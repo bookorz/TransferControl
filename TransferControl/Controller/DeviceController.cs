@@ -170,7 +170,7 @@ namespace TransferControl.Controller
                 Txn.SetTimeOutReport(this);
                 Txn.SetTimeOutMonitor(true);
                 TransactionRecord.New(Txn);
-                conn.Send(Txn.CommandEncodeStr);
+                
                 
                 string waferids = "";
                 foreach (Job each in Txn.TargetJobs)
@@ -178,8 +178,14 @@ namespace TransferControl.Controller
                     waferids += each.Job_Id + " ";
                 }
                 logger.Debug(_Config.DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
-                result = true;
-
+                if (conn.Send(Txn.CommandEncodeStr))
+                {
+                    result = true;
+                }
+                else
+                {
+                    result = false;
+                }
             }
             else
             {

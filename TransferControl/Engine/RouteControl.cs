@@ -12,10 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using TransferControl.Parser;
 using SANWA.Utility.Config;
+using DIOControl;
 
 namespace TransferControl.Engine
 {
-    public class RouteControl : AlarmMapping, ICommandReport
+    public class RouteControl : AlarmMapping, ICommandReport, IDIOTriggerReport
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
         string _Mode = "";
@@ -29,6 +30,7 @@ namespace TransferControl.Engine
         public int NotchDirect = 270;
 
         public int SpinWaitTimeOut = 99999000;
+        public static DIO DIO;
 
         /// <summary>
         /// 建構子，傳入一個事件回報對象
@@ -41,6 +43,7 @@ namespace TransferControl.Engine
             _UIReport = ReportUI;
             _HostReport = ReportHost;
             //初始化所有Controller
+            DIO = new DIO(this);
             ControllerManagement.LoadConfig(this);
 
             //初始化所有Node
@@ -56,13 +59,17 @@ namespace TransferControl.Engine
             PointManagement.LoadConfig();
             //初始化工作腳本
             TaskJobManagment.LoadConfig();
+            
         }
+
+       
         /// <summary>
         /// 對所有Controller連線
         /// </summary>
         public void ConnectAll()
         {
             ControllerManagement.ConnectAll();
+            DIO.Connect();
         }
         /// <summary>
         /// 對所有Controller斷線
@@ -2658,5 +2665,24 @@ namespace TransferControl.Engine
 
         }
 
+        public void On_Data_Chnaged(string Parameter, string Value)
+        {
+            _UIReport.On_Data_Chnaged(Parameter, Value);
+        }
+
+        public void On_Connection_Error(string DIOName, string ErrorMsg)
+        {
+            _UIReport.On_Connection_Error(DIOName, ErrorMsg);
+        }
+
+        public void On_Connection_Status_Report(string DIOName, string Status)
+        {
+            _UIReport.On_Connection_Status_Report(DIOName, Status);
+        }
+
+        public void On_Alarm_Happen(string DIOName, string ErrorCode)
+        {
+            _UIReport.On_Alarm_Happen(DIOName, ErrorCode);
+        }
     }
 }

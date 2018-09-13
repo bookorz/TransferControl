@@ -449,11 +449,19 @@ namespace TransferControl.Management
                                     {
                                         if (ex.ExcuteType.ToUpper().Equals("SCRIPT"))
                                         {
-                                            Node.ExcuteScript(ex.ExcuteName, Id, ex.param);
+                                            result = Node.ExcuteScript(ex.ExcuteName, Id, ex.param);
+                                            if (!result)
+                                            {
+                                                ErrorMessage = "Send Command Fail";
+                                            }
                                         }
                                         else if (ex.ExcuteType.ToUpper().Equals("CMD"))
                                         {
-                                            Node.SendCommand(ex.Txn);
+                                            result = Node.SendCommand(ex.Txn);
+                                            if (!result)
+                                            {
+                                                ErrorMessage = "Send Command Fail";
+                                            }
                                         }
                                     }
                                 }

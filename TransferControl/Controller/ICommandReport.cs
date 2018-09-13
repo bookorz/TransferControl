@@ -18,5 +18,6 @@ namespace TransferControl.Controller
         void On_Event_Trigger(Node Node, ReturnMessage Msg);
         void On_Node_State_Changed(Node Node, string Status);
         void On_Controller_State_Changed(string Device_ID, string Status);
+
     }
 }

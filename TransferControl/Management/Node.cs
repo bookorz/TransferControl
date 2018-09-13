@@ -230,7 +230,7 @@ namespace TransferControl.Management
             WaitForFinish = false;
             InitialComplete = false;
             IsWaferHold = false;
-            DesignatesAngle = "";
+            DesignatesAngle = "0";
 
             ErrorMsg = "";
             //Enable = true;
@@ -284,7 +284,7 @@ namespace TransferControl.Management
         /// <param name="ScriptName"></param>
         /// <param name="FormName"></param>
         /// <param name="Force"></param>
-        public void ExcuteScript(string ScriptName, string FormName, Dictionary<string, string> Param, string RecipeID = "")
+        public bool ExcuteScript(string ScriptName, string FormName, Dictionary<string, string> Param, string RecipeID = "")
         {
             if (Param != null)
             {
@@ -309,8 +309,9 @@ namespace TransferControl.Management
                 //dummyJob.Add(dummy);
                 //txn.TargetJobs = dummyJob;
                 logger.Debug("Excute Script:" + ScriptName + " Method:" + txn.Method);
-                SendCommand(txn);
+                return SendCommand(txn);
             }
+            return false;
         }
         /// <summary>
         /// 傳送命令
@@ -463,9 +464,13 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.ON);
                                 }
-                                else
+                                else if (txn.Value.Equals("0"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.OFF);
+                                }
+                                else if (txn.Value.Equals("2"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.Flashes);
                                 }
                                 break;
                             case Transaction.Command.LoadPortType.SetLoad:
@@ -473,9 +478,13 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Load, EncoderLoadPort.IndicatorStatus.ON);
                                 }
-                                else
+                                else if (txn.Value.Equals("0"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Load, EncoderLoadPort.IndicatorStatus.OFF);
+                                }
+                                else if (txn.Value.Equals("2"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Load, EncoderLoadPort.IndicatorStatus.Flashes);
                                 }
                                 break;
                             case Transaction.Command.LoadPortType.SetUnLoad:
@@ -483,9 +492,13 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Unload, EncoderLoadPort.IndicatorStatus.ON);
                                 }
-                                else
+                                else if (txn.Value.Equals("0"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Unload, EncoderLoadPort.IndicatorStatus.OFF);
+                                }
+                                else if (txn.Value.Equals("2"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Unload, EncoderLoadPort.IndicatorStatus.Flashes);
                                 }
                                 break;
                             case Transaction.Command.LoadPortType.GetLED:

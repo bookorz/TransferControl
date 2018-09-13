@@ -534,7 +534,13 @@ namespace TransferControl.Comm
                 //byte[] cmd = Encoding.Default.GetBytes(dataStr);
                 int n = theSocket.Send(t);
                 if (n < 1)
+                {
                     result = false;
+                }
+                else
+                {
+                    result = true;
+                }
             }
             catch (Exception ee)
             {
