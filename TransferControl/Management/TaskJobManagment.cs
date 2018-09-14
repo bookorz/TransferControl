@@ -23,11 +23,13 @@ namespace TransferControl.Management
         {
             public TaskJob ProceedTask { get; set; }
             public Dictionary<string, string> Params { get; set; }
+            public string GotoIndex = "";
         }
         public static void LoadConfig()
         {
             TaskJobList = new ConcurrentDictionary<string, List<TaskJob>>();
             CurrentProceedTasks = new ConcurrentDictionary<string, CurrentProceedTask>();
+            
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
             string Sql = @"SELECT t.task_name as TaskName,t.excute_obj as ExcuteObj, t.check_condition as CheckCondition, t.task_index as TaskIndex
                             FROM config_task_job t WHERE t.equipment_model_id = @equipment_model_id";
@@ -102,7 +104,7 @@ namespace TransferControl.Management
                                   select each;
                     if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
                     {
-                        result = CheckCondition(Id, out Message);
+                        result = CheckCondition(Id, out Message, NodeName);
                         tk.ProceedTask.CheckList.Clear();
                     }
                 }
@@ -123,11 +125,18 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static bool CheckCondition(string Id, out string Message)
+        public static bool CheckCondition(string Id, out string Message,string TriggerNodeName)
         {
             bool result = false;
             string taskName = "";
             Message = "";
+
+            Node TriggerNode = NodeManagement.Get(TriggerNodeName);
+            if (TriggerNode == null)
+            {
+                logger.Error("CheckCondition失敗，找不到TriggerNode:" + TriggerNodeName);
+                throw new Exception("CheckCondition失敗，找不到TriggerNode:" + TriggerNodeName);
+            }
             try
             {
                 CurrentProceedTask ExcutedTask = null;
@@ -162,35 +171,181 @@ namespace TransferControl.Management
                         }
 
                         string[] Conditions = eachExcuteObj.Split(new char[] { ':', '=' });
-                        if (Conditions.Length == 3)
+                        if (Conditions.Length >= 2)
                         {
                             string NodeName = Conditions[0];
                             string Attr = Conditions[1];
-                            string Value = Conditions[2];
-                            Node Node = NodeManagement.Get(NodeName);
-                            if (Node != null)
+                            string Value = "";
+                            if (Conditions.Length >= 3)
                             {
+                                Value = Conditions[2];
+                            }
+                            string SelfName = "";
+                            string PositionName = "";
+                            ExcutedTask.Params.TryGetValue("@Self", out SelfName);
+                            ExcutedTask.Params.TryGetValue("@Position", out PositionName);
+                            Node Self = NodeManagement.Get(SelfName);
+                            Node Position = NodeManagement.Get(PositionName);
+                            if (NodeName.ToUpper().Equals("FUNCTION"))
+                            {
+                                
                                 switch (Attr.ToUpper())
                                 {
-                                    case "INITIALCOMPLETE":
-                                        if (Node.InitialComplete.ToString().ToUpper().Equals(Value.ToUpper()))
+                                    case "CHECK_PRESENCE_AND_STATUS_FOR_GET":
+                                        if (Self == null)
                                         {
-                                            result = true;
+                                            logger.Error("CheckCondition失敗，找不到Node:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            throw new Exception("CheckCondition失敗，找不到Node:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        }
+                                        else if (Position == null)
+                                        {
+                                            logger.Error("CheckCondition失敗，找不到Node:" + Position + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            throw new Exception("CheckCondition失敗，找不到Node:" + Position + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
                                         }
                                         else
                                         {
-                                            result = false;
-                                            Message += NodeName + "尚未初始化完成.";
+                                            //檢查Robot手臂是否為空
+                                            
+                                            string RPresent = "";
+                                            string LPresent = "";
+
+                                            
+                                            if (!Self.IO.TryGetValue("R-Present", out RPresent))
+                                            {
+                                                logger.Error("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                throw new Exception("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            }
+                                            if (!Self.IO.TryGetValue("L-Present", out LPresent))
+                                            {
+                                                logger.Error("CheckCondition失敗，找不到L-Present:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                throw new Exception("CheckCondition失敗，找不到L-Present:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            }
+                                            if ( RPresent.Equals("0") && LPresent.Equals("0"))
+                                            {
+                                                //ROBOT沒有在席
+                                                if (Position.Type.ToUpper().Equals("LOADPORT"))
+                                                {
+                                                    //如果目的端是LoadPort，檢查門的狀態
+                                                    string Y_Axis_Position = "";
+                                                    string Door_Position = "";
+
+                                                    if (!Position.Status.TryGetValue("Y Axis Position", out Y_Axis_Position))
+                                                    {
+                                                        logger.Error("CheckCondition失敗，找不到Y Axis Position:" + Position + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        throw new Exception("CheckCondition失敗，找不到Y Axis Position:" + Position + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    }
+                                                    if (!Position.Status.TryGetValue("Door Position", out Door_Position))
+                                                    {
+                                                        logger.Error("CheckCondition失敗，找不到Door Position:" + Position + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        throw new Exception("CheckCondition失敗，找不到Door Position:" + Position + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    }
+                                                    if (Y_Axis_Position.Equals("Dock position") && Door_Position.Equals("Open position"))
+                                                    {
+                                                        result = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        
+                                                        Message = "00300005";//LOAD_LOCK_NOT_READY
+                                                        return false;
+                                                    }
+
+                                                }
+                                                else
+                                                {
+                                                    //檢查目的端在席是否存在
+                                                    
+                                                    if (!Position.IO.TryGetValue("R-Present", out RPresent))
+                                                    {
+                                                        logger.Error("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        throw new Exception("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    }
+                                                    if (RPresent.Equals("1"))
+                                                    {
+                                                        result = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        
+                                                        if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                                        {
+                                                            Message = "00300003";//ALIGNER_NO_WAFER
+                                                        }
+                                                        else if (Position.Type.ToUpper().Equals("STAGE"))
+                                                        {
+                                                            Message = "00300012";//LOAD_LOCK_NO_WAFER
+                                                        }
+                                                        return false;
+                                                    }
+
+                                                }
+                                            }
+                                            else
+                                            {
+                                                
+                                                if (!RPresent.Equals("0"))
+                                                {
+                                                    Message = "00300007";//ROBOT_NOT_EMPTY_ARM1
+                                                }
+                                                else if (!LPresent.Equals("0"))
+                                                {
+                                                    Message = "00300009";//ROBOT_NOT_EMPTY_ARM2
+                                                }
+                                                return false;
+                                            }
+
+
+
                                         }
                                         break;
                                 }
                             }
+                            else if (NodeName.ToUpper().Equals("GOTO"))
+                            {
+                                string NextIdx = Conditions[3];
+
+                                switch (Attr.ToUpper())
+                                {
+                                    case "TYPE":
+                                        if (Position.Type.ToUpper().Equals(Value.ToUpper()))
+                                        {
+                                            ExcutedTask.GotoIndex = NextIdx;
+                                        }
+                                        
+                                        break;
+                                    case "TRUE":
+                                        ExcutedTask.GotoIndex = NextIdx;
+                                        break;
+                                }
+                                result = true;
+                            }
                             else
                             {
-                                logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                Node Node = NodeManagement.Get(NodeName);
+                                if (Node != null)
+                                {
+                                    switch (Attr.ToUpper())
+                                    {
+                                        case "INITIALCOMPLETE":
+                                            if (Node.InitialComplete.ToString().ToUpper().Equals(Value.ToUpper()))
+                                            {
+                                                result = true;
+                                            }
+                                            else
+                                            {
+                                                
+                                                Message += NodeName + "尚未初始化完成.";
+                                                return false;
+                                            }
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                    throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                }
                             }
-
                         }
                         else
                         {
@@ -254,10 +409,21 @@ namespace TransferControl.Management
                 {
                     if (ExcutedTask != null)
                     {//只有帶ID進來，此Task已經開始執行，找到下一個須執行的項目
-                        var findTask = from each in tk
-                                       where each.TaskIndex > ExcutedTask.ProceedTask.TaskIndex
-                                       select each;
-                        tk = findTask.ToList();
+                        if (ExcutedTask.GotoIndex.Equals(""))
+                        {
+                            var findTask = from each in tk
+                                           where each.TaskIndex > ExcutedTask.ProceedTask.TaskIndex
+                                           select each;
+                            tk = findTask.ToList();
+                        }
+                        else
+                        {//如果有GOTO的Index，優先執行
+                            var findTask = from each in tk
+                                           where each.TaskIndex == Convert.ToInt32(ExcutedTask.GotoIndex)
+                                           select each;
+                            tk = findTask.ToList();
+                            ExcutedTask.GotoIndex = "";
+                        }
                     }
                     tk.Sort((x, y) => { return x.TaskIndex.CompareTo(y.TaskIndex); });
 
@@ -266,7 +432,7 @@ namespace TransferControl.Management
                         CurrentProceedTask CurrTask = new CurrentProceedTask();
                         CurrTask.ProceedTask = tk.First();
                         CurrTask.ProceedTask.CheckList.Clear();
-                        if (CurrTask.ProceedTask.TaskIndex!=1)
+                        if (CurrTask.ProceedTask.TaskIndex != 1)
                         {//拿之前的
                             CurrTask.Params = LastParam;
                         }
@@ -440,7 +606,7 @@ namespace TransferControl.Management
                                 {
                                     if (Node.ByPass)
                                     {
-                                        logger.Error("ExcuteObj失敗，Node:"+ ex.NodeName + " 目前為Bypass模式!");
+                                        logger.Error("ExcuteObj失敗，Node:" + ex.NodeName + " 目前為Bypass模式!");
                                         CurrentProceedTasks.TryRemove(Id, out tmpTk);
                                         ErrorMessage = "Bypass Mode";
                                         return false;
@@ -510,7 +676,7 @@ namespace TransferControl.Management
                 logger.Error("Excute fail Task Name:" + taskName + " exception: " + e.StackTrace);
                 //throw new Exception("Excute fail Task Name:" + taskName + " exception: " + e.Message);
                 ErrorMessage = "Excute fail Task Name:" + taskName + " exception: " + e.Message;
-           
+
                 return false;
             }
             return result;

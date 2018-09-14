@@ -1410,49 +1410,51 @@ namespace TransferControl.Engine
                                     break;
 
                                 case Transaction.Command.LoadPortType.ReadStatus:
+                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
                                     //偵測LoadPort門是否有開，沒開就停止所有可能會撞擊的裝置
-                                    if (Txn.FormName.Equals("InterLockChk"))
-                                    {
-                                        MessageParser parser = new MessageParser(Node.Brand);
-                                        Dictionary<string, string> content = parser.ParseMessage(Txn.Method, Msg.Value);
-                                        bool CheckResult = true;
-                                        string info = "";
-                                        foreach (KeyValuePair<string, string> each in content)
-                                        {
-                                            info += each.Key + ":" + each.Value + " ,";
-                                            switch (each.Key)
-                                            {
+                                    //if (Txn.FormName.Equals("InterLockChk"))
+                                    //{
+                                    //    MessageParser parser = new MessageParser(Node.Brand);
+                                    //    Dictionary<string, string> content = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    //    bool CheckResult = true;
+                                    //    string info = "";
+                                    //    foreach (KeyValuePair<string, string> each in content)
+                                    //    {
+                                    //        info += each.Key + ":" + each.Value + " ,";
+                                    //        switch (each.Key)
+                                    //        {
 
-                                                case "Y Axis Position":
-                                                    if (!each.Value.Equals("Dock position"))
-                                                    {
-                                                        CheckResult = false;
-                                                    }
-                                                    break;
-                                                case "Door Position":
-                                                    if (!each.Value.Equals("Open position"))
-                                                    {
-                                                        CheckResult = false;
-                                                    }
-                                                    break;
+                                    //            case "Y Axis Position":
+                                    //                if (!each.Value.Equals("Dock position"))
+                                    //                {
+                                    //                    CheckResult = false;
+                                    //                }
+                                    //                break;
+                                    //            case "Door Position":
+                                    //                if (!each.Value.Equals("Open position"))
+                                    //                {
+                                    //                    CheckResult = false;
+                                    //                }
+                                    //                break;
 
-                                            }
-                                        }
-                                        logger.Debug(info);
-                                        if (!CheckResult)
-                                        {
-                                            //檢查到LoadPort狀態不允許Robot存取
+                                    //        }
+                                    //    }
+                                    //    logger.Debug(info);
+                                    //    if (!CheckResult)
+                                    //    {
+                                    //        //檢查到LoadPort狀態不允許Robot存取
 
-                                            foreach (Node rbt in NodeManagement.GetEnableRobotList())
-                                            {//暫停Robot所有動作
-                                                Transaction StopTxn = new Transaction();
-                                                StopTxn.Method = Transaction.Command.RobotType.Pause;
-                                                StopTxn.FormName = "InterLockTxn";
-                                                logger.Error("LoadPort " + Node.Name + " is not ready, send pause cmd to " + rbt.Name + ".");
-                                                rbt.SendCommand(StopTxn);
-                                            }
-                                        }
-                                    }
+                                    //        foreach (Node rbt in NodeManagement.GetEnableRobotList())
+                                    //        {//暫停Robot所有動作
+                                    //            Transaction StopTxn = new Transaction();
+                                    //            StopTxn.Method = Transaction.Command.RobotType.Pause;
+                                    //            StopTxn.FormName = "InterLockTxn";
+                                    //            logger.Error("LoadPort " + Node.Name + " is not ready, send pause cmd to " + rbt.Name + ".");
+                                    //            rbt.SendCommand(StopTxn);
+                                    //        }
+                                    //    }
+                                    //}
                                     break;
                                 case Transaction.Command.LoadPortType.GetMapping:
                                     //產生Mapping資料
@@ -1535,6 +1537,15 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             switch (Txn.Method)
                             {
+                                case Transaction.Command.RobotType.GetRIO:
+                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    Dictionary<string,string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in RioResult)
+                                    {
+                                        Node.IO.Remove(each.Key);
+                                        Node.IO.Add(each.Key,each.Value);
+                                    }
+                                    break;
                                 case Transaction.Command.RobotType.GetMapping:
                                     //產生Mapping資料
                                     //string Mapping = Msg.Value;
@@ -1643,7 +1654,18 @@ namespace TransferControl.Engine
                             break;
                         case "ALIGNER":
                         case "OCR":
-
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.RobotType.GetRIO:
+                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in RioResult)
+                                    {
+                                        Node.IO.Remove(each.Key);
+                                        Node.IO.Add(each.Key, each.Value);
+                                    }
+                                    break;
+                            }
                             if (!_Mode.Equals("Stop") && Txn.FormName.Equals("Running"))
                             {
                                 //TargetJob = Txn.TargetJobs[0];

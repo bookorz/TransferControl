@@ -195,6 +195,9 @@ namespace TransferControl.Management
 
         public string MappingResult { get; set; }
 
+        public Dictionary<string, string> Status { get; set; }
+        public Dictionary<string, string> IO { get; set; }
+
         public void InitialObject()
         {
             JobList = new ConcurrentDictionary<string, Job>();
@@ -212,6 +215,8 @@ namespace TransferControl.Management
             CurrentPosition = "";
             PutOutArm = "";
             UnLockByJob = "";
+            Status = new Dictionary<string, string>();
+            IO = new Dictionary<string, string>();
             State = "Idle";
             if (Type.Equals("LOADPORT"))
             {
@@ -405,20 +410,21 @@ namespace TransferControl.Management
                     }
 
                     txn.Point = point.Point;
-                    if (point.PositionType.Equals("LOADPORT"))
-                    {
-                        Node port = NodeManagement.Get(point.Position);
-                        if (port != null)
-                        {
-                            if (!port.ByPass)
-                            {
-                                Transaction InterLockTxn = new Transaction();
-                                InterLockTxn.Method = Transaction.Command.LoadPortType.ReadStatus;
-                                InterLockTxn.FormName = "InterLockChk";
-                                port.SendCommand(InterLockTxn);
-                            }
-                        }
-                    }
+                    //檢查Loadport門是否為可以取放片狀態
+                    //if (point.PositionType.Equals("LOADPORT"))
+                    //{
+                    //    Node port = NodeManagement.Get(point.Position);
+                    //    if (port != null)
+                    //    {
+                    //        if (!port.ByPass)
+                    //        {
+                    //            Transaction InterLockTxn = new Transaction();
+                    //            InterLockTxn.Method = Transaction.Command.LoadPortType.ReadStatus;
+                    //            InterLockTxn.FormName = "InterLockChk";
+                    //            port.SendCommand(InterLockTxn);
+                    //        }
+                    //    }
+                    //}
                     if (!txn.Position2.Equals(""))
                     {
                         if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
