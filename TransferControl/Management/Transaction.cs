@@ -79,6 +79,8 @@ namespace TransferControl.Management
                 public const string SetOpAccessBlink = "SetOpAccessBlink";
                 public const string SetLoad = "SetLoad";
                 public const string SetUnLoad = "SetUnLoad";
+                public const string UntilUnDock = "UntilUnDock"; 
+                public const string DockingPositionNoVac = "DockingPositionNoVac";
             }
             
 

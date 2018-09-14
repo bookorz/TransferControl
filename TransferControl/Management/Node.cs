@@ -193,6 +193,8 @@ namespace TransferControl.Management
 
         public int NotchAngle { get; set; }
 
+        public string MappingResult { get; set; }
+
         public void InitialObject()
         {
             JobList = new ConcurrentDictionary<string, Job>();
@@ -202,6 +204,7 @@ namespace TransferControl.Management
             {
                 Phase = "2";
             }
+            MappingResult = "";
             CurrentLoadPort = "";
             FoupID = "";
             PrID = "";
@@ -590,6 +593,12 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.LoadPortType.MappingDown:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingDown(EncoderLoadPort.CommandType.Normal);
+                                break;
+                            case Transaction.Command.LoadPortType.UntilUnDock:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.UntilUndock(EncoderLoadPort.CommandType.Normal);
+                                break;
+                            case Transaction.Command.LoadPortType.DockingPositionNoVac:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DockingPositionNoVac(EncoderLoadPort.CommandType.Normal);
                                 break;
                         }
                         break;

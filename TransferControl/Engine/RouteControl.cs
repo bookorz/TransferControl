@@ -1411,7 +1411,7 @@ namespace TransferControl.Engine
 
                                 case Transaction.Command.LoadPortType.ReadStatus:
                                     //偵測LoadPort門是否有開，沒開就停止所有可能會撞擊的裝置
-                                    if (Txn.FormName.Equals("InterLockTxn"))
+                                    if (Txn.FormName.Equals("InterLockChk"))
                                     {
                                         MessageParser parser = new MessageParser(Node.Brand);
                                         Dictionary<string, string> content = parser.ParseMessage(Txn.Method, Msg.Value);
@@ -1463,6 +1463,7 @@ namespace TransferControl.Engine
                                     //    Mapping = "0000000110000000000000000";
                                     //}
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
+                                    Node.MappingResult = Mapping;
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
                                     {
