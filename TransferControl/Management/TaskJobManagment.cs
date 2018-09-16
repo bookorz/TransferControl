@@ -324,21 +324,19 @@ namespace TransferControl.Management
                                 Node Node = NodeManagement.Get(NodeName);
                                 if (Node != null)
                                 {
-                                    switch (Attr.ToUpper())
-                                    {
-                                        case "INITIALCOMPLETE":
-                                            if (Node.InitialComplete.ToString().ToUpper().Equals(Value.ToUpper()))
+                                    string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            if (AttrVal.Equals(Value.ToUpper()))
                                             {
                                                 result = true;
                                             }
                                             else
                                             {
                                                 
-                                                Message += NodeName + "尚未初始化完成.";
+                                                Message += "比對不吻合";
                                                 return false;
                                             }
-                                            break;
-                                    }
+                                           
+                                    
                                 }
                                 else
                                 {
