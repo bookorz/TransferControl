@@ -22,6 +22,6 @@ namespace TransferControl.Management
             public string FinishTrigger { get; set; }
             public bool Finished = false;
         }
-        public List<Excuted> CheckList = new List<Excuted>();
+        
     }
 }

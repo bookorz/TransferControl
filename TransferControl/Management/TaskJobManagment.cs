@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static TransferControl.Management.TaskJob;
 
 namespace TransferControl.Management
 {
@@ -23,13 +24,14 @@ namespace TransferControl.Management
         {
             public TaskJob ProceedTask { get; set; }
             public Dictionary<string, string> Params { get; set; }
+            public List<Excuted> CheckList = new List<Excuted>();
             public string GotoIndex = "";
         }
         public static void LoadConfig()
         {
             TaskJobList = new ConcurrentDictionary<string, List<TaskJob>>();
             CurrentProceedTasks = new ConcurrentDictionary<string, CurrentProceedTask>();
-            
+
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
             string Sql = @"SELECT t.task_name as TaskName,t.excute_obj as ExcuteObj, t.check_condition as CheckCondition, t.task_index as TaskIndex
                             FROM config_task_job t WHERE t.equipment_model_id = @equipment_model_id";
@@ -89,7 +91,7 @@ namespace TransferControl.Management
 
             if (CurrentProceedTasks.TryGetValue(Id, out tk))
             {
-                var findExcuted = from each in tk.ProceedTask.CheckList
+                var findExcuted = from each in tk.CheckList
                                   where each.NodeName.ToUpper().Equals(NodeName.ToUpper()) && each.ExcuteName.ToUpper().Equals(ExcuteName.ToUpper()) && each.ExcuteType.ToUpper().Equals(ExcuteType.ToUpper())
                                   select each;
                 if (findExcuted.Count() != 0)
@@ -99,13 +101,13 @@ namespace TransferControl.Management
                         findExcuted.First().Finished = true;//把做完的標記完成
 
                     }
-                    findExcuted = from each in tk.ProceedTask.CheckList
+                    findExcuted = from each in tk.CheckList
                                   where !each.Finished
                                   select each;
                     if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
                     {
                         result = CheckCondition(Id, out Message, NodeName);
-                        tk.ProceedTask.CheckList.Clear();
+                        tk.CheckList.Clear();
                     }
                 }
                 else
@@ -125,11 +127,12 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static bool CheckCondition(string Id, out string Message,string TriggerNodeName)
+        public static bool CheckCondition(string Id, out string Message, string TriggerNodeName)
         {
             bool result = false;
             string taskName = "";
             Message = "";
+            bool UnCheck = false;
 
             Node TriggerNode = NodeManagement.Get(TriggerNodeName);
             if (TriggerNode == null)
@@ -170,15 +173,21 @@ namespace TransferControl.Management
                             continue;
                         }
 
-                        string[] Conditions = eachExcuteObj.Split(new char[] { ':', '=' });
+                        string[] Conditions = eachExcuteObj.Split(new char[] { ':', '=', ',' });
                         if (Conditions.Length >= 2)
                         {
                             string NodeName = Conditions[0];
                             string Attr = Conditions[1];
                             string Value = "";
+                            string ErrorCode = "";
                             if (Conditions.Length >= 3)
                             {
                                 Value = Conditions[2];
+                            }
+
+                            if (Conditions.Length >= 4)
+                            {
+                                ErrorCode = Conditions[3];
                             }
                             string SelfName = "";
                             string PositionName = "";
@@ -186,162 +195,98 @@ namespace TransferControl.Management
                             ExcutedTask.Params.TryGetValue("@Position", out PositionName);
                             Node Self = NodeManagement.Get(SelfName);
                             Node Position = NodeManagement.Get(PositionName);
-                            if (NodeName.ToUpper().Equals("FUNCTION"))
+                            if (NodeName.ToUpper().Equals("UNCHK"))
                             {
-                                
-                                switch (Attr.ToUpper())
-                                {
-                                    case "CHECK_PRESENCE_AND_STATUS_FOR_GET":
-                                        if (Self == null)
-                                        {
-                                            logger.Error("CheckCondition失敗，找不到Node:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            throw new Exception("CheckCondition失敗，找不到Node:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                        }
-                                        else if (Position == null)
-                                        {
-                                            logger.Error("CheckCondition失敗，找不到Node:" + Position + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            throw new Exception("CheckCondition失敗，找不到Node:" + Position + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                        }
-                                        else
-                                        {
-                                            //檢查Robot手臂是否為空
-                                            
-                                            string RPresent = "";
-                                            string LPresent = "";
-
-                                            
-                                            if (!Self.IO.TryGetValue("R-Present", out RPresent))
-                                            {
-                                                logger.Error("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                throw new Exception("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            }
-                                            if (!Self.IO.TryGetValue("L-Present", out LPresent))
-                                            {
-                                                logger.Error("CheckCondition失敗，找不到L-Present:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                throw new Exception("CheckCondition失敗，找不到L-Present:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            }
-                                            if ( RPresent.Equals("0") && LPresent.Equals("0"))
-                                            {
-                                                //ROBOT沒有在席
-                                                if (Position.Type.ToUpper().Equals("LOADPORT"))
-                                                {
-                                                    //如果目的端是LoadPort，檢查門的狀態
-                                                    string Y_Axis_Position = "";
-                                                    string Door_Position = "";
-
-                                                    if (!Position.Status.TryGetValue("Y Axis Position", out Y_Axis_Position))
-                                                    {
-                                                        logger.Error("CheckCondition失敗，找不到Y Axis Position:" + Position + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                        throw new Exception("CheckCondition失敗，找不到Y Axis Position:" + Position + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    }
-                                                    if (!Position.Status.TryGetValue("Door Position", out Door_Position))
-                                                    {
-                                                        logger.Error("CheckCondition失敗，找不到Door Position:" + Position + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                        throw new Exception("CheckCondition失敗，找不到Door Position:" + Position + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    }
-                                                    if (Y_Axis_Position.Equals("Dock position") && Door_Position.Equals("Open position"))
-                                                    {
-                                                        result = true;
-                                                    }
-                                                    else
-                                                    {
-                                                        
-                                                        Message = "00300005";//LOAD_LOCK_NOT_READY
-                                                        return false;
-                                                    }
-
-                                                }
-                                                else
-                                                {
-                                                    //檢查目的端在席是否存在
-                                                    
-                                                    if (!Position.IO.TryGetValue("R-Present", out RPresent))
-                                                    {
-                                                        logger.Error("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                        throw new Exception("CheckCondition失敗，找不到R-Present:" + SelfName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    }
-                                                    if (RPresent.Equals("1"))
-                                                    {
-                                                        result = true;
-                                                    }
-                                                    else
-                                                    {
-                                                        
-                                                        if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                                        {
-                                                            Message = "00300003";//ALIGNER_NO_WAFER
-                                                        }
-                                                        else if (Position.Type.ToUpper().Equals("STAGE"))
-                                                        {
-                                                            Message = "00300012";//LOAD_LOCK_NO_WAFER
-                                                        }
-                                                        return false;
-                                                    }
-
-                                                }
-                                            }
-                                            else
-                                            {
-                                                
-                                                if (!RPresent.Equals("0"))
-                                                {
-                                                    Message = "00300007";//ROBOT_NOT_EMPTY_ARM1
-                                                }
-                                                else if (!LPresent.Equals("0"))
-                                                {
-                                                    Message = "00300009";//ROBOT_NOT_EMPTY_ARM2
-                                                }
-                                                return false;
-                                            }
-
-
-
-                                        }
-                                        break;
-                                }
-                            }
-                            else if (NodeName.ToUpper().Equals("GOTO"))
-                            {
-                                string NextIdx = Conditions[3];
-
-                                switch (Attr.ToUpper())
-                                {
-                                    case "TYPE":
-                                        if (Position.Type.ToUpper().Equals(Value.ToUpper()))
-                                        {
-                                            ExcutedTask.GotoIndex = NextIdx;
-                                        }
-                                        
-                                        break;
-                                    case "TRUE":
-                                        ExcutedTask.GotoIndex = NextIdx;
-                                        break;
-                                }
-                                result = true;
-                            }
-                            else
-                            {
+                                //UNCHK:Param:@Arm=2;
+                                //    0    1    2  3
+                                NodeName = Conditions[1];
+                                Attr = Conditions[2];
+                                Value = Conditions[3];
                                 Node Node = NodeManagement.Get(NodeName);
                                 if (Node != null)
                                 {
                                     string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                            if (AttrVal.Equals(Value.ToUpper()))
-                                            {
-                                                result = true;
-                                            }
-                                            else
-                                            {
-                                                
-                                                Message += "比對不吻合";
-                                                return false;
-                                            }
-                                           
-                                    
+                                    if (AttrVal.Equals(Value.ToUpper()))
+                                    {
+                                        result = true;
+                                    }
                                 }
                                 else
                                 {
-                                    logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                    throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                    if (Attr.Equals(Value))
+                                    {
+                                        UnCheck = true;
+                                    }
+                                }
+                            }
+                            else if (NodeName.ToUpper().Equals("GOTO"))
+                            {
+                                result = true;
+                                //GOTO:CHK:@Arm=2:2;
+                                //   0   1    2 3 4
+                                string NextIdx = Conditions[4];
+                                NodeName = Conditions[1];
+                                Attr = Conditions[2];
+                                Value = Conditions[3];
+                                switch (NodeName.ToUpper())
+                                {
+                                    case "CHK":
+                                        if (Conditions[2].Equals(Conditions[3]))
+                                        {
+                                            ExcutedTask.GotoIndex = NextIdx;
+                                            return true;
+                                        }
+                                        break;
+                                    default:
+                                        Node Node = NodeManagement.Get(NodeName);
+                                        if (Node != null)
+                                        {
+                                            string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            if (AttrVal.Equals(Value.ToUpper()))
+                                            {
+                                                ExcutedTask.GotoIndex = NextIdx;
+                                                return true;
+                                            }
+                                            
+                                        }
+                                        else
+                                        {
+                                            logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        }
+
+                                        break;
+                                }
+                                
+                            }
+                            else
+                            {
+                                if (UnCheck)
+                                {
+                                    result = true;
+                                }
+                                else
+                                {
+                                    Node Node = NodeManagement.Get(NodeName);
+                                    if (Node != null)
+                                    {
+                                        string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                        if (AttrVal.Equals(Value.ToUpper()))
+                                        {
+                                            result = true;
+                                        }
+                                        else
+                                        {
+
+                                            Message = ErrorCode;
+                                            return false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                    }
                                 }
                             }
                         }
@@ -429,7 +374,7 @@ namespace TransferControl.Management
                     {
                         CurrentProceedTask CurrTask = new CurrentProceedTask();
                         CurrTask.ProceedTask = tk.First();
-                        CurrTask.ProceedTask.CheckList.Clear();
+                        CurrTask.CheckList.Clear();
                         if (CurrTask.ProceedTask.TaskIndex != 1)
                         {//拿之前的
                             CurrTask.Params = LastParam;
@@ -503,7 +448,7 @@ namespace TransferControl.Management
                                         ex.ExcuteType = Type;
                                         ex.FinishTrigger = "Finished";
                                         ex.param = param;
-                                        CurrTask.ProceedTask.CheckList.Add(ex);
+                                        CurrTask.CheckList.Add(ex);
 
                                     }
                                     else if (Type.ToUpper().Equals("CMD"))
@@ -583,7 +528,7 @@ namespace TransferControl.Management
                                         ex.FinishTrigger = FinishTrigger;
                                         ex.Txn = Txn;
 
-                                        CurrTask.ProceedTask.CheckList.Add(ex);
+                                        CurrTask.CheckList.Add(ex);
 
                                     }
                                 }
@@ -596,7 +541,7 @@ namespace TransferControl.Management
                                     return false;
                                 }
                             }
-                            foreach (TaskJob.Excuted ex in CurrTask.ProceedTask.CheckList)
+                            foreach (TaskJob.Excuted ex in CurrTask.CheckList.ToList())
                             {
 
                                 Node Node = NodeManagement.Get(ex.NodeName);

@@ -342,6 +342,7 @@ namespace TransferControl.Controller
                                             {
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
+                                                Node.IsExcuting = false;
                                             }
                                             else
                                             {
@@ -355,11 +356,13 @@ namespace TransferControl.Controller
                                         case ReturnMessage.ReturnType.Finished:
                                             logger.Debug("Txn timmer stoped.");
                                             Txn.SetTimeOutMonitor(false);
+                                            Node.IsExcuting = false;
                                             //_ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                             break;
                                         case ReturnMessage.ReturnType.Error:
                                             logger.Debug("Txn timmer stoped.");
                                             Txn.SetTimeOutMonitor(false);
+                                            Node.IsExcuting = false;
                                             //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
                                             break;
                                         case ReturnMessage.ReturnType.Information:
@@ -368,10 +371,12 @@ namespace TransferControl.Controller
                                             if (_Config.Vendor.ToUpper().Equals("TDK") && Txn.CommandType.Equals("SET"))
                                             {
                                                 ReturnMsg.Type = ReturnMessage.ReturnType.Excuted;
+                                                Node.IsExcuting = false;
                                             }
                                             else
                                             {
                                                 ReturnMsg.Type = ReturnMessage.ReturnType.Finished;
+                                                Node.IsExcuting = false;
                                             }
                                             SpinWait.SpinUntil(() => false, 50);
                                             //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);

@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TransferControl.Controller;
 
@@ -195,6 +196,42 @@ namespace TransferControl.Management
 
         public string MappingResult { get; set; }
 
+        public string R_Presence { get; set; }
+
+        public string L_Presence { get; set; }
+
+        public string R_Hold_Status { get; set; }
+
+        public string L_Hold_Status { get; set; }
+
+        public string Y_Axis_Position { get; set; }
+
+        public string Door_Position { get; set; }
+
+        public string ArmCheck { get; set; }
+
+        public bool Foup_Placement { get; set; }
+
+        public bool Foup_Presence { get; set; }
+
+        public bool Access_SW { get; set; }
+
+        public bool Foup_Lock { get; set; }
+
+        public string Load_LED { get; set; }
+
+        public string UnLoad_LED { get; set; }
+
+        public string AccessSW_LED { get; set; }
+
+        public bool IsClamp { get; set; }
+
+        public bool IsDock { get; set; }
+
+        public bool IsExcuting { get; set; }
+
+        public bool IsPause { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
 
@@ -217,11 +254,11 @@ namespace TransferControl.Management
             UnLockByJob = "";
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
-            State = "Idle";
-            if (Type.Equals("LOADPORT"))
-            {
-                State = "Ready To Load";
-            }
+            State = "Not Origin";
+            //if (Type.Equals("LOADPORT"))
+            //{
+            //    State = "Ready To Load";
+            //}
             LastState = "Idle";
             LastFinMethod = "";
             Busy = false;
@@ -239,6 +276,8 @@ namespace TransferControl.Management
             InitialComplete = false;
             IsWaferHold = false;
             DesignatesAngle = "0";
+            IsExcuting = false;
+            IsPause = false;
 
             ErrorMsg = "";
             //Enable = true;
@@ -255,6 +294,41 @@ namespace TransferControl.Management
             DestPort = "";
             LoadTime = new DateTime();
             PortUnloadAndLoadFinished = false;
+
+            MappingResult = "";
+
+            R_Presence = "";
+
+            L_Presence = "";
+
+            R_Hold_Status = "";
+
+            L_Hold_Status = "";
+
+            Y_Axis_Position = "";
+
+            Door_Position = "";
+
+            ArmCheck = "";
+
+            Foup_Placement = false;
+
+            Foup_Presence = false;
+
+            Access_SW = false;
+
+            Foup_Lock = false;
+
+            Load_LED = "";
+
+
+            UnLoad_LED = "";
+
+            AccessSW_LED = "";
+
+            IsClamp = false;
+
+            IsDock = false;
         }
         /// <summary>
         /// 執行命令腳本
@@ -262,7 +336,7 @@ namespace TransferControl.Management
         /// <param name="ScriptName"></param>
         /// <param name="FormName"></param>
         /// <param name="Force"></param>
-        public void ExcuteScript(string ScriptName, string FormName, string RecipeID="", bool Force = false)
+        public void ExcuteScript(string ScriptName, string FormName, string RecipeID = "", bool Force = false)
         {
             CommandScript StartCmd = CommandScriptManagement.GetStart(ScriptName);
             if (StartCmd != null)
@@ -329,18 +403,31 @@ namespace TransferControl.Management
         /// <returns></returns>
         public bool SendCommand(Transaction txn, bool Force = false)
         {
+            while (true)
+            {
+                SpinWait.SpinUntil(() => !this.IsExcuting, 99999999);
+                lock (this)
+                {
+                    if (!this.IsExcuting)                  
+                    {
+                        break;
+                    }
+                }
+            }
+            this.IsExcuting = true;
             //var watch = System.Diagnostics.Stopwatch.StartNew();
-
+            // System.Threading.Thread.Sleep(500);
 
             bool result = false;
             try
             {
                 if (this.ByPass)
                 {
-                    
-                        logger.Debug("Command cancel,Cause " + this.Name + " in by pass mode.");
-                        return true;
-                    
+
+                    logger.Debug("Command cancel,Cause " + this.Name + " in by pass mode.");
+                    this.IsExcuting = false;
+                    return true;
+
                 }
 
                 IController Ctrl = ControllerManagement.Get(Controller);
@@ -379,7 +466,7 @@ namespace TransferControl.Management
                         }
                     }
                 }
-                
+
                 if (!txn.Position.Equals(""))
                 {
                     if (txn.RecipeID.Equals(""))
@@ -405,7 +492,7 @@ namespace TransferControl.Management
                     if (point == null)
                     {
                         logger.Error("point " + txn.Position + " not found!");
-
+                        this.IsExcuting = false;
                         throw new Exception("point " + txn.Position + " not found!");
                     }
 
@@ -438,7 +525,7 @@ namespace TransferControl.Management
                         if (point == null)
                         {
                             logger.Error("point " + txn.Position2 + " not found!");
-
+                            this.IsExcuting = false;
                             throw new Exception("point " + txn.Position + " not found!");
                         }
 
@@ -612,13 +699,13 @@ namespace TransferControl.Management
                         switch (txn.Method)
                         {
                             case Transaction.Command.RobotType.Exchange:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Exchange(AdrNo, txn.Seq,txn.Arm,txn.Point,txn.Slot,txn.Arm2,txn.Point2,txn.Slot2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Exchange(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot, txn.Arm2, txn.Point2, txn.Slot2);
                                 break;
                             case Transaction.Command.RobotType.GetMapping:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.MapList(AdrNo, txn.Seq, txn.Value);
                                 break;
                             case Transaction.Command.RobotType.Mapping:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Mapping(AdrNo, txn.Seq,txn.Point,"1",txn.Slot);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Mapping(AdrNo, txn.Seq, txn.Point, "1", txn.Slot);
                                 break;
                             case Transaction.Command.RobotType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Status(AdrNo, txn.Seq);
@@ -719,7 +806,7 @@ namespace TransferControl.Management
                         switch (txn.Method)
                         {
                             case Transaction.Command.AlignerType.SetAlign:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SetSize(AdrNo, txn.Seq,txn.Value);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SetSize(AdrNo, txn.Seq, txn.Value);
                                 break;
                             case Transaction.Command.AlignerType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Status(AdrNo, txn.Seq);
@@ -875,7 +962,7 @@ namespace TransferControl.Management
                         tmp.Value = "Interlock!";
                         logger.Error(this.Name + " Interlock! Txn:" + JsonConvert.SerializeObject(txn));
                         ControllerManagement.Get(Controller)._ReportTarget.On_Command_Error(this, txn, tmp);
-
+                        this.IsExcuting = false;
                         return false;
                     }
                     if (this.Type.Equals("LOADPORT"))
@@ -911,6 +998,7 @@ namespace TransferControl.Management
             catch (Exception e)
             {
                 logger.Error("SendCommand " + e.Message + "\n" + e.StackTrace);
+                this.IsExcuting = false;
                 throw new Exception("SendCommand " + e.Message + "\n" + e.StackTrace);
             }
             //watch.Stop();

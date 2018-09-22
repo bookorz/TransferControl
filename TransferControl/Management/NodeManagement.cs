@@ -222,9 +222,10 @@ namespace TransferControl.Management
         public static Node Get(string Name)
         {
             Node result = null;
-
-            NodeList.TryGetValue(Name.ToUpper(), out result);
-
+            if (Name != null)
+            {
+                NodeList.TryGetValue(Name.ToUpper(), out result);
+            }
             return result;
         }
 
