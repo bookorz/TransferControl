@@ -83,11 +83,22 @@ namespace TransferControl.Management
         /// <param name="ExcuteName"></param>
         /// <param name="ReturnType">Executed/Finished</param>
         /// <returns>true:當工作全部完成</returns>
-        public static bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message)
+        public static bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message,out string Report)
         {
             bool result = false;
             Message = "";
+            Report = "";
             CurrentProceedTask tk;
+
+            if (ExcuteName.Equals("DoubleGet"))
+            {
+                ExcuteName = "Get";
+            }
+            if (ExcuteName.Equals("DoublePut"))
+            {
+                ExcuteName = "Put";
+
+            }
 
             if (CurrentProceedTasks.TryGetValue(Id, out tk))
             {
@@ -106,7 +117,7 @@ namespace TransferControl.Management
                                   select each;
                     if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
                     {
-                        result = CheckCondition(Id, out Message, NodeName);
+                        result = CheckCondition(Id, NodeName, out Message,out Report);
                         tk.CheckList.Clear();
                     }
                 }
@@ -127,11 +138,12 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static bool CheckCondition(string Id, out string Message, string TriggerNodeName)
+        public static bool CheckCondition(string Id, string TriggerNodeName, out string Message, out string Report)
         {
             bool result = false;
             string taskName = "";
             Message = "";
+            Report = "";
             bool UnCheck = false;
 
             Node TriggerNode = NodeManagement.Get(TriggerNodeName);
@@ -173,65 +185,54 @@ namespace TransferControl.Management
                             continue;
                         }
 
-                        string[] Conditions = eachExcuteObj.Split(new char[] { ':', '=', ',' });
+                        string[] Conditions = eachExcuteObj.Split(new char[] { ':' });
                         if (Conditions.Length >= 2)
                         {
                             string NodeName = Conditions[0];
                             string Attr = Conditions[1];
-                            string Value = "";
-                            string ErrorCode = "";
-                            if (Conditions.Length >= 3)
-                            {
-                                Value = Conditions[2];
-                            }
-
-                            if (Conditions.Length >= 4)
-                            {
-                                ErrorCode = Conditions[3];
-                            }
+                            
+                            
                             string SelfName = "";
                             string PositionName = "";
                             ExcutedTask.Params.TryGetValue("@Self", out SelfName);
                             ExcutedTask.Params.TryGetValue("@Position", out PositionName);
                             Node Self = NodeManagement.Get(SelfName);
                             Node Position = NodeManagement.Get(PositionName);
-                            if (NodeName.ToUpper().Equals("UNCHK"))
+                            if(NodeName.ToUpper().Equals("REPORT"))
+                            {
+
+                                Report = Attr;
+                            }
+                            else if (NodeName.ToUpper().Equals("UNCHK"))
                             {
                                 //UNCHK:Param:@Arm=2;
-                                //    0    1    2  3
-                                NodeName = Conditions[1];
-                                Attr = Conditions[2];
-                                Value = Conditions[3];
-                                Node Node = NodeManagement.Get(NodeName);
-                                if (Node != null)
+                                //    0    1    2  
+                                
+                                string CheckValue = Conditions[2].Split('=')[0];
+                                string Value = Conditions[2].Split('=')[1];
+                               
+                                
+                                if (CheckValue.Equals(Value))
                                 {
-                                    string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                    if (AttrVal.Equals(Value.ToUpper()))
-                                    {
-                                        result = true;
-                                    }
+                                    UnCheck = true;
                                 }
-                                else
-                                {
-                                    if (Attr.Equals(Value))
-                                    {
-                                        UnCheck = true;
-                                    }
-                                }
+                                
                             }
                             else if (NodeName.ToUpper().Equals("GOTO"))
                             {
                                 result = true;
                                 //GOTO:CHK:@Arm=2:2;
-                                //   0   1    2 3 4
-                                string NextIdx = Conditions[4];
+                                //   0   1    2   3
+                                //GOTO:@Position:Type=STAGE:6;
+                                //   0      1        2      3
+                                string NextIdx = Conditions[3];
                                 NodeName = Conditions[1];
-                                Attr = Conditions[2];
-                                Value = Conditions[3];
+                                Attr = Conditions[2].Split('=')[0];
+                                string Value = Conditions[2].Split('=')[1];
                                 switch (NodeName.ToUpper())
                                 {
                                     case "CHK":
-                                        if (Conditions[2].Equals(Conditions[3]))
+                                        if (Attr.Equals(Value))
                                         {
                                             ExcutedTask.GotoIndex = NextIdx;
                                             return true;
@@ -267,6 +268,12 @@ namespace TransferControl.Management
                                 }
                                 else
                                 {
+                                    //ALIGNER02:InitialComplete=TRUE:ERR=8888888
+                                    //     0            1                 2
+                                    Attr = Conditions[1].Split('=')[0];
+                                    string Value = Conditions[1].Split('=')[1];
+                                    string ErrorType = Conditions[2].Split('=')[0];
+                                    string ErrorCode = Conditions[2].Split('=')[1];
                                     Node Node = NodeManagement.Get(NodeName);
                                     if (Node != null)
                                     {
@@ -277,7 +284,7 @@ namespace TransferControl.Management
                                         }
                                         else
                                         {
-
+                                            Report = ErrorType;
                                             Message = ErrorCode;
                                             return false;
                                         }
@@ -521,6 +528,8 @@ namespace TransferControl.Management
                                         Txn.FormName = Id;
                                         Txn.RecipeID = "300MM";
 
+                                        
+                                            
                                         TaskJob.Excuted ex = new TaskJob.Excuted();
                                         ex.NodeName = NodeName;
                                         ex.ExcuteName = Method;

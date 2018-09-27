@@ -32,6 +32,7 @@ namespace TransferControl.Management
         public string WaitToDo { get; set; }
         public string ProcessNode { get; set; }
         public string RecipeID { get; set; }
+        public bool ErrPosition { get; set; }
         public bool MapFlag { get; set; }
         public int Offset { get; set; }
         public int Angle { get; set; }

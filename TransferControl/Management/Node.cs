@@ -259,7 +259,7 @@ namespace TransferControl.Management
             //{
             //    State = "Ready To Load";
             //}
-            LastState = "Idle";
+            LastState = "Not Origin";
             LastFinMethod = "";
             Busy = false;
             PutOut = false;
@@ -403,21 +403,43 @@ namespace TransferControl.Management
         /// <returns></returns>
         public bool SendCommand(Transaction txn, bool Force = false)
         {
-            while (true)
+            if (this.Type.ToUpper().Equals("LOADPORT"))
             {
-                SpinWait.SpinUntil(() => !this.IsExcuting, 99999999);
-                lock (this)
+                while (true)
                 {
-                    if (!this.IsExcuting)                  
+                    SpinWait.SpinUntil(() => !this.IsExcuting, 99999999);
+                    lock (this)
                     {
-                        break;
+                        if (!this.IsExcuting)
+                        {
+                            break;
+                        }
                     }
                 }
             }
             this.IsExcuting = true;
             //var watch = System.Diagnostics.Stopwatch.StartNew();
             // System.Threading.Thread.Sleep(500);
+            try
+            {
+                txn.Slot = int.Parse(txn.Slot).ToString();
+                txn.Slot2 = int.Parse(txn.Slot2).ToString();
+            }
+            catch
+            {
 
+            }
+            foreach (Job j in txn.TargetJobs)
+            {
+                try
+                {
+                    j.Slot = int.Parse(j.Slot).ToString();
+                }
+                catch
+                {
+
+                }
+            }
             bool result = false;
             try
             {
@@ -739,9 +761,17 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.RobotType.Get:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWafer(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
+                                if (txn.Arm.Equals("3"))
+                                {
+                                    txn.Method = Transaction.Command.RobotType.DoubleGet;
+                                }
                                 break;
                             case Transaction.Command.RobotType.Put:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWafer(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
+                                if (txn.Arm.Equals("3"))
+                                {
+                                    txn.Method = Transaction.Command.RobotType.DoublePut;
+                                }
                                 break;
                             case Transaction.Command.RobotType.DoubleGet:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWafer(AdrNo, txn.Seq, "3", txn.Point, "0", txn.Slot);

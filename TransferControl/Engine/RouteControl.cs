@@ -1461,7 +1461,7 @@ namespace TransferControl.Engine
                                     {
                                         _HostReport.On_Event_Trigger("SIGSTAT", "PORT", Node.Name, "ALL");
                                     }
-                                    
+
                                     break;
                                 case Transaction.Command.LoadPortType.GetMapping:
                                     //產生Mapping資料
@@ -1492,6 +1492,8 @@ namespace TransferControl.Engine
                                             case '0':
                                                 wafer.Job_Id = "No wafer";
                                                 wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = false;
+                                                wafer.ErrPosition = false;
                                                 //MappingData.Add(wafer);
                                                 break;
                                             case '1':
@@ -1500,6 +1502,7 @@ namespace TransferControl.Engine
                                                     wafer.Job_Id = "Wafer" + currentIdx.ToString("00");
                                                     wafer.Host_Job_Id = wafer.Job_Id;
                                                     wafer.MapFlag = true;
+                                                    wafer.ErrPosition = false;
                                                     if (JobManagement.Add(wafer.Job_Id, wafer))
                                                     {
 
@@ -1515,18 +1518,22 @@ namespace TransferControl.Engine
                                                 wafer.Job_Id = "Crossed";
                                                 wafer.Host_Job_Id = wafer.Job_Id;
                                                 wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
                                                 //MappingData.Add(wafer);
                                                 break;
+                                            default:
                                             case '?':
                                                 wafer.Job_Id = "Undefined";
                                                 wafer.Host_Job_Id = wafer.Job_Id;
                                                 wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
                                                 //MappingData.Add(wafer);
                                                 break;
                                             case 'W':
                                                 wafer.Job_Id = "Double";
                                                 wafer.Host_Job_Id = wafer.Job_Id;
                                                 wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
                                                 //MappingData.Add(wafer);
                                                 break;
                                         }
@@ -1791,14 +1798,22 @@ namespace TransferControl.Engine
                                 if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
                                 {
                                     string ErrorMessage = "";
-                                    if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage))
+                                    string Report = "";
+                                    if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage, out Report))
                                     {//還沒做完
+                                        if (Report.Equals("ACK"))
+                                        {
+                                            if (_HostReport != null)
+                                            {
+                                                _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                            }
+                                        }
                                         if (!ErrorMessage.Equals(""))
                                         {//做完但沒通過檢查
                                             if (_HostReport != null)
                                             {
                                                 TaskJobManagment.Remove(Txn.FormName);
-                                                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+                                                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                             }
                                         }
                                         //檢查到不是Task，不做事
@@ -1807,6 +1822,13 @@ namespace TransferControl.Engine
                                     {//做完且通過檢查，開始進行下一個Task
                                         if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
                                         {//如果沒有可以執行的Task，回報完成
+                                            if (Report.Equals("ACK"))
+                                            {
+                                                if (_HostReport != null)
+                                                {
+                                                    _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                                }
+                                            }
                                             if (ErrorMessage.Equals(""))
                                             {
                                                 if (_HostReport != null)
@@ -1816,7 +1838,17 @@ namespace TransferControl.Engine
                                             }
                                             else
                                             {
-                                                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+                                                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Report.Equals("ACK"))
+                                            {
+                                                if (_HostReport != null)
+                                                {
+                                                    _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                                }
                                             }
                                         }
                                     }
@@ -1861,14 +1893,22 @@ namespace TransferControl.Engine
                     if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
                     {
                         string ErrorMessage = "";
-                        if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Excuted", out ErrorMessage))
+                        string Report = "";
+                        if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Excuted", out ErrorMessage, out Report))
                         {//還沒做完
+                            if (Report.Equals("ACK"))
+                            {
+                                if (_HostReport != null)
+                                {
+                                    _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                }
+                            }
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
                                 if (_HostReport != null)
                                 {
                                     TaskJobManagment.Remove(Txn.FormName);
-                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                 }
                             }
                             //檢查到不是Task，不做事
@@ -1877,6 +1917,7 @@ namespace TransferControl.Engine
                         {//做完且通過檢查，開始進行下一個Task
                             if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
                             {//如果沒有可以執行的Task，回報完成
+
                                 if (ErrorMessage.Equals(""))
                                 {
                                     if (_HostReport != null)
@@ -1886,7 +1927,17 @@ namespace TransferControl.Engine
                                 }
                                 else
                                 {
-                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                }
+                            }
+                            else
+                            {
+                                if (Report.Equals("ACK"))
+                                {
+                                    if (_HostReport != null)
+                                    {
+                                        _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                    }
                                 }
                             }
                         }
@@ -1906,6 +1957,8 @@ namespace TransferControl.Engine
             //var watch = System.Diagnostics.Stopwatch.StartNew();
             try
             {
+                UpdateJobLocation(Node, Txn);
+                UpdateNodeStatus(Node, Txn);
                 Node.LastFinMethod = Txn.Method;
                 Job TargetJob = null;
                 if (Txn.TargetJobs.Count != 0)
@@ -1917,8 +1970,14 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             Node.InterLock = false;
                             Node.Busy = false;
-                            UpdateJobLocation(Node, Txn);
-                            UpdateNodeStatus(Node, Txn);
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.RobotType.RobotHome:
+                                case Transaction.Command.RobotType.RobotOrginSearch:
+                                    Node.State = "Ready";
+                                    break;
+                            }
+
                             if (!_Mode.Equals("Stop") && Txn.FormName.Equals("Running"))
                             {
                                 switch (Node.Phase)
@@ -2148,6 +2207,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.LoadPortType.ForceInitialPos:
                                     _UIReport.On_Node_State_Changed(Node, "Ready To Load");
                                     IO_State_Change(Node.Name, "Foup_Lock", false);
+                                    Node.State = "Ready";
                                     break;
                                 case Transaction.Command.LoadPortType.Clamp:
                                     //IO_State_Change(Node.Name, "Foup_Lock", true);
@@ -2183,14 +2243,22 @@ namespace TransferControl.Engine
                             if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
                             {
                                 string ErrorMessage = "";
-                                if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage))
+                                string Report = "";
+                                if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage, out Report))
                                 {//還沒做完
+                                    if (Report.Equals("ACK"))
+                                    {
+                                        if (_HostReport != null)
+                                        {
+                                            _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                        }
+                                    }
                                     if (!ErrorMessage.Equals(""))
                                     {//做完但沒通過檢查
                                         if (_HostReport != null)
                                         {
                                             TaskJobManagment.Remove(Txn.FormName);
-                                            _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+                                            _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                         }
                                     }
                                     //檢查到不是Task，不做事
@@ -2199,6 +2267,13 @@ namespace TransferControl.Engine
                                 {//做完且通過檢查，開始進行下一個Task
                                     if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
                                     {//如果沒有可以執行的Task，回報完成
+                                        if (Report.Equals("ACK"))
+                                        {
+                                            if (_HostReport != null)
+                                            {
+                                                _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                            }
+                                        }
                                         if (ErrorMessage.Equals(""))
                                         {
                                             if (_HostReport != null)
@@ -2208,7 +2283,17 @@ namespace TransferControl.Engine
                                         }
                                         else
                                         {
-                                            _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+                                            _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (Report.Equals("ACK"))
+                                        {
+                                            if (_HostReport != null)
+                                            {
+                                                _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                            }
                                         }
                                     }
                                 }
@@ -2253,14 +2338,23 @@ namespace TransferControl.Engine
                     if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
                     {
                         string ErrorMessage = "";
-                        if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Finished", out ErrorMessage))
+                        string Report = "";
+                        if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Finished", out ErrorMessage, out Report))
                         {//還沒做完
+                            if (Report.Equals("ACK"))
+                            {
+                                if (_HostReport != null)
+                                {
+                                    _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                }
+                            }
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
                                 if (_HostReport != null)
                                 {
                                     TaskJobManagment.Remove(Txn.FormName);
-                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+
+                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                 }
                             }
                             //檢查到不是Task，不做事
@@ -2269,6 +2363,13 @@ namespace TransferControl.Engine
                         {//做完且通過檢查，開始進行下一個Task
                             if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
                             {//如果沒有可以執行的Task，回報完成
+                                if (Report.Equals("ACK"))
+                                {
+                                    if (_HostReport != null)
+                                    {
+                                        _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                    }
+                                }
                                 if (ErrorMessage.Equals(""))
                                 {
                                     if (_HostReport != null)
@@ -2278,7 +2379,17 @@ namespace TransferControl.Engine
                                 }
                                 else
                                 {
-                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, ErrorMessage);
+                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                }
+                            }
+                            else
+                            {
+                                if (Report.Equals("ACK"))
+                                {
+                                    if (_HostReport != null)
+                                    {
+                                        _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                    }
                                 }
                             }
                         }
@@ -2447,7 +2558,146 @@ namespace TransferControl.Engine
                 {
                     if (Txn.TargetJobs[0].Job_Id.Equals("dummy"))
                     {
-                        return;
+                        Job j;
+                        switch (Txn.Method)
+                        {
+                            case Transaction.Command.RobotType.Get:
+                                Node pos = NodeManagement.Get(Txn.Position);
+                                int slot = int.Parse(Txn.Slot);
+                                if (Txn.Arm.Equals("3"))
+                                {
+
+                                    Txn.Method = Transaction.Command.RobotType.DoubleGet;
+
+
+                                    Txn.TargetJobs.Clear();
+                                    if (pos.JobList.TryGetValue(slot.ToString(), out j))
+                                    {
+
+                                        Txn.TargetJobs.Add(j);
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                    if (pos.JobList.TryGetValue((slot - 1).ToString(), out j))
+                                    {
+
+                                        Txn.TargetJobs.Add(j);
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    pos = NodeManagement.Get(Txn.Position);
+
+
+                                    if (pos.JobList.TryGetValue(int.Parse(Txn.Slot).ToString(), out j))
+                                    {
+                                        Txn.TargetJobs.Clear();
+                                        Txn.TargetJobs.Add(j);
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
+                                break;
+                            case Transaction.Command.RobotType.Put:
+                                if (Txn.Arm.Equals("3"))
+                                {
+
+                                    Txn.Method = Transaction.Command.RobotType.DoublePut;
+                                    slot = int.Parse(Txn.Slot);
+                                    Txn.TargetJobs.Clear();
+                                    if (Node.JobList.TryGetValue(slot.ToString(), out j))
+                                    {
+                                        Txn.TargetJobs.Clear();
+                                        Txn.TargetJobs.Add(j);
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                    if (Node.JobList.TryGetValue((slot - 1).ToString(), out j))
+                                    {
+                                        Txn.TargetJobs.Clear();
+                                        Txn.TargetJobs.Add(j);
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    if (Node.JobList.TryGetValue(int.Parse(Txn.Slot).ToString(), out j))
+                                    {
+                                        Txn.TargetJobs.Clear();
+                                        Txn.TargetJobs.Add(j);
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
+                                break;
+                            case Transaction.Command.RobotType.DoubleGet:
+                                pos = NodeManagement.Get(Txn.Position);
+
+                                slot = int.Parse(Txn.Slot);
+                                Txn.TargetJobs.Clear();
+                                if (pos.JobList.TryGetValue(slot.ToString(), out j))
+                                {
+
+                                    Txn.TargetJobs.Add(j);
+                                }
+                                else
+                                {
+                                    return;
+                                }
+                                if (pos.JobList.TryGetValue((slot - 1).ToString(), out j))
+                                {
+
+                                    Txn.TargetJobs.Add(j);
+                                }
+                                else
+                                {
+                                    return;
+                                }
+                                break;
+                            case Transaction.Command.RobotType.DoublePut:
+                                slot = int.Parse(Txn.Slot);
+                                Txn.TargetJobs.Clear();
+                                if (Node.JobList.TryGetValue(slot.ToString(), out j))
+                                {
+                                    Txn.TargetJobs.Clear();
+                                    Txn.TargetJobs.Add(j);
+                                }
+                                else
+                                {
+                                    return;
+                                }
+                                if (Node.JobList.TryGetValue((slot - 1).ToString(), out j))
+                                {
+                                    Txn.TargetJobs.Clear();
+                                    Txn.TargetJobs.Add(j);
+                                }
+                                else
+                                {
+                                    return;
+                                }
+                                break;
+
+                        }
+
+
+
+
+
                     }
                 }
             }
@@ -2467,7 +2717,7 @@ namespace TransferControl.Engine
                                 Job tmp;
                                 TargetNode5.JobList.TryRemove(ArmsJob[i].Slot, out tmp);
                                 //LoadPort 空的Slot要塞假資料
-                                if (TargetNode5.Type.Equals("LOADPORT"))
+                                if (TargetNode5.Type.ToUpper().Equals("LOADPORT"))
                                 {
                                     tmp = new Job();
                                     tmp.Job_Id = "No wafer";
@@ -2537,7 +2787,7 @@ namespace TransferControl.Engine
                                 Job tmp;
                                 TargetNode4.JobList.TryRemove(Txn.TargetJobs[i].Slot, out tmp);
                                 //LoadPort 空的Slot要塞假資料
-                                if (TargetNode4.Type.Equals("LoadPort"))
+                                if (TargetNode4.Type.ToUpper().Equals("LOADPORT"))
                                 {
                                     tmp = new Job();
                                     tmp.Job_Id = "No wafer";
@@ -2651,7 +2901,7 @@ namespace TransferControl.Engine
                 Node.State = "Alarm";
                 if (_HostReport != null)
                 {
-                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, "TimeOut");
+                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, "ABS", "TimeOut");
                 }
                 _UIReport.On_Command_TimeOut(Node, Txn);
             }
@@ -2761,7 +3011,7 @@ namespace TransferControl.Engine
             Node.State = "Alarm";
             if (_HostReport != null)
             {
-                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Msg.Value);
+                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, "ABS", Msg.Value);
             }
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "Alarm");

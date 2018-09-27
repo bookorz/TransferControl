@@ -214,6 +214,21 @@ namespace TransferControl.Controller
                 List<ReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (ReturnMessage ReturnMsg in ReturnMsgList)
                 {
+                    if (ReturnMsg.Command.Equals("PAUSE"))
+                    {
+                        foreach(Transaction t in TransactionList.Values)
+                        {
+                            t.SetTimeOutMonitor(false);
+                        }
+                    }
+                    if (ReturnMsg.Command.Equals("CONT_"))
+                    {
+                        foreach (Transaction t in TransactionList.Values)
+                        {
+                            t.SetTimeOutMonitor(true);
+                        }
+                    }
+
                     if (WaitingForSync)
                     {
                         if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Error))
