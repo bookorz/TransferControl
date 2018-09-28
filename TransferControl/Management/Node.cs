@@ -335,9 +335,10 @@ namespace TransferControl.Management
         /// </summary>
         /// <param name="ScriptName"></param>
         /// <param name="FormName"></param>
-        /// <param name="Force"></param>
-        public void ExcuteScript(string ScriptName, string FormName, string RecipeID = "", bool Force = false)
+        /// <param name="Force"></param> 
+        public void ExcuteScript(string ScriptName, string FormName,out string Message, string RecipeID = "", bool Force = false)
         {
+            Message = "";
             CommandScript StartCmd = CommandScriptManagement.GetStart(ScriptName);
             if (StartCmd != null)
             {
@@ -357,7 +358,7 @@ namespace TransferControl.Management
                 //dummyJob.Add(dummy);
                 //txn.TargetJobs = dummyJob;
                 logger.Debug("Excute Script:" + ScriptName + " Method:" + txn.Method);
-                SendCommand(txn, Force);
+                SendCommand(txn, out Message,Force);
             }
         }
         /// <summary>
@@ -366,8 +367,9 @@ namespace TransferControl.Management
         /// <param name="ScriptName"></param>
         /// <param name="FormName"></param>
         /// <param name="Force"></param>
-        public bool ExcuteScript(string ScriptName, string FormName, Dictionary<string, string> Param, string RecipeID = "")
+        public bool ExcuteScript(string ScriptName, string FormName, Dictionary<string, string> Param,out string Message, string RecipeID = "")
         {
+            Message = "";
             if (Param != null)
             {
                 CommandScriptManagement.ReloadScriptWithParam(ScriptName, Param);
@@ -391,7 +393,7 @@ namespace TransferControl.Management
                 //dummyJob.Add(dummy);
                 //txn.TargetJobs = dummyJob;
                 logger.Debug("Excute Script:" + ScriptName + " Method:" + txn.Method);
-                return SendCommand(txn);
+                return SendCommand(txn,out Message);
             }
             return false;
         }
@@ -401,8 +403,9 @@ namespace TransferControl.Management
         /// <param name="txn"></param>
         /// <param name="Force"></param>
         /// <returns></returns>
-        public bool SendCommand(Transaction txn, bool Force = false)
+        public bool SendCommand(Transaction txn, out string Message, bool Force = false)
         {
+            Message = "";
             if (this.Type.ToUpper().Equals("LOADPORT"))
             {
                 while (true)
@@ -552,20 +555,20 @@ namespace TransferControl.Management
                         }
 
                         txn.Point2 = point.Point;
-                        if (point.PositionType.Equals("LOADPORT"))
-                        {
-                            Node port = NodeManagement.Get(point.Position);
-                            if (port != null)
-                            {
-                                if (!port.ByPass)
-                                {
-                                    Transaction InterLockTxn = new Transaction();
-                                    InterLockTxn.Method = Transaction.Command.LoadPortType.ReadStatus;
-                                    InterLockTxn.FormName = "InterLockChk";
-                                    port.SendCommand(InterLockTxn);
-                                }
-                            }
-                        }
+                        //if (point.PositionType.Equals("LOADPORT"))
+                        //{
+                        //    Node port = NodeManagement.Get(point.Position);
+                        //    if (port != null)
+                        //    {
+                        //        if (!port.ByPass)
+                        //        {
+                        //            Transaction InterLockTxn = new Transaction();
+                        //            InterLockTxn.Method = Transaction.Command.LoadPortType.ReadStatus;
+                        //            InterLockTxn.FormName = "InterLockChk";
+                        //            port.SendCommand(InterLockTxn);
+                        //        }
+                        //    }
+                        //}
                     }
                 }
 
@@ -1019,6 +1022,7 @@ namespace TransferControl.Management
                 else
                 {
                     logger.Debug("SendCommand fail.");
+                    Message = "COMM_ERR";
                     result = false;
                     if (this.Type.Equals("LOADPORT"))
                     {
