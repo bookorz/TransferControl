@@ -87,6 +87,7 @@ namespace TransferControl.Management
             //Robot
             public class RobotType
             {
+                public const string ArmReturn = "ArmReturn";
                 public const string Exchange = "Exchange";
                 public const string Get = "Get";
                 public const string DoubleGet = "DoubleGet";

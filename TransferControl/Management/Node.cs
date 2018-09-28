@@ -720,6 +720,9 @@ namespace TransferControl.Management
                     case "ROBOT":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.RobotType.ArmReturn:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Retract(AdrNo, txn.Seq);
+                                break;
                             case Transaction.Command.RobotType.Exchange:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Exchange(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot, txn.Arm2, txn.Point2, txn.Slot2);
                                 break;

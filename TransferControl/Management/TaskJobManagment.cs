@@ -117,6 +117,10 @@ namespace TransferControl.Management
                                   select each;
                     if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
                     {
+                        if (ExcuteName.ToUpper().Equals("STOP"))
+                        {
+                            System.Threading.Thread.Sleep(1000);
+                        }
                         result = CheckCondition(Id, NodeName, out Message,out Report);
                         tk.CheckList.Clear();
                     }
