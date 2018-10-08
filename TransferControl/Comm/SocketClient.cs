@@ -428,6 +428,75 @@ namespace TransferControl.Comm
 
 
                     break;
+                case "HST":
+
+                    S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
+                    if (S.IndexOf("1\r\n") != -1)
+                    {
+                        data = S.Substring(S.IndexOf("1\r\n"), 3);
+                        //logger.Debug("data:" + data);
+                        S = S.Substring(S.IndexOf("1\r\n") + 3);
+
+                        //logger.Debug("s:" + S);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                        //break;
+
+                    }
+                    
+                     if (S.IndexOf("-2\r\n") != -1)
+                    {
+                        data = S.Substring(S.IndexOf("-2\r\n"), 4);
+                        //logger.Debug("data:" + data);
+                        S = S.Substring(S.IndexOf("-2\r\n") + 4);
+
+                        //logger.Debug("s:" + S);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                        //break;
+
+                    }
+                    else if (S.IndexOf("]\r\n") != -1)
+                    {
+                        data = S.Substring(0, S.IndexOf("]\r\n") + 3).Substring(S.IndexOf("["));
+                        //logger.Debug("data:" + data);
+
+                        S = S.Substring(S.IndexOf("]\r\n") + 3);
+                        //logger.Debug("s:" + S);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                        //break;
+
+                    }
+                    else if (S.IndexOf("</Result>\r\n") != -1)
+                    {
+                        //logger.Debug("s:" + S);
+                        data = S.Substring(0, S.IndexOf("</Result>\r\n") + 11);
+                        //logger.Debug("data:" + data);
+
+                        S = S.Substring(S.IndexOf("</Result>\r\n") + 11);
+                        //logger.Debug("s:" + S);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                        break;
+                    }
+                    if (S.IndexOf("Welcome to e-Reader8000") != -1 || S.IndexOf("User:") != -1)
+                    {
+                        S = "";
+                        //logger.Debug("s:" + S);
+                       
+                        //break;
+
+                    }
+                    if (S.IndexOf("0\r\n") != -1)
+                    {
+                        data = S.Substring(0,S.IndexOf("0\r\n"));
+                        //logger.Debug("data:" + data);
+                        S = S.Substring(S.IndexOf("0\r\n") + 3);
+
+                        //logger.Debug("s:" + S);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                        //break;
+
+                    }
+
+                    break;
                 default:
                     data = Encoding.Default.GetString(OrgData, 0, OrgData.Length);
                    

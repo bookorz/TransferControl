@@ -44,6 +44,8 @@ namespace TransferControl.Management
             //LoadPort
             public class LoadPortType
             {
+                public const string EQASP = "EQASP";
+                public const string Mode = "Mode";
                 public const string Load = "Load";
                 public const string Mapping = "Mapping";
                 public const string MappingLoad = "MappingLoad";
@@ -158,6 +160,8 @@ namespace TransferControl.Management
                 public const string Online = "Online";
                 public const string Offline = "Offline";
                 public const string GetOnline = "GetOnline";
+                public const string ReadConfig = "ReadConfig";
+                
             }
         }
 

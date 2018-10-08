@@ -76,6 +76,7 @@
     <Compile Include="Management\Node.cs" />
     <Compile Include="Management\NodeManagement.cs" />
     <Compile Include="Management\NodeState.cs" />
+    <Compile Include="Management\OCRInfo.cs" />
     <Compile Include="Management\Path.cs" />
     <Compile Include="Management\PathManagement.cs" />
     <Compile Include="Management\PointManagement.cs" />

@@ -406,20 +406,20 @@ namespace TransferControl.Management
         public bool SendCommand(Transaction txn, out string Message, bool Force = false)
         {
             Message = "";
-            if (this.Type.ToUpper().Equals("LOADPORT"))
-            {
-                while (true)
-                {
-                    SpinWait.SpinUntil(() => !this.IsExcuting, 99999999);
-                    lock (this)
-                    {
-                        if (!this.IsExcuting)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
+            //if (this.Type.ToUpper().Equals("LOADPORT"))
+            //{
+            //    while (true)
+            //    {
+            //        SpinWait.SpinUntil(() => !this.IsExcuting, 99999999);
+            //        lock (this)
+            //        {
+            //            if (!this.IsExcuting)
+            //            {
+            //                break;
+            //            }
+            //        }
+            //    }
+            //}
             this.IsExcuting = true;
             //var watch = System.Diagnostics.Stopwatch.StartNew();
             // System.Threading.Thread.Sleep(500);
@@ -577,6 +577,26 @@ namespace TransferControl.Management
                     case "LOADPORT":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.LoadPortType.EQASP:
+                                if (txn.Value.Equals("1"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.EQASP(EncoderLoadPort.ParamState.Enable);
+                                }
+                                else if (txn.Value.Equals("0"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.EQASP(EncoderLoadPort.ParamState.Disable);
+                                }
+                                break;
+                            case Transaction.Command.LoadPortType.Mode:
+                                if (txn.Value.Equals("1"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Maintenance);
+                                }
+                                else if (txn.Value.Equals("0"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Online);
+                                }
+                                break;
                             case Transaction.Command.LoadPortType.SetOpAccessBlink:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.Flashes);
                                 break;
@@ -935,6 +955,10 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.OCRType.Read:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.Read();
+                                txn.CommandType = "CMD";
+                                break;
+                            case Transaction.Command.OCRType.ReadConfig:
+                                txn.CommandEncodeStr = "Ev ReadConfig(A4,"+txn.Value+",0)";
                                 txn.CommandType = "CMD";
                                 break;
                         }

@@ -190,7 +190,7 @@ namespace TransferControl.Controller
             else
             {
                 Transaction workingTxn;
-                TransactionList.TryGetValue(Txn.AdrNo + Txn.Type, out workingTxn);
+                TransactionList.TryGetValue(key, out workingTxn);
                 logger.Debug(_Config.DeviceName + "(DoWork " + _Config.IPAdress + ":" + _Config.Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
 
                 result = false;
@@ -379,6 +379,10 @@ namespace TransferControl.Controller
                                             Txn.SetTimeOutMonitor(false);
                                             Node.IsExcuting = false;
                                             //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
+                                            if (_Config.Vendor.ToUpper().Equals("TDK")){
+                                                conn.Send(ReturnMsg.FinCommand);
+                                                logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                            }
                                             break;
                                         case ReturnMessage.ReturnType.Information:
                                             logger.Debug("Txn timmer stoped.");
@@ -528,8 +532,13 @@ namespace TransferControl.Controller
                 key = Txn.Seq;
 
             }
+            else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
+            {
+                key = "1";
+            }
             else
             {
+                
                 key = Txn.AdrNo + Txn.Type;
             }
 

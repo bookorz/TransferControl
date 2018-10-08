@@ -93,13 +93,13 @@ namespace TransferControl.Engine
                     if (node.Type.Equals("ROBOT"))
                     {
                         txn.Method = Transaction.Command.RobotType.Continue;
-                        node.SendCommand(txn,out Message);
+                        node.SendCommand(txn, out Message);
                         node.State = "Run";
                     }
                     else if (node.Type.Equals("ALIGNER"))
                     {
                         txn.Method = Transaction.Command.AlignerType.Continue;
-                        node.SendCommand(txn,out Message);
+                        node.SendCommand(txn, out Message);
                         node.State = "Run";
                     }
                     txn.FormName = "PauseProcedure";
@@ -135,13 +135,13 @@ namespace TransferControl.Engine
                     if (node.Type.Equals("ROBOT"))
                     {
                         txn.Method = Transaction.Command.RobotType.Pause;
-                        node.SendCommand(txn,out Message);
+                        node.SendCommand(txn, out Message);
                         node.State = "Pause";
                     }
                     else if (node.Type.Equals("ALIGNER"))
                     {
                         txn.Method = Transaction.Command.AlignerType.Pause;
-                        node.SendCommand(txn,out Message);
+                        node.SendCommand(txn, out Message);
                         node.State = "Pause";
                     }
                     txn.FormName = "PauseProcedure";
@@ -534,7 +534,7 @@ namespace TransferControl.Engine
                                     txn.Arm = "";
                                     txn.ScriptName = ScriptName;
                                     txn.FormName = FormName;
-                                    if (RobotNode.SendCommand(txn,out Message))
+                                    if (RobotNode.SendCommand(txn, out Message))
                                     {
                                         Node NextRobot = NodeManagement.GetNextRobot(TargetJobs[0].Destination);
 
@@ -555,7 +555,7 @@ namespace TransferControl.Engine
                                     txn.Arm = "1";
                                     txn.ScriptName = ScriptName;
                                     txn.FormName = FormName;
-                                    if (RobotNode.SendCommand(txn,out Message))
+                                    if (RobotNode.SendCommand(txn, out Message))
                                     {
                                         Node NextRobot = NodeManagement.GetNextRobot(TargetJobs[0].Destination);
 
@@ -615,7 +615,7 @@ namespace TransferControl.Engine
                     txn.Arm = "2";
                     txn.ScriptName = ScriptName;
                     txn.FormName = FormName;
-                    if (RobotNode.SendCommand(txn,out Message))
+                    if (RobotNode.SendCommand(txn, out Message))
                     {
                         Node NextRobot = NodeManagement.GetNextRobot(TargetJobs[0].Destination);
 
@@ -997,7 +997,7 @@ namespace TransferControl.Engine
 
                         GetArmSlot(ref txn, Node, TargetJob);
 
-                        Node.SendCommand(txn,out Message);
+                        Node.SendCommand(txn, out Message);
 
 
                         break;
@@ -1117,7 +1117,7 @@ namespace TransferControl.Engine
 
                         GetArmSlot(ref txn, Node, TargetJob);
 
-                        Node.SendCommand(txn,out Message);
+                        Node.SendCommand(txn, out Message);
 
                         break;
                     case "Aligner":
@@ -1233,12 +1233,12 @@ namespace TransferControl.Engine
                         {
                             txn.Value = Action.Param;
                         }
-                        Node.SendCommand(txn,out Message);
+                        Node.SendCommand(txn, out Message);
                         break;
                     case "OCR":
                         Node = GetPosNode(Action.EqpType, TargetJob, FinNode);
                         txn.Value = Action.Param;
-                        Node.SendCommand(txn,out Message);
+                        Node.SendCommand(txn, out Message);
                         break;
                 }
             }
@@ -1287,7 +1287,7 @@ namespace TransferControl.Engine
                 txn.Arm = Wafer.Slot;
                 txn.ScriptName = ScriptName;
                 txn.FormName = FormName;
-                RobotNode.SendCommand(txn,out Message);
+                RobotNode.SendCommand(txn, out Message);
             }
             else if (RobotNode.JobList.Count == 2)//雙臂有片
             {
@@ -1312,7 +1312,7 @@ namespace TransferControl.Engine
                         txn.Arm = "";
                         txn.ScriptName = ScriptName;
                         txn.FormName = FormName;
-                        RobotNode.SendCommand(txn,out Message);
+                        RobotNode.SendCommand(txn, out Message);
                     }
                     else
                     {//單臂輪放
@@ -1327,7 +1327,7 @@ namespace TransferControl.Engine
                         txn.Arm = Wafer.Slot;
                         txn.ScriptName = ScriptName;
                         txn.FormName = FormName;
-                        RobotNode.SendCommand(txn,out Message);
+                        RobotNode.SendCommand(txn, out Message);
                     }
                 }
                 else
@@ -1343,7 +1343,7 @@ namespace TransferControl.Engine
                     txn.Arm = Wafer.Slot;
                     txn.ScriptName = ScriptName;
                     txn.FormName = FormName;
-                    RobotNode.SendCommand(txn,out Message);
+                    RobotNode.SendCommand(txn, out Message);
 
                 }
 
@@ -1890,7 +1890,7 @@ namespace TransferControl.Engine
                                     {
                                         txn.LastOneScript = true;
                                     }
-                                    Node.SendCommand(txn,out Message);
+                                    Node.SendCommand(txn, out Message);
                                 }
                             }
                         }
@@ -2120,6 +2120,32 @@ namespace TransferControl.Engine
                                         _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
                                     }
                                 }
+                                else if (Txn.Method.Equals(Transaction.Command.OCRType.ReadConfig))
+                                {
+                                  
+                                    if (Txn.TargetJobs.Count != 0)
+                                    {
+                                        switch (Node.Brand)
+                                        {
+                                            case "HST":
+                                                OCRInfo result = new OCRInfo(Msg.Value);
+
+                                                Txn.TargetJobs[0].OcrCodeList.Add(result);
+                                                Txn.TargetJobs[0].OcrCodeList.Sort((x, y) => { return x.Score.CompareTo(y.Score); });
+                                                var find = from Ocr in Txn.TargetJobs[0].OcrCodeList
+                                                           where Ocr.Passed.Equals("1")
+                                                           select Ocr;
+                                                if (find.Count() != 0)
+                                                {
+                                                    Txn.TargetJobs[0].Host_Job_Id = find.First().Result;
+                                                }
+
+                                                break;
+                                        }
+                                    }
+                                    
+                                    _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
+                                }
                             }
                             else if (Node.Type.ToUpper().Equals("ALIGNER"))
                             {
@@ -2335,7 +2361,7 @@ namespace TransferControl.Engine
                                         txn.LastOneScript = true;
                                     }
                                     logger.Debug("Excute Script:" + Txn.ScriptName + " Method:" + txn.Method);
-                                    Node.SendCommand(txn,out Message);
+                                    Node.SendCommand(txn, out Message);
                                 }
                             }
                         }
