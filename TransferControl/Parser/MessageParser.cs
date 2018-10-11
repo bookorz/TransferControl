@@ -19,6 +19,9 @@ namespace TransferControl.Parser
                 case "SANWA":
                     P = new SanwaParser();
                     break;
+                case "ASYST":
+                    P = new ASYSTParser();
+                    break;
                 default:
                     throw new Exception(Supplier + " 不存在");
                     

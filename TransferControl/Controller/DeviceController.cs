@@ -1,13 +1,9 @@
 ﻿using TransferControl.Comm;
-using TransferControl.Config;
 using TransferControl.Management;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-
-
 using log4net;
 using System.Collections.Concurrent;
 using SANWA.Utility;
@@ -99,7 +95,7 @@ namespace TransferControl.Controller
         {
             try
             {
-               
+
                 conn.Start();
             }
             catch (Exception e)
@@ -109,13 +105,13 @@ namespace TransferControl.Controller
 
         }
 
-        public string DoWorkSync(string Cmd,string Type,int Timeout = 30000)
+        public string DoWorkSync(string Cmd, string Type, int Timeout = 30000)
         {
             string result = "";
             WaitingForSync = true;
             ReturnTypeForSync = Type;
             conn.Send(Cmd);
-            
+
             SpinWait.SpinUntil(() => !WaitingForSync, Timeout);
             if (WaitingForSync)
             {
@@ -139,6 +135,7 @@ namespace TransferControl.Controller
             if (!Txn.NodeType.Equals("OCR"))
             {
                 List<ReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
+
                 if (msgList.Count != 0)
                 {
                     Txn.Type = msgList[0].Command;
@@ -158,7 +155,11 @@ namespace TransferControl.Controller
             }
             else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
             {
-                key = "1"  +Txn.Type;
+                key = "1" + Txn.Type;
+            }
+            else if (_Config.Vendor.ToUpper().Equals("ASYST"))
+            {
+                key = Txn.AdrNo;
             }
             else
             {
@@ -170,8 +171,8 @@ namespace TransferControl.Controller
                 Txn.SetTimeOutReport(this);
                 Txn.SetTimeOutMonitor(true);
                 TransactionRecord.New(Txn);
-                
-                
+
+
                 string waferids = "";
                 foreach (Job each in Txn.TargetJobs)
                 {
@@ -214,21 +215,23 @@ namespace TransferControl.Controller
                 List<ReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (ReturnMessage ReturnMsg in ReturnMsgList)
                 {
-                    if (ReturnMsg.Command.Equals("PAUSE"))
+                    if (ReturnMsg.Command != null)
                     {
-                        foreach(Transaction t in TransactionList.Values)
+                        if (ReturnMsg.Command.Equals("PAUSE"))
                         {
-                            t.SetTimeOutMonitor(false);
+                            foreach (Transaction t in TransactionList.Values)
+                            {
+                                t.SetTimeOutMonitor(false);
+                            }
+                        }
+                        if (ReturnMsg.Command.Equals("CONT_"))
+                        {
+                            foreach (Transaction t in TransactionList.Values)
+                            {
+                                t.SetTimeOutMonitor(true);
+                            }
                         }
                     }
-                    if (ReturnMsg.Command.Equals("CONT_"))
-                    {
-                        foreach (Transaction t in TransactionList.Values)
-                        {
-                            t.SetTimeOutMonitor(true);
-                        }
-                    }
-
                     if (WaitingForSync)
                     {
                         if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Error))
@@ -270,7 +273,8 @@ namespace TransferControl.Controller
                     {
                         key = ReturnMsg.Seq;
 
-                    }else if(_Config.Vendor.ToUpper().Equals("HST")|| _Config.Vendor.ToUpper().Equals("COGNEX"))
+                    }
+                    else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
                     {
                         key = "1" + ReturnMsg.Command;
                     }
@@ -331,7 +335,7 @@ namespace TransferControl.Controller
                             }
                             else
                             {
-                                
+
                                 Node = NodeManagement.GetByController(_Config.DeviceName, ReturnMsg.NodeAdr);
                                 if (Node == null)
                                 {
@@ -349,11 +353,11 @@ namespace TransferControl.Controller
                                 }
                                 else if (TransactionList.TryRemove(key, out Txn))
                                 {
-                                   // Node.InitialComplete = false;
+                                    // Node.InitialComplete = false;
                                     switch (ReturnMsg.Type)
                                     {
                                         case ReturnMessage.ReturnType.Excuted:
-                                            if (!Txn.CommandType.Equals("CMD") && !Txn.CommandType.Equals("MOV"))
+                                            if (!Txn.CommandType.Equals("CMD") && !Txn.CommandType.Equals("MOV") && !Txn.CommandType.Equals("HCS"))
                                             {
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
@@ -379,7 +383,8 @@ namespace TransferControl.Controller
                                             Txn.SetTimeOutMonitor(false);
                                             Node.IsExcuting = false;
                                             //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
-                                            if (_Config.Vendor.ToUpper().Equals("TDK")){
+                                            if (_Config.Vendor.ToUpper().Equals("TDK"))
+                                            {
                                                 conn.Send(ReturnMsg.FinCommand);
                                                 logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
                                             }
@@ -419,7 +424,7 @@ namespace TransferControl.Controller
                                     }
                                 }
                             }
-                            
+
                             switch (ReturnMsg.Type)
                             {
                                 case ReturnMessage.ReturnType.Information:
@@ -430,7 +435,7 @@ namespace TransferControl.Controller
                                     t.Value = ReturnMsg.Value;
                                     t.CommandEncodeStr = ReturnMsg.OrgMsg;
                                     t.Method = ReturnMsg.Command;
-                                    TransactionRecord.New(t,ReturnMsg.Type);
+                                    TransactionRecord.New(t, ReturnMsg.Type);
                                     //TransactionRecord.AddDetail(TransactionRecord.GetUUID(), Node.Name,Node.Type,ReturnMsg.Type,ReturnMsg.Value);
                                     _ReportTarget.On_Event_Trigger(Node, ReturnMsg);
                                     break;
@@ -453,8 +458,8 @@ namespace TransferControl.Controller
                                     {
                                         _ReportTarget.On_Node_State_Changed(Node, "Idle");
                                     }
-                                    
-                                    
+
+
                                     break;
                                 case ReturnMessage.ReturnType.Error:
                                     TransactionRecord.Update(Txn, ReturnMsg);
@@ -467,8 +472,8 @@ namespace TransferControl.Controller
                                     break;
 
                             }
-                            
-                            
+
+
                         }
                         else
                         {
@@ -494,7 +499,7 @@ namespace TransferControl.Controller
             _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Connected");
 
         }
-        
+
         public void On_Connection_Connecting(string Msg)
         {
             this._IsConnected = false;
@@ -538,7 +543,7 @@ namespace TransferControl.Controller
             }
             else
             {
-                
+
                 key = Txn.AdrNo + Txn.Type;
             }
 

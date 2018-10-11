@@ -59,7 +59,7 @@ namespace TransferControl.Comm
             }
 
             port = new SerialPort(_Config.PortName, _Config.BaudRate, p, _Config.DataBits, s);
-            
+
         }
 
 
@@ -95,7 +95,6 @@ namespace TransferControl.Comm
 
         private void ConnectServer()
         {
-
             try
             {
                 ConnReport.On_Connection_Connecting("Connecting to ");
@@ -109,9 +108,13 @@ namespace TransferControl.Comm
                     case "SANWA":
                         port.DataReceived += new SerialDataReceivedEventHandler(Sanwa_DataReceived);
                         break;
+                    case "ASYST":
+                        port.DataReceived += new SerialDataReceivedEventHandler(ASYST_DataReceived);
+                        break;
+                    case "SMARTTAG":
+                        port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG_DataReceived);
+                        break;
                 }
-
-
             }
             catch (Exception e)
             {
@@ -120,7 +123,40 @@ namespace TransferControl.Comm
             }
         }
 
+        private void ASYST_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                string data = "";
 
+                data = port.ReadTo("\r\n");
+
+
+                ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+            }
+            catch (Exception e1)
+            {
+                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
+                ConnReport.On_Connection_Error("(ASYST_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+            }
+        }
+
+        private void SMARTTAG_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                byte[] buf = new byte[250];
+                port.Read(buf, 0, buf.Length);
+                string data = ByteArrayToString(buf).TrimEnd('0');
+                ConnReport.On_Connection_Message(data.Trim());
+
+            }
+            catch (Exception e1)
+            {
+                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
+                ConnReport.On_Connection_Error("(ASYST_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+            }
+        }
 
         private void TDK_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
@@ -152,9 +188,9 @@ namespace TransferControl.Comm
             try
             {
                 string data = "";
-                
+
                 data = port.ReadTo("\r");
-                
+
 
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
             }
@@ -165,9 +201,37 @@ namespace TransferControl.Comm
             }
         }
 
+        private string ByteArrayToString(byte[] ba)
+        {
+            StringBuilder hex = new StringBuilder(ba.Length * 2);
+
+
+            foreach (byte b in ba)
+            {
+                if (b == 0)
+                {
+                    //continue;
+                }
+                hex.AppendFormat("{0:X2}", b);
+                hex.Append(" ");
+            }
+            return hex.ToString();
+        }
+
+
+        private byte[] HexStringToByteArray(string s)
+        {
+
+            s = s.Replace(" ", "");
+            byte[] buffer = new byte[s.Length / 2];
+            for (int i = 0; i < s.Length; i += 2)
+                buffer[i / 2] = (byte)Convert.ToByte(s.Substring(i, 2), 16);
+            return buffer;
+        }
+
         public void Dispose()
         {
-            
+
         }
     }
 }

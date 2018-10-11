@@ -454,7 +454,7 @@ namespace TransferControl.Comm
                         //break;
 
                     }
-                    else if (S.IndexOf("]\r\n") != -1)
+                    if (S.IndexOf("]\r\n") != -1)
                     {
                         data = S.Substring(0, S.IndexOf("]\r\n") + 3).Substring(S.IndexOf("["));
                         //logger.Debug("data:" + data);
