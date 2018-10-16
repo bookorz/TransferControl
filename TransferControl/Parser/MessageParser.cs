@@ -19,6 +19,9 @@ namespace TransferControl.Parser
                 case "SANWA":
                     P = new SanwaParser();
                     break;
+                case "ATEL_NEW":
+                    P = new Atel_newParser();
+                    break;
                 case "ASYST":
                     P = new ASYSTParser();
                     break;

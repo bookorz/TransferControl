@@ -90,6 +90,7 @@
     <Compile Include="Parser\ASYSTParser.cs" />
     <Compile Include="Parser\IParser.cs" />
     <Compile Include="Parser\MessageParser.cs" />
+    <Compile Include="Parser\Atel_newParser.cs" />
     <Compile Include="Parser\SanwaParser.cs" />
     <Compile Include="Parser\TDKParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

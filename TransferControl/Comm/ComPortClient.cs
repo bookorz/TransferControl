@@ -59,7 +59,12 @@ namespace TransferControl.Comm
             }
 
             port = new SerialPort(_Config.PortName, _Config.BaudRate, p, _Config.DataBits, s);
-
+            if (_Config.Vendor.Equals("SMARTTAG"))
+            {
+                //port.Handshake = Handshake.RequestToSendXOnXOff;
+                port.ReadTimeout = 5000;
+                port.WriteTimeout = 5000;
+            }
         }
 
 
@@ -93,6 +98,23 @@ namespace TransferControl.Comm
             }
         }
 
+        public bool SendHexData(object Message)
+        {
+            try
+            {
+                byte[] buf = HexStringToByteArray(Message.ToString());
+
+                port.Write(buf, 0, buf.Length);
+                return true;
+            }
+            catch (Exception e)
+            {
+                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
+                ConnReport.On_Connection_Error("(ConnectServer )" + e.Message + "\n" + e.StackTrace);
+                return false;
+            }
+        }
+
         private void ConnectServer()
         {
             try
@@ -105,6 +127,7 @@ namespace TransferControl.Comm
                     case "TDK":
                         port.DataReceived += new SerialDataReceivedEventHandler(TDK_DataReceived);
                         break;
+                    case "ATEL_NEW":
                     case "SANWA":
                         port.DataReceived += new SerialDataReceivedEventHandler(Sanwa_DataReceived);
                         break;
@@ -147,7 +170,7 @@ namespace TransferControl.Comm
             {
                 byte[] buf = new byte[250];
                 port.Read(buf, 0, buf.Length);
-                string data = ByteArrayToString(buf).TrimEnd('0');
+                string data = ByteArrayToString(buf);
                 ConnReport.On_Connection_Message(data.Trim());
 
             }
@@ -210,7 +233,7 @@ namespace TransferControl.Comm
             {
                 if (b == 0)
                 {
-                    //continue;
+                    continue;
                 }
                 hex.AppendFormat("{0:X2}", b);
                 hex.Append(" ");

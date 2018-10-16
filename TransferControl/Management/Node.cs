@@ -99,7 +99,7 @@ namespace TransferControl.Management
         /// <summary>
         /// 上一次的機況
         /// </summary>
-        public string LastState { get; set; }
+        public bool HasAlarm { get; set; }
         /// <summary>
         /// LoadPort專用，標記LD/UD/LU
         /// </summary>
@@ -224,13 +224,16 @@ namespace TransferControl.Management
 
         public string AccessSW_LED { get; set; }
 
-        public bool IsClamp { get; set; }
+        public bool IsRArmClamp { get; set; }
+        public bool IsLArmClamp { get; set; }
 
         public bool IsDock { get; set; }
 
         public bool IsExcuting { get; set; }
 
         public bool IsPause { get; set; }
+
+        public string CurrentSlotPosition { get; set; }
 
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
@@ -259,7 +262,7 @@ namespace TransferControl.Management
             //{
             //    State = "Ready To Load";
             //}
-            LastState = "Not Origin";
+            HasAlarm = false;
             LastFinMethod = "";
             Busy = false;
             PutOut = false;
@@ -278,7 +281,7 @@ namespace TransferControl.Management
             DesignatesAngle = "0";
             IsExcuting = false;
             IsPause = false;
-
+            CurrentSlotPosition = "??";
             ErrorMsg = "";
             //Enable = true;
 
@@ -326,7 +329,8 @@ namespace TransferControl.Management
 
             AccessSW_LED = "";
 
-            IsClamp = false;
+            IsRArmClamp = false;
+            IsLArmClamp = false;
 
             IsDock = false;
         }
@@ -336,7 +340,7 @@ namespace TransferControl.Management
         /// <param name="ScriptName"></param>
         /// <param name="FormName"></param>
         /// <param name="Force"></param> 
-        public void ExcuteScript(string ScriptName, string FormName,out string Message, string RecipeID = "", bool Force = false)
+        public void ExcuteScript(string ScriptName, string FormName, out string Message, string RecipeID = "", bool Force = false)
         {
             Message = "";
             CommandScript StartCmd = CommandScriptManagement.GetStart(ScriptName);
@@ -358,7 +362,7 @@ namespace TransferControl.Management
                 //dummyJob.Add(dummy);
                 //txn.TargetJobs = dummyJob;
                 logger.Debug("Excute Script:" + ScriptName + " Method:" + txn.Method);
-                SendCommand(txn, out Message,Force);
+                SendCommand(txn, out Message, Force);
             }
         }
         /// <summary>
@@ -367,7 +371,7 @@ namespace TransferControl.Management
         /// <param name="ScriptName"></param>
         /// <param name="FormName"></param>
         /// <param name="Force"></param>
-        public bool ExcuteScript(string ScriptName, string FormName, Dictionary<string, string> Param,out string Message, string RecipeID = "")
+        public bool ExcuteScript(string ScriptName, string FormName, Dictionary<string, string> Param, out string Message, string RecipeID = "")
         {
             Message = "";
             if (Param != null)
@@ -393,7 +397,7 @@ namespace TransferControl.Management
                 //dummyJob.Add(dummy);
                 //txn.TargetJobs = dummyJob;
                 logger.Debug("Excute Script:" + ScriptName + " Method:" + txn.Method);
-                return SendCommand(txn,out Message);
+                return SendCommand(txn, out Message);
             }
             return false;
         }
@@ -405,6 +409,7 @@ namespace TransferControl.Management
         /// <returns></returns>
         public bool SendCommand(Transaction txn, out string Message, bool Force = false)
         {
+            txn.RecipeID = this.WaferSize;
             Message = "";
             //if (this.Type.ToUpper().Equals("LOADPORT"))
             //{
@@ -574,6 +579,23 @@ namespace TransferControl.Management
 
                 switch (this.Type)
                 {
+                    case "SMARTTAG":
+                        switch (txn.Method)
+                        {
+                            case Transaction.Command.SmartTagType.Hello:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.Hello();
+                                break;
+                            case Transaction.Command.SmartTagType.GetLCDData:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.GetLCDData();
+                                break;
+                            case Transaction.Command.SmartTagType.SelectLCDData:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.SelectLCDData();
+                                break;
+                            case Transaction.Command.SmartTagType.SetLCDData:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.SetLCDData(txn.Value);
+                                break;
+                        }
+                        break;
                     case "LOADPORT":
                         switch (txn.Method)
                         {
@@ -737,6 +759,19 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.LoadPortType.DockingPositionNoVac:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DockingPositionNoVac(EncoderLoadPort.CommandType.Normal);
+                                break;
+                            case Transaction.Command.LoadPortType.MoveToSlot:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Slot(EncoderLoadPort.CommandType.Normal, txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetCompleteEvent:
+                                if (txn.Value.Equals("1"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Enable);
+                                }
+                                else if (txn.Value.Equals("0"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Disable);
+                                }
                                 break;
                         }
                         break;
@@ -958,7 +993,7 @@ namespace TransferControl.Management
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.OCRType.ReadConfig:
-                                txn.CommandEncodeStr = "Ev ReadConfig(A4,"+txn.Value+",0)";
+                                txn.CommandEncodeStr = "Ev ReadConfig(A4," + txn.Value + ",0)";
                                 txn.CommandType = "CMD";
                                 break;
                         }
@@ -1040,7 +1075,10 @@ namespace TransferControl.Management
                 }
                 if (Ctrl.DoWork(txn))
                 {
-
+                    if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData))
+                    {
+                        System.Threading.Thread.Sleep(1000);
+                    }
                     result = true;
                 }
                 else

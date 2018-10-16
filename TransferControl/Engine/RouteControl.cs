@@ -1370,7 +1370,7 @@ namespace TransferControl.Engine
                 switch (Txn.Method)
                 {
                     case Transaction.Command.RobotType.Reset:
-                        Node.State = Node.LastState;
+                        Node.HasAlarm = false;
                         AlarmManagement.Remove(Node.Name);
                         _UIReport.On_Node_State_Changed(Node, Node.State);
                         break;
@@ -1394,6 +1394,14 @@ namespace TransferControl.Engine
                     }//分裝置別
                     switch (Node.Type)
                     {
+                        case "SMARTTAG":
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.SmartTagType.GetLCDData:
+                                    Node.FoupID = Msg.Value;
+                                    break;
+                            }
+                            break;
                         case "LOADPORT":
                             switch (Txn.Method)
                             {
@@ -1427,6 +1435,32 @@ namespace TransferControl.Engine
                                     {
                                         switch (each.Key)
                                         {
+                                            case "SLOTPOS":
+                                                Node.CurrentSlotPosition = each.Value;
+                                                
+                                                break;
+                                            case "PIP":
+                                                if (each.Value.Equals("TRUE"))
+                                                {
+                                                    Node.Foup_Placement = true;
+                                                    Node.Foup_Presence = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.Foup_Placement = false;
+                                                    Node.Foup_Presence = false;
+                                                }
+                                                break;
+                                            case "PRTST":
+                                                if (each.Value.Equals("UNLK"))
+                                                {
+                                                    Node.Foup_Lock = false;
+                                                }
+                                                else
+                                                {
+                                                    Node.Foup_Lock = true;
+                                                }
+                                                break;
                                             case "Door Position":
                                                 Node.Door_Position = each.Value;
                                                 break;
@@ -1471,7 +1505,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.LoadPortType.GetMapping:
                                     //產生Mapping資料
                                     string Mapping = Msg.Value;
-                                    //string Mapping = "0000000000011100000000000";
+                                    //string Mapping = "1111111111111111111111111";
                                     //if (!Mapping.Equals("0000000000000000000000000"))
                                     //{
                                     //    Mapping = "0000000110000000000000000";
@@ -1553,6 +1587,7 @@ namespace TransferControl.Engine
                                     }
                                     Node.IsMapping = true;
                                     break;
+                                
                             }
 
 
@@ -1581,6 +1616,31 @@ namespace TransferControl.Engine
                                             case "L-Hold Status":
                                                 Node.L_Hold_Status = each.Value;
                                                 break;
+                                            case "R-Clamp Sensor":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.IsRArmClamp = true;
+                                                }
+                                                break;
+                                            case "R-UnClamp Sensor":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.IsRArmClamp = false;
+                                                }
+                                                break;
+                                            case "L-Clamp Sensor":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.IsLArmClamp = true;
+                                                }
+                                                break;
+                                            case "L-UnClamp Sensor":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.IsLArmClamp = false;
+                                                }
+                                                break;
+
                                         }
                                     }
 
@@ -1815,9 +1875,10 @@ namespace TransferControl.Engine
                                         }
                                         if (!ErrorMessage.Equals(""))
                                         {//做完但沒通過檢查
+                                            TaskJobManagment.Remove(Txn.FormName);
                                             if (_HostReport != null)
                                             {
-                                                TaskJobManagment.Remove(Txn.FormName);
+
                                                 _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                             }
                                         }
@@ -1910,9 +1971,10 @@ namespace TransferControl.Engine
                             }
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
+                                TaskJobManagment.Remove(Txn.FormName);
                                 if (_HostReport != null)
                                 {
-                                    TaskJobManagment.Remove(Txn.FormName);
+
                                     _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                 }
                             }
@@ -2122,7 +2184,7 @@ namespace TransferControl.Engine
                                 }
                                 else if (Txn.Method.Equals(Transaction.Command.OCRType.ReadConfig))
                                 {
-                                  
+
                                     if (Txn.TargetJobs.Count != 0)
                                     {
                                         switch (Node.Brand)
@@ -2143,7 +2205,7 @@ namespace TransferControl.Engine
                                                 break;
                                         }
                                     }
-                                    
+
                                     _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
                                 }
                             }
@@ -2226,12 +2288,12 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.LoadPortType.MappingLoad:
-
+                                    IO_State_Change(Node.Name, "Foup_Lock", true);
                                     break;
                                 case Transaction.Command.LoadPortType.Unload:
                                 case Transaction.Command.LoadPortType.MappingUnload:
                                 case Transaction.Command.LoadPortType.UnDock:
-
+                                    IO_State_Change(Node.Name, "Foup_Lock", false);
                                     _UIReport.On_Node_State_Changed(Node, "UnLoad Complete");
                                     break;
                                 case Transaction.Command.LoadPortType.InitialPos:
@@ -2286,9 +2348,10 @@ namespace TransferControl.Engine
                                     }
                                     if (!ErrorMessage.Equals(""))
                                     {//做完但沒通過檢查
+                                        TaskJobManagment.Remove(Txn.FormName);
                                         if (_HostReport != null)
                                         {
-                                            TaskJobManagment.Remove(Txn.FormName);
+
                                             _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                         }
                                     }
@@ -2381,9 +2444,10 @@ namespace TransferControl.Engine
                             }
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
+                                TaskJobManagment.Remove(Txn.FormName);
                                 if (_HostReport != null)
                                 {
-                                    TaskJobManagment.Remove(Txn.FormName);
+
 
                                     _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                 }
@@ -2925,11 +2989,7 @@ namespace TransferControl.Engine
             if (!Node.IsPause)
             {
                 logger.Debug("Transaction TimeOut:" + Txn.CommandEncodeStr);
-                if (!Node.State.Equals("Alarm"))
-                {
-                    Node.LastState = Node.State;
-                }
-                Node.State = "Alarm";
+                Node.HasAlarm = true;
                 if (_HostReport != null)
                 {
                     _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, "ABS", "TimeOut");
@@ -2972,16 +3032,21 @@ namespace TransferControl.Engine
                             case "ABNST":
                                 IO_State_Change(Node.Name, "Foup_Placement", false);
                                 break;
+                            case "POD_ARRIVED":
+                                IO_State_Change(Node.Name, "Foup_Presence", true);
+                                IO_State_Change(Node.Name, "Foup_Placement", true);
+                                break;
+
+                            case "POD_REMOVED":
+                                IO_State_Change(Node.Name, "Foup_Presence", false);
+                                IO_State_Change(Node.Name, "Foup_Placement", false);
+                                break;
                         }
                         break;
                 }
                 if (Msg.Command.Equals("ERROR"))
                 {
-                    if (!Node.State.Equals("Alarm"))
-                    {
-                        Node.LastState = Node.State;
-                    }
-                    Node.State = "Alarm";
+                    Node.HasAlarm = true;
 
                     _UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "Alarm");
@@ -3018,10 +3083,7 @@ namespace TransferControl.Engine
         /// <param name="Status"></param>
         public void On_Node_State_Changed(Node Node, string Status)
         {
-            if (!Node.State.Equals("Alarm") && Status.Equals("Alarm"))
-            {
-                Node.LastState = Node.State;
-            }
+            
             StateRecord.NodeStateUpdate(Node.Name, Node.State, Status);
             Node.State = Status;
 
@@ -3035,11 +3097,8 @@ namespace TransferControl.Engine
         /// <param name="Msg"></param>
         public void On_Command_Error(Node Node, Transaction Txn, ReturnMessage Msg)
         {
-            if (!Node.State.Equals("Alarm"))
-            {
-                Node.LastState = Node.State;
-            }
-            Node.State = "Alarm";
+            Node.HasAlarm = true;
+            TaskJobManagment.Remove(Txn.FormName);
             if (_HostReport != null)
             {
                 _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, "ABS", Msg.Value);

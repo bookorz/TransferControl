@@ -618,5 +618,13 @@ namespace TransferControl.Comm
             }
             return result;
         }
+
+        public bool SendHexData(object Message)
+        {
+           
+            return false;
+        }
+
+        
     }
 }

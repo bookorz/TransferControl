@@ -530,7 +530,7 @@ namespace TransferControl.Management
                                         Txn.Slot2 = Slot2;
                                         Txn.Value = Value;
                                         Txn.FormName = Id;
-                                        Txn.RecipeID = "300MM";
+                                        //Txn.RecipeID = "300MM";
 
                                         
                                             
@@ -626,7 +626,7 @@ namespace TransferControl.Management
                 logger.Error("Excute fail Task Name:" + taskName + " exception: " + e.StackTrace);
                 //throw new Exception("Excute fail Task Name:" + taskName + " exception: " + e.Message);
                 ErrorMessage = "Excute fail Task Name:" + taskName + " exception: " + e.Message;
-
+                Remove(Id);
                 return false;
             }
             return result;

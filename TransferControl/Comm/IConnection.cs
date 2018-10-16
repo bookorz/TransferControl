@@ -9,6 +9,7 @@ namespace TransferControl.Comm
     interface IConnection
     {
         bool Send(object Message);
+        bool SendHexData(object Message);
         void Start();
     }
 }

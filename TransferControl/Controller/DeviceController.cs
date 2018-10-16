@@ -179,13 +179,13 @@ namespace TransferControl.Controller
                     waferids += each.Job_Id + " ";
                 }
                 logger.Debug(_Config.DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
-                if (conn.Send(Txn.CommandEncodeStr))
+                if (this._Config.Vendor.Equals("SMARTTAG"))
                 {
-                    result = true;
+                    result = sendWith4Byte(Txn.CommandEncodeStr);
                 }
                 else
                 {
-                    result = false;
+                    result = conn.Send(Txn.CommandEncodeStr);
                 }
             }
             else
@@ -200,6 +200,27 @@ namespace TransferControl.Controller
 
 
             //}
+            return result;
+        }
+
+        public bool sendWith4Byte(string text)
+        {
+            bool result = true;
+            string cmd = "";
+            for (int i = 0; i < text.Length; i = i + 12)
+            {
+                if ((text.Length - i) > 12)
+                {
+                    cmd = text.Substring(i, 12);
+                }
+                else
+                {
+                    cmd = text.Substring(i);
+                }
+                result = result & conn.SendHexData(cmd);
+                System.Threading.Thread.Sleep(22);
+            }
+            //Console.WriteLine("Send:" + text);
             return result;
         }
 
@@ -365,10 +386,19 @@ namespace TransferControl.Controller
                                             }
                                             else
                                             {
-                                                Txn.SetTimeOutMonitor(false);
-                                                Txn.SetTimeOut(60000);
-                                                Txn.SetTimeOutMonitor(true);
-                                                TransactionList.TryAdd(key, Txn);
+                                                if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
+                                                {
+                                                    logger.Debug("Txn timmer stoped.");
+                                                    Txn.SetTimeOutMonitor(false);
+                                                    Node.IsExcuting = false;
+                                                }
+                                                else
+                                                {
+                                                    Txn.SetTimeOutMonitor(false);
+                                                    Txn.SetTimeOut(60000);
+                                                    Txn.SetTimeOutMonitor(true);
+                                                    TransactionList.TryAdd(key, Txn);
+                                                }
                                             }
                                             //_ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
                                             break;
@@ -444,7 +474,7 @@ namespace TransferControl.Controller
                                     _ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
                                     if (Txn.CommandType.Equals("CMD") && !Node.Type.Equals("LOADPORT"))
                                     {
-                                        _ReportTarget.On_Node_State_Changed(Node, "Run");
+                                        _ReportTarget.On_Node_State_Changed(Node, "Busy");
                                     }
                                     break;
                                 case ReturnMessage.ReturnType.Finished:
@@ -456,7 +486,7 @@ namespace TransferControl.Controller
                                     _ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                     if (!Node.Type.Equals("LOADPORT"))
                                     {
-                                        _ReportTarget.On_Node_State_Changed(Node, "Idle");
+                                        _ReportTarget.On_Node_State_Changed(Node, "Ready");
                                     }
 
 

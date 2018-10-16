@@ -24,7 +24,7 @@ namespace TransferControl.Management
         public string Slot2 { get; set; }
         public string Method { get; set; }
         public string Arm { get; set; }
-        public string Arm2 { get; set; }       
+        public string Arm2 { get; set; }
         public string Value { get; set; }
         public string CommandType { get; set; }
         public string CommandEncodeStr { get; set; }
@@ -41,9 +41,18 @@ namespace TransferControl.Management
 
         public class Command
         {
+            public class SmartTagType
+            {
+                public const string Hello = "Hello";
+                public const string GetLCDData = "GetLCDData";
+                public const string SelectLCDData = "SelectLCDData";
+                public const string SetLCDData = "SetLCDData";
+            }
             //LoadPort
             public class LoadPortType
             {
+                public const string SetCompleteEvent = "SetCompleteEvent";
+                public const string MoveToSlot = "MoveToSlot";
                 public const string EQASP = "EQASP";
                 public const string Mode = "Mode";
                 public const string Load = "Load";
@@ -73,7 +82,7 @@ namespace TransferControl.Management
                 public const string ReadVersion = "ReadVersion";
                 public const string ReadStatus = "ReadState";
                 public const string MapperWaitPosition = "MapperWaitPosition";
-                public const string MapperStartPosition = "MapperStartPosition"; 
+                public const string MapperStartPosition = "MapperStartPosition";
                 public const string MapperArmRetracted = "MapperArmRetracted";
                 public const string MapperArmStretch = "MapperArmStretch";
                 public const string MappingDown = "MappingDown";
@@ -81,10 +90,10 @@ namespace TransferControl.Management
                 public const string SetOpAccessBlink = "SetOpAccessBlink";
                 public const string SetLoad = "SetLoad";
                 public const string SetUnLoad = "SetUnLoad";
-                public const string UntilUnDock = "UntilUnDock"; 
+                public const string UntilUnDock = "UntilUnDock";
                 public const string DockingPositionNoVac = "DockingPositionNoVac";
             }
-            
+
 
             //Robot
             public class RobotType
@@ -161,7 +170,7 @@ namespace TransferControl.Management
                 public const string Offline = "Offline";
                 public const string GetOnline = "GetOnline";
                 public const string ReadConfig = "ReadConfig";
-                
+
             }
         }
 
