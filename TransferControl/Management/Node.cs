@@ -196,9 +196,9 @@ namespace TransferControl.Management
 
         public string MappingResult { get; set; }
 
-        public string R_Presence { get; set; }
+        public bool R_Presence { get; set; }
 
-        public string L_Presence { get; set; }
+        public bool L_Presence { get; set; }
 
         public string R_Hold_Status { get; set; }
 
@@ -224,8 +224,13 @@ namespace TransferControl.Management
 
         public string AccessSW_LED { get; set; }
 
-        public bool IsRArmClamp { get; set; }
-        public bool IsLArmClamp { get; set; }
+        public bool RArmClamp { get; set; }
+
+        public bool RArmUnClamp { get; set; }
+
+        public bool LArmClamp { get; set; }
+
+        public bool LArmUnClamp { get; set; }
 
         public bool IsDock { get; set; }
 
@@ -233,7 +238,15 @@ namespace TransferControl.Management
 
         public bool IsPause { get; set; }
 
+        public string R_Flip_Degree { get; set; }
+
+        public string L_Flip_Degree { get; set; }
+
         public string CurrentSlotPosition { get; set; }
+
+        public string CurrentPoint { get; set; }
+
+        public string X_Position { get; set; }
 
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
@@ -252,8 +265,10 @@ namespace TransferControl.Management
             FoupID = "";
             PrID = "";
             CjID = "";
+            R_Flip_Degree = "0";
+            L_Flip_Degree = "0";
             CurrentPosition = "";
-            PutOutArm = "";
+            PutOutArm = "";           
             UnLockByJob = "";
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
@@ -264,6 +279,8 @@ namespace TransferControl.Management
             //}
             HasAlarm = false;
             LastFinMethod = "";
+            CurrentPoint = "";
+            X_Position = "";
             Busy = false;
             PutOut = false;
             PutAvailable = true;
@@ -300,9 +317,9 @@ namespace TransferControl.Management
 
             MappingResult = "";
 
-            R_Presence = "";
+            R_Presence = false;
 
-            L_Presence = "";
+            L_Presence = false;
 
             R_Hold_Status = "";
 
@@ -329,8 +346,10 @@ namespace TransferControl.Management
 
             AccessSW_LED = "";
 
-            IsRArmClamp = false;
-            IsLArmClamp = false;
+            RArmClamp = false;
+            RArmUnClamp = false;
+            LArmClamp = false;
+            LArmUnClamp = false;
 
             IsDock = false;
         }
@@ -778,6 +797,9 @@ namespace TransferControl.Management
                     case "ROBOT":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.RobotType.GetPosition:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ArmLocation(AdrNo, txn.Seq, txn.Value, "1");
+                                break;
                             case Transaction.Command.RobotType.ArmReturn:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Retract(AdrNo, txn.Seq);
                                 break;

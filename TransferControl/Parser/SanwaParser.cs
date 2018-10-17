@@ -29,16 +29,16 @@ namespace TransferControl.Parser
             switch (MsgAry[0])
             {
                 case "004":
-                    result.Add("R-Hold Status", MsgAry[1]);                   
+                    result.Add("R_Hold_Status", MsgAry[1]);                   
                     break;
                 case "005":
-                    result.Add("L-Hold Status", MsgAry[1]);
+                    result.Add("L_Hold_Status", MsgAry[1]);
                     break;
                 case "008":
-                    result.Add("R-Present", MsgAry[1]);
+                    result.Add("R_Present", MsgAry[1]);
                     break;
                 case "009":
-                    result.Add("L-Present", MsgAry[1]);
+                    result.Add("L_Present", MsgAry[1]);
                     break;
             }
             return result;

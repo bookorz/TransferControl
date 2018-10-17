@@ -11,6 +11,7 @@ namespace TransferControl.Management
         public string TaskName { get; set; }
         public string ExcuteObj { get; set; }
         public string CheckCondition { get; set; }
+        public string SkipCondition { get; set; }
         public int TaskIndex { get; set; }
         public class Excuted
         {

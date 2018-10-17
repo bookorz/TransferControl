@@ -1595,8 +1595,21 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             switch (Txn.Method)
                             {
-                                case Transaction.Command.RobotType.GetRIO:
+                                case Transaction.Command.RobotType.GetPosition:
                                     MessageParser parser = new MessageParser(Node.Brand);
+                                    Dictionary<string, string> PositionResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in PositionResult)
+                                    {
+                                        switch (each.Key)
+                                        {
+                                            case "X_Position":
+                                                Node.X_Position = each.Value;
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case Transaction.Command.RobotType.GetRIO:
+                                     parser = new MessageParser(Node.Brand);
                                     Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in RioResult)
                                     {
@@ -1604,43 +1617,78 @@ namespace TransferControl.Engine
                                         Node.IO.Add(each.Key, each.Value);
                                         switch (each.Key)
                                         {
-                                            case "R-Present":
-                                                Node.R_Presence = each.Value;
+                                            case "R_Present":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.R_Presence = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.R_Presence = false;
+                                                }                                               
                                                 break;
-                                            case "L-Present":
-                                                Node.L_Presence = each.Value;
+                                            case "L_Present":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.L_Presence = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.L_Presence = false;
+                                                }                                                
                                                 break;
-                                            case "R-Hold Status":
+                                            case "R_Hold_Status":
                                                 Node.R_Hold_Status = each.Value;
                                                 break;
-                                            case "L-Hold Status":
+                                            case "L_Hold_Status":
                                                 Node.L_Hold_Status = each.Value;
                                                 break;
-                                            case "R-Clamp Sensor":
+                                            case "R_Clamp_Sensor":
                                                 if (each.Value.Equals("1"))
                                                 {
-                                                    Node.IsRArmClamp = true;
+                                                    Node.RArmClamp = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.RArmClamp = false;
                                                 }
                                                 break;
-                                            case "R-UnClamp Sensor":
+                                            case "R_UnClamp_Sensor":
                                                 if (each.Value.Equals("1"))
                                                 {
-                                                    Node.IsRArmClamp = false;
+                                                    Node.RArmUnClamp = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.RArmUnClamp = false;
                                                 }
                                                 break;
-                                            case "L-Clamp Sensor":
+                                            case "L_Clamp_Sensor":
                                                 if (each.Value.Equals("1"))
                                                 {
-                                                    Node.IsLArmClamp = true;
+                                                    Node.LArmClamp = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.LArmClamp = false;
                                                 }
                                                 break;
-                                            case "L-UnClamp Sensor":
+                                            case "L_UnClamp_Sensor":
                                                 if (each.Value.Equals("1"))
                                                 {
-                                                    Node.IsLArmClamp = false;
+                                                    Node.LArmUnClamp = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.LArmUnClamp = false;
                                                 }
                                                 break;
-
+                                            case "R_0_Degree_Sensor":
+                                                Node.R_Flip_Degree = "0";
+                                                break;
+                                            case "R_180_Degree_Sensor":
+                                                Node.R_Flip_Degree = "180";
+                                                break;
                                         }
                                     }
 
@@ -1764,11 +1812,25 @@ namespace TransferControl.Engine
                                         Node.IO.Add(each.Key, each.Value);
                                         switch (each.Key)
                                         {
-                                            case "R-Present":
-                                                Node.R_Presence = each.Value;
+                                            case "R_Present":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.R_Presence = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.R_Presence = false;
+                                                }
                                                 break;
-                                            case "L-Present":
-                                                Node.L_Presence = each.Value;
+                                            case "L_Present":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.L_Presence = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.L_Presence = false;
+                                                }
                                                 break;
                                             case "R-Hold Status":
                                                 Node.R_Hold_Status = each.Value;
@@ -2520,7 +2582,7 @@ namespace TransferControl.Engine
 
                         case Transaction.Command.RobotType.Get:
                         case Transaction.Command.RobotType.GetAfterWait:
-
+                            Node.CurrentPoint = Txn.Point;
 
                             if (Node.Phase.Equals("2"))
                             {
@@ -2563,6 +2625,7 @@ namespace TransferControl.Engine
                             break;
                         case Transaction.Command.RobotType.Put:
                         case Transaction.Command.RobotType.PutBack:
+                            Node.CurrentPoint = Txn.Point;
                             if (Node.Phase.Equals("2"))
                             {
                                 var find = from job in Node.JobList.Values.ToList()
@@ -2590,6 +2653,7 @@ namespace TransferControl.Engine
                         case Transaction.Command.RobotType.WaitBeforeGet:
                         case Transaction.Command.RobotType.WaitBeforePut:
                         case Transaction.Command.RobotType.PutWithoutBack:
+                            Node.CurrentPoint = Txn.Point;
                             Node.PutOutArm = Txn.Arm;
                             Node.PutOut = true;
                             //4Port use only
