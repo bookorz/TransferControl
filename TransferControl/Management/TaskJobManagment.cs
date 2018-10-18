@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TransferControl.Engine;
 using static TransferControl.Management.TaskJob;
 
 namespace TransferControl.Management
@@ -264,6 +265,24 @@ namespace TransferControl.Management
                                 }
 
                             }
+                            else if (NodeName.ToUpper().Equals("DIO"))
+                            {
+                                string Param = Conditions[1].Split('=')[0];
+                                string Value = Conditions[1].Split('=')[1];
+                                string ErrorType = Conditions[2].Split('=')[0];
+                                string ErrorCode = Conditions[2].Split('=')[1];
+                                string CurrVal = RouteControl.DIO.GetIO("IN", Param);
+                                if (CurrVal.ToUpper().Equals(Value.ToUpper()))
+                                {
+                                    result = true;
+                                }
+                                else
+                                {
+                                    Report = ErrorType;
+                                    Message = ErrorCode;
+                                    result= false;
+                                }
+                            }
                             else if (NodeName.ToUpper().Equals("SET"))
                             {
                                 NodeName = Conditions[1];
@@ -329,6 +348,10 @@ namespace TransferControl.Management
 
                                 switch (FunctionName)
                                 {
+                                    case "AccessSequentially":
+
+
+                                        break;
                                     case "Check_X_AXIS_Position":
                                         foreach(Excuted each in ExcutedTask.CheckList)
                                         {
@@ -403,26 +426,36 @@ namespace TransferControl.Management
                                     Attr = Conditions[1].Split('=')[0];
                                     string Value = Conditions[1].Split('=')[1];
                                     string ErrorType = Conditions[2].Split('=')[0];
-                                    string ErrorCode = Conditions[2].Split('=')[1];
-                                    Node Node = NodeManagement.Get(NodeName);
-                                    if (Node != null)
+                                    if (ErrorType.Equals("DIO"))
                                     {
-                                        string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                        if (AttrVal.Equals(Value.ToUpper()))
-                                        {
-                                            result = true;
-                                        }
-                                        else
-                                        {
-                                            Report = ErrorType;
-                                            Message = ErrorCode;
-                                            return false;
-                                        }
+                                        string Param = Conditions[2].Split('=')[1];
+                                        string Set = Conditions[2].Split('=')[2];
+
+                                        RouteControl.DIO.SetIO(Param, Set);
                                     }
                                     else
                                     {
-                                        logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                        throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        string ErrorCode = Conditions[2].Split('=')[1];
+                                        Node Node = NodeManagement.Get(NodeName);
+                                        if (Node != null)
+                                        {
+                                            string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            if (AttrVal.Equals(Value.ToUpper()))
+                                            {
+                                                result = true;
+                                            }
+                                            else
+                                            {
+                                                Report = ErrorType;
+                                                Message = ErrorCode;
+                                                return false;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        }
                                     }
                                 }
                             }
@@ -607,6 +640,8 @@ namespace TransferControl.Management
                         if (CurrentProceedTasks.TryAdd(Id, CurrTask))
                         {
                             string ExcuteObjStr = CurrTask.ProceedTask.ExcuteObj;
+                         
+
                             //指令替代
                             if (CurrTask.Params != null)
                             {

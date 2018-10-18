@@ -16,7 +16,7 @@ using DIOControl;
 
 namespace TransferControl.Engine
 {
-    public class RouteControl : AlarmMapping, ICommandReport, IDIOTriggerReport
+    public class RouteControl : AlarmMapping, Controller.ICommandReport, IDIOTriggerReport
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
         string _Mode = "";
@@ -2659,6 +2659,11 @@ namespace TransferControl.Engine
                             //4Port use only
 
                             Node.GetAvailable = true;
+                            break;
+                        case Transaction.Command.RobotType.GetWait:
+                        case Transaction.Command.RobotType.PutWait:
+                            Node.CurrentPoint = Txn.Point;
+                            
                             break;
                     }
                     break;
