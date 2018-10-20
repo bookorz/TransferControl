@@ -248,6 +248,10 @@ namespace TransferControl.Management
 
         public string X_Position { get; set; }
 
+        public string R_Position { get; set; }
+
+        public string L_Position { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
 
@@ -281,6 +285,8 @@ namespace TransferControl.Management
             LastFinMethod = "";
             CurrentPoint = "";
             X_Position = "";
+            R_Position = "";
+            L_Position = "";
             Busy = false;
             PutOut = false;
             PutAvailable = true;

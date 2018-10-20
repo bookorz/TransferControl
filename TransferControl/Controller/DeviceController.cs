@@ -392,6 +392,13 @@ namespace TransferControl.Controller
                                                     Txn.SetTimeOutMonitor(false);
                                                     Node.IsExcuting = false;
                                                 }
+                                                else if (Txn.Method.Equals(Transaction.Command.RobotType.RobotOrginSearch))
+                                                {
+                                                    logger.Debug("Txn timmer stoped.");
+                                                    Txn.SetTimeOutMonitor(false);
+                                                    //Node.IsExcuting = false;
+                                                    TransactionList.TryAdd(key, Txn);
+                                                }
                                                 else
                                                 {
                                                     Txn.SetTimeOutMonitor(false);

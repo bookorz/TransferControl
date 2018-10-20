@@ -149,7 +149,7 @@ namespace TransferControl.Management
             string taskName = "";
             Message = "";
             Report = "";
-            bool UnCheck = false;
+            //bool UnCheck = false;
 
             Node TriggerNode = NodeManagement.Get(TriggerNodeName);
             if (TriggerNode == null)
@@ -193,204 +193,172 @@ namespace TransferControl.Management
                         string[] Conditions = eachExcuteObj.Split(new char[] { ':' });
                         if (Conditions.Length >= 2)
                         {
-                            string NodeName = Conditions[0];
+                            string Type = Conditions[0];
+                            string NodeName = "";
                             string Attr = Conditions[1];
-
-
-                            string SelfName = "";
+                            string Value = "";
+                            Node Node = null;
+                            string ErrorType = "";
+                            string ErrorCode = "";
+                            string TargetName = "";
                             string PositionName = "";
-                            ExcutedTask.Params.TryGetValue("@Self", out SelfName);
+                            string Slot = "";
+                            int Val = 0;
+                            int diff = 0;
+
+                            ExcutedTask.Params.TryGetValue("@Target", out TargetName);
                             ExcutedTask.Params.TryGetValue("@Position", out PositionName);
-                            Node Self = NodeManagement.Get(SelfName);
-                            Node Position = NodeManagement.Get(PositionName);
-                            if (NodeName.ToUpper().Equals("REPORT"))
+                            ExcutedTask.Params.TryGetValue("@Slot", out Slot);
+                            //Node Target = NodeManagement.Get(TargetName);
+                            //Node Position = NodeManagement.Get(PositionName);
+                            switch (Type.ToUpper())
                             {
-                                result = true;
-                                Report = Attr;
-                            }
-                            else if (NodeName.ToUpper().Equals("UNCHK"))
-                            {
-                                //UNCHK:Param:@Arm=2;
-                                //    0    1    2  
+                                case "REPORT":
 
-                                string CheckValue = Conditions[2].Split('=')[0];
-                                string Value = Conditions[2].Split('=')[1];
-
-
-                                if (CheckValue.Equals(Value))
-                                {
-                                    UnCheck = true;
-                                }
-
-                            }
-                            else if (NodeName.ToUpper().Equals("GOTO"))
-                            {
-                                result = true;
-                                //GOTO:CHK:@Arm=2:2;
-                                //   0   1    2   3
-                                //GOTO:@Position:Type=STAGE:6;
-                                //   0      1        2      3
-                                string NextIdx = Conditions[3];
-                                NodeName = Conditions[1];
-                                Attr = Conditions[2].Split('=')[0];
-                                string Value = Conditions[2].Split('=')[1];
-                                switch (NodeName.ToUpper())
-                                {
-                                    case "CHK":
-                                        if (Attr.Equals(Value))
-                                        {
-                                            ExcutedTask.GotoIndex = NextIdx;
-                                            return true;
-                                        }
-                                        break;
-                                    default:
-                                        Node Node = NodeManagement.Get(NodeName);
-                                        if (Node != null)
-                                        {
-                                            string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                            if (AttrVal.Equals(Value.ToUpper()))
-                                            {
-                                                ExcutedTask.GotoIndex = NextIdx;
-                                                return true;
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                        }
-
-                                        break;
-                                }
-
-                            }
-                            else if (NodeName.ToUpper().Equals("DIO"))
-                            {
-                                string Param = Conditions[1].Split('=')[0];
-                                string Value = Conditions[1].Split('=')[1];
-                                string ErrorType = Conditions[2].Split('=')[0];
-                                string ErrorCode = Conditions[2].Split('=')[1];
-                                string CurrVal = RouteControl.DIO.GetIO("IN", Param);
-                                if (CurrVal.ToUpper().Equals(Value.ToUpper()))
-                                {
                                     result = true;
-                                }
-                                else
-                                {
-                                    Report = ErrorType;
-                                    Message = ErrorCode;
-                                    result= false;
-                                }
-                            }
-                            else if (NodeName.ToUpper().Equals("SET"))
-                            {
-                                NodeName = Conditions[1];
-                                Attr = Conditions[2].Split('=')[0];
-                                string Value = Conditions[2].Split('=')[1];
-                                Node Node = NodeManagement.Get(NodeName);
-                                if (Node != null)
-                                {
-                                    //string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                    switch (Node.GetType().GetProperty(Attr).PropertyType.Name)
+                                    Report = Attr;
+                                    break;
+
+                                case "DIO":
+
+                                    string Param = Conditions[1].Split('=')[0];
+                                    Value = Conditions[1].Split('=')[1];
+                                    ErrorType = Conditions[2].Split('=')[0];
+                                    ErrorCode = Conditions[2].Split('=')[1];
+                                    string CurrVal = RouteControl.DIO.GetIO("IN", Param);
+                                    if (CurrVal.ToUpper().Equals(Value.ToUpper()))
                                     {
-                                        case "String":
-                                            try
-                                            {
-                                                Node.GetType().GetProperty(Attr).SetValue(Node, Value);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                logger.Error("CheckCondition失敗，String型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                throw new Exception("CheckCondition失敗，String型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            }
-                                            break;
-                                        case "Int64":
-                                        case "Int32":
-                                        case "Int16":
-                                            try
-                                            {
-                                                Node.GetType().GetProperty(Attr).SetValue(Node, Convert.ToInt32(Value));
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                logger.Error("CheckCondition失敗，Int型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                throw new Exception("CheckCondition失敗，Int型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            }
-                                            break;
-                                        case "Boolean":
-                                            try
-                                            {
-                                                Node.GetType().GetProperty(Attr).SetValue(Node, bool.Parse(Value));
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                logger.Error("CheckCondition失敗，Bool型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                throw new Exception("CheckCondition失敗，Bool型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            }
-                                            break;
-                                        default:
-                                            logger.Error("CheckCondition失敗，型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            throw new Exception("CheckCondition失敗，型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        result = true;
                                     }
-                                }
-                                else
-                                {
-                                    logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                    throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                }
-                            }
-                            else if (NodeName.ToUpper().Equals("FUNCTION"))
-                            {
-                                string FunctionName = Conditions[1];
-                                string ErrorType = Conditions[2].Split('=')[0];
-                                string ErrorCode = Conditions[2].Split('=')[1];
+                                    else
+                                    {
+                                        Report = ErrorType;
+                                        Message = ErrorCode;
+                                        result = false;
+                                    }
+                                    break;
+                                case "SET":
 
-                                switch (FunctionName)
-                                {
-                                    case "AccessSequentially":
-
-
-                                        break;
-                                    case "Check_X_AXIS_Position":
-                                        foreach(Excuted each in ExcutedTask.CheckList)
+                                    NodeName = Conditions[1];
+                                    Attr = Conditions[2].Split('=')[0];
+                                    Value = Conditions[2].Split('=')[1];
+                                    Node = NodeManagement.Get(NodeName);
+                                    if (Node != null)
+                                    {
+                                        //string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                        switch (Node.GetType().GetProperty(Attr).PropertyType.Name)
                                         {
-                                            if (each.Txn.Method.Equals(Transaction.Command.RobotType.GetPosition))
-                                            {
-                                                Node rb = NodeManagement.Get(each.NodeName);
-                                                int Spec = 0;
-                                                int Value = 0;
-                                                switch (rb.CurrentPoint)
+                                            case "String":
+                                                try
                                                 {
-                                                    case "71":
-                                                        Spec = Convert.ToInt32("00009062");
-                                                        
-                                                        break;
-                                                    case "72":
-                                                        //00358343
-                                                        Spec = Convert.ToInt32("00358343");
-                                                        break;
-                                                    case "73":
-                                                        //01057385
-                                                        Spec = Convert.ToInt32("01057385");
-                                                        break;
-                                                    case "74":
-                                                        //001407895
-                                                        Spec = Convert.ToInt32("001407895");
-                                                        break;
-                                                    case "1":
-                                                        //00141510
-                                                        Spec = Convert.ToInt32("00141510");
-                                                        break;
-                                                    case "2":
-                                                        //00797166
-                                                        Spec = Convert.ToInt32("00797166");
-                                                        break;
+                                                    Node.GetType().GetProperty(Attr).SetValue(Node, Value);
                                                 }
-                                                Value = Convert.ToInt32(rb.X_Position);
-                                                int diff = Spec - Value;
+                                                catch (Exception e)
+                                                {
+                                                    logger.Error("CheckCondition失敗，String型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    throw new Exception("CheckCondition失敗，String型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                }
+                                                break;
+                                            case "Int64":
+                                            case "Int32":
+                                            case "Int16":
+                                                try
+                                                {
+                                                    Node.GetType().GetProperty(Attr).SetValue(Node, Convert.ToInt32(Value));
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    logger.Error("CheckCondition失敗，Int型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    throw new Exception("CheckCondition失敗，Int型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                }
+                                                break;
+                                            case "Boolean":
+                                                try
+                                                {
+                                                    Node.GetType().GetProperty(Attr).SetValue(Node, bool.Parse(Value));
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    logger.Error("CheckCondition失敗，Bool型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    throw new Exception("CheckCondition失敗，Bool型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                }
+                                                break;
+                                            default:
+                                                logger.Error("CheckCondition失敗，型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                throw new Exception("CheckCondition失敗，型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                    }
+                                    break;
+                                case "FUNCTION":
+
+                                    string FunctionName = Conditions[1];
+                                    ErrorType = Conditions[2].Split('=')[0];
+                                    ErrorCode = Conditions[2].Split('=')[1];
+                                    Node TarNode = null;
+                                    switch (FunctionName)
+                                    {
+                                        case "GetSaftyCheck":
+                                            TarNode = NodeManagement.Get(PositionName);
+
+                                            int slotNo = 0;
+                                            if (int.TryParse(Slot, out slotNo))
+                                            {
+                                                Job SlotData = null;
+                                                TarNode.JobList.TryGetValue(slotNo.ToString(), out SlotData);
+                                                if (SlotData.MapFlag && !SlotData.ErrPosition)
+                                                {
+                                                    result = true;
+                                                }
+                                                else
+                                                {
+                                                    Report = ErrorType;
+                                                    Message = ErrorCode;
+                                                    result = false;
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                Report = ErrorType;
+                                                Message = ErrorCode;
+                                                result = false;
+                                            }
+                                            break;
+                                        case "AccessSequentially":
+                                            //string Slot = 
+                                            //TarNode = NodeManagement.Get(TargetName);
+
+                                            //if (TarNode.R_Flip_Degree.Equals("0"))
+                                            //{
+                                            //    //取放片Slot 1 不檢查，其餘Slot的前一個Slot不能有片
+
+                                            //}
+                                            //else if (TarNode.R_Flip_Degree.Equals("180"))
+                                            //{
+                                            //    //取放片Slot 25 不檢查，其餘Slot的後一個Slot不能有片
+
+                                            //}
+                                            //else
+                                            //{
+                                            //    result = false;
+                                            //}
+                                            result = true;
+                                            break;
+                                        case "Check_LP_Safty":
+
+                                            TarNode = NodeManagement.Get("ROBOT01");
+                                            Val = 0;
+                                            if (TarNode.CurrentPosition.ToUpper().Equals(TargetName))
+                                            {
+                                                Val = Convert.ToInt32(TarNode.R_Position);
+                                                diff = 0 - Val;
                                                 diff = Math.Abs(diff);
-                                                logger.Debug("Diff:"+diff.ToString());
+                                                logger.Debug("Diff:" + diff.ToString());
                                                 if (diff > 500)
                                                 {
                                                     Report = ErrorType;
@@ -402,41 +370,119 @@ namespace TransferControl.Management
                                                     result = true;
                                                 }
                                             }
-                                        }
-                                        
+                                            else
+                                            {
+                                                result = true;
+                                            }
 
-                                        break;
-                                    default:
-                                        result = true;
-                                        break;
-                                }
 
-                                
-                            }
-                            else
-                            {
-                                if (UnCheck)
-                                {
-                                    result = true;
-                                }
-                                else
-                                {
+                                            break;
+                                        case "Check_X_AXIS_Position":
+
+                                            TarNode = NodeManagement.Get(TargetName);
+                                            int Spec = 0;
+                                            Val = 0;
+                                            switch (TarNode.CurrentPoint)
+                                            {
+                                                case "71":
+                                                    Spec = Convert.ToInt32("00009062");
+
+                                                    break;
+                                                case "72":
+                                                    //00358343
+                                                    Spec = Convert.ToInt32("00358343");
+                                                    break;
+                                                case "73":
+                                                    //01057385
+                                                    Spec = Convert.ToInt32("01057385");
+                                                    break;
+                                                case "74":
+                                                    //001407895
+                                                    Spec = Convert.ToInt32("001407895");
+                                                    break;
+                                                case "1":
+                                                    //00164791
+                                                    Spec = Convert.ToInt32("00164791");//164810
+                                                    break;
+                                                case "2":
+                                                    //00797166
+                                                    Spec = Convert.ToInt32("00824895");//824906
+                                                    break;
+                                                case "81":
+                                                    Spec = Convert.ToInt32("00021510");
+
+                                                    break;
+                                                case "82":
+                                                    //00371187
+                                                    Spec = Convert.ToInt32("00371187");
+                                                    break;
+                                                case "83":
+                                                    //01070479
+                                                    Spec = Convert.ToInt32("01070479");
+                                                    break;
+                                                case "84":
+                                                    //01420896
+                                                    Spec = Convert.ToInt32("01420896");
+                                                    break;
+
+                                            }
+                                            Val = Convert.ToInt32(TarNode.X_Position);
+                                            diff = Spec - Val;
+                                            diff = Math.Abs(diff);
+                                            logger.Debug("Diff:" + diff.ToString());
+                                            if (diff > 500)
+                                            {
+                                                Report = ErrorType;
+                                                Message = ErrorCode;
+                                                result = false;
+                                            }
+                                            else
+                                            {
+                                                result = true;
+                                            }
+                                            break;
+                                        default:
+                                            result = true;
+                                            break;
+                                    }
+
+
+                                    break;
+                                case "CHECK":
+
                                     //ALIGNER02:InitialComplete=TRUE:ERR=8888888
                                     //     0            1                 2
-                                    Attr = Conditions[1].Split('=')[0];
-                                    string Value = Conditions[1].Split('=')[1];
-                                    string ErrorType = Conditions[2].Split('=')[0];
+                                    NodeName = Conditions[1];
+                                    Attr = Conditions[2].Split('=')[0];
+                                    Value = Conditions[2].Split('=')[1];
+                                    ErrorType = Conditions[3].Split('=')[0];
                                     if (ErrorType.Equals("DIO"))
                                     {
-                                        string Param = Conditions[2].Split('=')[1];
-                                        string Set = Conditions[2].Split('=')[2];
+                                        string ParamName = Conditions[3].Split('=')[1];
+                                        string Set = Conditions[3].Split('=')[2];
+                                        Node = NodeManagement.Get(NodeName);
+                                        if (Node != null)
+                                        {
+                                            string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            if (AttrVal.Equals(Value.ToUpper()))
+                                            {
+                                                RouteControl.DIO.SetIO(ParamName, Set);
 
-                                        RouteControl.DIO.SetIO(Param, Set);
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        }
+                                        result = true;
+
                                     }
                                     else
                                     {
-                                        string ErrorCode = Conditions[2].Split('=')[1];
-                                        Node Node = NodeManagement.Get(NodeName);
+                                        ErrorCode = Conditions[3].Split('=')[1];
+                                        Node = NodeManagement.Get(NodeName);
                                         if (Node != null)
                                         {
                                             string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
@@ -457,7 +503,8 @@ namespace TransferControl.Management
                                             throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
                                         }
                                     }
-                                }
+
+                                    break;
                             }
                         }
                         else
@@ -629,7 +676,7 @@ namespace TransferControl.Management
                         CurrentProceedTask CurrTask = new CurrentProceedTask();
                         CurrTask.ProceedTask = tk.First();
                         CurrTask.CheckList.Clear();
-                        if (CurrTask.ProceedTask.TaskIndex != 1)
+                        if (param == null)
                         {//拿之前的
                             CurrTask.Params = LastParam;
                         }
@@ -640,7 +687,7 @@ namespace TransferControl.Management
                         if (CurrentProceedTasks.TryAdd(Id, CurrTask))
                         {
                             string ExcuteObjStr = CurrTask.ProceedTask.ExcuteObj;
-                         
+
 
                             //指令替代
                             if (CurrTask.Params != null)

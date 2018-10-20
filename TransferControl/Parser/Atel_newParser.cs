@@ -55,6 +55,9 @@ namespace TransferControl.Parser
             {
                 switch (i)
                 {
+                    case 0:
+                        result.Add("R_Position", MsgAry[i]);
+                        break;
                     case 4:
                         result.Add("X_Position", MsgAry[i]);
                         break;
