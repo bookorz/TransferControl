@@ -23,7 +23,7 @@ namespace TransferControl.Management
         private static DBUtil dBUtil = new DBUtil();
 
         public static void LoadConfig()
-        { 
+        {
             NodeList = new ConcurrentDictionary<string, Node>();
             NodeListByCtrl = new ConcurrentDictionary<string, Node>();
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
@@ -35,7 +35,8 @@ namespace TransferControl.Management
 	                        UPPER(t.alternative_aligner) AS alternativealigner,	                       
 	                        t.wafer_size as WaferSize,
                             t.Double_Arm as DoubleArmActive,
-                            t.Notch_Angle as NotchAngle
+                            t.Notch_Angle as NotchAngle,
+                            t.R_Flip_Degree as R_Flip_Degree
                         FROM config_node t
                         WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
@@ -43,7 +44,7 @@ namespace TransferControl.Management
             string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
             //str_json = str_json.Replace("\"[", "[").Replace("]\"", "]").Replace("\\\"", "\"");
             List<Node> nodeList = JsonConvert.DeserializeObject<List<Node>>(str_json);
-           
+
             foreach (Node each in nodeList)
             {
                 if (each.Enable)
@@ -53,7 +54,7 @@ namespace TransferControl.Management
                     NodeListByCtrl.TryAdd(each.Controller + each.AdrNo, each);
                 }
             }
-            
+
         }
 
         public static void InitialNodes()
@@ -62,10 +63,10 @@ namespace TransferControl.Management
             {
                 each.CurrentLoadPort = "";
                 each.CurrentPosition = "";
-                
+
                 //each.InitialComplete = false;
                 each.JobList.Clear();
-               
+
                 each.Phase = "";
                 each.PutOut = false;
                 //each.TransferQueue.Clear();
@@ -120,7 +121,7 @@ namespace TransferControl.Management
             else
             {
                 var findPause = from node in NodeList.Values.ToList()
-                              where node.State.Equals("Pause") && !node.ByPass
+                                where node.State.Equals("Pause") && !node.ByPass
                                 select node;
                 if (findPause.Count() != 0)
                 {
@@ -226,6 +227,10 @@ namespace TransferControl.Management
             {
                 NodeList.TryGetValue(Name.ToUpper(), out result);
             }
+            if (result == null)
+            {
+                logger.Error("Node not exist, Name:" + Name);
+            }
             return result;
         }
 
@@ -248,7 +253,7 @@ namespace TransferControl.Management
         public static Node GetByController(string DeviceName, string NodeAdr)
         {
             Node result = null;
-            
+
             NodeListByCtrl.TryGetValue(DeviceName + NodeAdr, out result);
 
             return result;

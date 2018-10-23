@@ -128,6 +128,8 @@ namespace TransferControl.Management
         /// 是否需要Initial
         /// </summary>
         public bool InitialComplete { get; set; }
+
+        public bool OrgSearchComplete { get; set; }
         /// <summary>
         /// LoadPort專用，Mapping完成
         /// </summary>
@@ -252,6 +254,8 @@ namespace TransferControl.Management
 
         public string L_Position { get; set; }
 
+        public string Servo { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
 
@@ -300,6 +304,7 @@ namespace TransferControl.Management
             CheckStatus = false;
             WaitForFinish = false;
             InitialComplete = false;
+            OrgSearchComplete = false;
             IsWaferHold = false;
             DesignatesAngle = "0";
             IsExcuting = false;

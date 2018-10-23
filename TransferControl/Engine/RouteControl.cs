@@ -1375,10 +1375,10 @@ namespace TransferControl.Engine
                         _UIReport.On_Node_State_Changed(Node, Node.State);
                         break;
                     case Transaction.Command.RobotType.Pause:
-                        Node.IsPause = true;
+                        //Node.IsPause = true;
                         break;
                     case Transaction.Command.RobotType.Continue:
-                        Node.IsPause = false;
+                        //Node.IsPause = false;
                         break;
                 }
 
@@ -1595,8 +1595,21 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             switch (Txn.Method)
                             {
-                                case Transaction.Command.RobotType.GetPosition:
+                                case Transaction.Command.RobotType.GetStatus:
                                     MessageParser parser = new MessageParser(Node.Brand);
+                                    Dictionary<string, string> StatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in StatusResult)
+                                    {
+                                        switch (each.Key)
+                                        {
+                                            case "Servo":
+                                                Node.Servo = each.Value;
+                                                break;                                            
+                                        }
+                                    }
+                                    break;
+                                case Transaction.Command.RobotType.GetPosition:
+                                    parser = new MessageParser(Node.Brand);
                                     Dictionary<string, string> PositionResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in PositionResult)
                                     {
@@ -1686,12 +1699,7 @@ namespace TransferControl.Engine
                                                     Node.LArmUnClamp = false;
                                                 }
                                                 break;
-                                            case "R_0_Degree_Sensor":
-                                                Node.R_Flip_Degree = "0";
-                                                break;
-                                            case "R_180_Degree_Sensor":
-                                                Node.R_Flip_Degree = "180";
-                                                break;
+                                            
                                         }
                                     }
 

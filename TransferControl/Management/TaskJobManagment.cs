@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TransferControl.Engine;
 using static TransferControl.Management.TaskJob;
@@ -117,11 +118,7 @@ namespace TransferControl.Management
                                   where !each.Finished
                                   select each;
                     if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
-                    {
-                        if (ExcuteName.ToUpper().Equals("STOP"))
-                        {
-                            System.Threading.Thread.Sleep(1000);
-                        }
+                    {                       
                         result = CheckCondition(Id, NodeName, out Message, out Report);
                         tk.CheckList.Clear();
                     }
@@ -213,13 +210,18 @@ namespace TransferControl.Management
                             //Node Position = NodeManagement.Get(PositionName);
                             switch (Type.ToUpper())
                             {
+                                case "DELAY":
+                                    int DelayTime = Convert.ToInt32(Attr);
+                                    SpinWait.SpinUntil(() => false, DelayTime);
+                                    result = true;
+                                    break;
                                 case "REPORT":
 
                                     result = true;
                                     Report = Attr;
                                     break;
 
-                                case "DIO":
+                                case "CHECK_DIO":
 
                                     string Param = Conditions[1].Split('=')[0];
                                     Value = Conditions[1].Split('=')[1];
@@ -235,77 +237,82 @@ namespace TransferControl.Management
                                         Report = ErrorType;
                                         Message = ErrorCode;
                                         result = false;
+                                        break;
                                     }
                                     break;
-                                case "SET":
-
-                                    NodeName = Conditions[1];
-                                    Attr = Conditions[2].Split('=')[0];
-                                    Value = Conditions[2].Split('=')[1];
-                                    Node = NodeManagement.Get(NodeName);
-                                    if (Node != null)
-                                    {
-                                        //string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                        switch (Node.GetType().GetProperty(Attr).PropertyType.Name)
-                                        {
-                                            case "String":
-                                                try
-                                                {
-                                                    Node.GetType().GetProperty(Attr).SetValue(Node, Value);
-                                                }
-                                                catch (Exception e)
-                                                {
-                                                    logger.Error("CheckCondition失敗，String型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    throw new Exception("CheckCondition失敗，String型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                }
-                                                break;
-                                            case "Int64":
-                                            case "Int32":
-                                            case "Int16":
-                                                try
-                                                {
-                                                    Node.GetType().GetProperty(Attr).SetValue(Node, Convert.ToInt32(Value));
-                                                }
-                                                catch (Exception e)
-                                                {
-                                                    logger.Error("CheckCondition失敗，Int型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    throw new Exception("CheckCondition失敗，Int型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                }
-                                                break;
-                                            case "Boolean":
-                                                try
-                                                {
-                                                    Node.GetType().GetProperty(Attr).SetValue(Node, bool.Parse(Value));
-                                                }
-                                                catch (Exception e)
-                                                {
-                                                    logger.Error("CheckCondition失敗，Bool型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    throw new Exception("CheckCondition失敗，Bool型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                }
-                                                break;
-                                            default:
-                                                logger.Error("CheckCondition失敗，型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                throw new Exception("CheckCondition失敗，型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                        throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                    }
-                                    break;
+                                
                                 case "FUNCTION":
 
                                     string FunctionName = Conditions[1];
                                     ErrorType = Conditions[2].Split('=')[0];
                                     ErrorCode = Conditions[2].Split('=')[1];
                                     Node TarNode = null;
+                                    int slotNo = 0;
                                     switch (FunctionName)
                                     {
-                                        case "GetSaftyCheck":
-                                            TarNode = NodeManagement.Get(PositionName);
+                                        case "Put_Safty_Check":
+                                            if (PositionName.Equals(""))
+                                            {
+                                                ExcutedTask.Params.TryGetValue("@ToPosition", out PositionName);
+                                                ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
+                                                string FromPosition = "";
+                                                string FromSlot = "";
+                                                ExcutedTask.Params.TryGetValue("@FromPosition", out FromPosition);
+                                                ExcutedTask.Params.TryGetValue("@FromSlot", out FromSlot);
+                                                if (!FromPosition.Equals("") && !FromSlot.Equals(""))
+                                                {
+                                                    if (FromPosition.Equals(PositionName) && FromSlot.Equals(Slot))
+                                                    {
+                                                        //Trans 如果來源目的相同，略過放片檢查
+                                                        result = true;
+                                                        break;
+                                                    }
+                                                }
+                                                TarNode = NodeManagement.Get(PositionName);
+                                            }
+                                            else
+                                            {
+                                                TarNode = NodeManagement.Get(PositionName);
+                                            }
 
-                                            int slotNo = 0;
+                                            slotNo = 0;
+                                            if (int.TryParse(Slot, out slotNo))
+                                            {
+                                                Job SlotData = null;
+                                                TarNode.JobList.TryGetValue(slotNo.ToString(), out SlotData);
+                                                if (!SlotData.MapFlag && !SlotData.ErrPosition)
+                                                {
+                                                    result = true;
+                                                }
+                                                else
+                                                {
+                                                    Report = ErrorType;
+                                                    Message = ErrorCode;
+                                                    result = false;
+                                                    break;
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                Report = ErrorType;
+                                                Message = ErrorCode;
+                                                result = false;
+                                                break;
+                                            }
+                                            break;
+                                        case "Get_Safty_Check":
+                                            if (PositionName.Equals(""))
+                                            {
+                                                ExcutedTask.Params.TryGetValue("@FromPosition", out PositionName);
+                                                ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
+                                                TarNode = NodeManagement.Get(PositionName);                                               
+                                            }
+                                            else
+                                            {
+                                                TarNode = NodeManagement.Get(PositionName);
+                                            }
+                                            slotNo = 0;
                                             if (int.TryParse(Slot, out slotNo))
                                             {
                                                 Job SlotData = null;
@@ -329,25 +336,85 @@ namespace TransferControl.Management
                                                 result = false;
                                             }
                                             break;
-                                        case "AccessSequentially":
-                                            //string Slot = 
-                                            //TarNode = NodeManagement.Get(TargetName);
+                                        case "Get_Access_Sequentially":
+                                        case "Put_Access_Sequentially":
 
-                                            //if (TarNode.R_Flip_Degree.Equals("0"))
-                                            //{
-                                            //    //取放片Slot 1 不檢查，其餘Slot的前一個Slot不能有片
+                                            if (PositionName.Equals(""))
+                                            {
+                                                if (FunctionName.Equals("GetAccessSequentially"))
+                                                {
+                                                    ExcutedTask.Params.TryGetValue("@FromPosition", out PositionName);
+                                                    ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
+                                                }
+                                                else if (FunctionName.Equals("PutAccessSequentially"))
+                                                {
+                                                    ExcutedTask.Params.TryGetValue("@ToPosition", out PositionName);
+                                                    ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
+                                                }
+                                                TarNode = NodeManagement.Get(PositionName);
+                                            }
+                                            else
+                                            {
+                                                TarNode = NodeManagement.Get(PositionName);
+                                            }
+                                            slotNo = 0;
+                                            if (int.TryParse(Slot, out slotNo))
+                                            {
+                                                Job SlotData = null;
 
-                                            //}
-                                            //else if (TarNode.R_Flip_Degree.Equals("180"))
-                                            //{
-                                            //    //取放片Slot 25 不檢查，其餘Slot的後一個Slot不能有片
+                                                if (TarNode.R_Flip_Degree.Equals("0"))
+                                                {
+                                                    //取放片Slot 1 不檢查
+                                                    if (slotNo != 1)
+                                                    {
+                                                        TarNode.JobList.TryGetValue((slotNo - 1).ToString(), out SlotData);
+                                                        //其餘Slot的前一個Slot不能有片(Slot 是反序)
+                                                        if (!SlotData.MapFlag && !SlotData.ErrPosition)
+                                                        {
+                                                            result = true;
+                                                        }
+                                                        else
+                                                        {
+                                                            Report = ErrorType;
+                                                            Message = ErrorCode;
+                                                            result = false;
+                                                        }
+                                                    }
+                                                }
+                                                else if (TarNode.R_Flip_Degree.Equals("180"))
+                                                {
+                                                    //取放片Slot 1 不檢查
+                                                    if (slotNo != 25)
+                                                    {
+                                                        TarNode.JobList.TryGetValue((slotNo + 1).ToString(), out SlotData);
+                                                        //其餘Slot的後一個Slot不能有片(Slot 是反序)
+                                                        if (!SlotData.MapFlag && !SlotData.ErrPosition)
+                                                        {
+                                                            result = true;
+                                                        }
+                                                        else
+                                                        {
+                                                            Report = ErrorType;
+                                                            Message = ErrorCode;
+                                                            result = false;
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    Report = ErrorType;
+                                                    Message = ErrorCode;
+                                                    result = false;
+                                                }
 
-                                            //}
-                                            //else
-                                            //{
-                                            //    result = false;
-                                            //}
-                                            result = true;
+                                            }
+                                            else
+                                            {
+                                                Report = ErrorType;
+                                                Message = ErrorCode;
+                                                result = false;
+                                            }
+
                                             break;
                                         case "Check_LP_Safty":
 
@@ -377,9 +444,27 @@ namespace TransferControl.Management
 
 
                                             break;
-                                        case "Check_X_AXIS_Position":
+                                        case "Get_Check_X_AXIS_Position":
+                                        case "Put_Check_X_AXIS_Position":
 
-                                            TarNode = NodeManagement.Get(TargetName);
+                                            if (PositionName.Equals(""))
+                                            {
+                                                if (FunctionName.Equals("Get_Check_X_AXIS_Position"))
+                                                {
+                                                    ExcutedTask.Params.TryGetValue("@FromPosition", out PositionName);
+                                                    //ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
+                                                }
+                                                else if (FunctionName.Equals("Put_Check_X_AXIS_Position"))
+                                                {
+                                                    ExcutedTask.Params.TryGetValue("@ToPosition", out PositionName);
+                                                    //ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
+                                                }
+                                                TarNode = NodeManagement.Get(PositionName);
+                                            }
+                                            else
+                                            {
+                                                TarNode = NodeManagement.Get(PositionName);
+                                            }
                                             int Spec = 0;
                                             Val = 0;
                                             switch (TarNode.CurrentPoint)
@@ -448,7 +533,7 @@ namespace TransferControl.Management
 
 
                                     break;
-                                case "CHECK":
+                                case "CHECK_NODE":
 
                                     //ALIGNER02:InitialComplete=TRUE:ERR=8888888
                                     //     0            1                 2
@@ -505,12 +590,80 @@ namespace TransferControl.Management
                                     }
 
                                     break;
+                                case "SET_NODE":
+
+                                    NodeName = Conditions[1];
+                                    Attr = Conditions[2].Split('=')[0];
+                                    Value = Conditions[2].Split('=')[1];
+                                    string SetAttr = Conditions[3].Split('=')[0];
+                                    string SetVal = Conditions[3].Split('=')[1];
+                                    Node = NodeManagement.Get(NodeName);
+                                    if (Node != null)
+                                    {
+                                        string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                        if (AttrVal.Equals(Value.ToUpper()))
+                                        {
+                                            //string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            switch (Node.GetType().GetProperty(SetAttr).PropertyType.Name)
+                                            {
+                                                case "String":
+                                                    try
+                                                    {
+                                                        Node.GetType().GetProperty(SetAttr).SetValue(Node, SetVal);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        logger.Error("CheckCondition失敗，String型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        throw new Exception("CheckCondition失敗，String型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    }
+                                                    break;
+                                                case "Int64":
+                                                case "Int32":
+                                                case "Int16":
+                                                    try
+                                                    {
+                                                        Node.GetType().GetProperty(SetAttr).SetValue(Node, Convert.ToInt32(SetVal));
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        logger.Error("CheckCondition失敗，Int型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        throw new Exception("CheckCondition失敗，Int型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    }
+                                                    break;
+                                                case "Boolean":
+                                                    try
+                                                    {
+                                                        Node.GetType().GetProperty(SetAttr).SetValue(Node, bool.Parse(SetVal));
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        logger.Error("CheckCondition失敗，Bool型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        throw new Exception("CheckCondition失敗，Bool型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    }
+                                                    break;
+                                                default:
+                                                    logger.Error("CheckCondition失敗，型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                    throw new Exception("CheckCondition失敗，型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                    }
+                                    result = true;
+                                    break;
                             }
                         }
                         else
                         {
                             logger.Error("Task CheckCondition 解析失敗，Task Name:" + taskName);
                             throw new Exception("Task CheckCondition 解析失敗，Task Name:" + taskName);
+                        }
+                        if (result == false)
+                        {
+                            break;
                         }
                     }
                 }
