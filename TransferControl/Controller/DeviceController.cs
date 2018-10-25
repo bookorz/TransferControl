@@ -131,9 +131,9 @@ namespace TransferControl.Controller
             return result;
         }
 
-        public bool DoWork(Transaction Txn)
+        public bool DoWork(Transaction Txn, bool WaitForData = false)
         {
-
+            conn.WaitForData(WaitForData);
             bool result = false;
             // lock (TransactionList)
             if (!Txn.NodeType.Equals("OCR"))

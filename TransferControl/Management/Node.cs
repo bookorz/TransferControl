@@ -1107,12 +1107,13 @@ namespace TransferControl.Management
                     txn.TargetJobs.Add(dummy);
 
                 }
-                if (Ctrl.DoWork(txn))
+                bool IsWaitData = false;
+                if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData))
                 {
-                    if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData))
-                    {
-                        System.Threading.Thread.Sleep(1000);
-                    }
+                    IsWaitData = true;
+                }
+                if (Ctrl.DoWork(txn, IsWaitData))
+                {                    
                     result = true;
                 }
                 else

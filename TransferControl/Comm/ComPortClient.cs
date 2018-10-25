@@ -17,6 +17,7 @@ namespace TransferControl.Comm
         private SerialPort port;
         IConnectionReport ConnReport;
         DeviceConfig cfg;
+        public bool _WaitForData = false;
 
         public ComPortClient(DeviceConfig _Config, IConnectionReport _ConnReport)
         {
@@ -61,12 +62,18 @@ namespace TransferControl.Comm
             port = new SerialPort(_Config.PortName, _Config.BaudRate, p, _Config.DataBits, s);
             if (_Config.Vendor.Equals("SMARTTAG"))
             {
-                //port.Handshake = Handshake.RequestToSendXOnXOff;
+                port.Handshake = Handshake.None;
+                port.RtsEnable = true;
                 port.ReadTimeout = 5000;
                 port.WriteTimeout = 5000;
             }
         }
 
+        public void WaitForData(bool Enable)
+        {
+            _WaitForData = Enable;
+        }
+    
 
         public void Close()
         {
@@ -168,6 +175,8 @@ namespace TransferControl.Comm
         {
             try
             {
+                SpinWait.SpinUntil(() => !_WaitForData, 1000);
+
                 byte[] buf = new byte[250];
                 port.Read(buf, 0, buf.Length);
                 string data = ByteArrayToString(buf);

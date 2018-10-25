@@ -108,7 +108,7 @@ namespace TransferControl.Management
             if (CurrentProceedTasks.TryGetValue(Id, out tk))
             {
                 var findExcuted = from each in tk.CheckList
-                                  where each.NodeName.ToUpper().Equals(NodeName.ToUpper()) && each.ExcuteName.ToUpper().Equals(ExcuteName.ToUpper()) && each.ExcuteType.ToUpper().Equals(ExcuteType.ToUpper())
+                                  where each.NodeName.ToUpper().Equals(NodeName.ToUpper()) && each.ExcuteName.ToUpper().Equals(ExcuteName.ToUpper())// && each.ExcuteType.ToUpper().Equals(ExcuteType.ToUpper())
                                   select each;
                 if (findExcuted.Count() != 0)
                 {

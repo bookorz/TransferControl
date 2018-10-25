@@ -57,6 +57,11 @@ namespace TransferControl.Comm
 
         }
 
+        public void WaitForData(bool Enable)
+        {
+
+        }
+
         private byte[] KeepAlive(int onOff, int keepAliveTime, int keepAliveInterval)
         {
             byte[] buffer = new byte[12];
