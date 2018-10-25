@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TransferControl.Controller;
+using TransferControl.Engine;
 
 namespace TransferControl.Management
 {
@@ -1074,12 +1075,12 @@ namespace TransferControl.Management
                     }
                     else
                     {
-                        TargetJob = new Job();
+                        TargetJob = RouteControl.CreateJob();
                     }
                 }
                 else
                 {
-                    TargetJob = new Job();
+                    TargetJob = RouteControl.CreateJob();
                 }
                 if (txn.CommandType.Equals("CMD") || txn.CommandType.Equals("MOV"))
                 {
@@ -1101,7 +1102,7 @@ namespace TransferControl.Management
                 if (txn.TargetJobs.Count == 0)
                 {
 
-                    Job dummy = new Job();
+                    Job dummy = RouteControl.CreateJob();
                     dummy.Job_Id = "dummy";
                     txn.TargetJobs.Add(dummy);
 

@@ -15,12 +15,13 @@ using static TransferControl.Management.TaskJob;
 
 namespace TransferControl.Management
 {
-    public static class TaskJobManagment
+    public class TaskJobManagment
     {
-        static ILog logger = LogManager.GetLogger(typeof(TaskJobManagment));
-        static ConcurrentDictionary<string, List<TaskJob>> TaskJobList;
-        static ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
-        private static DBUtil dBUtil = new DBUtil();
+         ILog logger = LogManager.GetLogger(typeof(TaskJobManagment));
+         ConcurrentDictionary<string, List<TaskJob>> TaskJobList;
+         ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
+        private  DBUtil dBUtil = new DBUtil();
+        ITaskJobReport _TaskReport;
 
         public class CurrentProceedTask
         {
@@ -29,8 +30,9 @@ namespace TransferControl.Management
             public List<Excuted> CheckList = new List<Excuted>();
             public string GotoIndex = "";
         }
-        public static void LoadConfig()
+        public TaskJobManagment(ITaskJobReport TaskReport)
         {
+            _TaskReport = TaskReport;
             TaskJobList = new ConcurrentDictionary<string, List<TaskJob>>();
             CurrentProceedTasks = new ConcurrentDictionary<string, CurrentProceedTask>();
 
@@ -66,7 +68,7 @@ namespace TransferControl.Management
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public static bool IsTask(string Id)
+        public bool IsTask(string Id)
         {
             if (CurrentProceedTasks.ContainsKey(Id))
             {
@@ -85,11 +87,12 @@ namespace TransferControl.Management
         /// <param name="ExcuteName"></param>
         /// <param name="ReturnType">Executed/Finished</param>
         /// <returns>true:當工作全部完成</returns>
-        public static bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message, out string Report)
+        public bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message, out string Report,out string Location)
         {
             bool result = false;
             Message = "";
             Report = "";
+            Location = "";
             CurrentProceedTask tk;
 
             if (ExcuteName.Equals("DoubleGet"))
@@ -118,13 +121,18 @@ namespace TransferControl.Management
                                   where !each.Finished
                                   select each;
                     if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
-                    {                       
-                        result = CheckCondition(Id, NodeName, out Message, out Report);
+                    {
+                        result = CheckCondition(Id,out Message, out Report,out Location);
                         tk.CheckList.Clear();
                     }
                 }
                 else
                 {
+                    //Excute為空白
+
+                    result = CheckCondition(Id, out Message, out Report, out Location);
+
+
                     //logger.Error("CheckTask失敗，找不到設定值.ExcuteName:" + ExcuteName+ " ExcuteType:"+ ExcuteType);
                     //throw new Exception("CheckTask失敗，找不到Id:" + Id);
                     //Message += " " + "CheckTask失敗，找不到設定值.ExcuteName:" + ExcuteName + " ExcuteType:" + ExcuteType;
@@ -140,20 +148,21 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static bool CheckCondition(string Id, string TriggerNodeName, out string Message, out string Report)
+        public bool CheckCondition(string Id, out string Message, out string Report,out string Location)
         {
             bool result = false;
             string taskName = "";
             Message = "";
             Report = "";
+            Location = "";
             //bool UnCheck = false;
 
-            Node TriggerNode = NodeManagement.Get(TriggerNodeName);
-            if (TriggerNode == null)
-            {
-                logger.Error("CheckCondition失敗，找不到TriggerNode:" + TriggerNodeName);
-                throw new Exception("CheckCondition失敗，找不到TriggerNode:" + TriggerNodeName);
-            }
+            //Node TriggerNode = NodeManagement.Get(TriggerNodeName);
+            //if (TriggerNode == null)
+            //{
+            //    logger.Error("CheckCondition失敗，找不到TriggerNode:" + TriggerNodeName);
+            //    throw new Exception("CheckCondition失敗，找不到TriggerNode:" + TriggerNodeName);
+            //}
             try
             {
                 CurrentProceedTask ExcutedTask = null;
@@ -197,8 +206,14 @@ namespace TransferControl.Management
                             Node Node = null;
                             string ErrorType = "";
                             string ErrorCode = "";
+                            Location = "";
+                            string[] tmpAry;
                             string TargetName = "";
                             string PositionName = "";
+                            string FromPosition = "";
+                            string FromSlot = "";
+                            string ToPosition = "";
+                            string ToSlot = "";
                             string Slot = "";
                             int Val = 0;
                             int diff = 0;
@@ -220,14 +235,63 @@ namespace TransferControl.Management
                                     result = true;
                                     Report = Attr;
                                     break;
+                                case "MOVE_WIP":
+                                    FromPosition = Conditions[1];
+                                    FromSlot = Convert.ToInt32(Conditions[2]).ToString();
+                                    ToPosition = Conditions[3];
+                                    ToSlot = Convert.ToInt32(Conditions[4]).ToString();
+                                    Node FNode = NodeManagement.Get(FromPosition);
+                                    Node TNode = NodeManagement.Get(ToPosition);
+                                    Job J;
+                                    Job tmp;
+                                    if (FNode.JobList.TryRemove(FromSlot, out J))
+                                    {
+                                        //空的Slot要塞空資料                                       
+                                        tmp = RouteControl.CreateJob();
+                                        tmp.Job_Id = "No wafer";
+                                        tmp.Host_Job_Id = "No wafer";
+                                        tmp.Slot = FromSlot;
+                                        tmp.Position = FNode.Name;
+                                        FNode.JobList.TryAdd(tmp.Slot, tmp);
 
+                                        
+                                        J.LastNode = J.Position;
+                                        J.LastSlot = J.Slot;
+
+                                        TNode.JobList.TryRemove(ToSlot, out tmp);
+                                        if (TNode.JobList.TryAdd(ToSlot, J))
+                                        {
+                                            //更新WAFER位置
+                                            J.Position = TNode.Name;
+                                            J.Slot = ToSlot;
+                                            J.PositionChangeReport();
+                                        }
+                                        else
+                                        {
+                                            logger.Error("Move wip error(Add): From="+ FromPosition+" Slot="+ FromSlot + " To="+ ToPosition + " Slot="+ ToSlot);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        logger.Error("Move wip error(Remove): From=" + FromPosition + " Slot=" + FromSlot + " To=" + ToPosition + " Slot=" + ToSlot);
+                                    }
+                                    result = true;
+                                    break;
                                 case "CHECK_DIO":
 
                                     string Param = Conditions[1].Split('=')[0];
                                     Value = Conditions[1].Split('=')[1];
                                     ErrorType = Conditions[2].Split('=')[0];
                                     ErrorCode = Conditions[2].Split('=')[1];
-                                    string CurrVal = RouteControl.DIO.GetIO("IN", Param);
+                                    tmpAry = ErrorCode.Split(',');
+                                    if (tmpAry.Length >= 2)
+                                    {
+                                        ErrorCode = tmpAry[0];
+                                        Location = tmpAry[1];
+                                    }
+                                    
+
+                                    string CurrVal = RouteControl.Instance.DIO.GetIO("IN", Param);
                                     if (CurrVal.ToUpper().Equals(Value.ToUpper()))
                                     {
                                         result = true;
@@ -240,12 +304,18 @@ namespace TransferControl.Management
                                         break;
                                     }
                                     break;
-                                
+
                                 case "FUNCTION":
 
                                     string FunctionName = Conditions[1];
                                     ErrorType = Conditions[2].Split('=')[0];
                                     ErrorCode = Conditions[2].Split('=')[1];
+                                    tmpAry = ErrorCode.Split(',');
+                                    if (tmpAry.Length >= 2)
+                                    {
+                                        ErrorCode = tmpAry[0];
+                                        Location = tmpAry[1];
+                                    }
                                     Node TarNode = null;
                                     int slotNo = 0;
                                     switch (FunctionName)
@@ -255,8 +325,7 @@ namespace TransferControl.Management
                                             {
                                                 ExcutedTask.Params.TryGetValue("@ToPosition", out PositionName);
                                                 ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
-                                                string FromPosition = "";
-                                                string FromSlot = "";
+
                                                 ExcutedTask.Params.TryGetValue("@FromPosition", out FromPosition);
                                                 ExcutedTask.Params.TryGetValue("@FromSlot", out FromSlot);
                                                 if (!FromPosition.Equals("") && !FromSlot.Equals(""))
@@ -306,7 +375,7 @@ namespace TransferControl.Management
                                             {
                                                 ExcutedTask.Params.TryGetValue("@FromPosition", out PositionName);
                                                 ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
-                                                TarNode = NodeManagement.Get(PositionName);                                               
+                                                TarNode = NodeManagement.Get(PositionName);
                                             }
                                             else
                                             {
@@ -551,7 +620,7 @@ namespace TransferControl.Management
                                             string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
                                             if (AttrVal.Equals(Value.ToUpper()))
                                             {
-                                                RouteControl.DIO.SetIO(ParamName, Set);
+                                                RouteControl.Instance.DIO.SetIO(ParamName, Set);
 
                                             }
 
@@ -567,6 +636,12 @@ namespace TransferControl.Management
                                     else
                                     {
                                         ErrorCode = Conditions[3].Split('=')[1];
+                                        tmpAry = ErrorCode.Split(',');
+                                        if (tmpAry.Length >= 2)
+                                        {
+                                            ErrorCode = tmpAry[0];
+                                            Location = tmpAry[1];
+                                        }
                                         Node = NodeManagement.Get(NodeName);
                                         if (Node != null)
                                         {
@@ -684,13 +759,22 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static void Remove(string Id)
+        public void Remove(string Id)
         {
             CurrentProceedTask tmp;
             CurrentProceedTasks.TryRemove(Id, out tmp);
         }
 
-        public static bool Excute(string Id, out string ErrorMessage, string taskName = "", Dictionary<string, string> param = null)
+        public void Clear()
+        {
+            foreach(string Id in CurrentProceedTasks.Keys)
+            {
+                _TaskReport.On_Task_Abort(Id);
+            }
+            CurrentProceedTasks.Clear();
+        }
+
+        public bool Excute(string Id, out string ErrorMessage, string taskName = "", Dictionary<string, string> param = null)
         {
             bool result = false;
             try
@@ -769,7 +853,7 @@ namespace TransferControl.Management
                             }
                             string[] SkipConditionAry = SkipCondition.Split(';');
                             foreach (string eachSkip in SkipConditionAry)
-                            {
+                            {//過濾Task
                                 if (eachSkip.Trim().Equals(""))
                                 {
                                     continue;
@@ -841,6 +925,11 @@ namespace TransferControl.Management
                         {
                             string ExcuteObjStr = CurrTask.ProceedTask.ExcuteObj;
 
+                            if (ExcuteObjStr.Trim().Equals(""))
+                            {
+                                _TaskReport.On_Task_NoExcuted(Id);
+                                return true;
+                            }
 
                             //指令替代
                             if (CurrTask.Params != null)

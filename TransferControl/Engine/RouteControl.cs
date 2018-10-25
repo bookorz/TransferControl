@@ -16,7 +16,7 @@ using DIOControl;
 
 namespace TransferControl.Engine
 {
-    public class RouteControl : AlarmMapping, Controller.ICommandReport, IDIOTriggerReport
+    public class RouteControl : AlarmMapping, Controller.ICommandReport, IDIOTriggerReport, IJobReport, ITaskJobReport
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
         string _Mode = "";
@@ -30,7 +30,9 @@ namespace TransferControl.Engine
         public int NotchDirect = 270;
 
         public int SpinWaitTimeOut = 99999000;
-        public static DIO DIO;
+        public DIO DIO;
+        public TaskJobManagment TaskJob;
+        public static RouteControl Instance;
 
         /// <summary>
         /// 建構子，傳入一個事件回報對象
@@ -38,6 +40,7 @@ namespace TransferControl.Engine
         /// <param name="ReportTarget"></param>
         public RouteControl(IUserInterfaceReport ReportUI, IHostInterfaceReport ReportHost = null)
         {
+            Instance = this;
             EqpState = "Idle";
             _Mode = "Stop";
             _UIReport = ReportUI;
@@ -58,7 +61,7 @@ namespace TransferControl.Engine
             //初始化Robot點位表
             PointManagement.LoadConfig();
             //初始化工作腳本
-            TaskJobManagment.LoadConfig();
+            TaskJob = new TaskJobManagment(this);
 
         }
 
@@ -1519,7 +1522,7 @@ namespace TransferControl.Engine
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
                                     {
-                                        Job wafer = new Job();
+                                        Job wafer = RouteControl.CreateJob();
                                         wafer.Slot = (i + 1).ToString();
                                         wafer.FromPort = Node.Name;
                                         wafer.FromPortSlot = wafer.Slot;
@@ -1595,6 +1598,16 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             switch (Txn.Method)
                             {
+                                case Transaction.Command.RobotType.GetError:
+                                    if (Msg.Value.Equals("00000000"))
+                                    {
+                                        Node.HasAlarm = false;
+                                    }
+                                    else
+                                    {
+                                        Node.HasAlarm = true;
+                                    }
+                                    break;
                                 case Transaction.Command.RobotType.GetStatus:
                                     MessageParser parser = new MessageParser(Node.Brand);
                                     Dictionary<string, string> StatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
@@ -1716,7 +1729,7 @@ namespace TransferControl.Engine
                                         int currentIdx = 1;
                                         for (int i = 0; i < Mapping.Length; i++)
                                         {
-                                            Job wafer = new Job();
+                                            Job wafer = RouteControl.CreateJob();
                                             wafer.Slot = (i + 1).ToString();
                                             wafer.FromPort = Port.Name;
                                             wafer.FromPortSlot = wafer.Slot;
@@ -1924,80 +1937,80 @@ namespace TransferControl.Engine
                         {
                             if (!Txn.CommandType.Equals("CMD") && !Txn.CommandType.Equals("MOV"))
                             {
-                                switch (Txn.ScriptName.ToUpper())
-                                {
-                                    case "ROBOTINIT":
-                                    case "ALIGNERINIT":
-                                    case "LOADPORTINIT":
-                                        Node.InitialComplete = true;
-                                        break;
-                                }
+                                //switch (Txn.ScriptName.ToUpper())
+                                //{
+                                //    case "ROBOTINIT":
+                                //    case "ALIGNERINIT":
+                                //    case "LOADPORTINIT":
+                                //        Node.InitialComplete = true;
+                                //        break;
+                                //}
                                 _UIReport.On_Script_Finished(Node, Txn.ScriptName, Txn.FormName);
-                                if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
-                                {
-                                    string ErrorMessage = "";
-                                    string Report = "";
-                                    if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage, out Report))
-                                    {//還沒做完
-                                        if (Report.Equals("ACK"))
-                                        {
-                                            if (_HostReport != null)
-                                            {
-                                                _HostReport.On_TaskJob_Ack(Txn.FormName);
-                                            }
-                                        }
-                                        if (!ErrorMessage.Equals(""))
-                                        {//做完但沒通過檢查
-                                            TaskJobManagment.Remove(Txn.FormName);
-                                            if (_HostReport != null)
-                                            {
+                                //if (TaskJob.IsTask(Txn.FormName))//如果是帶TaskID才檢查
+                                //{
+                                //    string ErrorMessage = "";
+                                //    string Report = "";
+                                //    if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage, out Report))
+                                //    {//還沒做完
+                                //        if (Report.Equals("ACK"))
+                                //        {
+                                //            if (_HostReport != null)
+                                //            {
+                                //                _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                //            }
+                                //        }
+                                //        if (!ErrorMessage.Equals(""))
+                                //        {//做完但沒通過檢查
+                                //            TaskJob.Remove(Txn.FormName);
+                                //            if (_HostReport != null)
+                                //            {
 
-                                                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
-                                            }
-                                            _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
-                                        }
-                                        //檢查到不是Task，不做事
-                                    }
-                                    else
-                                    {//做完且通過檢查，開始進行下一個Task
-                                        if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
-                                        {//如果沒有可以執行的Task，回報完成
-                                            if (Report.Equals("ACK"))
-                                            {
-                                                if (_HostReport != null)
-                                                {
-                                                    _HostReport.On_TaskJob_Ack(Txn.FormName);
-                                                }
-                                            }
-                                            if (ErrorMessage.Equals(""))
-                                            {
-                                                if (_HostReport != null)
-                                                {
-                                                    _HostReport.On_TaskJob_Finished(Txn.FormName);
-                                                }
-                                                _UIReport.On_TaskJob_Finished(Txn.FormName);
-                                            }
-                                            else
-                                            {
-                                                if (_HostReport != null)
-                                                {
-                                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
-                                                }
-                                                _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (Report.Equals("ACK"))
-                                            {
-                                                if (_HostReport != null)
-                                                {
-                                                    _HostReport.On_TaskJob_Ack(Txn.FormName);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                //                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                //            }
+                                //            _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                //        }
+                                //        //檢查到不是Task，不做事
+                                //    }
+                                //    else
+                                //    {//做完且通過檢查，開始進行下一個Task
+                                //        if (!TaskJob.Excute(Txn.FormName, out ErrorMessage))
+                                //        {//如果沒有可以執行的Task，回報完成
+                                //            if (Report.Equals("ACK"))
+                                //            {
+                                //                if (_HostReport != null)
+                                //                {
+                                //                    _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                //                }
+                                //            }
+                                //            if (ErrorMessage.Equals(""))
+                                //            {
+                                //                if (_HostReport != null)
+                                //                {
+                                //                    _HostReport.On_TaskJob_Finished(Txn.FormName);
+                                //                }
+                                //                _UIReport.On_TaskJob_Finished(Txn.FormName);
+                                //            }
+                                //            else
+                                //            {
+                                //                if (_HostReport != null)
+                                //                {
+                                //                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                //                }
+                                //                _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                //            }
+                                //        }
+                                //        else
+                                //        {
+                                //            if (Report.Equals("ACK"))
+                                //            {
+                                //                if (_HostReport != null)
+                                //                {
+                                //                    _HostReport.On_TaskJob_Ack(Txn.FormName);
+                                //                }
+                                //            }
+                                //        }
+                                //    }
+                                //}
                             }
                         }
                         else
@@ -2035,11 +2048,12 @@ namespace TransferControl.Engine
                             }
                         }
                     }
-                    if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
+                    if (TaskJob.IsTask(Txn.FormName))//如果是帶TaskID才檢查
                     {
                         string ErrorMessage = "";
                         string Report = "";
-                        if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Excuted", out ErrorMessage, out Report))
+                        string Location = "";
+                        if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Excuted", out ErrorMessage, out Report,out Location))
                         {//還沒做完
                             if (Report.Equals("ACK"))
                             {
@@ -2050,11 +2064,11 @@ namespace TransferControl.Engine
                             }
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
-                                TaskJobManagment.Remove(Txn.FormName);
+                                TaskJob.Remove(Txn.FormName);
                                 if (_HostReport != null)
                                 {
 
-                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Location, Report, ErrorMessage);
                                 }
                                 _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                             }
@@ -2062,7 +2076,7 @@ namespace TransferControl.Engine
                         }
                         else
                         {//做完且通過檢查，開始進行下一個Task
-                            if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
+                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage))
                             {//如果沒有可以執行的Task，回報完成
 
                                 if (ErrorMessage.Equals(""))
@@ -2077,7 +2091,7 @@ namespace TransferControl.Engine
                                 {
                                     if (_HostReport != null)
                                     {
-                                        _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                        _HostReport.On_TaskJob_Aborted(Txn.FormName, Location, Report, ErrorMessage);
                                     }
                                     _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                 }
@@ -2109,7 +2123,7 @@ namespace TransferControl.Engine
             //var watch = System.Diagnostics.Stopwatch.StartNew();
             try
             {
-                UpdateJobLocation(Node, Txn);
+                //UpdateJobLocation(Node, Txn);
                 UpdateNodeStatus(Node, Txn);
                 Node.LastFinMethod = Txn.Method;
                 Job TargetJob = null;
@@ -2418,11 +2432,12 @@ namespace TransferControl.Engine
                                     break;
                             }
                             _UIReport.On_Script_Finished(Node, Txn.ScriptName, Txn.FormName);
-                            if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
+                            if (TaskJob.IsTask(Txn.FormName))//如果是帶TaskID才檢查
                             {
                                 string ErrorMessage = "";
                                 string Report = "";
-                                if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage, out Report))
+                                string Location = "";
+                                if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "SCRIPT", Txn.ScriptName, "Finished", out ErrorMessage, out Report, out Location))
                                 {//還沒做完
                                     if (Report.Equals("ACK"))
                                     {
@@ -2433,10 +2448,10 @@ namespace TransferControl.Engine
                                     }
                                     if (!ErrorMessage.Equals(""))
                                     {//做完但沒通過檢查
-                                        TaskJobManagment.Remove(Txn.FormName);
+                                        TaskJob.Remove(Txn.FormName);
                                         if (_HostReport != null)
                                         {
-                                            _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                            _HostReport.On_TaskJob_Aborted(Txn.FormName, Location, Report, ErrorMessage);
                                         }
                                         _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                     }
@@ -2444,7 +2459,7 @@ namespace TransferControl.Engine
                                 }
                                 else
                                 {//做完且通過檢查，開始進行下一個Task
-                                    if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
+                                    if (!TaskJob.Excute(Txn.FormName, out ErrorMessage))
                                     {//如果沒有可以執行的Task，回報完成
                                         if (Report.Equals("ACK"))
                                         {
@@ -2465,7 +2480,7 @@ namespace TransferControl.Engine
                                         {
                                             if (_HostReport != null)
                                             {
-                                                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                                _HostReport.On_TaskJob_Aborted(Txn.FormName, Location, Report, ErrorMessage);
                                             }
                                             _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                                         }
@@ -2519,11 +2534,12 @@ namespace TransferControl.Engine
                             }
                         }
                     }
-                    if (TaskJobManagment.IsTask(Txn.FormName))//如果是帶TaskID才檢查
+                    if (TaskJob.IsTask(Txn.FormName))//如果是帶TaskID才檢查
                     {
                         string ErrorMessage = "";
                         string Report = "";
-                        if (!TaskJobManagment.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Finished", out ErrorMessage, out Report))
+                        string Location = "";
+                        if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Finished", out ErrorMessage, out Report, out Location))
                         {//還沒做完
                             if (Report.Equals("ACK"))
                             {
@@ -2534,10 +2550,10 @@ namespace TransferControl.Engine
                             }
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
-                                TaskJobManagment.Remove(Txn.FormName);
+                                TaskJob.Remove(Txn.FormName);
                                 if (_HostReport != null)
                                 {
-                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                    _HostReport.On_TaskJob_Aborted(Txn.FormName, Location, Report, ErrorMessage);
                                 }
                                 _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
                             }
@@ -2545,7 +2561,7 @@ namespace TransferControl.Engine
                         }
                         else
                         {//做完且通過檢查，開始進行下一個Task
-                            if (!TaskJobManagment.Excute(Txn.FormName, out ErrorMessage))
+                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage))
                             {//如果沒有可以執行的Task，回報完成
                                 if (Report.Equals("ACK"))
                                 {
@@ -2566,7 +2582,7 @@ namespace TransferControl.Engine
                                 {
                                     if (_HostReport != null)
                                     {
-                                        _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, Report, ErrorMessage);
+                                        _HostReport.On_TaskJob_Aborted(Txn.FormName, Location, Report, ErrorMessage);
                                     }
                                 }
                             }
@@ -2745,346 +2761,346 @@ namespace TransferControl.Engine
         /// </summary>
         /// <param name="Node"></param>
         /// <param name="Txn"></param>
-        private void UpdateJobLocation(Node Node, Transaction Txn)
-        {
-            try
-            {
-                if (Txn.TargetJobs != null)
-                {
-                    if (Txn.TargetJobs.Count != 0)
-                    {
-                        if (Txn.TargetJobs[0].Job_Id.Equals("dummy"))
-                        {
-                            Job j;
-                            switch (Txn.Method)
-                            {
-                                case Transaction.Command.RobotType.Get:
-                                    Node pos = NodeManagement.Get(Txn.Position);
-                                    int slot = int.Parse(Txn.Slot);
-                                    if (Txn.Arm.Equals("3"))
-                                    {
+        //private void UpdateJobLocation(Node Node, Transaction Txn)
+        //{
+        //    try
+        //    {
+        //        if (Txn.TargetJobs != null)
+        //        {
+        //            if (Txn.TargetJobs.Count != 0)
+        //            {
+        //                if (Txn.TargetJobs[0].Job_Id.Equals("dummy"))
+        //                {
+        //                    Job j;
+        //                    switch (Txn.Method)
+        //                    {
+        //                        case Transaction.Command.RobotType.Get:
+        //                            Node pos = NodeManagement.Get(Txn.Position);
+        //                            int slot = int.Parse(Txn.Slot);
+        //                            if (Txn.Arm.Equals("3"))
+        //                            {
 
-                                        Txn.Method = Transaction.Command.RobotType.DoubleGet;
-
-
-                                        Txn.TargetJobs.Clear();
-                                        if (pos.JobList.TryGetValue(slot.ToString(), out j))
-                                        {
-
-                                            Txn.TargetJobs.Add(j);
-                                        }
-                                        else
-                                        {
-                                            return;
-                                        }
-                                        if (pos.JobList.TryGetValue((slot - 1).ToString(), out j))
-                                        {
-
-                                            Txn.TargetJobs.Add(j);
-                                        }
-                                        else
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        pos = NodeManagement.Get(Txn.Position);
+        //                                Txn.Method = Transaction.Command.RobotType.DoubleGet;
 
 
-                                        if (pos.JobList.TryGetValue(int.Parse(Txn.Slot).ToString(), out j))
-                                        {
-                                            Txn.TargetJobs.Clear();
-                                            Txn.TargetJobs.Add(j);
-                                        }
-                                        else
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    break;
-                                case Transaction.Command.RobotType.Put:
-                                    if (Txn.Arm.Equals("3"))
-                                    {
+        //                                Txn.TargetJobs.Clear();
+        //                                if (pos.JobList.TryGetValue(slot.ToString(), out j))
+        //                                {
 
-                                        Txn.Method = Transaction.Command.RobotType.DoublePut;
-                                        slot = int.Parse(Txn.Slot);
-                                        Txn.TargetJobs.Clear();
-                                        if (Node.JobList.TryGetValue(slot.ToString(), out j))
-                                        {
-                                            Txn.TargetJobs.Clear();
-                                            Txn.TargetJobs.Add(j);
-                                        }
-                                        else
-                                        {
-                                            return;
-                                        }
-                                        if (Node.JobList.TryGetValue((slot - 1).ToString(), out j))
-                                        {
-                                            Txn.TargetJobs.Clear();
-                                            Txn.TargetJobs.Add(j);
-                                        }
-                                        else
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (Node.JobList.TryGetValue(int.Parse(Txn.Slot).ToString(), out j))
-                                        {
-                                            Txn.TargetJobs.Clear();
-                                            Txn.TargetJobs.Add(j);
-                                        }
-                                        else
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    break;
-                                case Transaction.Command.RobotType.DoubleGet:
-                                    pos = NodeManagement.Get(Txn.Position);
+        //                                    Txn.TargetJobs.Add(j);
+        //                                }
+        //                                else
+        //                                {
+        //                                    return;
+        //                                }
+        //                                if (pos.JobList.TryGetValue((slot - 1).ToString(), out j))
+        //                                {
 
-                                    slot = int.Parse(Txn.Slot);
-                                    Txn.TargetJobs.Clear();
-                                    if (pos.JobList.TryGetValue(slot.ToString(), out j))
-                                    {
-
-                                        Txn.TargetJobs.Add(j);
-                                    }
-                                    else
-                                    {
-                                        return;
-                                    }
-                                    if (pos.JobList.TryGetValue((slot - 1).ToString(), out j))
-                                    {
-
-                                        Txn.TargetJobs.Add(j);
-                                    }
-                                    else
-                                    {
-                                        return;
-                                    }
-                                    break;
-                                case Transaction.Command.RobotType.DoublePut:
-                                    slot = int.Parse(Txn.Slot);
-                                    Txn.TargetJobs.Clear();
-                                    if (Node.JobList.TryGetValue(slot.ToString(), out j))
-                                    {
-                                        Txn.TargetJobs.Clear();
-                                        Txn.TargetJobs.Add(j);
-                                    }
-                                    else
-                                    {
-                                        return;
-                                    }
-                                    if (Node.JobList.TryGetValue((slot - 1).ToString(), out j))
-                                    {
-                                        Txn.TargetJobs.Clear();
-                                        Txn.TargetJobs.Add(j);
-                                    }
-                                    else
-                                    {
-                                        return;
-                                    }
-                                    break;
-
-                            }
+        //                                    Txn.TargetJobs.Add(j);
+        //                                }
+        //                                else
+        //                                {
+        //                                    return;
+        //                                }
+        //                            }
+        //                            else
+        //                            {
+        //                                pos = NodeManagement.Get(Txn.Position);
 
 
+        //                                if (pos.JobList.TryGetValue(int.Parse(Txn.Slot).ToString(), out j))
+        //                                {
+        //                                    Txn.TargetJobs.Clear();
+        //                                    Txn.TargetJobs.Add(j);
+        //                                }
+        //                                else
+        //                                {
+        //                                    return;
+        //                                }
+        //                            }
+        //                            break;
+        //                        case Transaction.Command.RobotType.Put:
+        //                            if (Txn.Arm.Equals("3"))
+        //                            {
 
+        //                                Txn.Method = Transaction.Command.RobotType.DoublePut;
+        //                                slot = int.Parse(Txn.Slot);
+        //                                Txn.TargetJobs.Clear();
+        //                                if (Node.JobList.TryGetValue(slot.ToString(), out j))
+        //                                {
+        //                                    Txn.TargetJobs.Clear();
+        //                                    Txn.TargetJobs.Add(j);
+        //                                }
+        //                                else
+        //                                {
+        //                                    return;
+        //                                }
+        //                                if (Node.JobList.TryGetValue((slot - 1).ToString(), out j))
+        //                                {
+        //                                    Txn.TargetJobs.Clear();
+        //                                    Txn.TargetJobs.Add(j);
+        //                                }
+        //                                else
+        //                                {
+        //                                    return;
+        //                                }
+        //                            }
+        //                            else
+        //                            {
+        //                                if (Node.JobList.TryGetValue(int.Parse(Txn.Slot).ToString(), out j))
+        //                                {
+        //                                    Txn.TargetJobs.Clear();
+        //                                    Txn.TargetJobs.Add(j);
+        //                                }
+        //                                else
+        //                                {
+        //                                    return;
+        //                                }
+        //                            }
+        //                            break;
+        //                        case Transaction.Command.RobotType.DoubleGet:
+        //                            pos = NodeManagement.Get(Txn.Position);
 
+        //                            slot = int.Parse(Txn.Slot);
+        //                            Txn.TargetJobs.Clear();
+        //                            if (pos.JobList.TryGetValue(slot.ToString(), out j))
+        //                            {
 
-                        }
-                    }
-                }
-                switch (Node.Type)
-                {
-                    case "ROBOT":
-                        switch (Txn.Method)
-                        {
-                            case Transaction.Command.RobotType.DoubleGet:
-                                //修正雙放時，帳會顛倒問題
-                                List<Job> ArmsJob = Txn.TargetJobs.ToList();
-                                ArmsJob.Sort((x, y) => { return Convert.ToInt16(x.Slot).CompareTo(Convert.ToInt16(y.Slot)); });
+        //                                Txn.TargetJobs.Add(j);
+        //                            }
+        //                            else
+        //                            {
+        //                                return;
+        //                            }
+        //                            if (pos.JobList.TryGetValue((slot - 1).ToString(), out j))
+        //                            {
 
-                                for (int i = 0; i < ArmsJob.Count; i++)
-                                {
-                                    Node TargetNode5 = NodeManagement.Get(ArmsJob[i].Position);
-                                    Job tmp;
-                                    TargetNode5.JobList.TryRemove(ArmsJob[i].Slot, out tmp);
-                                    //LoadPort 空的Slot要塞假資料
-                                    if (TargetNode5.Type.ToUpper().Equals("LOADPORT"))
-                                    {
-                                        tmp = new Job();
-                                        tmp.Job_Id = "No wafer";
-                                        tmp.Host_Job_Id = "No wafer";
-                                        tmp.Slot = ArmsJob[i].Slot;
-                                        TargetNode5.JobList.TryAdd(ArmsJob[i].Slot, tmp);
-                                        ProcessRecord.UpdateSubstrateStart(TargetNode5.PrID, ArmsJob[i]);
-                                    }
-                                    ArmsJob[i].LastNode = ArmsJob[i].Position;
-                                    ArmsJob[i].LastSlot = ArmsJob[i].Slot;
-                                    ArmsJob[i].Slot = (i + 1).ToString();
-                                    ArmsJob[i].Position = Node.Name;
-                                    Node.JobList.TryAdd(ArmsJob[i].Slot, ArmsJob[i]);
-                                    _UIReport.On_Job_Location_Changed(ArmsJob[i]);
-                                }
+        //                                Txn.TargetJobs.Add(j);
+        //                            }
+        //                            else
+        //                            {
+        //                                return;
+        //                            }
+        //                            break;
+        //                        case Transaction.Command.RobotType.DoublePut:
+        //                            slot = int.Parse(Txn.Slot);
+        //                            Txn.TargetJobs.Clear();
+        //                            if (Node.JobList.TryGetValue(slot.ToString(), out j))
+        //                            {
+        //                                Txn.TargetJobs.Clear();
+        //                                Txn.TargetJobs.Add(j);
+        //                            }
+        //                            else
+        //                            {
+        //                                return;
+        //                            }
+        //                            if (Node.JobList.TryGetValue((slot - 1).ToString(), out j))
+        //                            {
+        //                                Txn.TargetJobs.Clear();
+        //                                Txn.TargetJobs.Add(j);
+        //                            }
+        //                            else
+        //                            {
+        //                                return;
+        //                            }
+        //                            break;
 
-                                break;
-                            case Transaction.Command.RobotType.DoublePut:
-                                //修正雙放時，帳會顛倒問題
-                                ArmsJob = Txn.TargetJobs.ToList();
-                                ArmsJob.Sort((x, y) => { return Convert.ToInt16(x.Slot).CompareTo(Convert.ToInt16(y.Slot)); });
-                                bool first = true;
-                                foreach (Job j in ArmsJob)
-                                {
-                                    Node TargetNode6 = NodeManagement.Get(Txn.Position);
-                                    Job tmp;
-                                    //從Robot刪除
-                                    Node.JobList.TryRemove(j.Slot, out tmp);
-                                    j.LastNode = j.Position;
-                                    j.LastSlot = j.Slot;
-
-                                    if (first)//修正雙放時，帳會顛倒問題
-                                    {
-                                        j.Slot = Txn.Slot; //上手臂放第二個Slot,因為PortSlot是顛倒的
-                                        first = false;
-                                    }
-                                    else
-                                    {
-                                        j.Slot = (Convert.ToInt16(Txn.Slot) - 1).ToString();
-                                    }
-                                    //加入到目的地
-                                    TargetNode6.JobList.TryRemove(j.Slot, out tmp);
-                                    TargetNode6.JobList.TryAdd(j.Slot, j);
-
-                                    j.Position = Txn.Position;
-
-                                    _UIReport.On_Job_Location_Changed(j);
-                                    if (j.Position.Equals(j.Destination))
-                                    {
-                                        Node from = NodeManagement.Get(j.FromPort);
-                                        ProcessRecord.updateSubstrateStatus(from.PrID, j, "COMPLETE");
-                                        ProcessRecord.UpdateSubstrateEnd(from.PrID, j);
-                                    }
-                                }
-                                //if (IsTaskFinish())
-                                //{
-                                //    _EngReport.On_Task_Finished(Txn.FormName);
-                                //}
-                                break;
-                            case Transaction.Command.RobotType.Get://更新Wafer位置
-                            case Transaction.Command.RobotType.GetAfterWait:
-
-                                //logger.Debug(Txn.TargetJobs.Count.ToString());
-                                for (int i = 0; i < Txn.TargetJobs.Count; i++)
-                                {
-                                    Node TargetNode4 = NodeManagement.Get(Txn.TargetJobs[i].Position);
-                                    Job tmp;
-                                    TargetNode4.JobList.TryRemove(Txn.TargetJobs[i].Slot, out tmp);
-                                    //LoadPort 空的Slot要塞假資料
-                                    if (TargetNode4.Type.ToUpper().Equals("LOADPORT"))
-                                    {
-                                        tmp = new Job();
-                                        tmp.Job_Id = "No wafer";
-                                        tmp.Host_Job_Id = "No wafer";
-                                        tmp.Slot = Txn.TargetJobs[i].Slot;
-                                        TargetNode4.JobList.TryAdd(Txn.TargetJobs[i].Slot, tmp);
-                                        ProcessRecord.UpdateSubstrateStart(TargetNode4.PrID, Txn.TargetJobs[i]);
-                                    }
-                                    Txn.TargetJobs[i].LastNode = Txn.TargetJobs[i].Position;
-                                    Txn.TargetJobs[i].LastSlot = Txn.TargetJobs[i].Slot;
-                                    Txn.TargetJobs[i].Position = Node.Name;
-                                    switch (i)
-                                    {
-                                        case 0:
-                                            Txn.TargetJobs[i].Slot = Txn.Arm;
-
-                                            break;
-                                        case 1:
-                                            Txn.TargetJobs[i].Slot = Txn.Arm2;
-
-                                            break;
-                                    }
-
-                                    Node.JobList.TryAdd(Txn.TargetJobs[i].Slot, Txn.TargetJobs[i]);
-
-                                    _UIReport.On_Job_Location_Changed(Txn.TargetJobs[i]);
-                                    // logger.Debug(JsonConvert.SerializeObject(Txn.TargetJobs[i]));
-                                }
-
-                                break;
-                            case Transaction.Command.RobotType.Put:
-                            case Transaction.Command.RobotType.PutWithoutBack:
-
-                                //logger.Debug(Txn.TargetJobs.Count.ToString());
-
-
-
-                                //Node.PreReady = true;
-
-
-                                for (int i = 0; i < Txn.TargetJobs.Count; i++)
-                                {
-                                    Job tmp;
-                                    Node.JobList.TryRemove(Txn.TargetJobs[i].Slot, out tmp);
-                                    Txn.TargetJobs[i].LastNode = Txn.TargetJobs[i].Position;
-                                    Txn.TargetJobs[i].LastSlot = Txn.TargetJobs[i].Slot;
-                                    Txn.TargetJobs[i].Position = Txn.Position;
-                                    //Txn.TargetJobs[i].ProcessFlag = true;
-                                    switch (i)
-                                    {
-                                        case 0:
-                                            Txn.TargetJobs[i].Slot = Txn.Slot;
-
-                                            break;
-                                        case 1:
-                                            Txn.TargetJobs[i].Slot = Txn.Slot2;
-                                            Txn.TargetJobs[i].Position = Txn.Position2;
-                                            break;
-                                    }
-                                    Node TargetNode3 = NodeManagement.Get(Txn.TargetJobs[i].Position);
-                                    TargetNode3.JobList.TryRemove(Txn.TargetJobs[i].Slot, out tmp);
-                                    TargetNode3.JobList.TryAdd(Txn.TargetJobs[i].Slot, Txn.TargetJobs[i]);
-                                    _UIReport.On_Job_Location_Changed(Txn.TargetJobs[i]);
-                                    // logger.Debug(JsonConvert.SerializeObject(Txn.TargetJobs[i]));
-                                    if (Txn.TargetJobs[i].Position.Equals(Txn.TargetJobs[i].Destination))
-                                    {
-
-                                        Node from = NodeManagement.Get(Txn.TargetJobs[i].FromPort);
-                                        ProcessRecord.updateSubstrateStatus(from.PrID, Txn.TargetJobs[i], "COMPLETE");
-                                        ProcessRecord.UpdateSubstrateEnd(from.PrID, Txn.TargetJobs[i]);
-                                    }
-                                }
-                                //if (Txn.Method.Equals(Transaction.Command.RobotType.Put))
-                                //{
-                                //    if (IsTaskFinish())
-                                //    {
-                                //        _EngReport.On_Task_Finished(Txn.FormName);
-                                //    }
-                                //}
-                                break;
-
-
-                            case Transaction.Command.RobotType.PutWait:
-
-
-                                break;
+        //                    }
 
 
 
 
-                        }
-                        break;
 
-                }
-            }
-            catch (Exception e)
-            {
-                logger.Error(e.StackTrace);
-            }
-        }
+        //                }
+        //            }
+        //        }
+        //        switch (Node.Type)
+        //        {
+        //            case "ROBOT":
+        //                switch (Txn.Method)
+        //                {
+        //                    case Transaction.Command.RobotType.DoubleGet:
+        //                        //修正雙放時，帳會顛倒問題
+        //                        List<Job> ArmsJob = Txn.TargetJobs.ToList();
+        //                        ArmsJob.Sort((x, y) => { return Convert.ToInt16(x.Slot).CompareTo(Convert.ToInt16(y.Slot)); });
+
+        //                        for (int i = 0; i < ArmsJob.Count; i++)
+        //                        {
+        //                            Node TargetNode5 = NodeManagement.Get(ArmsJob[i].Position);
+        //                            Job tmp;
+        //                            TargetNode5.JobList.TryRemove(ArmsJob[i].Slot, out tmp);
+        //                            //LoadPort 空的Slot要塞假資料
+        //                            if (TargetNode5.Type.ToUpper().Equals("LOADPORT"))
+        //                            {
+        //                                tmp = new Job();
+        //                                tmp.Job_Id = "No wafer";
+        //                                tmp.Host_Job_Id = "No wafer";
+        //                                tmp.Slot = ArmsJob[i].Slot;
+        //                                TargetNode5.JobList.TryAdd(ArmsJob[i].Slot, tmp);
+        //                                ProcessRecord.UpdateSubstrateStart(TargetNode5.PrID, ArmsJob[i]);
+        //                            }
+        //                            ArmsJob[i].LastNode = ArmsJob[i].Position;
+        //                            ArmsJob[i].LastSlot = ArmsJob[i].Slot;
+        //                            ArmsJob[i].Slot = (i + 1).ToString();
+        //                            ArmsJob[i].Position = Node.Name;
+        //                            Node.JobList.TryAdd(ArmsJob[i].Slot, ArmsJob[i]);
+        //                            _UIReport.On_Job_Location_Changed(ArmsJob[i]);
+        //                        }
+
+        //                        break;
+        //                    case Transaction.Command.RobotType.DoublePut:
+        //                        //修正雙放時，帳會顛倒問題
+        //                        ArmsJob = Txn.TargetJobs.ToList();
+        //                        ArmsJob.Sort((x, y) => { return Convert.ToInt16(x.Slot).CompareTo(Convert.ToInt16(y.Slot)); });
+        //                        bool first = true;
+        //                        foreach (Job j in ArmsJob)
+        //                        {
+        //                            Node TargetNode6 = NodeManagement.Get(Txn.Position);
+        //                            Job tmp;
+        //                            //從Robot刪除
+        //                            Node.JobList.TryRemove(j.Slot, out tmp);
+        //                            j.LastNode = j.Position;
+        //                            j.LastSlot = j.Slot;
+
+        //                            if (first)//修正雙放時，帳會顛倒問題
+        //                            {
+        //                                j.Slot = Txn.Slot; //上手臂放第二個Slot,因為PortSlot是顛倒的
+        //                                first = false;
+        //                            }
+        //                            else
+        //                            {
+        //                                j.Slot = (Convert.ToInt16(Txn.Slot) - 1).ToString();
+        //                            }
+        //                            //加入到目的地
+        //                            TargetNode6.JobList.TryRemove(j.Slot, out tmp);
+        //                            TargetNode6.JobList.TryAdd(j.Slot, j);
+
+        //                            j.Position = Txn.Position;
+
+        //                            _UIReport.On_Job_Location_Changed(j);
+        //                            if (j.Position.Equals(j.Destination))
+        //                            {
+        //                                Node from = NodeManagement.Get(j.FromPort);
+        //                                ProcessRecord.updateSubstrateStatus(from.PrID, j, "COMPLETE");
+        //                                ProcessRecord.UpdateSubstrateEnd(from.PrID, j);
+        //                            }
+        //                        }
+        //                        //if (IsTaskFinish())
+        //                        //{
+        //                        //    _EngReport.On_Task_Finished(Txn.FormName);
+        //                        //}
+        //                        break;
+        //                    case Transaction.Command.RobotType.Get://更新Wafer位置
+        //                    case Transaction.Command.RobotType.GetAfterWait:
+
+        //                        //logger.Debug(Txn.TargetJobs.Count.ToString());
+        //                        for (int i = 0; i < Txn.TargetJobs.Count; i++)
+        //                        {
+        //                            Node TargetNode4 = NodeManagement.Get(Txn.TargetJobs[i].Position);
+        //                            Job tmp;
+        //                            TargetNode4.JobList.TryRemove(Txn.TargetJobs[i].Slot, out tmp);
+        //                            //LoadPort 空的Slot要塞假資料
+        //                            if (TargetNode4.Type.ToUpper().Equals("LOADPORT"))
+        //                            {
+        //                                tmp = new Job();
+        //                                tmp.Job_Id = "No wafer";
+        //                                tmp.Host_Job_Id = "No wafer";
+        //                                tmp.Slot = Txn.TargetJobs[i].Slot;
+        //                                TargetNode4.JobList.TryAdd(Txn.TargetJobs[i].Slot, tmp);
+        //                                ProcessRecord.UpdateSubstrateStart(TargetNode4.PrID, Txn.TargetJobs[i]);
+        //                            }
+        //                            Txn.TargetJobs[i].LastNode = Txn.TargetJobs[i].Position;
+        //                            Txn.TargetJobs[i].LastSlot = Txn.TargetJobs[i].Slot;
+        //                            Txn.TargetJobs[i].Position = Node.Name;
+        //                            switch (i)
+        //                            {
+        //                                case 0:
+        //                                    Txn.TargetJobs[i].Slot = Txn.Arm;
+
+        //                                    break;
+        //                                case 1:
+        //                                    Txn.TargetJobs[i].Slot = Txn.Arm2;
+
+        //                                    break;
+        //                            }
+
+        //                            Node.JobList.TryAdd(Txn.TargetJobs[i].Slot, Txn.TargetJobs[i]);
+
+        //                            _UIReport.On_Job_Location_Changed(Txn.TargetJobs[i]);
+        //                            // logger.Debug(JsonConvert.SerializeObject(Txn.TargetJobs[i]));
+        //                        }
+
+        //                        break;
+        //                    case Transaction.Command.RobotType.Put:
+        //                    case Transaction.Command.RobotType.PutWithoutBack:
+
+        //                        //logger.Debug(Txn.TargetJobs.Count.ToString());
+
+
+
+        //                        //Node.PreReady = true;
+
+
+        //                        for (int i = 0; i < Txn.TargetJobs.Count; i++)
+        //                        {
+        //                            Job tmp;
+        //                            Node.JobList.TryRemove(Txn.TargetJobs[i].Slot, out tmp);
+        //                            Txn.TargetJobs[i].LastNode = Txn.TargetJobs[i].Position;
+        //                            Txn.TargetJobs[i].LastSlot = Txn.TargetJobs[i].Slot;
+        //                            Txn.TargetJobs[i].Position = Txn.Position;
+        //                            //Txn.TargetJobs[i].ProcessFlag = true;
+        //                            switch (i)
+        //                            {
+        //                                case 0:
+        //                                    Txn.TargetJobs[i].Slot = Txn.Slot;
+
+        //                                    break;
+        //                                case 1:
+        //                                    Txn.TargetJobs[i].Slot = Txn.Slot2;
+        //                                    Txn.TargetJobs[i].Position = Txn.Position2;
+        //                                    break;
+        //                            }
+        //                            Node TargetNode3 = NodeManagement.Get(Txn.TargetJobs[i].Position);
+        //                            TargetNode3.JobList.TryRemove(Txn.TargetJobs[i].Slot, out tmp);
+        //                            TargetNode3.JobList.TryAdd(Txn.TargetJobs[i].Slot, Txn.TargetJobs[i]);
+        //                            _UIReport.On_Job_Location_Changed(Txn.TargetJobs[i]);
+        //                            // logger.Debug(JsonConvert.SerializeObject(Txn.TargetJobs[i]));
+        //                            if (Txn.TargetJobs[i].Position.Equals(Txn.TargetJobs[i].Destination))
+        //                            {
+
+        //                                Node from = NodeManagement.Get(Txn.TargetJobs[i].FromPort);
+        //                                ProcessRecord.updateSubstrateStatus(from.PrID, Txn.TargetJobs[i], "COMPLETE");
+        //                                ProcessRecord.UpdateSubstrateEnd(from.PrID, Txn.TargetJobs[i]);
+        //                            }
+        //                        }
+        //                        //if (Txn.Method.Equals(Transaction.Command.RobotType.Put))
+        //                        //{
+        //                        //    if (IsTaskFinish())
+        //                        //    {
+        //                        //        _EngReport.On_Task_Finished(Txn.FormName);
+        //                        //    }
+        //                        //}
+        //                        break;
+
+
+        //                    case Transaction.Command.RobotType.PutWait:
+
+
+        //                        break;
+
+
+
+
+        //                }
+        //                break;
+
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        logger.Error(e.StackTrace);
+        //    }
+        //}
         /// <summary>
         /// 命令超時
         /// </summary>
@@ -3092,6 +3108,7 @@ namespace TransferControl.Engine
         /// <param name="Txn"></param>
         public void On_Command_TimeOut(Node Node, Transaction Txn)
         {
+            TaskJob.Remove(Txn.FormName);
             if (!Node.IsPause)
             {
                 logger.Debug("Transaction TimeOut:" + Txn.CommandEncodeStr);
@@ -3205,10 +3222,10 @@ namespace TransferControl.Engine
         public void On_Command_Error(Node Node, Transaction Txn, ReturnMessage Msg)
         {
             Node.HasAlarm = true;
-            TaskJobManagment.Remove(Txn.FormName);
+            TaskJob.Remove(Txn.FormName);
             if (_HostReport != null)
             {
-                _HostReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, "ABS", Msg.Value);
+                _HostReport.On_TaskJob_Aborted(Txn.FormName, "", "ABS", Msg.Value);
             }
             _UIReport.On_TaskJob_Aborted(Txn.FormName, Node.Name, "ABS", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
@@ -3238,6 +3255,11 @@ namespace TransferControl.Engine
 
         public void On_Alarm_Happen(string DIOName, string ErrorCode)
         {
+            if (ErrorCode.Equals("00100007"))
+            {
+                ControllerManagement.ClearTransactionList();
+                TaskJob.Clear();
+            }
             _UIReport.On_Alarm_Happen(DIOName, ErrorCode);
         }
 
@@ -3260,6 +3282,83 @@ namespace TransferControl.Engine
             {
                 logger.Error(e.StackTrace);
             }
+        }
+
+        public void On_Job_Position_Changed(Job Job)
+        {
+            _UIReport.On_Job_Location_Changed(Job);
+        }
+
+        public static Job CreateJob()
+        {
+            return new Job(RouteControl.Instance);
+        }
+
+        public void On_Task_NoExcuted(string Id)
+        {
+            string ErrorMessage = "";
+            string Report = "";
+            string Location = "";
+            if (!TaskJob.CheckTask(Id, "", "","", "", out ErrorMessage, out Report, out Location))
+            {//還沒做完
+                if (Report.Equals("ACK"))
+                {
+                    if (_HostReport != null)
+                    {
+                        _HostReport.On_TaskJob_Ack(Id);
+                    }
+                }
+                if (!ErrorMessage.Equals(""))
+                {//做完但沒通過檢查
+                    TaskJob.Remove(Id);
+                    if (_HostReport != null)
+                    {
+
+                        _HostReport.On_TaskJob_Aborted(Id, Location, Report, ErrorMessage);
+                    }
+                    _UIReport.On_TaskJob_Aborted(Id, "", Report, ErrorMessage);
+                }
+                //檢查到不是Task，不做事
+            }
+            else
+            {//做完且通過檢查，開始進行下一個Task
+                if (!TaskJob.Excute(Id, out ErrorMessage))
+                {//如果沒有可以執行的Task，回報完成
+
+                    if (ErrorMessage.Equals(""))
+                    {
+                        if (_HostReport != null)
+                        {
+                            _HostReport.On_TaskJob_Finished(Id);
+                        }
+                        _UIReport.On_TaskJob_Finished(Id);
+                    }
+                    else
+                    {
+                        if (_HostReport != null)
+                        {
+                            _HostReport.On_TaskJob_Aborted(Id, Location, Report, ErrorMessage);
+                        }
+                        _UIReport.On_TaskJob_Aborted(Id, "", Report, ErrorMessage);
+                    }
+                }
+                else
+                {
+                    if (Report.Equals("ACK"))
+                    {
+                        if (_HostReport != null)
+                        {
+                            _HostReport.On_TaskJob_Ack(Id);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void On_Task_Abort(string Id)
+        {
+
+            _HostReport.On_TaskJob_Aborted(Id, "SYSTEM", "ABS", "S0300170");
         }
     }
 }

@@ -70,6 +70,8 @@
     <Compile Include="Management\CommandScript.cs" />
     <Compile Include="Management\CommandScriptManagement.cs" />
     <Compile Include="Management\ControllerManagement.cs" />
+    <Compile Include="Management\IJobReport.cs" />
+    <Compile Include="Management\ITaskJobReport.cs" />
     <Compile Include="Management\ITransactionReport.cs" />
     <Compile Include="Management\Job.cs" />
     <Compile Include="Management\JobManagement.cs" />

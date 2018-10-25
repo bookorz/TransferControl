@@ -39,8 +39,11 @@ namespace TransferControl.Management
         public int Angle { get; set; }
         public DateTime AssignTime { get; private set; }
 
-        public Job()
+        IJobReport _Report = null;
+
+        public Job(IJobReport Report)
         {
+            _Report = Report;
             Job_Id = "";
             WaitToDo = "";
             Destination = "";
@@ -54,6 +57,14 @@ namespace TransferControl.Management
             NeedProcess = false;
             OCRFlag = false;
             OcrCodeList = new List<OCRInfo>();
+        }
+
+        public void PositionChangeReport()
+        {
+            if (_Report != null)
+            {
+                _Report.On_Job_Position_Changed(this);
+            }
         }
 
         public void AssignPort(string Position , string Slot)

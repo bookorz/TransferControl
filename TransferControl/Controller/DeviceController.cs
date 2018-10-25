@@ -60,6 +60,10 @@ namespace TransferControl.Controller
 
         public void ClearTransactionList()
         {
+            foreach(Transaction each in TransactionList.Values)
+            {
+                each.SetTimeOutMonitor(false);
+            }
             TransactionList.Clear();
         }
 
