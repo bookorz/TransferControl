@@ -424,7 +424,7 @@ namespace TransferControl.Controller
                                             Txn.SetTimeOutMonitor(false);
                                             Node.IsExcuting = false;
                                             //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
-                                            if (_Config.Vendor.ToUpper().Equals("TDK"))
+                                            if (_Config.Vendor.ToUpper().Equals("TDK")|| _Config.Vendor.ToUpper().Equals("SMARTTAG"))
                                             {
                                                 conn.Send(ReturnMsg.FinCommand);
                                                 logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);

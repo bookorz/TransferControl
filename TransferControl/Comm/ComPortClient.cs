@@ -242,7 +242,7 @@ namespace TransferControl.Comm
             {
                 if (b == 0)
                 {
-                    continue;
+                    //continue;
                 }
                 hex.AppendFormat("{0:X2}", b);
                 hex.Append(" ");

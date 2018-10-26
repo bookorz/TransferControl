@@ -20,7 +20,7 @@ namespace TransferControl.Management
         {
             AlarmList.Add(Alm);
             InsertToDB(Alm);
-
+            logger.Info("Alarm Happen: " + JsonConvert.SerializeObject(Alm, Formatting.Indented));
         }
 
         public static void Clear()
