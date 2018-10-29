@@ -15,10 +15,10 @@ namespace TransferControl.Management
 {
     public class TaskJobManagment
     {
-         ILog logger = LogManager.GetLogger(typeof(TaskJobManagment));
-         ConcurrentDictionary<string, List<TaskJob>> TaskJobList;
-         ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
-        private  DBUtil dBUtil = new DBUtil();
+        ILog logger = LogManager.GetLogger(typeof(TaskJobManagment));
+        ConcurrentDictionary<string, List<TaskJob>> TaskJobList;
+        ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
+        private DBUtil dBUtil = new DBUtil();
         ITaskJobReport _TaskReport;
 
         public class CurrentProceedTask
@@ -85,7 +85,7 @@ namespace TransferControl.Management
         /// <param name="ExcuteName"></param>
         /// <param name="ReturnType">Executed/Finished</param>
         /// <returns>true:當工作全部完成</returns>
-        public bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message, out string Report,out string Location)
+        public bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message, out string Report, out string Location)
         {
             bool result = false;
             Message = "";
@@ -102,38 +102,48 @@ namespace TransferControl.Management
                 ExcuteName = "Put";
 
             }
-
+            logger.Debug("CurrentProceedTasks Count = " + CurrentProceedTasks.Count());
             if (CurrentProceedTasks.TryGetValue(Id, out tk))
             {
-                var findExcuted = from each in tk.CheckList
-                                  where each.NodeName.ToUpper().Equals(NodeName.ToUpper()) && each.ExcuteName.ToUpper().Equals(ExcuteName.ToUpper())// && each.ExcuteType.ToUpper().Equals(ExcuteType.ToUpper())
-                                  select each;
-                if (findExcuted.Count() != 0)
+                lock (tk)//避免兩個命令同時回報完成，造成同時命令完成
                 {
-                    if (findExcuted.First().FinishTrigger.ToUpper().Equals(ReturnType.ToUpper()))
+                    var findExcuted = from each in tk.CheckList
+                                      where each.NodeName.ToUpper().Equals(NodeName.ToUpper()) && each.ExcuteName.ToUpper().Equals(ExcuteName.ToUpper()) && each.ExcuteType.ToUpper().Equals(ExcuteType.ToUpper())
+                                      select each;
+                    if (findExcuted.Count() != 0)
                     {
-                        findExcuted.First().Finished = true;//把做完的標記完成
+                        Excuted tmp = findExcuted.First();
+                        if (tmp.FinishTrigger.ToUpper().Equals(ReturnType.ToUpper()))
+                        {
+                            tmp.Finished = true;//把做完的標記完成
+                            logger.Debug("命令完成:" + ExcuteName + " Node:" + NodeName + "ExcuteType:" + ExcuteType);
+                        }
 
+                        findExcuted = from each in tk.CheckList
+                                      where !each.Finished
+                                      select each;
+                        if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
+                        {
+                            logger.Debug("全部命令完成，檢查通過條件");
+                            result = CheckCondition(Id, out Message, out Report, out Location);
+                            tk.CheckList.Clear();
+                        }
                     }
-                    findExcuted = from each in tk.CheckList
-                                  where !each.Finished
-                                  select each;
-                    if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
+                    else if (ExcuteName.Equals(""))
                     {
-                        result = CheckCondition(Id,out Message, out Report,out Location);
-                        tk.CheckList.Clear();
+                        //Excute為空白
+
+                        result = CheckCondition(Id, out Message, out Report, out Location);
+
+
+                        //logger.Error("CheckTask失敗，找不到設定值.ExcuteName:" + ExcuteName+ " ExcuteType:"+ ExcuteType);
+                        //throw new Exception("CheckTask失敗，找不到Id:" + Id);
+                        //Message += " " + "CheckTask失敗，找不到設定值.ExcuteName:" + ExcuteName + " ExcuteType:" + ExcuteType;
                     }
-                }
-                else
-                {
-                    //Excute為空白
-
-                    result = CheckCondition(Id, out Message, out Report, out Location);
-
-
-                    //logger.Error("CheckTask失敗，找不到設定值.ExcuteName:" + ExcuteName+ " ExcuteType:"+ ExcuteType);
-                    //throw new Exception("CheckTask失敗，找不到Id:" + Id);
-                    //Message += " " + "CheckTask失敗，找不到設定值.ExcuteName:" + ExcuteName + " ExcuteType:" + ExcuteType;
+                    else
+                    {
+                        logger.Error("CheckTask失敗，找不到該命令:" + ExcuteName + " Node:" + NodeName);
+                    }
                 }
             }
             else
@@ -146,7 +156,7 @@ namespace TransferControl.Management
             return result;
         }
 
-        public bool CheckCondition(string Id, out string Message, out string Report,out string Location)
+        public bool CheckCondition(string Id, out string Message, out string Report, out string Location)
         {
             bool result = false;
             string taskName = "";
@@ -242,37 +252,42 @@ namespace TransferControl.Management
                                     Node TNode = NodeManagement.Get(ToPosition);
                                     Job J;
                                     Job tmp;
-                                    if (FNode.JobList.TryRemove(FromSlot, out J))
+                                    if (!FNode.JobList.TryRemove(FromSlot, out J))
                                     {
-                                        //空的Slot要塞空資料                                       
-                                        tmp = RouteControl.CreateJob();
-                                        tmp.Job_Id = "No wafer";
-                                        tmp.Host_Job_Id = "No wafer";
-                                        tmp.Slot = FromSlot;
-                                        tmp.Position = FNode.Name;
-                                        FNode.JobList.TryAdd(tmp.Slot, tmp);
+                                        J = RouteControl.CreateJob();//當沒有帳時強制建帳
+                                        J.Job_Id = JobManagement.GetNewID();
+                                        J.Position = FNode.Name;
+                                        J.Slot = FromSlot;
+                                    }
+                                    //空的Slot要塞空資料                                       
+                                    tmp = RouteControl.CreateJob();
+                                    tmp.Job_Id = "No wafer";
+                                    tmp.Host_Job_Id = "No wafer";
+                                    tmp.Slot = FromSlot;
+                                    tmp.Position = FNode.Name;
+                                    FNode.JobList.TryAdd(tmp.Slot, tmp);
 
-                                        
-                                        J.LastNode = J.Position;
-                                        J.LastSlot = J.Slot;
 
-                                        TNode.JobList.TryRemove(ToSlot, out tmp);
-                                        if (TNode.JobList.TryAdd(ToSlot, J))
-                                        {
-                                            //更新WAFER位置
-                                            J.Position = TNode.Name;
-                                            J.Slot = ToSlot;
-                                            J.PositionChangeReport();
-                                        }
-                                        else
-                                        {
-                                            logger.Error("Move wip error(Add): From="+ FromPosition+" Slot="+ FromSlot + " To="+ ToPosition + " Slot="+ ToSlot);
-                                        }
+                                    J.LastNode = J.Position;
+                                    J.LastSlot = J.Slot;
+
+                                    TNode.JobList.TryRemove(ToSlot, out tmp);
+                                    if (TNode.JobList.TryAdd(ToSlot, J))
+                                    {
+                                        //更新WAFER位置
+                                        J.Position = TNode.Name;
+                                        J.Slot = ToSlot;
+                                        J.PositionChangeReport();
                                     }
                                     else
                                     {
-                                        logger.Error("Move wip error(Remove): From=" + FromPosition + " Slot=" + FromSlot + " To=" + ToPosition + " Slot=" + ToSlot);
+                                        logger.Error("Move wip error(Add): From=" + FromPosition + " Slot=" + FromSlot + " To=" + ToPosition + " Slot=" + ToSlot);
                                     }
+                                    //}
+                                    //else
+                                    //{
+                                    //    logger.Error("Move wip error(Remove): From=" + FromPosition + " Slot=" + FromSlot + " To=" + ToPosition + " Slot=" + ToSlot);
+                                    //}
                                     result = true;
                                     break;
                                 case "CHECK_DIO":
@@ -287,7 +302,7 @@ namespace TransferControl.Management
                                         ErrorCode = tmpAry[0];
                                         Location = tmpAry[1];
                                     }
-                                    
+
 
                                     string CurrVal = RouteControl.Instance.DIO.GetIO("IN", Param);
                                     if (CurrVal.ToUpper().Equals(Value.ToUpper()))
@@ -765,7 +780,7 @@ namespace TransferControl.Management
 
         public void Clear()
         {
-            foreach(string Id in CurrentProceedTasks.Keys)
+            foreach (string Id in CurrentProceedTasks.Keys)
             {
                 _TaskReport.On_Task_Abort(Id);
             }
@@ -1138,7 +1153,7 @@ namespace TransferControl.Management
                     }
                     else
                     {
-                        logger.Error("已找不到Task，完成工作，TaskId:" + Id);
+                        logger.Info("已找不到Task，完成工作，TaskId:" + Id);
                         Remove(Id);
                         //throw new Exception("已找不到Task，完成工作，TaskId:" + Id);
                         //ErrorMessage = "已找不到Task，完成工作，TaskId:" + Id;

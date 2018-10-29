@@ -36,7 +36,8 @@ namespace TransferControl.Management
 	                        t.wafer_size as WaferSize,
                             t.Double_Arm as DoubleArmActive,
                             t.Notch_Angle as NotchAngle,
-                            t.R_Flip_Degree as R_Flip_Degree
+                            t.R_Flip_Degree as R_Flip_Degree,
+                            t.associated_node as Associated_Node
                         FROM config_node t
                         WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);

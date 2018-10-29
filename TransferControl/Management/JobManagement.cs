@@ -16,6 +16,22 @@ namespace TransferControl.Management
             JobList.Clear();
         }
 
+        public static string GetNewID()
+        {
+            int currentIdx = 1;
+            string key = "";
+            while (true)
+            {
+                key = "Wafer" + currentIdx.ToString("000");
+                if (!JobList.ContainsKey(key))
+                {
+                    break;
+                }
+                
+            }
+            return key;
+        }
+
         public static void ClearAssignJobByPort(string PortName)
         {
             var findAssignJob = from job in GetJobList()

@@ -257,7 +257,9 @@ namespace TransferControl.Management
 
         public string Servo { get; set; }
 
-        public Dictionary<string, string> Status { get; set; }
+        public string Associated_Node { get; set; }
+
+    public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
 
         public void InitialObject()

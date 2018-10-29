@@ -1541,7 +1541,7 @@ namespace TransferControl.Engine
                                             case '1':
                                                 while (true)
                                                 {
-                                                    wafer.Job_Id = "Wafer" + currentIdx.ToString("00");
+                                                    wafer.Job_Id = "Wafer" + currentIdx.ToString("000");
                                                     wafer.Host_Job_Id = wafer.Job_Id;
                                                     wafer.MapFlag = true;
                                                     wafer.ErrPosition = false;
@@ -2133,6 +2133,15 @@ namespace TransferControl.Engine
                     logger.Debug("On_Command_Finished:" + Txn.Method + ":" + Txn.Method);
                     switch (Node.Type)
                     {
+                        case "SMARTTAG":
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.SmartTagType.GetLCDData:
+
+                                    Node.FoupID = Msg.Value;
+                                    break;
+                            }
+                            break;
                         case "ROBOT":
                             Node.InterLock = false;
                             Node.Busy = false;
@@ -3357,7 +3366,7 @@ namespace TransferControl.Engine
 
         public void On_Task_Abort(string Id)
         {
-
+            //TaskJob.Remove(Id);
             _HostReport.On_TaskJob_Aborted(Id, "SYSTEM", "ABS", "S0300170");
         }
     }
