@@ -108,6 +108,7 @@ namespace TransferControl.Management
                 public const string GetAfterWait = "GetAfterWait";
                 public const string Put = "Put";
                 public const string PutWithoutBack = "PutWithoutBack";
+                public const string GetWithoutBack = "GetWithoutBack";
                 public const string PutBack = "PutBack";
                 public const string DoublePut = "DoublePut";
                 public const string GetWait = "GetWait";

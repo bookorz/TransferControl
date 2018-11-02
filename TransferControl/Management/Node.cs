@@ -185,6 +185,12 @@ namespace TransferControl.Management
 
         public bool DoubleArmActive { get; set; }
 
+        public bool RArmActive { get; set; }
+
+        public bool LArmActive { get; set; }
+
+        public int CarryCount { get; set; }
+
         public bool HasPresent { get; set; }
 
         public bool CheckStatus { get; set; }
@@ -259,8 +265,27 @@ namespace TransferControl.Management
 
         public string Associated_Node { get; set; }
 
-    public Dictionary<string, string> Status { get; set; }
+        public string LockOn { get; set; }
+
+        public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
+        public Dictionary<string,ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
+
+        public class ActionRequest
+        {
+            public string TaskName { get; set; }
+            public string Position { get; set; }
+            public string Slot { get; set; }
+            public string Slot2 { get; set; }
+            public string Arm { get; set; }
+            public string Value { get; set; }
+            public long TimeStamp { get; }
+
+            public ActionRequest()
+            {
+                TimeStamp = DateTime.Now.Ticks;
+            }
+        }
 
         public void InitialObject()
         {
@@ -279,15 +304,17 @@ namespace TransferControl.Management
             R_Flip_Degree = "0";
             L_Flip_Degree = "0";
             CurrentPosition = "";
-            PutOutArm = "";           
+            PutOutArm = "";
             UnLockByJob = "";
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
             State = "Not Origin";
+            CarryCount = 0;
             //if (Type.Equals("LOADPORT"))
             //{
             //    State = "Ready To Load";
             //}
+            LockOn = "";
             HasAlarm = false;
             LastFinMethod = "";
             CurrentPoint = "";
@@ -886,7 +913,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToContinue(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
                                 break;
                             case Transaction.Command.RobotType.PutWithoutBack:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToDown(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToDown(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);                                
+                                break;
+                            case Transaction.Command.RobotType.GetWithoutBack:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToUp(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
                                 break;
                             case Transaction.Command.RobotType.PutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToContinue(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
@@ -1115,7 +1145,7 @@ namespace TransferControl.Management
                     IsWaitData = true;
                 }
                 if (Ctrl.DoWork(txn, IsWaitData))
-                {                    
+                {
                     result = true;
                 }
                 else

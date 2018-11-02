@@ -9,7 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using TransferControl.Engine;
-using static TransferControl.Management.TaskJob;
+
 
 namespace TransferControl.Management
 {
@@ -25,8 +25,9 @@ namespace TransferControl.Management
         {
             public TaskJob ProceedTask { get; set; }
             public Dictionary<string, string> Params { get; set; }
-            public List<Excuted> CheckList = new List<Excuted>();
+            public List<TaskJob.Excuted> CheckList = new List<TaskJob.Excuted>();
             public string GotoIndex = "";
+            public bool Finished = false;
         }
         public TaskJobManagment(ITaskJobReport TaskReport)
         {
@@ -112,7 +113,7 @@ namespace TransferControl.Management
                                       select each;
                     if (findExcuted.Count() != 0)
                     {
-                        Excuted tmp = findExcuted.First();
+                        TaskJob.Excuted tmp = findExcuted.First();
                         if (tmp.FinishTrigger.ToUpper().Equals(ReturnType.ToUpper()))
                         {
                             tmp.Finished = true;//把做完的標記完成
@@ -688,50 +689,108 @@ namespace TransferControl.Management
                                     Node = NodeManagement.Get(NodeName);
                                     if (Node != null)
                                     {
-                                        string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                        string AttrVal = "";
+                                        if (Attr.Equals("WipCount"))
+                                        {
+                                            AttrVal = Node.JobList.Count.ToString();
+                                        }
+                                        else
+                                        {
+                                            AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                        }
+
                                         if (AttrVal.Equals(Value.ToUpper()))
                                         {
                                             //string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                            switch (Node.GetType().GetProperty(SetAttr).PropertyType.Name)
+                                            if (SetAttr.Equals("RequestQueue"))
                                             {
-                                                case "String":
-                                                    try
+                                                try
+                                                {
+                                                    Node.ActionRequest req = new Node.ActionRequest();
+                                                    if (Conditions.Length >= 3)
                                                     {
-                                                        Node.GetType().GetProperty(SetAttr).SetValue(Node, SetVal);
+                                                        string[] Attrs = Conditions[4].Split(',');
+                                                        foreach(string atr in Attrs)
+                                                        {
+                                                            if (atr.Trim().Equals(""))
+                                                            {
+                                                                continue;
+                                                            }
+                                                            string k = atr.Split('=')[0];
+                                                            string v = atr.Split('=')[1];
+                                                            switch (k)
+                                                            {
+                                                                case "Position":
+                                                                    req.Position = v;
+                                                                    break;
+                                                                case "Slot":
+                                                                    req.Slot = v;
+                                                                    break;
+                                                                case "Arm":
+                                                                    req.Arm = v;
+                                                                    break;
+                                                                case "Value":
+                                                                    req.Value = v;
+                                                                    break;
+                                                            }
+                                                        }
                                                     }
-                                                    catch (Exception e)
+                                                    
+                                                    req.TaskName = SetVal;
+                                                    if (!Node.RequestQueue.ContainsKey(SetVal))
                                                     {
-                                                        logger.Error("CheckCondition失敗，String型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                        throw new Exception("CheckCondition失敗，String型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        Node.RequestQueue.Add(SetVal, req);
                                                     }
-                                                    break;
-                                                case "Int64":
-                                                case "Int32":
-                                                case "Int16":
-                                                    try
-                                                    {
-                                                        Node.GetType().GetProperty(SetAttr).SetValue(Node, Convert.ToInt32(SetVal));
-                                                    }
-                                                    catch (Exception e)
-                                                    {
-                                                        logger.Error("CheckCondition失敗，Int型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                        throw new Exception("CheckCondition失敗，Int型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    }
-                                                    break;
-                                                case "Boolean":
-                                                    try
-                                                    {
-                                                        Node.GetType().GetProperty(SetAttr).SetValue(Node, bool.Parse(SetVal));
-                                                    }
-                                                    catch (Exception e)
-                                                    {
-                                                        logger.Error("CheckCondition失敗，Bool型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                        throw new Exception("CheckCondition失敗，Bool型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    }
-                                                    break;
-                                                default:
-                                                    logger.Error("CheckCondition失敗，型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                                    throw new Exception("CheckCondition失敗，型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    logger.Error("加入RequestQueue失敗，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex+" "+e.StackTrace);
+                                                    throw new Exception("加入RequestQueue失敗，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex + " " + e.StackTrace);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                switch (Node.GetType().GetProperty(SetAttr).PropertyType.Name)
+                                                {
+                                                    case "String":
+                                                        try
+                                                        {
+                                                            Node.GetType().GetProperty(SetAttr).SetValue(Node, SetVal);
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            logger.Error("CheckCondition失敗，String型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                            throw new Exception("CheckCondition失敗，String型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        }
+                                                        break;
+                                                    case "Int64":
+                                                    case "Int32":
+                                                    case "Int16":
+                                                        try
+                                                        {
+                                                            Node.GetType().GetProperty(SetAttr).SetValue(Node, Convert.ToInt32(SetVal));
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            logger.Error("CheckCondition失敗，Int型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                            throw new Exception("CheckCondition失敗，Int型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        }
+                                                        break;
+                                                    case "Boolean":
+                                                        try
+                                                        {
+                                                            Node.GetType().GetProperty(SetAttr).SetValue(Node, bool.Parse(SetVal));
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            logger.Error("CheckCondition失敗，Bool型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                            throw new Exception("CheckCondition失敗，Bool型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        }
+                                                        break;
+                                                    default:
+                                                        logger.Error("CheckCondition失敗，型別不符，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                        throw new Exception("CheckCondition失敗，型別不符，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                                }
                                             }
                                         }
                                     }
@@ -776,6 +835,7 @@ namespace TransferControl.Management
         {
             CurrentProceedTask tmp;
             CurrentProceedTasks.TryRemove(Id, out tmp);
+            tmp.Finished = true;
         }
 
         public void Clear()
@@ -787,9 +847,10 @@ namespace TransferControl.Management
             CurrentProceedTasks.Clear();
         }
 
-        public bool Excute(string Id, out string ErrorMessage, string taskName = "", Dictionary<string, string> param = null)
+        public bool Excute(string Id, out string ErrorMessage, out CurrentProceedTask Task, string taskName = "", Dictionary<string, string> param = null)
         {
             bool result = false;
+            Task = null;
             try
             {
                 CurrentProceedTask tmpTk;
@@ -797,6 +858,7 @@ namespace TransferControl.Management
                 CurrentProceedTask ExcutedTask = null;
                 Dictionary<string, string> LastParam = null;
                 ErrorMessage = "";
+                
                 if (taskName.Equals(""))
                 {
                     //只有帶ID進來，此Task已經開始執行，尋找上一次執行的Task
@@ -936,6 +998,7 @@ namespace TransferControl.Management
                         }
                         if (CurrentProceedTasks.TryAdd(Id, CurrTask))
                         {
+                            Task = CurrTask;
                             string ExcuteObjStr = CurrTask.ProceedTask.ExcuteObj;
 
                             if (ExcuteObjStr.Trim().Equals(""))

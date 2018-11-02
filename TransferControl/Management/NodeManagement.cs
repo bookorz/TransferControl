@@ -37,7 +37,9 @@ namespace TransferControl.Management
                             t.Double_Arm as DoubleArmActive,
                             t.Notch_Angle as NotchAngle,
                             t.R_Flip_Degree as R_Flip_Degree,
-                            t.associated_node as Associated_Node
+                            t.associated_node as Associated_Node,
+                            t.r_arm as RArmActive,
+                            t.l_arm as LArmActive
                         FROM config_node t
                         WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
@@ -173,6 +175,23 @@ namespace TransferControl.Management
             if (findPort.Count() != 0)
             {
                 result = findPort.ToList();
+                result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });
+            }
+
+            return result;
+        }
+
+        public static List<Node> GetAlignerList()
+        {
+            List<Node> result = new List<Node>();
+
+            var findA = from A in NodeList.Values.ToList()
+                           where A.Type.Equals("ALIGNER")
+                           select A;
+
+            if (findA.Count() != 0)
+            {
+                result = findA.ToList();
                 result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });
             }
 
