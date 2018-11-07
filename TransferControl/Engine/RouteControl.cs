@@ -682,8 +682,8 @@ namespace TransferControl.Engine
                             Node.Busy = false;
                             switch (Txn.Method)
                             {
-                                case Transaction.Command.RobotType.RobotHome:
-                                case Transaction.Command.RobotType.RobotOrginSearch:
+                                case Transaction.Command.RobotType.Home:
+                                case Transaction.Command.RobotType.OrginSearch:
                                     Node.State = "Ready";
                                     break;
                             }
@@ -1005,7 +1005,7 @@ namespace TransferControl.Engine
                             Node.IsWaferHold = false;
                             break;
                         case Transaction.Command.AlignerType.Retract:
-                        case Transaction.Command.AlignerType.AlignerHome:
+                        case Transaction.Command.AlignerType.Home:
                             Node.Available = true;
                             Node.UnLockByJob = "";
 
@@ -1130,7 +1130,23 @@ namespace TransferControl.Engine
         /// <param name="Status"></param>
         public void On_Controller_State_Changed(string Device_ID, string Status)
         {
-
+            var find = from node in NodeManagement.GetList()
+                       where node.Controller.Equals(Device_ID)
+                       select node;
+            foreach(Node each in find)
+            {
+                switch (Status)
+                {
+                    case "Connected":
+                        each.Connected = true;
+                        break;
+                    case "Disconnected":
+                    case "Connection_Error":
+                        each.Connected = false;
+                        break;
+                }
+                
+            }
             logger.Debug(Device_ID + " " + Status);
             _UIReport.On_Controller_State_Changed(Device_ID, Status);
         }

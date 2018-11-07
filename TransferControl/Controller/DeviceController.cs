@@ -136,6 +136,8 @@ namespace TransferControl.Controller
             conn.WaitForData(WaitForData);
             bool result = false;
             // lock (TransactionList)
+            
+
             if (!Txn.NodeType.Equals("OCR"))
             {
                 List<ReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
@@ -183,6 +185,14 @@ namespace TransferControl.Controller
                     waferids += each.Job_Id + " ";
                 }
                 logger.Debug(_Config.DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
+
+                Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
+                if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS")!=-1 )
+                {
+                    Txn.SetTimeOut(3000);
+                }
+
+
                 if (this._Config.Vendor.Equals("SMARTTAG"))
                 {
                     result = sendWith4Byte(Txn.CommandEncodeStr);
@@ -396,7 +406,7 @@ namespace TransferControl.Controller
                                                     Txn.SetTimeOutMonitor(false);
                                                     Node.IsExcuting = false;
                                                 }
-                                                else if (Txn.Method.Equals(Transaction.Command.RobotType.RobotOrginSearch))
+                                                else if (Txn.Method.Equals(Transaction.Command.RobotType.OrginSearch))
                                                 {
                                                     logger.Debug("Txn timmer stoped.");
                                                     Txn.SetTimeOutMonitor(false);
@@ -581,6 +591,10 @@ namespace TransferControl.Controller
             else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
             {
                 key = "1";
+            }else if (_Config.Vendor.ToUpper().Equals("ASYST"))
+            {
+                key = Txn.AdrNo;
+
             }
             else
             {

@@ -267,6 +267,8 @@ namespace TransferControl.Management
 
         public string LockOn { get; set; }
 
+        public bool Connected { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string,ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -296,6 +298,7 @@ namespace TransferControl.Management
             {
                 Phase = "2";
             }
+            Connected = false;
             MappingResult = "";
             CurrentLoadPort = "";
             FoupID = "";
@@ -823,15 +826,18 @@ namespace TransferControl.Management
                             case Transaction.Command.LoadPortType.MoveToSlot:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Slot(EncoderLoadPort.CommandType.Normal, txn.Value);
                                 break;
-                            case Transaction.Command.LoadPortType.SetCompleteEvent:
+                            case Transaction.Command.LoadPortType.SetAllEvent:
                                 if (txn.Value.Equals("1"))
                                 {
-                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Enable);
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.All, EncoderLoadPort.ParamState.Enable);
                                 }
                                 else if (txn.Value.Equals("0"))
                                 {
-                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Disable);
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.All, EncoderLoadPort.ParamState.Disable);
                                 }
+                                break;
+                            case Transaction.Command.LoadPortType.SetCompleteEvent:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Enable);
                                 break;
                         }
                         break;
@@ -927,16 +933,16 @@ namespace TransferControl.Management
                             case Transaction.Command.RobotType.PutWait:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToReady(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 break;
-                            case Transaction.Command.RobotType.RobotHome:
+                            case Transaction.Command.RobotType.Home:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Home(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.RobotType.RobotHomeSafety:
+                            case Transaction.Command.RobotType.HomeSafety:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.HomeSafety(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.RobotType.RobotHomeA:
+                            case Transaction.Command.RobotType.HomeA:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.HomeOrgin(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.RobotType.RobotOrginSearch:
+                            case Transaction.Command.RobotType.OrginSearch:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.OrginSearch(AdrNo, txn.Seq);
                                 break;
                             case Transaction.Command.RobotType.WaferRelease:
@@ -945,16 +951,16 @@ namespace TransferControl.Management
                             case Transaction.Command.RobotType.WaferHold:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.WaferHold(AdrNo, txn.Seq, txn.Arm);
                                 break;
-                            case Transaction.Command.RobotType.RobotServo:
+                            case Transaction.Command.RobotType.Servo:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ServoOn(AdrNo, txn.Seq, txn.Value);
                                 break;
-                            case Transaction.Command.RobotType.RobotMode:
+                            case Transaction.Command.RobotType.Mode:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Mode(AdrNo, txn.Seq, txn.Value);
                                 break;
                             case Transaction.Command.RobotType.Reset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ErrorReset(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.RobotType.RobotSpeed:
+                            case Transaction.Command.RobotType.Speed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSpeed(AdrNo, txn.Seq, txn.Value);
                                 break;
                         }
@@ -995,7 +1001,7 @@ namespace TransferControl.Management
                             case Transaction.Command.AlignerType.GetMode:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.GetMode(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.AlignerType.AlignerHome:
+                            case Transaction.Command.AlignerType.Home:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Home(AdrNo, txn.Seq);
                                 break;
                             case Transaction.Command.AlignerType.Align:
@@ -1021,19 +1027,19 @@ namespace TransferControl.Management
                             case Transaction.Command.AlignerType.WaferHold:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.WaferHold(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.AlignerType.AlignerServo:
+                            case Transaction.Command.AlignerType.Servo:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.ServoOn(AdrNo, txn.Seq, txn.Value);
                                 break;
-                            case Transaction.Command.AlignerType.AlignerMode:
+                            case Transaction.Command.AlignerType.Mode:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Mode(AdrNo, txn.Seq, txn.Value);
                                 break;
-                            case Transaction.Command.AlignerType.AlignerOrigin:
+                            case Transaction.Command.AlignerType.OrginSearch:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.OrginSearch(AdrNo, txn.Seq);
                                 break;
                             case Transaction.Command.AlignerType.Reset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.ErrorReset(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.AlignerType.AlignerSpeed:
+                            case Transaction.Command.AlignerType.Speed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.setSpeed(AdrNo, txn.Seq, txn.Value);
                                 break;
 
@@ -1144,6 +1150,8 @@ namespace TransferControl.Management
                 {
                     IsWaitData = true;
                 }
+                
+
                 if (Ctrl.DoWork(txn, IsWaitData))
                 {
                     result = true;

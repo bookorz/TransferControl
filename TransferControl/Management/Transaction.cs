@@ -51,6 +51,7 @@ namespace TransferControl.Management
             //LoadPort
             public class LoadPortType
             {
+                public const string SetAllEvent = "SetAllEvent";
                 public const string SetCompleteEvent = "SetCompleteEvent";
                 public const string MoveToSlot = "MoveToSlot";
                 public const string EQASP = "EQASP";
@@ -115,14 +116,13 @@ namespace TransferControl.Management
                 public const string PutWait = "PutWait";
                 public const string WaferHold = "WaferHold";
                 public const string WaferRelease = "WaferRelease";
-                public const string RobotHome = "RobotHome";
-                public const string RobotHomeA = "RobotHomeA";
-                public const string RobotHomeSafety = "RobotHomeSafety";
-                public const string RobotOrginSearch = "RobotOrginSearch";
-                public const string RobotServo = "RobotServo";
-                public const string RobotMode = "RobotMode";
-                public const string RobotWaferRelease = "RobotWaferRelease";
-                public const string RobotSpeed = "RobotSpeed";
+                public const string Home = "Home";
+                public const string HomeA = "HomeA";
+                public const string HomeSafety = "HomeSafety";
+                public const string OrginSearch = "OrginSearch";
+                public const string Servo = "Servo";
+                public const string Mode = "Mode";
+                public const string Speed = "Speed";
                 public const string Reset = "Reset";
                 public const string GetStatus = "GetStatus";
                 public const string GetCombineStatus = "GetCombineStatus";
@@ -147,11 +147,11 @@ namespace TransferControl.Management
                 public const string WaferHold = "WaferHold";
                 public const string WaferRelease = "WaferRelease";
                 public const string Retract = "Retract";
-                public const string AlignerMode = "AlignerMode";
-                public const string AlignerSpeed = "AlignerSpeed";
-                public const string AlignerOrigin = "AlignerOrigin";
-                public const string AlignerServo = "AlignerServo";
-                public const string AlignerHome = "AlignerHome";
+                public const string Mode = "Mode";
+                public const string Speed = "Speed";
+                public const string OrginSearch = "OrginSearch";
+                public const string Servo = "Servo";
+                public const string Home = "Home";
                 public const string GetStatus = "GetStatus";
                 public const string GetCombineStatus = "GetCombineStatus";
                 public const string Reset = "Reset";

@@ -20,6 +20,7 @@ namespace TransferControl.Management
         ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
         private DBUtil dBUtil = new DBUtil();
         ITaskJobReport _TaskReport;
+        bool SaftyCheckByPass = true;
 
         public class CurrentProceedTask
         {
@@ -31,12 +32,13 @@ namespace TransferControl.Management
         }
         public TaskJobManagment(ITaskJobReport TaskReport)
         {
+            SaftyCheckByPass = SANWA.Utility.Config.SystemConfig.Get().SaftyCheckByPass;
             _TaskReport = TaskReport;
             TaskJobList = new ConcurrentDictionary<string, List<TaskJob>>();
             CurrentProceedTasks = new ConcurrentDictionary<string, CurrentProceedTask>();
 
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            string Sql = @"SELECT t.task_name as TaskName,t.excute_obj as ExcuteObj, t.check_condition as CheckCondition, t.task_index as TaskIndex,t.skip_condition as SkipCondition
+            string Sql = @"SELECT t.task_name as TaskName,t.excute_obj as ExcuteObj, t.check_condition as CheckCondition, t.task_index as TaskIndex,t.skip_condition as SkipCondition,t.is_safety_check as IsSafetyCheck
                             FROM config_task_job t WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
             DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
@@ -177,6 +179,10 @@ namespace TransferControl.Management
                 CurrentProceedTask ExcutedTask = null;
                 if (CurrentProceedTasks.TryGetValue(Id, out ExcutedTask))
                 {
+                    if(ExcutedTask.ProceedTask.IsSafetyCheck && this.SaftyCheckByPass)
+                    {//當安全檢查取消打開時，跳過所有標記為安全檢查的項目
+                        return true;
+                    }
                     string ConditionsStr = ExcutedTask.ProceedTask.CheckCondition;
                     //指令替代
                     if (ExcutedTask.Params != null)
@@ -224,6 +230,7 @@ namespace TransferControl.Management
                             string ToPosition = "";
                             string ToSlot = "";
                             string Slot = "";
+                            string Arm = "";
                             int Val = 0;
                             int diff = 0;
 
@@ -339,7 +346,7 @@ namespace TransferControl.Management
                                             {
                                                 ExcutedTask.Params.TryGetValue("@ToPosition", out PositionName);
                                                 ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
-
+                                                ExcutedTask.Params.TryGetValue("@Arm", out Arm);
                                                 ExcutedTask.Params.TryGetValue("@FromPosition", out FromPosition);
                                                 ExcutedTask.Params.TryGetValue("@FromSlot", out FromSlot);
                                                 if (!FromPosition.Equals("") && !FromSlot.Equals(""))
@@ -366,6 +373,21 @@ namespace TransferControl.Management
                                                 if (!SlotData.MapFlag && !SlotData.ErrPosition)
                                                 {
                                                     result = true;
+                                                    if (Arm.Equals("3"))
+                                                    {//雙取時要多檢查一個Slot
+                                                        TarNode.JobList.TryGetValue((slotNo - 1).ToString(), out SlotData);
+                                                        if (!SlotData.MapFlag && !SlotData.ErrPosition)
+                                                        {
+                                                            result = true;
+                                                        }
+                                                        else
+                                                        {
+                                                            Report = ErrorType;
+                                                            Message = ErrorCode;
+                                                            result = false;
+                                                            break;
+                                                        }
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -389,6 +411,7 @@ namespace TransferControl.Management
                                             {
                                                 ExcutedTask.Params.TryGetValue("@FromPosition", out PositionName);
                                                 ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
+                                                ExcutedTask.Params.TryGetValue("@Arm", out Arm);
                                                 TarNode = NodeManagement.Get(PositionName);
                                             }
                                             else
@@ -403,6 +426,21 @@ namespace TransferControl.Management
                                                 if (SlotData.MapFlag && !SlotData.ErrPosition)
                                                 {
                                                     result = true;
+                                                    if (Arm.Equals("3"))
+                                                    {//雙取時要多檢查一個Slot
+                                                        TarNode.JobList.TryGetValue((slotNo - 1).ToString(), out SlotData);
+
+                                                        if (SlotData.MapFlag && !SlotData.ErrPosition)
+                                                        {
+                                                            result = true;
+                                                        }
+                                                        else
+                                                        {
+                                                            Report = ErrorType;
+                                                            Message = ErrorCode;
+                                                            result = false;
+                                                        }
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -710,7 +748,7 @@ namespace TransferControl.Management
                                                     if (Conditions.Length >= 3)
                                                     {
                                                         string[] Attrs = Conditions[4].Split(',');
-                                                        foreach(string atr in Attrs)
+                                                        foreach (string atr in Attrs)
                                                         {
                                                             if (atr.Trim().Equals(""))
                                                             {
@@ -735,7 +773,7 @@ namespace TransferControl.Management
                                                             }
                                                         }
                                                     }
-                                                    
+
                                                     req.TaskName = SetVal;
                                                     if (!Node.RequestQueue.ContainsKey(SetVal))
                                                     {
@@ -744,7 +782,7 @@ namespace TransferControl.Management
                                                 }
                                                 catch (Exception e)
                                                 {
-                                                    logger.Error("加入RequestQueue失敗，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex+" "+e.StackTrace);
+                                                    logger.Error("加入RequestQueue失敗，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex + " " + e.StackTrace);
                                                     throw new Exception("加入RequestQueue失敗，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex + " " + e.StackTrace);
                                                 }
                                             }
@@ -835,7 +873,10 @@ namespace TransferControl.Management
         {
             CurrentProceedTask tmp;
             CurrentProceedTasks.TryRemove(Id, out tmp);
-            tmp.Finished = true;
+            if (tmp != null)
+            {
+                tmp.Finished = true;
+            }
         }
 
         public void Clear()
@@ -858,7 +899,7 @@ namespace TransferControl.Management
                 CurrentProceedTask ExcutedTask = null;
                 Dictionary<string, string> LastParam = null;
                 ErrorMessage = "";
-                
+
                 if (taskName.Equals(""))
                 {
                     //只有帶ID進來，此Task已經開始執行，尋找上一次執行的Task
@@ -935,16 +976,14 @@ namespace TransferControl.Management
                                 }
                                 string[] EachSkipConditionAry = eachSkip.Split(':');
                                 string NodeName = EachSkipConditionAry[0];
-                                Node Node = NodeManagement.Get(NodeName);
-                                if (Node != null)
+                                if (NodeName.Equals("VAR"))
                                 {
-
                                     if (EachSkipConditionAry[1].IndexOf("=") != -1)
                                     {
                                         string[] ConditionAry = EachSkipConditionAry[1].Split('=');
                                         string Value = ConditionAry[1];
                                         string Attr = ConditionAry[0];
-                                        string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                        string AttrVal = CurrParam[Attr].ToString().ToUpper();
                                         if (AttrVal.Equals(Value.ToUpper()))
                                         {
                                             break;
@@ -955,7 +994,7 @@ namespace TransferControl.Management
                                         string[] ConditionAry = EachSkipConditionAry[1].Split(new string[] { "<>" }, StringSplitOptions.None);
                                         string Value = ConditionAry[1];
                                         string Attr = ConditionAry[0];
-                                        string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                        string AttrVal = CurrParam[Attr].ToString().ToUpper();
                                         if (!AttrVal.Equals(Value.ToUpper()))
                                         {
                                             break;
@@ -969,8 +1008,43 @@ namespace TransferControl.Management
                                 }
                                 else
                                 {
-                                    logger.Error("SkipCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                    throw new Exception("SkipCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                    Node Node = NodeManagement.Get(NodeName);
+                                    if (Node != null)
+                                    {
+
+                                        if (EachSkipConditionAry[1].IndexOf("=") != -1)
+                                        {
+                                            string[] ConditionAry = EachSkipConditionAry[1].Split('=');
+                                            string Value = ConditionAry[1];
+                                            string Attr = ConditionAry[0];
+                                            string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            if (AttrVal.Equals(Value.ToUpper()))
+                                            {
+                                                break;
+                                            }
+                                        }
+                                        else if (EachSkipConditionAry[1].IndexOf("<>") != -1)
+                                        {
+                                            string[] ConditionAry = EachSkipConditionAry[1].Split(new string[] { "<>" }, StringSplitOptions.None);
+                                            string Value = ConditionAry[1];
+                                            string Attr = ConditionAry[0];
+                                            string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            if (!AttrVal.Equals(Value.ToUpper()))
+                                            {
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            logger.Error("SkipCondition失敗，格式錯誤，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            throw new Exception("SkipCondition失敗，格式錯誤，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        logger.Error("SkipCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        throw new Exception("SkipCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                    }
                                 }
                                 tmp1.Add(eachTask);
                             }
