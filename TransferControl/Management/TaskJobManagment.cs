@@ -539,30 +539,52 @@ namespace TransferControl.Management
                                             break;
                                         case "Check_LP_Safty":
 
-                                            TarNode = NodeManagement.Get("ROBOT01");
-                                            Val = 0;
-                                            if (TarNode.CurrentPosition.ToUpper().Equals(TargetName))
+                                            foreach (Node robot in NodeManagement.GetEnableRobotList())
                                             {
-                                                Val = Convert.ToInt32(TarNode.R_Position);
-                                                diff = 0 - Val;
-                                                diff = Math.Abs(diff);
-                                                logger.Debug("Diff:" + diff.ToString());
-                                                if (diff > 500)
-                                                {
-                                                    Report = ErrorType;
-                                                    Message = ErrorCode;
-                                                    result = false;
-                                                }
-                                                else
-                                                {
-                                                    result = true;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                result = true;
-                                            }
+                                                TarNode = NodeManagement.Get(TargetName);//取得Port物件
 
+                                                if (TarNode.Associated_Node.Equals(robot.Name))//找到可以存取該Port的Robot
+                                                {
+                                                    Val = 0;
+                                                    if (TarNode.CurrentPosition.ToUpper().Equals(TargetName))//Robot如果在這個Port前
+                                                    {
+                                                        Val = Convert.ToInt32(TarNode.R_Position);
+                                                        diff = Val;
+                                                        
+                                                        logger.Debug("Diff:" + diff.ToString());
+                                                        if (diff > 500)//手臂伸出超過500就發警報
+                                                        {
+                                                            Report = ErrorType;
+                                                            Message = ErrorCode;
+                                                            result = false;
+                                                            break;
+                                                        }
+                                                        else
+                                                        {
+                                                            result = true;
+                                                        }
+                                                        Val = Convert.ToInt32(TarNode.L_Position);
+                                                        diff = Val;
+
+                                                        logger.Debug("Diff:" + diff.ToString());
+                                                        if (diff > 500)//手臂伸出超過500就發警報
+                                                        {
+                                                            Report = ErrorType;
+                                                            Message = ErrorCode;
+                                                            result = false;
+                                                            break;
+                                                        }
+                                                        else
+                                                        {
+                                                            result = true;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        result = true;
+                                                    }
+                                                }
+                                            }
 
                                             break;
                                         case "Get_Check_X_AXIS_Position":
