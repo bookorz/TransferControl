@@ -81,7 +81,7 @@ namespace TransferControl.Comm
         {
             //byte[] inValue = new byte[] { 1, 0, 0, 0, 0x20, 0x4e, 0, 0, 0xd0, 0x07, 0, 0 };// 首次探測時間20 秒, 間隔偵測時間2 秒
             //byte[] inValue = new byte[] { 1, 0, 0, 0, 0x88, 0x13, 0, 0, 0xd0, 0x07, 0, 0 };// 首次探測時間5 秒, 間隔偵測時間2 秒
-            theSocket.IOControl(IOControlCode.KeepAliveValues, KeepAlive(1, 10000, 10000), null);
+            //theSocket.IOControl(IOControlCode.KeepAliveValues, KeepAlive(1, 10000, 10000), null);
         }
 
         ///
@@ -304,13 +304,14 @@ namespace TransferControl.Comm
 
             lock (lockObj_IsConnectSuccess)
             {
-                ConnReport.On_Connection_Connected("Connected");
+                
                 Socket client = (Socket)iar.AsyncState;
                 try
                 {
                     client.EndConnect(iar);
                     IsconnectSuccess = true;
                     StartKeepAlive(); //開始KeppAlive檢測
+                    ConnReport.On_Connection_Connected("Connected");
                 }
                 catch (Exception e)
                 {
@@ -331,7 +332,7 @@ namespace TransferControl.Comm
         /// 
         private void StartKeepAlive()
         {
-            theSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(OnReceiveCallback), theSocket);
+//theSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(OnReceiveCallback), theSocket);
         }
 
         ///
