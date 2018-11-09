@@ -56,6 +56,15 @@ namespace TransferControl.Comm
 
         public void Start()
         {
+            try
+            {
+                tcpClient.Client.Shutdown(SocketShutdown.Both);
+                tcpClient.Client.Disconnect(false);
+            }
+            catch
+            {
+
+            }
             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnectServer));
         }
 
@@ -95,7 +104,7 @@ namespace TransferControl.Comm
         private void Receive(object input)
         {
             string receiveMsg = string.Empty;
-            byte[] receiveBytes = new byte[tcpClient.ReceiveBufferSize];
+            
            
             int numberOfBytesRead = 0;
             NetworkStream ns = tcpClient.GetStream();
@@ -107,9 +116,14 @@ namespace TransferControl.Comm
                 {
                     do
                     {
+                        
+                        byte[] receiveBytes = new byte[tcpClient.ReceiveBufferSize];
                         numberOfBytesRead = ns.Read(receiveBytes, 0, tcpClient.ReceiveBufferSize);
+
+                        byte[] bytesRead = new byte[numberOfBytesRead];
+                        Array.Copy(receiveBytes, bytesRead, numberOfBytesRead);
                         //receiveMsg = Encoding.Default.GetString(receiveBytes, 0, numberOfBytesRead);
-                        socketDataArrivalHandler(receiveBytes);
+                        socketDataArrivalHandler(bytesRead);
                     }
                     while (ns.DataAvailable);
                 }
@@ -138,7 +152,7 @@ namespace TransferControl.Comm
 
                         S = S.Substring(S.IndexOf(Convert.ToChar(3)) + 1);
                         //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         break;
                     }
 
@@ -156,7 +170,7 @@ namespace TransferControl.Comm
 
                         S = S.Substring(S.IndexOf("\r") + 1);
                         //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         break;
                     }
 
@@ -172,7 +186,7 @@ namespace TransferControl.Comm
                         S = S.Substring(S.IndexOf("1\r\n") + 3);
 
                         //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         //break;
 
                     }
@@ -184,7 +198,7 @@ namespace TransferControl.Comm
                         S = S.Substring(S.IndexOf("-2\r\n") + 4);
 
                         //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         //break;
 
                     }
@@ -195,7 +209,7 @@ namespace TransferControl.Comm
 
                         S = S.Substring(S.IndexOf("]\r\n") + 3);
                         //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         //break;
 
                     }
@@ -207,7 +221,7 @@ namespace TransferControl.Comm
 
                         S = S.Substring(S.IndexOf("</Result>\r\n") + 11);
                         //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         break;
                     }
                     if (S.IndexOf("Welcome to e-Reader8000") != -1 || S.IndexOf("User:") != -1)
@@ -225,7 +239,7 @@ namespace TransferControl.Comm
                         S = S.Substring(S.IndexOf("0\r\n") + 3);
 
                         //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         //break;
 
                     }
@@ -234,7 +248,7 @@ namespace TransferControl.Comm
                 default:
                     data = Encoding.Default.GetString(OrgData, 0, OrgData.Length);
 
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data.Trim('0'));
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
 
                     break;
             }

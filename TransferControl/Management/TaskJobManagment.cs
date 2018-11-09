@@ -127,7 +127,7 @@ namespace TransferControl.Management
                                       select each;
                         if (findExcuted.Count() == 0)//當全部完成後，檢查設定的通過條件
                         {
-                            logger.Debug("全部命令完成，檢查通過條件");
+                            //logger.Debug("全部命令完成，檢查通過條件");
                             result = CheckCondition(Id, out Message, out Report, out Location);
                             tk.CheckList.Clear();
                         }
@@ -543,46 +543,56 @@ namespace TransferControl.Management
                                             {
                                                 TarNode = NodeManagement.Get(TargetName);//取得Port物件
 
-                                                if (TarNode.Associated_Node.Equals(robot.Name))//找到可以存取該Port的Robot
+                                                if (TarNode.Associated_Node.ToUpper().Equals(robot.Name.ToUpper()))//找到可以存取該Port的Robot
                                                 {
                                                     Val = 0;
                                                     if (TarNode.CurrentPosition.ToUpper().Equals(TargetName))//Robot如果在這個Port前
                                                     {
-                                                        Val = Convert.ToInt32(TarNode.R_Position);
-                                                        diff = Val;
-                                                        
-                                                        logger.Debug("Diff:" + diff.ToString());
-                                                        if (diff > 500)//手臂伸出超過500就發警報
+                                                        if (!TarNode.R_Position.Equals(""))
                                                         {
-                                                            Report = ErrorType;
-                                                            Message = ErrorCode;
-                                                            result = false;
-                                                            break;
-                                                        }
-                                                        else
-                                                        {
-                                                            result = true;
-                                                        }
-                                                        Val = Convert.ToInt32(TarNode.L_Position);
-                                                        diff = Val;
+                                                            Val = Convert.ToInt32(TarNode.R_Position);
+                                                            diff = Val;
 
-                                                        logger.Debug("Diff:" + diff.ToString());
-                                                        if (diff > 500)//手臂伸出超過500就發警報
-                                                        {
-                                                            Report = ErrorType;
-                                                            Message = ErrorCode;
-                                                            result = false;
-                                                            break;
+                                                            logger.Debug("Diff:" + diff.ToString());
+                                                            if (diff > 500)//手臂伸出超過500就發警報
+                                                            {
+                                                                Report = ErrorType;
+                                                                Message = ErrorCode;
+                                                                result = false;
+                                                                break;
+                                                            }
+                                                            else
+                                                            {
+                                                                result = true;
+                                                            }
                                                         }
-                                                        else
+                                                        if (!TarNode.L_Position.Equals(""))
                                                         {
-                                                            result = true;
+                                                            Val = Convert.ToInt32(TarNode.L_Position);
+                                                            diff = Val;
+
+                                                            logger.Debug("Diff:" + diff.ToString());
+                                                            if (diff > 500)//手臂伸出超過500就發警報
+                                                            {
+                                                                Report = ErrorType;
+                                                                Message = ErrorCode;
+                                                                result = false;
+                                                                break;
+                                                            }
+                                                            else
+                                                            {
+                                                                result = true;
+                                                            }
                                                         }
                                                     }
                                                     else
                                                     {
                                                         result = true;
                                                     }
+                                                }
+                                                else
+                                                {
+                                                    result = true;
                                                 }
                                             }
 
@@ -887,7 +897,7 @@ namespace TransferControl.Management
                 logger.Error("CheckCondition fail Task Id:" + Id + " exception: " + e.StackTrace);
                 throw new Exception("CheckCondition fail Task Id:" + Id + " exception: " + e.Message);
             }
-
+            logger.Debug("result:"+ result+ " Report:"+ Report+" Message:"+Message);
             return result;
         }
 
@@ -1005,7 +1015,7 @@ namespace TransferControl.Management
                                         string[] ConditionAry = EachSkipConditionAry[1].Split('=');
                                         string Value = ConditionAry[1];
                                         string Attr = ConditionAry[0];
-                                        string AttrVal = CurrParam[Attr].ToString().ToUpper();
+                                        string AttrVal = CurrParam["@"+Attr].ToString().ToUpper();
                                         if (AttrVal.Equals(Value.ToUpper()))
                                         {
                                             break;
@@ -1016,7 +1026,7 @@ namespace TransferControl.Management
                                         string[] ConditionAry = EachSkipConditionAry[1].Split(new string[] { "<>" }, StringSplitOptions.None);
                                         string Value = ConditionAry[1];
                                         string Attr = ConditionAry[0];
-                                        string AttrVal = CurrParam[Attr].ToString().ToUpper();
+                                        string AttrVal = CurrParam["@"+Attr].ToString().ToUpper();
                                         if (!AttrVal.Equals(Value.ToUpper()))
                                         {
                                             break;

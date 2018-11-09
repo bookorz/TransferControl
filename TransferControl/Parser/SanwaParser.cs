@@ -15,6 +15,10 @@ namespace TransferControl.Parser
             {
                 case Transaction.Command.RobotType.GetRIO:
                     return ParseRIO(Message);
+                case Transaction.Command.RobotType.GetPosition:
+                    return ParsePosition(Message);
+                case Transaction.Command.RobotType.GetStatus:
+                    return ParseStatus(Message);
                 default:
                     throw new Exception(Command + " Not support");
             }
@@ -40,6 +44,44 @@ namespace TransferControl.Parser
                 case "009":
                     result.Add("L_Present", MsgAry[1]);
                     break;
+            }
+            return result;
+        }
+
+        private Dictionary<string, string> ParsePosition(string Message)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+
+            string[] MsgAry = Message.Split(',');
+            for (int i = 0; i < MsgAry.Length; i++)
+            {
+                switch (i)
+                {
+                    case 0:
+                        result.Add("R_Position", MsgAry[i]);
+                        break;
+                    case 4:
+                        result.Add("X_Position", MsgAry[i]);
+                        break;
+
+                }
+            }
+            return result;
+        }
+
+        private Dictionary<string, string> ParseStatus(string Message)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+
+            for (int i = 0; i < Message.Length; i++)
+            {
+
+                switch (i + 1)
+                {
+                    case 10:
+                        result.Add("Servo", Message[i].ToString());
+                        break;
+                }
             }
             return result;
         }
