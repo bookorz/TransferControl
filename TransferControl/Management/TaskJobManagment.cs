@@ -236,6 +236,10 @@ namespace TransferControl.Management
 
                             ExcutedTask.Params.TryGetValue("@Target", out TargetName);
                             ExcutedTask.Params.TryGetValue("@Position", out PositionName);
+                            if (PositionName == null)
+                            {
+                                PositionName = "";
+                            }
                             ExcutedTask.Params.TryGetValue("@Slot", out Slot);
                             //Node Target = NodeManagement.Get(TargetName);
                             //Node Position = NodeManagement.Get(PositionName);
@@ -346,7 +350,7 @@ namespace TransferControl.Management
                                             {
                                                 ExcutedTask.Params.TryGetValue("@ToPosition", out PositionName);
                                                 ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
-                                                ExcutedTask.Params.TryGetValue("@Arm", out Arm);
+                                                ExcutedTask.Params.TryGetValue("@ToArm", out Arm);
                                                 ExcutedTask.Params.TryGetValue("@FromPosition", out FromPosition);
                                                 ExcutedTask.Params.TryGetValue("@FromSlot", out FromSlot);
                                                 if (!FromPosition.Equals("") && !FromSlot.Equals(""))
@@ -411,7 +415,7 @@ namespace TransferControl.Management
                                             {
                                                 ExcutedTask.Params.TryGetValue("@FromPosition", out PositionName);
                                                 ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
-                                                ExcutedTask.Params.TryGetValue("@Arm", out Arm);
+                                                ExcutedTask.Params.TryGetValue("@FromArm", out Arm);
                                                 TarNode = NodeManagement.Get(PositionName);
                                             }
                                             else
@@ -462,12 +466,12 @@ namespace TransferControl.Management
 
                                             if (PositionName.Equals(""))
                                             {
-                                                if (FunctionName.Equals("GetAccessSequentially"))
+                                                if (FunctionName.Equals("Get_Access_Sequentially"))
                                                 {
                                                     ExcutedTask.Params.TryGetValue("@FromPosition", out PositionName);
                                                     ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
                                                 }
-                                                else if (FunctionName.Equals("PutAccessSequentially"))
+                                                else if (FunctionName.Equals("Put_Access_Sequentially"))
                                                 {
                                                     ExcutedTask.Params.TryGetValue("@ToPosition", out PositionName);
                                                     ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
@@ -759,6 +763,8 @@ namespace TransferControl.Management
                                     Node = NodeManagement.Get(NodeName);
                                     if (Node != null)
                                     {
+                                        
+
                                         string AttrVal = "";
                                         if (Attr.Equals("WipCount"))
                                         {
@@ -767,6 +773,15 @@ namespace TransferControl.Management
                                         else
                                         {
                                             AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+
+                                            if (Attr.ToUpper().Equals("SERVO")&& AttrVal.Equals("0"))
+                                            {//當偵測到ROBOT被切過手動，把所有PORT改為未Mapping狀態   聲鑫要求
+                                                foreach(Node p in NodeManagement.GetLoadPortList())
+                                                {
+                                                    p.IsMapping = false;
+                                                }
+
+                                            }
                                         }
 
                                         if (AttrVal.Equals(Value.ToUpper()))
@@ -777,7 +792,7 @@ namespace TransferControl.Management
                                                 try
                                                 {
                                                     Node.ActionRequest req = new Node.ActionRequest();
-                                                    if (Conditions.Length >= 3)
+                                                    if (Conditions.Length >= 5)
                                                     {
                                                         string[] Attrs = Conditions[4].Split(',');
                                                         foreach (string atr in Attrs)
@@ -807,9 +822,12 @@ namespace TransferControl.Management
                                                     }
 
                                                     req.TaskName = SetVal;
-                                                    if (!Node.RequestQueue.ContainsKey(SetVal))
+                                                    lock (Node.RequestQueue)
                                                     {
-                                                        Node.RequestQueue.Add(SetVal, req);
+                                                        if (!Node.RequestQueue.ContainsKey(SetVal))
+                                                        {
+                                                            Node.RequestQueue.Add(SetVal, req);
+                                                        }
                                                     }
                                                 }
                                                 catch (Exception e)
@@ -901,14 +919,16 @@ namespace TransferControl.Management
             return result;
         }
 
-        public void Remove(string Id)
+        public CurrentProceedTask Remove(string Id)
         {
+            logger.Debug("Delete Task ID:" + Id);
             CurrentProceedTask tmp;
             CurrentProceedTasks.TryRemove(Id, out tmp);
             if (tmp != null)
             {
                 tmp.Finished = true;
             }
+            return tmp;
         }
 
         public void Clear()
@@ -1324,6 +1344,7 @@ namespace TransferControl.Management
                     {
                         logger.Info("已找不到Task，完成工作，TaskId:" + Id);
                         Remove(Id);
+
                         //throw new Exception("已找不到Task，完成工作，TaskId:" + Id);
                         //ErrorMessage = "已找不到Task，完成工作，TaskId:" + Id;
                         return false;

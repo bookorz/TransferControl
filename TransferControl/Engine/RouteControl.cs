@@ -19,7 +19,7 @@ namespace TransferControl.Engine
     public class RouteControl : AlarmMapping, Controller.ICommandReport, IDIOTriggerReport, IJobReport, ITaskJobReport
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
-        string _Mode = "";
+        
         public bool IsInitial = false;
         DateTime StartTime = new DateTime();
         IUserInterfaceReport _UIReport;
@@ -42,7 +42,7 @@ namespace TransferControl.Engine
         {
             Instance = this;
             EqpState = "Idle";
-            _Mode = "Stop";
+           
             _UIReport = ReportUI;
             _HostReport = ReportHost;
             //初始化所有Controller
@@ -52,8 +52,7 @@ namespace TransferControl.Engine
             //初始化所有Node
             NodeManagement.LoadConfig();
 
-            //初始化傳送腳本
-            PathManagement.LoadConfig();
+            
             //初始化命令腳本
             CommandScriptManagement.LoadConfig();
             //初始化命令參數轉換表
@@ -75,20 +74,6 @@ namespace TransferControl.Engine
             DIO.Connect();
         }
         
-        /// <summary>
-        /// 取得目前模式
-        /// </summary>
-        /// <returns></returns>
-        public string GetMode()
-        {
-            string result = "";
-            lock (this)
-            {
-                result = _Mode;
-            }
-
-            return result;
-        }
         
 
 
@@ -252,6 +237,7 @@ namespace TransferControl.Engine
                                     //}
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
                                     Node.MappingResult = Mapping;
+                                    Node.IsMapping = true;
                                     if (_HostReport != null)
                                     {
                                         _HostReport.On_Event_Trigger("MAPDT", "", Node.Name, Msg.Value);
@@ -299,6 +285,7 @@ namespace TransferControl.Engine
                                                 wafer.MapFlag = true;
                                                 wafer.ErrPosition = true;
                                                 //MappingData.Add(wafer);
+                                                Node.IsMapping = false;
                                                 break;
                                             default:
                                             case '?':
@@ -307,6 +294,7 @@ namespace TransferControl.Engine
                                                 wafer.MapFlag = true;
                                                 wafer.ErrPosition = true;
                                                 //MappingData.Add(wafer);
+                                                Node.IsMapping = false;
                                                 break;
                                             case 'W':
                                                 wafer.Job_Id = "Double";
@@ -314,6 +302,7 @@ namespace TransferControl.Engine
                                                 wafer.MapFlag = true;
                                                 wafer.ErrPosition = true;
                                                 //MappingData.Add(wafer);
+                                                Node.IsMapping = false;
                                                 break;
                                         }
                                         if (!Node.AddJob(wafer.Slot, wafer))
@@ -325,7 +314,7 @@ namespace TransferControl.Engine
                                         }
 
                                     }
-                                    Node.IsMapping = true;
+                                    
                                     break;
 
                             }
@@ -1107,7 +1096,8 @@ namespace TransferControl.Engine
                 if (Msg.Command.Equals("ERROR"))
                 {
                     Node.HasAlarm = true;
-
+                    Node.InitialComplete = false;
+                    Node.OrgSearchComplete = false;
                     _UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "Alarm");
 
@@ -1173,6 +1163,8 @@ namespace TransferControl.Engine
         /// <param name="Msg"></param>
         public void On_Command_Error(Node Node, Transaction Txn, ReturnMessage Msg)
         {
+            Node.InitialComplete = false;
+            Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             TaskJob.Remove(Txn.FormName);
             if (_HostReport != null)

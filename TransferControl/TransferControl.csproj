@@ -81,7 +81,6 @@
     <Compile Include="Management\NodeState.cs" />
     <Compile Include="Management\OCRInfo.cs" />
     <Compile Include="Management\Path.cs" />
-    <Compile Include="Management\PathManagement.cs" />
     <Compile Include="Management\PointManagement.cs" />
     <Compile Include="Management\ProcessRecord.cs" />
     <Compile Include="Management\RobotPoint.cs" />

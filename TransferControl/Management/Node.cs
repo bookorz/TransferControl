@@ -286,6 +286,11 @@ namespace TransferControl.Management
             public ActionRequest()
             {
                 TimeStamp = DateTime.Now.Ticks;
+                Position = "";
+                Slot = "";
+                Slot2 = "";
+                Arm = "";
+                Value = "";
             }
         }
 
@@ -647,15 +652,19 @@ namespace TransferControl.Management
                         {
                             case Transaction.Command.SmartTagType.Hello:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.Hello();
+                               
                                 break;
                             case Transaction.Command.SmartTagType.GetLCDData:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.GetLCDData();
+                               
                                 break;
                             case Transaction.Command.SmartTagType.SelectLCDData:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.SelectLCDData();
+                              
                                 break;
                             case Transaction.Command.SmartTagType.SetLCDData:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.SetLCDData(txn.Value);
+                               
                                 break;
                         }
                         break;
