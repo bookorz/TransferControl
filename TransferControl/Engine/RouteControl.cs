@@ -18,6 +18,7 @@ namespace TransferControl.Engine
 {
     public class RouteControl : AlarmMapping, Controller.ICommandReport, IDIOTriggerReport, IJobReport, ITaskJobReport
     {
+
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
         string _Mode = "";
         public bool IsInitial = false;
