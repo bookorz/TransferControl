@@ -16,7 +16,7 @@ namespace TransferControl.Management
     public class TaskJobManagment
     {
         ILog logger = LogManager.GetLogger(typeof(TaskJobManagment));
-        ConcurrentDictionary<string, List<TaskJob>> TaskJobList;
+        ConcurrentDictionary<string, List<TaskJob>> TaskJobList; 
         ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
         private DBUtil dBUtil = new DBUtil();
         ITaskJobReport _TaskReport;
@@ -493,9 +493,18 @@ namespace TransferControl.Management
                                                     if (slotNo != 1)
                                                     {
                                                         TarNode.JobList.TryGetValue((slotNo - 1).ToString(), out SlotData);
+                                                        ExcutedTask.Params.TryGetValue("@FromPosition", out FromPosition);
+                                                        ExcutedTask.Params.TryGetValue("@FromSlot", out FromSlot);
+                                                        ExcutedTask.Params.TryGetValue("@ToPosition", out ToPosition);
+                                                        ExcutedTask.Params.TryGetValue("@ToSlot", out ToSlot);
+
                                                         //其餘Slot的前一個Slot不能有片(Slot 是反序)
                                                         if (!SlotData.MapFlag && !SlotData.ErrPosition)
                                                         {
+                                                            result = true;
+                                                        }
+                                                        else if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot)-1)== Convert.ToInt32(FromSlot))
+                                                        {//因放片時，會造成干涉的Slot已被取走，所以不會有問題
                                                             result = true;
                                                         }
                                                         else
@@ -512,8 +521,17 @@ namespace TransferControl.Management
                                                     if (slotNo != 25)
                                                     {
                                                         TarNode.JobList.TryGetValue((slotNo + 1).ToString(), out SlotData);
+                                                        ExcutedTask.Params.TryGetValue("@FromPosition", out FromPosition);
+                                                        ExcutedTask.Params.TryGetValue("@FromSlot", out FromSlot);
+                                                        ExcutedTask.Params.TryGetValue("@ToPosition", out ToPosition);
+                                                        ExcutedTask.Params.TryGetValue("@ToSlot", out ToSlot);
+
                                                         //其餘Slot的後一個Slot不能有片(Slot 是反序)
                                                         if (!SlotData.MapFlag && !SlotData.ErrPosition)
+                                                        {
+                                                            result = true;
+                                                        }
+                                                        else if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot) + 1) == Convert.ToInt32(FromSlot))
                                                         {
                                                             result = true;
                                                         }

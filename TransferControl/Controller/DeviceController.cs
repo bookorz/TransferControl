@@ -190,7 +190,7 @@ namespace TransferControl.Controller
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS")!=-1 )
                 {
-                    Txn.SetTimeOut(3000);
+                    Txn.SetTimeOut(5000);
                 }
 
 
