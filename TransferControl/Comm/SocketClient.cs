@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TransferControl.Controller;
 
+
 namespace TransferControl.Comm
 {
     class SocketClient : IConnection

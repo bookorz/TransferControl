@@ -18,5 +18,5 @@ namespace TransferControl.Config
         public string ParityBit { get; set; }
         public int DataBits { get; set; }
         public string StopBit { get; set; }
-    }
+    }//test
 }
