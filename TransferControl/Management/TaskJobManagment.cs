@@ -271,14 +271,16 @@ namespace TransferControl.Management
                                         J.Position = FNode.Name;
                                         J.Slot = FromSlot;
                                     }
-                                    //空的Slot要塞空資料                                       
-                                    tmp = RouteControl.CreateJob();
-                                    tmp.Job_Id = "No wafer";
-                                    tmp.Host_Job_Id = "No wafer";
-                                    tmp.Slot = FromSlot;
-                                    tmp.Position = FNode.Name;
-                                    FNode.JobList.TryAdd(tmp.Slot, tmp);
-
+                                    if (FNode.Type.ToUpper().Equals("LOADPORT"))
+                                    {
+                                        //LOADPORT空的Slot要塞空資料                                       
+                                        tmp = RouteControl.CreateJob();
+                                        tmp.Job_Id = "No wafer";
+                                        tmp.Host_Job_Id = "No wafer";
+                                        tmp.Slot = FromSlot;
+                                        tmp.Position = FNode.Name;
+                                        FNode.JobList.TryAdd(tmp.Slot, tmp);
+                                    }
 
                                     J.LastNode = J.Position;
                                     J.LastSlot = J.Slot;

@@ -269,6 +269,8 @@ namespace TransferControl.Management
 
         public bool Connected { get; set; }
 
+        public bool ReadyForAccess { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string,ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -318,6 +320,7 @@ namespace TransferControl.Management
             IO = new Dictionary<string, string>();
             State = "Not Origin";
             CarryCount = 0;
+            ReadyForAccess = true;
             //if (Type.Equals("LOADPORT"))
             //{
             //    State = "Ready To Load";
