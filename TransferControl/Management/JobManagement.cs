@@ -27,7 +27,7 @@ namespace TransferControl.Management
                 {
                     break;
                 }
-                
+                currentIdx++;
             }
             return key;
         }
