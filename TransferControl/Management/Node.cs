@@ -283,7 +283,8 @@ namespace TransferControl.Management
             public string Slot2 { get; set; }
             public string Arm { get; set; }
             public string Value { get; set; }
-            public long TimeStamp { get; }
+           
+            public long TimeStamp { get; set; }
 
             public ActionRequest()
             {
@@ -293,6 +294,7 @@ namespace TransferControl.Management
                 Slot2 = "";
                 Arm = "";
                 Value = "";
+                
             }
         }
 
@@ -321,6 +323,7 @@ namespace TransferControl.Management
             State = "Not Origin";
             CarryCount = 0;
             ReadyForAccess = true;
+          
             //if (Type.Equals("LOADPORT"))
             //{
             //    State = "Ready To Load";
