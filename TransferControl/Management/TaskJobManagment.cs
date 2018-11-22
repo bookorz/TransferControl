@@ -1325,16 +1325,8 @@ namespace TransferControl.Management
                                     }
                                     else
                                     {
-                                        if (ex.ExcuteType.ToUpper().Equals("SCRIPT"))
-                                        {
-                                            result = Node.ExcuteScript(ex.ExcuteName, Id, ex.param, out ErrorMessage);
 
-                                        }
-                                        else if (ex.ExcuteType.ToUpper().Equals("CMD"))
-                                        {
-                                            result = Node.SendCommand(ex.Txn, out ErrorMessage);
-
-                                        }
+                                        result = Node.SendCommand(ex.Txn, out ErrorMessage);
                                     }
                                 }
                                 else

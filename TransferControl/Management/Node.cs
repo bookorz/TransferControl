@@ -269,7 +269,9 @@ namespace TransferControl.Management
 
         public bool Connected { get; set; }
 
-        public bool ReadyForAccess { get; set; }
+        public bool ReadyForGet { get; set; }
+
+        public bool ReadyForPut { get; set; }
 
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
@@ -322,8 +324,8 @@ namespace TransferControl.Management
             IO = new Dictionary<string, string>();
             State = "Not Origin";
             CarryCount = 0;
-            ReadyForAccess = true;
-          
+            ReadyForPut = true;
+            ReadyForGet = true;
             //if (Type.Equals("LOADPORT"))
             //{
             //    State = "Ready To Load";
@@ -408,73 +410,7 @@ namespace TransferControl.Management
 
             IsDock = false;
         }
-        /// <summary>
-        /// 執行命令腳本
-        /// </summary>
-        /// <param name="ScriptName"></param>
-        /// <param name="FormName"></param>
-        /// <param name="Force"></param> 
-        public void ExcuteScript(string ScriptName, string FormName, out string Message, string RecipeID = "", bool Force = false)
-        {
-            Message = "";
-            CommandScript StartCmd = CommandScriptManagement.GetStart(ScriptName);
-            if (StartCmd != null)
-            {
-                Transaction txn = new Transaction();
-                txn.Method = StartCmd.Method;
-                txn.FormName = FormName;
-                txn.ScriptName = ScriptName;
-                txn.Arm = StartCmd.Arm;
-                txn.Position = StartCmd.Position;
-                txn.Slot = StartCmd.Slot;
-                txn.Value = StartCmd.Value;
-                txn.ScriptIndex = StartCmd.Index;
-                txn.RecipeID = RecipeID;
-                //List<Job> dummyJob = new List<Job>();
-                //Job dummy = new Job();
-                //dummy.Job_Id = "dummy";
-                //dummyJob.Add(dummy);
-                //txn.TargetJobs = dummyJob;
-                logger.Debug("Excute Script:" + ScriptName + " Method:" + txn.Method);
-                SendCommand(txn, out Message, Force);
-            }
-        }
-        /// <summary>
-        /// 執行命令腳本(帶參數)
-        /// </summary>
-        /// <param name="ScriptName"></param>
-        /// <param name="FormName"></param>
-        /// <param name="Force"></param>
-        public bool ExcuteScript(string ScriptName, string FormName, Dictionary<string, string> Param, out string Message, string RecipeID = "")
-        {
-            Message = "";
-            if (Param != null)
-            {
-                CommandScriptManagement.ReloadScriptWithParam(ScriptName, Param);
-            }
-            CommandScript StartCmd = CommandScriptManagement.GetStart(ScriptName);
-            if (StartCmd != null)
-            {
-                Transaction txn = new Transaction();
-                txn.Method = StartCmd.Method;
-                txn.FormName = FormName;
-                txn.ScriptName = ScriptName;
-                txn.Arm = StartCmd.Arm;
-                txn.Position = StartCmd.Position;
-                txn.Slot = StartCmd.Slot;
-                txn.Value = StartCmd.Value;
-                txn.ScriptIndex = StartCmd.Index;
-                txn.RecipeID = RecipeID;
-                //List<Job> dummyJob = new List<Job>();
-                //Job dummy = new Job();
-                //dummy.Job_Id = "dummy";
-                //dummyJob.Add(dummy);
-                //txn.TargetJobs = dummyJob;
-                logger.Debug("Excute Script:" + ScriptName + " Method:" + txn.Method);
-                return SendCommand(txn, out Message);
-            }
-            return false;
-        }
+        
         /// <summary>
         /// 傳送命令
         /// </summary>

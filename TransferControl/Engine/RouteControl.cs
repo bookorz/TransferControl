@@ -54,8 +54,7 @@ namespace TransferControl.Engine
             NodeManagement.LoadConfig();
 
             
-            //初始化命令腳本
-            CommandScriptManagement.LoadConfig();
+            
             //初始化命令參數轉換表
             CmdParamManagement.Initialize();
             //初始化Robot點位表
@@ -237,7 +236,14 @@ namespace TransferControl.Engine
                                     //    Mapping = "0000000110000000000000000";
                                     //}
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
-                                    Node.MappingResult = Mapping;
+                                    if (Node.Name.Equals("LOADPORT02"))
+                                    {
+                                        Mapping = "1111111111111111111111111";
+                                        //Mapping = "1110000000000000000000000";
+                                    }
+                                    
+                                        Node.MappingResult = Mapping;
+                                    
                                     Node.IsMapping = true;
                                     if (_HostReport != null)
                                     {
