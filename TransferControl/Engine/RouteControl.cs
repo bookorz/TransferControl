@@ -1157,7 +1157,7 @@ namespace TransferControl.Engine
         public void On_Node_State_Changed(Node Node, string Status)
         {
 
-            StateRecord.NodeStateUpdate(Node.Name, Node.State, Status);
+            //StateRecord.NodeStateUpdate(Node.Name, Node.State, Status);
             Node.State = Status;
 
             _UIReport.On_Node_State_Changed(Node, Status);
