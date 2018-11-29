@@ -12,6 +12,7 @@ namespace TransferControl.Management
         public string Job_Id { get; set; }
         public string Host_Job_Id { get; set; }
         public List<OCRInfo> OcrCodeList { get; set; }
+        public bool InProcess { get; set; }
         public bool NeedProcess { get; set; }
         public bool ProcessFlag { get; set; }
         public bool AlignerFlag { get; set; }
@@ -56,6 +57,7 @@ namespace TransferControl.Management
             AlignerFlag = false;
             NeedProcess = false;
             OCRFlag = false;
+            InProcess = false;
             OcrCodeList = new List<OCRInfo>();
         }
 

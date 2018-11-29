@@ -29,7 +29,7 @@ namespace TransferControl.Engine
         void On_Connection_Status_Report(string DIOName, string Status);
         void On_Alarm_Happen(string DIOName, string ErrorCode);
 
-        void On_TaskJob_Aborted(string TaskID, string NodeName, string ReportType, string Message);
-        void On_TaskJob_Finished(string TaskID);
+        void On_TaskJob_Aborted(TaskJobManagment.CurrentProceedTask Task, string NodeName, string ReportType, string Message);
+        void On_TaskJob_Finished(TaskJobManagment.CurrentProceedTask Task);
     }
 }

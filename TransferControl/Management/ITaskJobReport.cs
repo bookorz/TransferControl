@@ -8,7 +8,7 @@ namespace TransferControl.Management
 {
     public interface ITaskJobReport
     {
-        void On_Task_NoExcuted(string Id);
-        void On_Task_Abort(string Id);
+        void On_Task_NoExcuted(TaskJobManagment.CurrentProceedTask Task);
+        void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task);
     }
 }

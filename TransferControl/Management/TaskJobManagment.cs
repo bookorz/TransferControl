@@ -16,7 +16,7 @@ namespace TransferControl.Management
     public class TaskJobManagment
     {
         ILog logger = LogManager.GetLogger(typeof(TaskJobManagment));
-        ConcurrentDictionary<string, List<TaskJob>> TaskJobList; 
+        ConcurrentDictionary<string, List<TaskJob>> TaskJobList;
         ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
         private DBUtil dBUtil = new DBUtil();
         ITaskJobReport _TaskReport;
@@ -24,6 +24,7 @@ namespace TransferControl.Management
 
         public class CurrentProceedTask
         {
+            public string Id { get; set; }
             public TaskJob ProceedTask { get; set; }
             public Dictionary<string, string> Params { get; set; }
             public List<TaskJob.Excuted> CheckList = new List<TaskJob.Excuted>();
@@ -69,9 +70,10 @@ namespace TransferControl.Management
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public bool IsTask(string Id)
+        public bool IsTask(string Id ,out CurrentProceedTask tk)
         {
-            if (CurrentProceedTasks.ContainsKey(Id))
+            tk = null;
+            if (CurrentProceedTasks.TryGetValue(Id,out tk))
             {
                 return true;
             }
@@ -179,7 +181,7 @@ namespace TransferControl.Management
                 CurrentProceedTask ExcutedTask = null;
                 if (CurrentProceedTasks.TryGetValue(Id, out ExcutedTask))
                 {
-                    if(ExcutedTask.ProceedTask.IsSafetyCheck && this.SaftyCheckByPass)
+                    if (ExcutedTask.ProceedTask.IsSafetyCheck && this.SaftyCheckByPass)
                     {//當安全檢查取消打開時，跳過所有標記為安全檢查的項目
                         return true;
                     }
@@ -280,6 +282,13 @@ namespace TransferControl.Management
                                         tmp.Slot = FromSlot;
                                         tmp.Position = FNode.Name;
                                         FNode.JobList.TryAdd(tmp.Slot, tmp);
+                                        //從LOADPORT取出，處理開始
+                                        J.InProcess = true;
+                                    }
+                                    if (TNode.Type.ToUpper().Equals("LOADPORT"))
+                                    {
+                                        //放回UNLOADPORT，處理結束
+                                        J.InProcess = false;
                                     }
 
                                     J.LastNode = J.Position;
@@ -505,7 +514,7 @@ namespace TransferControl.Management
                                                         {
                                                             result = true;
                                                         }
-                                                        else if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot)-1)== Convert.ToInt32(FromSlot))
+                                                        else if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot) - 1) == Convert.ToInt32(FromSlot))
                                                         {//因放片時，會造成干涉的Slot已被取走，所以不會有問題
                                                             result = true;
                                                         }
@@ -783,7 +792,7 @@ namespace TransferControl.Management
                                     Node = NodeManagement.Get(NodeName);
                                     if (Node != null)
                                     {
-                                        
+
 
                                         string AttrVal = "";
                                         if (Attr.Equals("WipCount"))
@@ -794,9 +803,9 @@ namespace TransferControl.Management
                                         {
                                             AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
 
-                                            if (Attr.ToUpper().Equals("SERVO")&& AttrVal.Equals("0"))
+                                            if (Attr.ToUpper().Equals("SERVO") && AttrVal.Equals("0"))
                                             {//當偵測到ROBOT被切過手動，把所有PORT改為未Mapping狀態   聲鑫要求
-                                                foreach(Node p in NodeManagement.GetLoadPortList())
+                                                foreach (Node p in NodeManagement.GetLoadPortList())
                                                 {
                                                     p.IsMapping = false;
                                                 }
@@ -935,7 +944,7 @@ namespace TransferControl.Management
                 logger.Error("CheckCondition fail Task Id:" + Id + " exception: " + e.StackTrace);
                 throw new Exception("CheckCondition fail Task Id:" + Id + " exception: " + e.Message);
             }
-            logger.Debug("result:"+ result+ " Report:"+ Report+" Message:"+Message);
+            logger.Debug("result:" + result + " Report:" + Report + " Message:" + Message);
             return result;
         }
 
@@ -953,9 +962,9 @@ namespace TransferControl.Management
 
         public void Clear()
         {
-            foreach (string Id in CurrentProceedTasks.Keys)
+            foreach (CurrentProceedTask tk in CurrentProceedTasks.Values)
             {
-                _TaskReport.On_Task_Abort(Id);
+                _TaskReport.On_Task_Abort(tk);
             }
             CurrentProceedTasks.Clear();
         }
@@ -977,6 +986,7 @@ namespace TransferControl.Management
                     //只有帶ID進來，此Task已經開始執行，尋找上一次執行的Task
                     if (CurrentProceedTasks.TryGetValue(Id, out ExcutedTask))
                     {
+                        Task = ExcutedTask;
                         taskName = ExcutedTask.ProceedTask.TaskName;
                         Remove(Id);
                         LastParam = ExcutedTask.Params;
@@ -1055,7 +1065,7 @@ namespace TransferControl.Management
                                         string[] ConditionAry = EachSkipConditionAry[1].Split('=');
                                         string Value = ConditionAry[1];
                                         string Attr = ConditionAry[0];
-                                        string AttrVal = CurrParam["@"+Attr].ToString().ToUpper();
+                                        string AttrVal = CurrParam["@" + Attr].ToString().ToUpper();
                                         if (AttrVal.Equals(Value.ToUpper()))
                                         {
                                             break;
@@ -1066,7 +1076,7 @@ namespace TransferControl.Management
                                         string[] ConditionAry = EachSkipConditionAry[1].Split(new string[] { "<>" }, StringSplitOptions.None);
                                         string Value = ConditionAry[1];
                                         string Attr = ConditionAry[0];
-                                        string AttrVal = CurrParam["@"+Attr].ToString().ToUpper();
+                                        string AttrVal = CurrParam["@" + Attr].ToString().ToUpper();
                                         if (!AttrVal.Equals(Value.ToUpper()))
                                         {
                                             break;
@@ -1142,6 +1152,7 @@ namespace TransferControl.Management
                         {//用傳入的
                             CurrTask.Params = param;
                         }
+                        CurrTask.Id = Id;
                         if (CurrentProceedTasks.TryAdd(Id, CurrTask))
                         {
                             Task = CurrTask;
@@ -1149,7 +1160,7 @@ namespace TransferControl.Management
 
                             if (ExcuteObjStr.Trim().Equals(""))
                             {
-                                _TaskReport.On_Task_NoExcuted(Id);
+                                _TaskReport.On_Task_NoExcuted(CurrTask);
                                 return true;
                             }
 
@@ -1356,7 +1367,7 @@ namespace TransferControl.Management
                     {
                         logger.Info("已找不到Task，完成工作，TaskId:" + Id);
                         Remove(Id);
-
+                        
                         //throw new Exception("已找不到Task，完成工作，TaskId:" + Id);
                         //ErrorMessage = "已找不到Task，完成工作，TaskId:" + Id;
                         return false;
