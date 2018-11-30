@@ -215,6 +215,19 @@ namespace TransferControl.Management
             return result;
         }
 
+        public static Node GetLoadPortByFoup(string FoupId)
+        {
+            Node result = null;
+            var findPort = from port in NodeList.Values.ToList()
+                           where port.Type.Equals("LOADPORT") && port.Enable && port.FoupID.ToUpper().Equals(FoupId.ToUpper())
+                           select port;
+            if (findPort.Count() != 0)
+            {
+                result = findPort.First();
+            }
+            return result;
+        }
+
         public static List<Node> GetEnableRobotList()
         {
             List<Node> result = new List<Node>();

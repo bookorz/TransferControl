@@ -11,6 +11,7 @@ namespace TransferControl.Management
         public string Slot { get; set; }
         public string Job_Id { get; set; }
         public string Host_Job_Id { get; set; }
+        public string Host_Lot_Id { get; set; }
         public List<OCRInfo> OcrCodeList { get; set; }
         public bool InProcess { get; set; }
         public bool NeedProcess { get; set; }
@@ -46,6 +47,7 @@ namespace TransferControl.Management
         {
             _Report = Report;
             Job_Id = "";
+            Host_Lot_Id = "";
             WaitToDo = "";
             Destination = "";
             DestinationSlot = "";

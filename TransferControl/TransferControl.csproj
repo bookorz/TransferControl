@@ -68,7 +68,10 @@
     <Compile Include="Engine\RouteControl.cs" />
     <Compile Include="Management\AlarmInfo.cs" />
     <Compile Include="Management\AlarmManagement.cs" />
+    <Compile Include="Management\Carrier.cs" />
+    <Compile Include="Management\CarrierManagement.cs" />
     <Compile Include="Management\CmdParamManagement.cs" />
+    <Compile Include="Management\ControlJob.cs" />
     <Compile Include="Management\ControllerManagement.cs" />
     <Compile Include="Management\IJobReport.cs" />
     <Compile Include="Management\ITaskJobReport.cs" />
@@ -81,6 +84,9 @@
     <Compile Include="Management\OCRInfo.cs" />
     <Compile Include="Management\Path.cs" />
     <Compile Include="Management\PointManagement.cs" />
+    <Compile Include="Management\ProcessJob.cs" />
+    <Compile Include="Management\ControlJobManagement.cs" />
+    <Compile Include="Management\ProcessJobManagement.cs" />
     <Compile Include="Management\ProcessRecord.cs" />
     <Compile Include="Management\RobotPoint.cs" />
     <Compile Include="Management\StateRecord.cs" />

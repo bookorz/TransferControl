@@ -275,8 +275,6 @@ namespace TransferControl.Management
 
         public bool AccessAutoMode { get; set; }
 
-        public int FoupIdStatus { get; set; }
-
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string,ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -313,7 +311,6 @@ namespace TransferControl.Management
             {
                 Phase = "2";
             }
-            FoupIdStatus = 0;
             Connected = false;
             AccessAutoMode = false;
             MappingResult = "";
