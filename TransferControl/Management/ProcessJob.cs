@@ -17,6 +17,7 @@ namespace TransferControl.Management
         public int PRRecipeMethod;
         public string RcpSpec;
         public int ProcessStart;
+        public long Seq;
 
         //run time data
         public int PJState;
@@ -32,7 +33,7 @@ namespace TransferControl.Management
             RcpSpec = "";
             ProcessStart = 0;
             SlotID = new int[0];
-
+            Seq = DateTime.Now.Ticks;
             PJState = 0;
 
         }

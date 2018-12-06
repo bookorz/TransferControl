@@ -20,14 +20,17 @@ namespace TransferControl.Management
         {
             int currentIdx = 1;
             string key = "";
-            while (true)
+            lock (CarrierList)
             {
-                key = "CST" + currentIdx.ToString("000");
-                if (!CarrierList.ContainsKey(key))
+                while (true)
                 {
-                    break;
+                    key = "CST" + currentIdx.ToString("000");
+                    if (!CarrierList.ContainsKey(key))
+                    {
+                        break;
+                    }
+                    currentIdx++;
                 }
-                currentIdx++;
             }
             return key;
         }
@@ -41,6 +44,22 @@ namespace TransferControl.Management
                 lock (CarrierList)
                 {
                     result = CarrierList.Values.ToList();                    
+                }
+            }
+            return result;
+        }
+
+        public static Carrier FindByLocation(string PortName)
+        {
+            Carrier result = null;
+            lock (CarrierList)
+            {
+                var find = from each in CarrierList.Values
+                           where each.LocationID.ToUpper().Equals(PortName.ToUpper())
+                           select each;
+                if (find.Count() != 0)
+                {
+                    result = find.First();
                 }
             }
             return result;
