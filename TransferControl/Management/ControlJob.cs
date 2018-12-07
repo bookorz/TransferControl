@@ -10,8 +10,9 @@ namespace TransferControl.Management
     {
         //Create Data
         public string CJ_ObjID;
-        public int PrCtrlSpecNumber;
-        public string[] PrCtrlSpec_PrObjID;
+        public List<string> PrCtrlSpec_PrObjID;
+        public List<string> CarrierInputSpec;
+        public List<OutSpec> MtrlOutSpec;
         public int ProcessOrderMgnt;
         public int StartMethod;
 
@@ -20,14 +21,22 @@ namespace TransferControl.Management
 
         public ControlJob()
         {
-            PrCtrlSpecNumber = 25;
             CJ_ObjID = "";
-            PrCtrlSpec_PrObjID = new string[0];
-
+            PrCtrlSpec_PrObjID = new List<string>();
+            CarrierInputSpec = new List<string>();
+            MtrlOutSpec = new List<OutSpec>();
             ProcessOrderMgnt = 0;
             StartMethod = 0;
 
             CJState = 0;
+        }
+
+        public class OutSpec
+        {
+            public string SrcCarrierID = "";
+            public string DstCarrierID = "";
+            public List<int> SrcMap = new List<int>();
+            public List<int> DstMap = new List<int>();
         }
     }
 }
