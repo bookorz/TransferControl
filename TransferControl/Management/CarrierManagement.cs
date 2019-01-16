@@ -9,30 +9,32 @@ namespace TransferControl.Management
 {
     public class CarrierManagement
     {
-        private static ConcurrentDictionary<string, Carrier> CarrierList = new ConcurrentDictionary<string, Carrier>();
+        private static List<Carrier> CarrierList = new List<Carrier>();
 
         public static void Initial()
         {
             CarrierList.Clear();
         }
 
-        public static string GetNewID()
+        public static int GetNewIndex()
         {
             int currentIdx = 1;
-            string key = "";
+            
             lock (CarrierList)
             {
                 while (true)
                 {
-                    key = "CST" + currentIdx.ToString("000");
-                    if (!CarrierList.ContainsKey(key))
+                    var find = from each in CarrierList
+                               where each.CarrierIndex == currentIdx
+                               select each;
+                    if (find.Count() == 0)
                     {
-                        break;
+                        return currentIdx;
                     }
                     currentIdx++;
                 }
             }
-            return key;
+           
         }
 
         public static List<Carrier> GetCarrierList()
@@ -43,7 +45,7 @@ namespace TransferControl.Management
             {
                 lock (CarrierList)
                 {
-                    result = CarrierList.Values.ToList();                    
+                    result = CarrierList;                    
                 }
             }
             return result;
@@ -54,7 +56,7 @@ namespace TransferControl.Management
             Carrier result = null;
             lock (CarrierList)
             {
-                var find = from each in CarrierList.Values
+                var find = from each in CarrierList
                            where each.LocationID.ToUpper().Equals(PortName.ToUpper())
                            select each;
                 if (find.Count() != 0)
@@ -71,33 +73,38 @@ namespace TransferControl.Management
 
             lock (CarrierList)
             {
-                CarrierList.TryGetValue(CarrierId, out result);
+                var find = from each in CarrierList
+                           where each.CarrierID.ToUpper().Equals(CarrierId.ToUpper())
+                           select each;
+                if (find.Count() != 0)
+                {
+                    result = find.First();
+                }
             }
 
             return result;
         }
 
-        public static bool Add(string CarrierId, Carrier Carrier)
+        public static bool Add(Carrier Carrier)
         {
             bool result = false;
             lock (CarrierList)
             {
-                if (!CarrierList.ContainsKey(CarrierId))
-                {
-                    CarrierList.TryAdd(CarrierId, Carrier);
+                
+                    CarrierList.Add(Carrier);
                     result = true;
-                }
+                
             }
             return result;
         }
 
-        public static bool Remove(string CarrierId)
+        public static bool Remove(Carrier Carrier)
         {
             bool result = false;
             lock (CarrierList)
             {
                 Carrier tmp;
-                result = CarrierList.TryRemove(CarrierId, out tmp);
+                result = CarrierList.Remove(Carrier);
 
             }
             return result;

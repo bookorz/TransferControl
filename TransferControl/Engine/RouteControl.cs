@@ -22,11 +22,11 @@ namespace TransferControl.Engine
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
         
         public bool IsInitial = false;
-        DateTime StartTime = new DateTime();
+        //DateTime StartTime = new DateTime();
         IUserInterfaceReport _UIReport;
         IHostInterfaceReport _HostReport;
-        int LapsedWfCount = 0;
-        int LapsedLotCount = 0;
+        //int LapsedWfCount = 0;
+        //int LapsedLotCount = 0;
         public string EqpState = "";
         public int NotchDirect = 270;
 
@@ -86,7 +86,7 @@ namespace TransferControl.Engine
         /// <param name="Msg"></param>
         public void On_Command_Excuted(Node Node, Transaction Txn, ReturnMessage Msg)
         {
-            string Message = "";
+            //string Message = "";
             try
             {
                 logger.Debug("On_Command_Excuted");
@@ -238,8 +238,8 @@ namespace TransferControl.Engine
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
                                     if (Node.Name.Equals("LOADPORT02"))
                                     {
-                                        Mapping = "1111111111111111111111111";
-                                        //Mapping = "1110000000000000000000000";
+                                        //Mapping = "1111111111111111111111111";
+                                        Mapping = SystemConfig.Get().MappingData;
                                     }
                                     
                                         Node.MappingResult = Mapping;
@@ -650,7 +650,7 @@ namespace TransferControl.Engine
         public void On_Command_Finished(Node Node, Transaction Txn, ReturnMessage Msg)
         {
 
-            string Message = "";
+            //string Message = "";
             //var watch = System.Diagnostics.Stopwatch.StartNew();
             try
             {
@@ -909,17 +909,7 @@ namespace TransferControl.Engine
 
                             if (Node.Phase.Equals("2"))
                             {
-                                var find = from job in Node.JobList.Values.ToList()
-                                           where !job.ProcessFlag && job.NeedProcess
-                                           select job;
-                                if (find.Count() == 0)
-                                {
-                                    Node.AllDone = true;//手上的都做完了
-                                }
-                                else
-                                {
-                                    Node.AllDone = false;
-                                }
+                                
 
                                 Node NextRobot = NodeManagement.GetNextRobot(Txn.TargetJobs[0].Destination);
 
@@ -951,18 +941,7 @@ namespace TransferControl.Engine
                             Node.CurrentPoint = Txn.Point;
                             if (Node.Phase.Equals("2"))
                             {
-                                var find = from job in Node.JobList.Values.ToList()
-                                           where !job.ProcessFlag
-                                           select job;
-                                if (find.Count() == 0)
-                                {
-                                    Node.AllDone = true;//手上的都做完了
-                                }
-                                else
-                                {
-                                    Node.AllDone = false;
-                                }
-
+                                
                                 Node.GetAvailable = true;
                                 Node.GetMutex = true;
                                 Node.UnLockByJob = "";
@@ -1182,6 +1161,10 @@ namespace TransferControl.Engine
             Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
+            if (Msg.Value.Equals(""))
+            {
+                Msg.Value = Msg.Command;
+            }
             if (_HostReport != null)
             {
                 _HostReport.On_TaskJob_Aborted(Task, "", "ABS", Msg.Value);

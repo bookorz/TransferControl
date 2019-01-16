@@ -463,15 +463,43 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Information))
+                                    if (ReturnMsg.Type != null)
                                     {
-                                        //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
-                                        conn.Send(ReturnMsg.FinCommand);
-                                        logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                        if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Information))
+                                        {
+                                            //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
+                                            conn.Send(ReturnMsg.FinCommand);
+                                            logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                        }
+                                        else
+                                        {
+                                            if (ReturnMsg.Type.ToUpper().Equals("ERROR"))
+                                            {
+                                                Txn = TransactionList.First().Value;
+
+                                                logger.Debug("Txn timmer stoped.");
+                                                Txn.SetTimeOutMonitor(false);
+                                                Node.IsExcuting = false;
+                                                //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
+                                                if (_Config.Vendor.ToUpper().Equals("TDK") || _Config.Vendor.ToUpper().Equals("SMARTTAG"))
+                                                {
+                                                    conn.Send(ReturnMsg.FinCommand);
+                                                    logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                                }
+
+                                                TransactionList.TryRemove(TransactionList.First().Key, out Txn);
+                                            }
+                                            else
+                                            {
+
+                                                logger.Debug(_Config.DeviceName + "(On_Connection_Message Txn is not found. msg:" + Msg);
+                                                return;
+                                            }
+                                        }
                                     }
                                     else
                                     {
-                                        logger.Debug(_Config.DeviceName + "(On_Connection_Message Txn is not found. msg:" + Msg);
+                                        logger.Debug(_Config.DeviceName + "(On_Connection_Message Return type is null. msg:" + Msg);
                                         return;
                                     }
                                 }

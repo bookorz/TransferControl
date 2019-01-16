@@ -30,9 +30,7 @@ namespace TransferControl.Management
             string Sql = @"SELECT 
 	                        UPPER(t.node_id) AS name, UPPER(t.controller_id) AS controller,
 	                        t.conn_address AS adrno, UPPER(t.node_type) AS TYPE, 
-	                        UPPER(t.vendor) AS brand,t.bypass,t.enable_flg AS ENABLE, 
-	                        UPPER(t.default_aligner) AS defaultaligner, 
-	                        UPPER(t.alternative_aligner) AS alternativealigner,	                       
+	                        UPPER(t.vendor) AS brand,t.bypass,t.enable_flg AS ENABLE,                        
 	                        t.wafer_size as WaferSize,
                             t.Double_Arm as DoubleArmActive,
                             t.Notch_Angle as NotchAngle,
@@ -220,6 +218,19 @@ namespace TransferControl.Management
             Node result = null;
             var findPort = from port in NodeList.Values.ToList()
                            where port.Type.Equals("LOADPORT") && port.Enable && port.FoupID.ToUpper().Equals(FoupId.ToUpper())
+                           select port;
+            if (findPort.Count() != 0)
+            {
+                result = findPort.First();
+            }
+            return result;
+        }
+
+        public static Node GetLoadPortByPTN(int PTN)
+        {
+            Node result = null;
+            var findPort = from port in NodeList.Values.ToList()
+                           where port.Type.Equals("LOADPORT") && port.Enable && port.PTN.Equals(PTN)
                            select port;
             if (findPort.Count() != 0)
             {

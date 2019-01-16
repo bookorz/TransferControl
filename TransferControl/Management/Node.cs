@@ -121,10 +121,7 @@ namespace TransferControl.Management
         /// 紀錄伸出的是哪支手臂
         /// </summary>
         public string PutOutArm { get; set; }
-        /// <summary>
-        /// 手臂上的Wafer都做完了
-        /// </summary>
-        public bool AllDone { get; set; }
+        
         /// <summary>
         /// 是否需要Initial
         /// </summary>
@@ -151,14 +148,6 @@ namespace TransferControl.Management
         /// LoadPort專用，紀錄Demo模式Wafer所指定的目的地Foup
         /// </summary>
         public string DestPort { get; set; }
-        /// <summary>
-        /// Robot專用，預設使用的Aligner
-        /// </summary>
-        public string DefaultAligner { get; set; }
-        /// <summary>
-        /// Robot專用，次要使用的Aligner
-        /// </summary>
-        public string AlternativeAligner { get; set; }
         /// <summary>
         /// LoadPort專用，Foup Load的時間
         /// </summary>
@@ -275,6 +264,14 @@ namespace TransferControl.Management
 
         public bool AccessAutoMode { get; set; }
 
+        public int E87_TransferState { get; set; }
+
+        public int E87_ReservationState { get; set; }
+
+        public int E87_AssociationState { get; set; }
+
+        public int PTN { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string,ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -329,6 +326,9 @@ namespace TransferControl.Management
             CarryCount = 0;
             ReadyForPut = true;
             ReadyForGet = true;
+            E87_TransferState = 0;
+            E87_ReservationState = 0;
+            E87_AssociationState = 0;
             //if (Type.Equals("LOADPORT"))
             //{
             //    State = "Ready To Load";
@@ -347,7 +347,7 @@ namespace TransferControl.Management
             GetMutex = true;
             InterLock = false;
             Reserve = false;
-            AllDone = false;
+           
             Available = true;
             HasPresent = false;
             CheckStatus = false;

@@ -71,11 +71,13 @@
     <Compile Include="Management\Carrier.cs" />
     <Compile Include="Management\CarrierManagement.cs" />
     <Compile Include="Management\CmdParamManagement.cs" />
-    <Compile Include="Management\ControlJob.cs" />
+    <Compile Include="Operation\ControlJob.cs" />
     <Compile Include="Management\ControllerManagement.cs" />
     <Compile Include="Management\IJobReport.cs" />
     <Compile Include="Management\ITaskJobReport.cs" />
     <Compile Include="Management\ITransactionReport.cs" />
+    <Compile Include="Operation\IProcessJobReport.cs" />
+    <Compile Include="Operation\IXfeStateReport.cs" />
     <Compile Include="Management\Job.cs" />
     <Compile Include="Management\JobManagement.cs" />
     <Compile Include="Management\Node.cs" />
@@ -84,9 +86,9 @@
     <Compile Include="Management\OCRInfo.cs" />
     <Compile Include="Management\Path.cs" />
     <Compile Include="Management\PointManagement.cs" />
-    <Compile Include="Management\ProcessJob.cs" />
-    <Compile Include="Management\ControlJobManagement.cs" />
-    <Compile Include="Management\ProcessJobManagement.cs" />
+    <Compile Include="Operation\ProcessJob.cs" />
+    <Compile Include="Operation\ControlJobManagement.cs" />
+    <Compile Include="Operation\ProcessJobManagement.cs" />
     <Compile Include="Management\ProcessRecord.cs" />
     <Compile Include="Management\RobotPoint.cs" />
     <Compile Include="Management\StateRecord.cs" />
@@ -94,6 +96,7 @@
     <Compile Include="Management\TaskJobManagment.cs" />
     <Compile Include="Management\Transaction.cs" />
     <Compile Include="Management\TransactionRecord.cs" />
+    <Compile Include="Operation\XfeCrossZone.cs" />
     <Compile Include="Parser\ASYSTParser.cs" />
     <Compile Include="Parser\IParser.cs" />
     <Compile Include="Parser\MessageParser.cs" />
@@ -119,5 +122,6 @@
     <Content Include="Lib\log4net.dll" />
     <Content Include="Lib\nmodbuspc.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
