@@ -793,6 +793,27 @@ namespace TransferControl.Management
                             case Transaction.Command.LoadPortType.SetCompleteEvent:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Enable);
                                 break;
+                            case Transaction.Command.LoadPortType.SetDisableSlotSensor:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetCassetteSizeOption(EncoderLoadPort.CassrtteSize.Disable_SlotSensor_INX2200);
+                                break;
+                            case Transaction.Command.LoadPortType.TweekDn:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekDown);
+                                break;
+                            case Transaction.Command.LoadPortType.TweekUp:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekUp);
+                                break;
+                            case Transaction.Command.LoadPortType.SetSlotOffset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetWaferOffset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetSlotPitch:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetTweekDistance:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
+                                break;
                         }
                         break;
                     case "ROBOT":

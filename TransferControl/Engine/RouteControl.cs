@@ -236,13 +236,13 @@ namespace TransferControl.Engine
                                     //    Mapping = "0000000110000000000000000";
                                     //}
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
-                                    if (Node.Name.Equals("LOADPORT02"))
-                                    {
-                                        //Mapping = "1111111111111111111111111";
-                                        Mapping = SystemConfig.Get().MappingData;
-                                    }
+                                    //if (Node.Name.Equals("LOADPORT02"))
+                                    //{
+                                    //    //Mapping = "1111111111111111111111111";
+                                    //    Mapping = SystemConfig.Get().MappingData;
+                                    //}
                                     
-                                        Node.MappingResult = Mapping;
+                                    Node.MappingResult = Mapping;
                                     
                                     Node.IsMapping = true;
                                     if (_HostReport != null)
