@@ -48,12 +48,12 @@ namespace TransferControl.Management
 
             foreach (Node each in nodeList)
             {
-                if (each.Enable)
-                {
+                //if (each.Enable)
+                //{
                     each.InitialObject();
                     NodeList.TryAdd(each.Name, each);
                     NodeListByCtrl.TryAdd(each.Controller + each.AdrNo, each);
-                }
+                //}
             }
 
         }

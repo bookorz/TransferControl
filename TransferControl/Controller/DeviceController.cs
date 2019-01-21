@@ -172,7 +172,9 @@ namespace TransferControl.Controller
             {
                 key = Txn.AdrNo + Txn.Type;
             }
-            if (TransactionList.TryAdd(key, Txn))
+
+            
+            if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
             {
 
                 Txn.SetTimeOutReport(this);
@@ -536,7 +538,7 @@ namespace TransferControl.Controller
                                     _ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                     if (!Node.Type.Equals("LOADPORT"))
                                     {
-                                        _ReportTarget.On_Node_State_Changed(Node, "Ready");
+                                        _ReportTarget.On_Node_State_Changed(Node, "StandBy");
                                     }
 
 

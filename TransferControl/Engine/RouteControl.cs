@@ -48,6 +48,9 @@ namespace TransferControl.Engine
             _HostReport = ReportHost;
             //初始化所有Controller
             DIO = new DIO(this);
+
+            
+
             ControllerManagement.LoadConfig(this);
 
             //初始化所有Node
@@ -72,6 +75,7 @@ namespace TransferControl.Engine
         {
             ControllerManagement.ConnectAll();
             DIO.Connect();
+            
         }
         
         
@@ -97,6 +101,7 @@ namespace TransferControl.Engine
                     case Transaction.Command.RobotType.Reset:
                         Node.HasAlarm = false;
                         AlarmManagement.Remove(Node.Name);
+                        AlarmManagement.Remove("SYSTEM");
                         _UIReport.On_Node_State_Changed(Node, Node.State);
                         break;
                     case Transaction.Command.RobotType.Pause:
@@ -168,12 +173,12 @@ namespace TransferControl.Engine
                                                 if (each.Value.Equals("TRUE"))
                                                 {
                                                     Node.Foup_Placement = true;
-                                                    Node.Foup_Presence = true;
+                                                    Node.Foup_Presence = false;
                                                 }
                                                 else
                                                 {
                                                     Node.Foup_Placement = false;
-                                                    Node.Foup_Presence = false;
+                                                    Node.Foup_Presence = true;
                                                 }
                                                 break;
                                             case "PRTST":
@@ -331,6 +336,14 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             switch (Txn.Method)
                             {
+                                case Transaction.Command.RobotType.GetSpeed:
+                                    if (Msg.Value.Equals("0") && (Node.Brand.Equals("ATEL_NEW")|| Node.Brand.Equals("SANWA")))
+                                    {
+                                        Msg.Value = "100";
+                                    }
+
+                                    Node.Speed = Msg.Value;
+                                    break;
                                 case Transaction.Command.RobotType.GetError:
                                     if (Msg.Value.Equals("00000000"))
                                     {
@@ -680,7 +693,7 @@ namespace TransferControl.Engine
                             {
                                 case Transaction.Command.RobotType.Home:
                                 case Transaction.Command.RobotType.OrginSearch:
-                                    Node.State = "Ready";
+                                    Node.State = "READY";
                                     break;
                             }
 
@@ -788,7 +801,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.LoadPortType.ForceInitialPos:
                                     _UIReport.On_Node_State_Changed(Node, "Ready To Load");
                                     IO_State_Change(Node.Name, "Foup_Lock", false);
-                                    Node.State = "Ready";
+                                    Node.State = "READY";
                                     break;
                                 case Transaction.Command.LoadPortType.Clamp:
                                     //IO_State_Change(Node.Name, "Foup_Lock", true);
@@ -1076,12 +1089,12 @@ namespace TransferControl.Engine
                                 IO_State_Change(Node.Name, "Foup_Placement", false);
                                 break;
                             case "POD_ARRIVED":
-                                IO_State_Change(Node.Name, "Foup_Presence", true);
+                                IO_State_Change(Node.Name, "Foup_Presence", false);
                                 IO_State_Change(Node.Name, "Foup_Placement", true);
                                 break;
 
                             case "POD_REMOVED":
-                                IO_State_Change(Node.Name, "Foup_Presence", false);
+                                IO_State_Change(Node.Name, "Foup_Presence", true);
                                 IO_State_Change(Node.Name, "Foup_Placement", false);
                                 break;
                         }
@@ -1093,7 +1106,7 @@ namespace TransferControl.Engine
                     Node.InitialComplete = false;
                     Node.OrgSearchComplete = false;
                     _UIReport.On_Command_Error(Node, new Transaction(), Msg);
-                    _UIReport.On_Node_State_Changed(Node, "Alarm");
+                    _UIReport.On_Node_State_Changed(Node, "Error");
 
                 }
                 else
@@ -1146,7 +1159,10 @@ namespace TransferControl.Engine
 
             //StateRecord.NodeStateUpdate(Node.Name, Node.State, Status);
             Node.State = Status;
-
+            if (Node.HasAlarm)
+            {
+                Status = "Error";
+            }
             _UIReport.On_Node_State_Changed(Node, Status);
         }
         /// <summary>
@@ -1171,7 +1187,7 @@ namespace TransferControl.Engine
             }
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
-            _UIReport.On_Node_State_Changed(Node, "Alarm");
+            _UIReport.On_Node_State_Changed(Node, "Error");
 
         }
 

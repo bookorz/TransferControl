@@ -1,6 +1,7 @@
 ﻿using log4net;
 using Newtonsoft.Json;
 using SANWA.Utility;
+using SANWA.Utility.Config;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -272,9 +273,14 @@ namespace TransferControl.Management
 
         public int PTN { get; set; }
 
+        public string Speed { get; set; }
+
+        public bool ByPassCheck { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string,ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
+        private static DBUtil dBUtil = new DBUtil();
 
         public class ActionRequest
         {
@@ -308,6 +314,8 @@ namespace TransferControl.Management
             {
                 Phase = "2";
             }
+            Speed = "";
+            ByPassCheck = false;
             Connected = false;
             AccessAutoMode = false;
             MappingResult = "";
@@ -322,7 +330,7 @@ namespace TransferControl.Management
             UnLockByJob = "";
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
-            State = "Not Origin";
+            State = "UNORG";
             CarryCount = 0;
             ReadyForPut = true;
             ReadyForGet = true;
@@ -412,6 +420,13 @@ namespace TransferControl.Management
             LArmUnClamp = false;
 
             IsDock = false;
+        }
+
+        public void SetEnable(bool enable)
+        {
+            this.Enable = enable;
+            string SQL = @"update config_node set enable_flg = "+ Convert.ToByte(enable).ToString()+" where equipment_model_id = '"+ SystemConfig.Get().SystemMode + "' and node_id = '"+this.Name+"'";
+            dBUtil.ExecuteNonQuery(SQL, null);
         }
         
         /// <summary>
@@ -616,6 +631,9 @@ namespace TransferControl.Management
                     case "LOADPORT":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.LoadPortType.Stop:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Stop(EncoderLoadPort.CommandType.Normal);
+                                break;
                             case Transaction.Command.LoadPortType.EQASP:
                                 if (txn.Value.Equals("1"))
                                 {

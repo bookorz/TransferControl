@@ -51,6 +51,7 @@ namespace TransferControl.Management
             //LoadPort
             public class LoadPortType
             {
+                public const string Stop = "Stop";
                 public const string SetTweekDistance = "SetTweekDistance";
                 public const string SetSlotPitch = "SetSlotPitch";
                 public const string SetWaferOffset = "SetWaferOffset";

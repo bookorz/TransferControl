@@ -201,7 +201,7 @@ namespace TransferControl.Management
 
 
                     string[] ExcuteObjs = ConditionsStr.Split(';');
-                    if (ExcutedTask.ProceedTask.CheckCondition.Equals(""))
+                    if (ExcutedTask.ProceedTask.CheckCondition.Trim().Equals(""))
                     {
                         return true;
                     }
@@ -263,7 +263,17 @@ namespace TransferControl.Management
                                     ToPosition = Conditions[3];
                                     ToSlot = Convert.ToInt32(Conditions[4]).ToString();
                                     Node FNode = NodeManagement.Get(FromPosition);
+                                    if (!FNode.Enable)
+                                    {
+                                        result = true;
+                                        break;
+                                    }
                                     Node TNode = NodeManagement.Get(ToPosition);
+                                    if (!TNode.Enable)
+                                    {
+                                        result = true;
+                                        break;
+                                    }
                                     Job J;
                                     Job tmp;
                                     if (!FNode.JobList.TryRemove(FromSlot, out J))
@@ -374,10 +384,20 @@ namespace TransferControl.Management
                                                     }
                                                 }
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
                                             else
                                             {
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
 
                                             slotNo = 0;
@@ -428,10 +448,20 @@ namespace TransferControl.Management
                                                 ExcutedTask.Params.TryGetValue("@FromSlot", out Slot);
                                                 ExcutedTask.Params.TryGetValue("@FromArm", out Arm);
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
                                             else
                                             {
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
                                             slotNo = 0;
                                             if (int.TryParse(Slot, out slotNo))
@@ -488,10 +518,20 @@ namespace TransferControl.Management
                                                     ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
                                                 }
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
                                             else
                                             {
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
                                             slotNo = 0;
                                             if (int.TryParse(Slot, out slotNo))
@@ -514,9 +554,17 @@ namespace TransferControl.Management
                                                         {
                                                             result = true;
                                                         }
-                                                        else if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot) - 1) == Convert.ToInt32(FromSlot))
-                                                        {//因放片時，會造成干涉的Slot已被取走，所以不會有問題
-                                                            result = true;
+                                                        else if (ToPosition != null && ToSlot != null && FromSlot != null) {
+                                                            if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot) - 1) == Convert.ToInt32(FromSlot))
+                                                            {//因放片時，會造成干涉的Slot已被取走，所以不會有問題
+                                                                result = true;
+                                                            }
+                                                            else
+                                                            {
+                                                                Report = ErrorType;
+                                                                Message = ErrorCode;
+                                                                result = false;
+                                                            }
                                                         }
                                                         else
                                                         {
@@ -542,9 +590,18 @@ namespace TransferControl.Management
                                                         {
                                                             result = true;
                                                         }
-                                                        else if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot) + 1) == Convert.ToInt32(FromSlot))
+                                                        else if (ToPosition != null && ToSlot != null && FromSlot != null)
                                                         {
-                                                            result = true;
+                                                            if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot) + 1) == Convert.ToInt32(FromSlot))
+                                                            {
+                                                                result = true;
+                                                            }
+                                                            else
+                                                            {
+                                                                Report = ErrorType;
+                                                                Message = ErrorCode;
+                                                                result = false;
+                                                            }
                                                         }
                                                         else
                                                         {
@@ -575,7 +632,10 @@ namespace TransferControl.Management
                                             foreach (Node robot in NodeManagement.GetEnableRobotList())
                                             {
                                                 TarNode = NodeManagement.Get(TargetName);//取得Port物件
-
+                                                if (!TarNode.Enable)
+                                                {
+                                                    continue;
+                                                }
                                                 if (TarNode.Associated_Node.ToUpper().Equals(robot.Name.ToUpper()))//找到可以存取該Port的Robot
                                                 {
                                                     Val = 0;
@@ -646,10 +706,20 @@ namespace TransferControl.Management
                                                     //ExcutedTask.Params.TryGetValue("@ToSlot", out Slot);
                                                 }
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
                                             else
                                             {
                                                 TarNode = NodeManagement.Get(PositionName);
+                                                if (!TarNode.Enable)
+                                                {
+                                                    result = true;
+                                                    break;
+                                                }
                                             }
                                             int Spec = 0;
                                             Val = 0;
@@ -732,6 +802,11 @@ namespace TransferControl.Management
                                         string ParamName = Conditions[3].Split('=')[1];
                                         string Set = Conditions[3].Split('=')[2];
                                         Node = NodeManagement.Get(NodeName);
+                                        if (!Node.Enable)
+                                        {
+                                            result = true;
+                                            break;
+                                        }
                                         if (Node != null)
                                         {
                                             string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
@@ -760,6 +835,11 @@ namespace TransferControl.Management
                                             Location = tmpAry[1];
                                         }
                                         Node = NodeManagement.Get(NodeName);
+                                        if (!Node.Enable)
+                                        {
+                                            result = true;
+                                            break;
+                                        }
                                         if (Node != null)
                                         {
                                             string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
@@ -790,6 +870,11 @@ namespace TransferControl.Management
                                     string SetAttr = Conditions[3].Split('=')[0];
                                     string SetVal = Conditions[3].Split('=')[1];
                                     Node = NodeManagement.Get(NodeName);
+                                    if (!Node.Enable)
+                                    {
+                                        result = true;
+                                        break;
+                                    }
                                     if (Node != null)
                                     {
 
@@ -1102,6 +1187,7 @@ namespace TransferControl.Management
                                             string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
                                             if (AttrVal.Equals(Value.ToUpper()))
                                             {
+                                                tmp1.Remove(eachTask);
                                                 break;
                                             }
                                         }
@@ -1113,6 +1199,7 @@ namespace TransferControl.Management
                                             string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
                                             if (!AttrVal.Equals(Value.ToUpper()))
                                             {
+                                                tmp1.Remove(eachTask);
                                                 break;
                                             }
                                         }
@@ -1130,7 +1217,7 @@ namespace TransferControl.Management
                                 }
                                 tmp1.Add(eachTask);
                             }
-
+                            
                         }
 
 
@@ -1188,6 +1275,15 @@ namespace TransferControl.Management
                                 if (ExcuteObj.Length == 4)
                                 {
                                     string NodeName = ExcuteObj[0];
+                                    Node target = NodeManagement.Get(NodeName);
+                                    if (target != null)
+                                    {
+                                        if (!target.Enable)
+                                        {
+                                            logger.Debug("Node disabled:"+ eachExcuteObj);
+                                            continue;
+                                        }
+                                    }
                                     string Type = ExcuteObj[1];
 
                                     if (Type.ToUpper().Equals("SCRIPT"))
@@ -1320,6 +1416,10 @@ namespace TransferControl.Management
                                     ErrorMessage = "ExcuteObj 解析失敗，Task Name:" + taskName;
                                     return false;
                                 }
+                            }
+                            if (CurrTask.CheckList.Count == 0)
+                            {
+                                return false;
                             }
                             foreach (TaskJob.Excuted ex in CurrTask.CheckList.ToList())
                             {
