@@ -316,6 +316,10 @@ namespace TransferControl.Controller
                     {
                         key = "1" + ReturnMsg.Command;
                     }
+                    else if (_Config.Vendor.ToUpper().Equals("ASYST"))
+                    {
+                        key = ReturnMsg.NodeAdr;
+                    }
                     else
                     {
                         key = ReturnMsg.NodeAdr + ReturnMsg.Command;

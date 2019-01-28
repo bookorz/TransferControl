@@ -631,6 +631,36 @@ namespace TransferControl.Management
                     case "LOADPORT":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.LoadPortType.GetSlotOffset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetSlotOffset();
+                                break;
+                            case Transaction.Command.LoadPortType.GetWaferOffset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetWaferOffset();
+                                break;
+                            case Transaction.Command.LoadPortType.GetSlotPitch:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetSlotPitch();
+                                break;
+                            case Transaction.Command.LoadPortType.GetTweekDistance:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetTweekDistance();
+                                break;
+                            case Transaction.Command.LoadPortType.GetCassetteSize:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetCassetteSizeOption();
+                                break;
+                            case Transaction.Command.LoadPortType.SetSlotOffset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetWaferOffset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetSlotPitch:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetTweekDistance:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
+                                break;
+                            case Transaction.Command.LoadPortType.SetCassetteSize:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetCassetteSizeOption(txn.Value);
+                                break;
                             case Transaction.Command.LoadPortType.Stop:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Stop(EncoderLoadPort.CommandType.Normal);
                                 break;
@@ -811,27 +841,27 @@ namespace TransferControl.Management
                             case Transaction.Command.LoadPortType.SetCompleteEvent:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Enable);
                                 break;
-                            case Transaction.Command.LoadPortType.SetDisableSlotSensor:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetCassetteSizeOption(EncoderLoadPort.CassrtteSize.Disable_SlotSensor_INX2200);
-                                break;
+                            //case Transaction.Command.LoadPortType:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetCassetteSizeOption(EncoderLoadPort.CassrtteSize.Disable_SlotSensor_INX2200);
+                            //    break;
                             case Transaction.Command.LoadPortType.TweekDn:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekDown);
                                 break;
                             case Transaction.Command.LoadPortType.TweekUp:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekUp);
                                 break;
-                            case Transaction.Command.LoadPortType.SetSlotOffset:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
-                                break;
-                            case Transaction.Command.LoadPortType.SetWaferOffset:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
-                                break;
-                            case Transaction.Command.LoadPortType.SetSlotPitch:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
-                                break;
-                            case Transaction.Command.LoadPortType.SetTweekDistance:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
-                                break;
+                            //case Transaction.Command.LoadPortType.SetSlotOffset:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
+                            //    break;
+                            //case Transaction.Command.LoadPortType.SetWaferOffset:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
+                            //    break;
+                            //case Transaction.Command.LoadPortType.SetSlotPitch:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
+                            //    break;
+                            //case Transaction.Command.LoadPortType.SetTweekDistance:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
+                            //    break;
                         }
                         break;
                     case "ROBOT":

@@ -345,7 +345,7 @@ namespace TransferControl.Engine
                                     Node.Speed = Msg.Value;
                                     break;
                                 case Transaction.Command.RobotType.GetError:
-                                    if (Msg.Value.Equals("00000000"))
+                                    if (Msg.Value.Contains("00000000"))
                                     {
                                         Node.HasAlarm = false;
                                     }
@@ -1106,7 +1106,7 @@ namespace TransferControl.Engine
                     Node.InitialComplete = false;
                     Node.OrgSearchComplete = false;
                     _UIReport.On_Command_Error(Node, new Transaction(), Msg);
-                    _UIReport.On_Node_State_Changed(Node, "Error");
+                    _UIReport.On_Node_State_Changed(Node, "ALARM");
 
                 }
                 else
@@ -1161,7 +1161,7 @@ namespace TransferControl.Engine
             Node.State = Status;
             if (Node.HasAlarm)
             {
-                Status = "Error";
+                Status = "ALARM";
             }
             _UIReport.On_Node_State_Changed(Node, Status);
         }
@@ -1187,7 +1187,7 @@ namespace TransferControl.Engine
             }
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
-            _UIReport.On_Node_State_Changed(Node, "Error");
+            _UIReport.On_Node_State_Changed(Node, "ALARM");
 
         }
 

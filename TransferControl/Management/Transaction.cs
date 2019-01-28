@@ -52,11 +52,16 @@ namespace TransferControl.Management
             public class LoadPortType
             {
                 public const string Stop = "Stop";
+                public const string GetTweekDistance = "GetTweekDistance";
+                public const string GetSlotPitch = "GetSlotPitch";
+                public const string GetWaferOffset = "GetWaferOffset";
+                public const string GetSlotOffset = "GetSlotOffset";
+                public const string GetCassetteSize = "GetCassetteSize";
                 public const string SetTweekDistance = "SetTweekDistance";
                 public const string SetSlotPitch = "SetSlotPitch";
                 public const string SetWaferOffset = "SetWaferOffset";
                 public const string SetSlotOffset = "SetSlotOffset";
-                public const string SetDisableSlotSensor = "SetDisableSlotSensor";
+                public const string SetCassetteSize = "SetCassetteSize";
                 public const string TweekDn = "TweekDn";
                 public const string TweekUp = "TweekUp";
                 public const string SetAllEvent = "SetAllEvent";
@@ -209,7 +214,7 @@ namespace TransferControl.Management
             timeOutTimer.Enabled = false;
 
             //timeOutTimer.Interval = 10000;
-            timeOutTimer.Interval = 999999;
+            timeOutTimer.Interval = 30000;
 
             timeOutTimer.Elapsed += new System.Timers.ElapsedEventHandler(TimeOutMonitor);
 

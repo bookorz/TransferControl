@@ -57,6 +57,7 @@ namespace TransferControl.Management
             {
                 if (each.Enable)
                 {
+                    //each.ConnectionType = "Socket";
                     //each.IPAdress = "127.0.0.1";
                     //each.Port = 9527;
                     DeviceController tmp = new DeviceController(each, Report);
