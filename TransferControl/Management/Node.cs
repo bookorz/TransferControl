@@ -167,6 +167,8 @@ namespace TransferControl.Management
 
         public bool Busy { get; set; }
 
+        public bool OPACCESS { get; set; }
+
         public string LastFinMethod { get; set; }
 
         public bool WaitForFinish { get; set; }
@@ -317,6 +319,7 @@ namespace TransferControl.Management
             Speed = "";
             ByPassCheck = false;
             Connected = false;
+            OPACCESS = false;
             AccessAutoMode = false;
             MappingResult = "";
             CurrentLoadPort = "";
