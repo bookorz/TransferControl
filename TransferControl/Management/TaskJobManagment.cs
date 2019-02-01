@@ -30,6 +30,7 @@ namespace TransferControl.Management
             public List<TaskJob.Excuted> CheckList = new List<TaskJob.Excuted>();
             public string GotoIndex = "";
             public bool Finished = false;
+            public bool Finished2 = false;
         }
         public TaskJobManagment(ITaskJobReport TaskReport)
         {

@@ -994,6 +994,9 @@ namespace TransferControl.Management
                     case "ALIGNER":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.AlignerType.GetPosition:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ArmLocation(AdrNo, txn.Seq, txn.Value, "1");
+                                break;
                             case Transaction.Command.AlignerType.SetAlign:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SetSize(AdrNo, txn.Seq, txn.Value);
                                 break;

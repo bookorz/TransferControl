@@ -629,6 +629,7 @@ namespace TransferControl.Engine
                                     {
                                         _HostReport.On_TaskJob_Finished(Task);
                                     }
+
                                     _UIReport.On_TaskJob_Finished(Task);
                                 }
                                 else
@@ -714,8 +715,8 @@ namespace TransferControl.Engine
 
                                         OCRResult = Msg.Value.Replace("[", "").Replace("]", "").Split(',');
 
-                                        Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
-
+                                        //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
+                                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
 
                                         switch (Node.Brand)
                                         {

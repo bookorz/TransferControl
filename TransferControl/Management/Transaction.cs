@@ -153,6 +153,7 @@ namespace TransferControl.Management
             //Aligner
             public class AlignerType
             {
+                public const string GetPosition = "GetPosition";
                 public const string SetAlign = "SetAlign";
                 public const string Align = "Align";
                 public const string AlignOption = "AlignOption";
