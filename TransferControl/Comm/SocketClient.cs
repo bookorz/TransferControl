@@ -16,6 +16,7 @@ namespace TransferControl.Comm
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(SocketClient));
 
+        
         //委托
         private delegate void delSocketDataArrival(byte[] data);
         delSocketDataArrival socketDataArrival;
@@ -81,8 +82,9 @@ namespace TransferControl.Comm
         private void SetHeartBeat()
         {
             //byte[] inValue = new byte[] { 1, 0, 0, 0, 0x20, 0x4e, 0, 0, 0xd0, 0x07, 0, 0 };// 首次探測時間20 秒, 間隔偵測時間2 秒
-            //byte[] inValue = new byte[] { 1, 0, 0, 0, 0x88, 0x13, 0, 0, 0xd0, 0x07, 0, 0 };// 首次探測時間5 秒, 間隔偵測時間2 秒
-            //theSocket.IOControl(IOControlCode.KeepAliveValues, KeepAlive(1, 10000, 10000), null);
+            byte[] inValue = new byte[] { 1, 0, 0, 0, 0x88, 0x13, 0, 0, 0xd0, 0x07, 0, 0 };// 首次探測時間5 秒, 間隔偵測時間2 秒
+            theSocket.IOControl(IOControlCode.KeepAliveValues, KeepAlive(1, 5000, 1000), null);
+            //theSocket.IOControl(IOControlCode.KeepAliveValues, inValue, null);
         }
 
         ///
@@ -96,12 +98,12 @@ namespace TransferControl.Comm
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, remotePort);
             theSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             theSocket.SendTimeout = 1000;
+            theSocket.ReceiveTimeout = 1000;
+            SetHeartBeat();//设置心跳参数
 
-            SetHeartBeat();//設置心跳參數
+            #region 异步连接代码
 
-            #region 異步連接代碼
-
-            TimeoutObject.Reset(); //覆位timeout事件
+            TimeoutObject.Reset();  //复位timeout事件
             try
             {
                 ConnReport.On_Connection_Connecting("Connecting");
@@ -110,7 +112,6 @@ namespace TransferControl.Comm
             catch (Exception err)
             {
                 SockErrorStr = err.ToString();
-                ConnReport.On_Connection_Error(err.Message);
                 return false;
             }
             if (TimeoutObject.WaitOne(10000, false))//直到timeout，或者TimeoutObject.set()
@@ -127,7 +128,6 @@ namespace TransferControl.Comm
             else
             {
                 SockErrorStr = "Time Out";
-                ConnReport.On_Connection_Error("Time Out");
                 return false;
             }
             #endregion
@@ -169,7 +169,7 @@ namespace TransferControl.Comm
         }
 
 
-       
+
 
         ///
 
@@ -305,7 +305,7 @@ namespace TransferControl.Comm
 
             lock (lockObj_IsConnectSuccess)
             {
-                
+
                 Socket client = (Socket)iar.AsyncState;
                 try
                 {
@@ -333,7 +333,7 @@ namespace TransferControl.Comm
         /// 
         private void StartKeepAlive()
         {
-//theSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(OnReceiveCallback), theSocket);
+            theSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(OnReceiveCallback), theSocket);
         }
 
         ///
@@ -370,7 +370,7 @@ namespace TransferControl.Comm
                     }
                 }
                 //此處buffer似乎要清空--待實現 zq
-                for(int i = 0; i < buffer.Length; i++)// Initial buffer
+                for (int i = 0; i < buffer.Length; i++)// Initial buffer
                 {
                     buffer[i] = 0;
                 }
@@ -380,7 +380,10 @@ namespace TransferControl.Comm
             {
                 if (socketDisconnected != null)
                 {
-                    socketDisconnected(); //Keepalive檢測網線斷開引發的異常在這裏捕獲
+                    IsconnectSuccess = false;
+                    theSocket.Disconnect(true);
+                    ConnReport.On_Connection_Disconnected("Disconnected");
+                    //socketDisconnected(); //Keepalive檢測網線斷開引發的異常在這裏捕獲
                     return;
                 }
             }
@@ -449,8 +452,8 @@ namespace TransferControl.Comm
                         //break;
 
                     }
-                    
-                     if (S.IndexOf("-2\r\n") != -1)
+
+                    if (S.IndexOf("-2\r\n") != -1)
                     {
                         data = S.Substring(S.IndexOf("-2\r\n"), 4);
                         //logger.Debug("data:" + data);
@@ -487,13 +490,13 @@ namespace TransferControl.Comm
                     {
                         S = "";
                         //logger.Debug("s:" + S);
-                       
+
                         //break;
 
                     }
                     if (S.IndexOf("0\r\n") != -1)
                     {
-                        data = S.Substring(0,S.IndexOf("0\r\n"));
+                        data = S.Substring(0, S.IndexOf("0\r\n"));
                         //logger.Debug("data:" + data);
                         S = S.Substring(S.IndexOf("0\r\n") + 3);
 
@@ -506,9 +509,9 @@ namespace TransferControl.Comm
                     break;
                 default:
                     data = Encoding.Default.GetString(OrgData, 0, OrgData.Length);
-                   
+
                     ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
-                   
+
                     break;
             }
 
@@ -561,7 +564,7 @@ namespace TransferControl.Comm
                         SockErrorStr = err.ToString();
                         return false;
                     }
-                    if (TimeoutObject.WaitOne(2000, false))//直到timeout，或者TimeoutObject.set()
+                    if (TimeoutObject.WaitOne(1000, false))//直到timeout，或者TimeoutObject.set()
                     {
                         if (IsconnectSuccess)
                         {
@@ -628,10 +631,10 @@ namespace TransferControl.Comm
 
         public bool SendHexData(object Message)
         {
-           
+
             return false;
         }
 
-        
+
     }
 }

@@ -18,8 +18,8 @@ namespace TransferControl.Engine
         void On_Event_Trigger(Node Node, ReturnMessage Msg);
         void On_Node_State_Changed(Node Node, string Status);
         void On_Eqp_State_Changed(string OldStatus,string NewStatus);
-        void On_Controller_State_Changed(string Device_ID, string Status);
-        
+        //void On_Controller_State_Changed(string Device_ID, string Status);
+        void On_Node_Connection_Changed(string NodeName,string Status);
         void On_Job_Location_Changed(Job Job);
      
         void On_Mode_Changed(string Mode);

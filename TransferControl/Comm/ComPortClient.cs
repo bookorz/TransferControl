@@ -83,10 +83,12 @@ namespace TransferControl.Comm
 
         public void Start()
         {
-
-            Thread ComTd = new Thread(ConnectServer);
-            ComTd.IsBackground = true;
-            ComTd.Start();
+            if (!port.IsOpen)
+            {
+                Thread ComTd = new Thread(ConnectServer);
+                ComTd.IsBackground = true;
+                ComTd.Start();
+            }
         }
 
         public bool Send(object Message)

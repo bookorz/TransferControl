@@ -143,7 +143,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.LoadPortType.InitialPos:
                                 case Transaction.Command.LoadPortType.ForceInitialPos:
                                     //LoadPort卸載時打開安全鎖
-                                    Node.InterLock = true;
+                                   // Node.InterLock = true;
                                     //標記尚未Mapping
                                     Node.IsMapping = false;
                                     //刪除所有帳
@@ -688,7 +688,7 @@ namespace TransferControl.Engine
                             }
                             break;
                         case "ROBOT":
-                            Node.InterLock = false;
+                            //Node.InterLock = false;
                             Node.Busy = false;
                             switch (Txn.Method)
                             {
@@ -818,10 +818,10 @@ namespace TransferControl.Engine
 
 
 
-                    if (!Node.Type.Equals("LOADPORT"))//LoadPort 只能在Mapping完成後關閉安全鎖
-                    {
-                        Node.InterLock = false;
-                    }
+                    //if (!Node.Type.Equals("LOADPORT"))//LoadPort 只能在Mapping完成後關閉安全鎖
+                    //{
+                    //    Node.InterLock = false;
+                    //}
                     TaskJobManagment.CurrentProceedTask Task;
                     if (TaskJob.IsTask(Txn.FormName,out Task))//如果是帶TaskID才檢查
                     {
@@ -1010,14 +1010,14 @@ namespace TransferControl.Engine
                     {
                         case Transaction.Command.LoadPortType.MappingLoad:
 
-                            Node.InterLock = false;
+                           // Node.InterLock = false;
                             _UIReport.On_Node_State_Changed(Node, "Load Complete");
                             break;
                         case Transaction.Command.LoadPortType.Unload:
                             _UIReport.On_Node_State_Changed(Node, "UnLoad Complete");
                             break;
                         default:
-                            Node.InterLock = true;
+                           // Node.InterLock = true;
                             break;
                     }
                     break;
@@ -1143,10 +1143,10 @@ namespace TransferControl.Engine
                         each.Connected = false;
                         break;
                 }
-                
+                _UIReport.On_Node_Connection_Changed(each.Name,Status);
             }
             logger.Debug(Device_ID + " " + Status);
-            _UIReport.On_Controller_State_Changed(Device_ID, Status);
+           
         }
 
 

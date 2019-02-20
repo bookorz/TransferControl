@@ -76,12 +76,29 @@ namespace TransferControl.Comm
 
             //建立IPEndPoint
             IPEndPoint ipe = new IPEndPoint(ipa, Config.Port);
-
+            
             //開始連線
             try
-            {
-                
+            { 
+                //tcpClient.ReceiveTimeout = 1000;
                 tcpClient.Connect(ipe);
+               
+
+                //bool success = false;
+                //while (!success)
+                //{
+                //    var result = tcpClient.BeginConnect("remotehost", Config.Port, null, null);
+                //    success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+                //    if (!success)
+                //    {
+                //        logger.Error(Config.DeviceName+" ip="+Config.IPAdress+":"+Config.Port.ToString()+" connect timeout!");
+                //    }
+                //    else
+                //    {
+                //        break;
+                //    }
+                //}
+
                 if (tcpClient.Connected)
                 {
                     ConnReport.On_Connection_Connected("Connected");

@@ -18,6 +18,8 @@ namespace TransferControl.Management
     {
 
         ILog logger = LogManager.GetLogger(typeof(Node));
+
+        public string ConnectionStatus { get; set; }
         /// <summary>
         /// 名稱
         /// </summary>
@@ -93,7 +95,7 @@ namespace TransferControl.Management
         /// <summary>
         /// LoadPort用於標記True為目前不能取放片，其他裝置用於標記True為正在執行命令中
         /// </summary>
-        public bool InterLock { get; set; }
+        //public bool InterLock { get; set; }
         /// <summary>
         /// 目前機況
         /// </summary>
@@ -307,6 +309,11 @@ namespace TransferControl.Management
             }
         }
 
+        public IController GetController()
+        {
+            return ControllerManagement.Get(Controller);
+        }
+
         public void InitialObject()
         {
             JobList = new ConcurrentDictionary<string, Job>();
@@ -356,7 +363,7 @@ namespace TransferControl.Management
             PutAvailable = true;
             GetAvailable = true;
             GetMutex = true;
-            InterLock = false;
+            //InterLock = false;
             Reserve = false;
            
             Available = true;
@@ -491,7 +498,7 @@ namespace TransferControl.Management
 
                 }
 
-                IController Ctrl = ControllerManagement.Get(Controller);
+                IController Ctrl = this.GetController();
                 if (this.Brand.ToUpper().Equals("KAWASAKI"))
                 {
 
@@ -1149,23 +1156,23 @@ namespace TransferControl.Management
                 {
                     TargetJob = RouteControl.CreateJob();
                 }
-                if (txn.CommandType.Equals("CMD") || txn.CommandType.Equals("MOV"))
-                {
-                    this.InitialComplete = false;
-                    if ((this.InterLock || !(this.UnLockByJob.Equals(TargetJob.Job_Id) || this.UnLockByJob.Equals(""))) && !Force)
-                    {
-                        ReturnMessage tmp = new ReturnMessage();
-                        tmp.Value = "Interlock!";
-                        logger.Error(this.Name + " Interlock! Txn:" + JsonConvert.SerializeObject(txn));
-                        ControllerManagement.Get(Controller)._ReportTarget.On_Command_Error(this, txn, tmp);
-                        this.IsExcuting = false;
-                        return false;
-                    }
-                    if (this.Type.Equals("LOADPORT"))
-                    {
-                        this.InterLock = true;
-                    }
-                }
+                //if (txn.CommandType.Equals("CMD") || txn.CommandType.Equals("MOV"))
+                //{
+                //    this.InitialComplete = false;
+                //    if ((this.InterLock || !(this.UnLockByJob.Equals(TargetJob.Job_Id) || this.UnLockByJob.Equals(""))) && !Force)
+                //    {
+                //        ReturnMessage tmp = new ReturnMessage();
+                //        tmp.Value = "Interlock!";
+                //        logger.Error(this.Name + " Interlock! Txn:" + JsonConvert.SerializeObject(txn));
+                //        this.GetController()._ReportTarget.On_Command_Error(this, txn, tmp);
+                //        this.IsExcuting = false;
+                //        return false;
+                //    }
+                //    if (this.Type.Equals("LOADPORT"))
+                //    {
+                //        this.InterLock = true;
+                //    }
+                //}
                 if (txn.TargetJobs.Count == 0)
                 {
 
@@ -1190,10 +1197,10 @@ namespace TransferControl.Management
                     logger.Debug("SendCommand fail.");
                     Message = "COMM_ERR";
                     result = false;
-                    if (this.Type.Equals("LOADPORT"))
-                    {
-                        this.InterLock = false;
-                    }
+                    //if (this.Type.Equals("LOADPORT"))
+                    //{
+                    //    this.InterLock = false;
+                    //}
                 }
 
 

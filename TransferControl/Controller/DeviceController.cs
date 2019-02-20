@@ -37,7 +37,7 @@ namespace TransferControl.Controller
             {
                 case "Socket":
                     //conn = new SocketClient(Config, this);
-                    conn = new TcpCommClient(Config, this);
+                    conn = new SocketClient(Config, this);
                     break;
                 case "ComPort":
                     conn = new ComPortClient(Config, this);
@@ -535,10 +535,10 @@ namespace TransferControl.Controller
                                     break;
                                 case ReturnMessage.ReturnType.Finished:
                                     TransactionRecord.Update(Txn, ReturnMsg);
-                                    if (Node.Type.Equals("LOADPORT"))
-                                    {
-                                        Node.InterLock = false;
-                                    }
+                                    //if (Node.Type.Equals("LOADPORT"))
+                                    //{
+                                    //    Node.InterLock = false;
+                                    //}
                                     _ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                     if (!Node.Type.Equals("LOADPORT"))
                                     {
@@ -549,10 +549,10 @@ namespace TransferControl.Controller
                                     break;
                                 case ReturnMessage.ReturnType.Error:
                                     TransactionRecord.Update(Txn, ReturnMsg);
-                                    if (Node.Type.Equals("LOADPORT"))
-                                    {
-                                        Node.InterLock = false;
-                                    }
+                                    //if (Node.Type.Equals("LOADPORT"))
+                                    //{
+                                    //    Node.InterLock = false;
+                                    //}
                                     _ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
 
                                     break;
@@ -578,10 +578,22 @@ namespace TransferControl.Controller
             }
         }
 
+        private void ChangeNodeConnectionStatus(string status)
+        {
+            var Nodes = from each in NodeManagement.GetList()
+                        where each.Controller.Equals(this.Name)
+                            select each;
+            foreach(Node eachNode in Nodes)
+            {
+                eachNode.ConnectionStatus = status;
+            }
+        }
+
         public void On_Connection_Connected(object Msg)
         {
             this._IsConnected = true;
             this.Status = "Connected";
+            ChangeNodeConnectionStatus("Connected");
             _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Connected");
 
         }
@@ -590,6 +602,7 @@ namespace TransferControl.Controller
         {
             this._IsConnected = false;
             this.Status = "Connecting";
+            ChangeNodeConnectionStatus("Connecting");
             _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Connecting");
 
         }
@@ -598,6 +611,7 @@ namespace TransferControl.Controller
         {
             this._IsConnected = false;
             this.Status = "Disconnected";
+            ChangeNodeConnectionStatus("Disconnected");
             _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Disconnected");
 
         }
@@ -610,6 +624,7 @@ namespace TransferControl.Controller
                 txn.SetTimeOutMonitor(false);
             }
             TransactionList.Clear();
+            ChangeNodeConnectionStatus("Connection_Error");
             _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Connection_Error");
         }
 
@@ -626,7 +641,8 @@ namespace TransferControl.Controller
             else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
             {
                 key = "1";
-            }else if (_Config.Vendor.ToUpper().Equals("ASYST"))
+            }
+            else if (_Config.Vendor.ToUpper().Equals("ASYST"))
             {
                 key = Txn.AdrNo;
 
