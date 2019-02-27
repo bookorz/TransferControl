@@ -259,7 +259,7 @@ namespace TransferControl.Management
         {
             List<Node> result = NodeList.Values.ToList();
 
-            result.Sort((x, y) => { return y.Name.CompareTo(x.Name); });
+            result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });
 
             return result;
         }

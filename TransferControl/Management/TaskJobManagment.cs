@@ -29,6 +29,7 @@ namespace TransferControl.Management
             public Dictionary<string, string> Params { get; set; }
             public List<TaskJob.Excuted> CheckList = new List<TaskJob.Excuted>();
             public string GotoIndex = "";
+            public int ExcutedCount = 0;
             public bool Finished = false;
             public bool Finished2 = false;
         }
@@ -200,7 +201,7 @@ namespace TransferControl.Management
                         ExcutedTask.Params = new Dictionary<string, string>();
                     }
 
-
+                    
                     string[] ExcuteObjs = ConditionsStr.Split(';');
                     if (ExcutedTask.ProceedTask.CheckCondition.Trim().Equals(""))
                     {
@@ -247,7 +248,43 @@ namespace TransferControl.Management
                             //Node Target = NodeManagement.Get(TargetName);
                             //Node Position = NodeManagement.Get(PositionName);
                             switch (Type.ToUpper())
-                            {
+                            {                                          //times:interval  
+                                case "REPEAT"://REPEAT:@Target:IsPause=true:10:200;
+                                    if (Conditions.Length >= 5)
+                                    {
+                                        NodeName = Conditions[1];
+                                        Attr = Conditions[2].Split('=')[0];
+                                        Value = Conditions[2].Split('=')[1];
+                                        string times = Conditions[3];
+                                        string interval = Conditions[4];
+                                        Node = NodeManagement.Get(NodeName);
+                                        if (!Node.Enable)
+                                        {
+                                            result = true;
+                                            break;
+                                        }
+                                        if (Node != null)
+                                        {
+                                            string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                            if (AttrVal.Equals(Value.ToUpper()))
+                                            {
+                                                ExcutedTask.GotoIndex = ExcutedTask.ProceedTask.TaskIndex.ToString();
+
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            logger.Error("CheckCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            throw new Exception("CheckCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        logger.Error("REPEAT error: " + eachExcuteObj);
+                                    }
+                                    break;
                                 case "DELAY":
                                     int DelayTime = Convert.ToInt32(Attr);
                                     SpinWait.SpinUntil(() => false, DelayTime);
@@ -367,6 +404,7 @@ namespace TransferControl.Management
                                     int slotNo = 0;
                                     switch (FunctionName)
                                     {
+                                        
                                         case "Put_Safty_Check":
                                             if (PositionName.Equals(""))
                                             {
@@ -1099,6 +1137,7 @@ namespace TransferControl.Management
                                            where each.TaskIndex > ExcutedTask.ProceedTask.TaskIndex
                                            select each;
                             tk = findTask.ToList();
+                            ExcutedTask.ExcutedCount = 0;
                         }
                         else
                         {//如果有GOTO的Index，優先執行
@@ -1107,6 +1146,7 @@ namespace TransferControl.Management
                                            select each;
                             tk = findTask.ToList();
                             ExcutedTask.GotoIndex = "";
+                            ExcutedTask.ExcutedCount++;
                         }
                     }
 

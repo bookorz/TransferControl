@@ -21,7 +21,7 @@ namespace TransferControl.Controller
         public SANWA.Utility.Encoder Encoder;
         ConcurrentDictionary<string, Transaction> TransactionList = new ConcurrentDictionary<string, Transaction>();
         public string Name { get; set; }
-        public string Status { get; set; }
+        public string Status = "Disconnected";
         private bool _IsConnected { get; set; }
         public int TrxNo = 1;
         bool WaitingForSync = false;
@@ -52,6 +52,11 @@ namespace TransferControl.Controller
             this.Name = _Config.DeviceName;
             this.Status = "";
             this._IsConnected = false;
+        }
+
+        public DeviceConfig GetConfig()
+        {
+            return _Config;
         }
 
         public bool IsConnected()
