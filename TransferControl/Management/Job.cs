@@ -39,6 +39,7 @@ namespace TransferControl.Management
         public bool MapFlag { get; set; }
         public int Offset { get; set; }
         public int Angle { get; set; }
+        public bool IsAssigned { get; set; }
         public DateTime AssignTime { get; private set; }
 
         IJobReport _Report = null;
@@ -60,6 +61,7 @@ namespace TransferControl.Management
             NeedProcess = false;
             OCRFlag = false;
             InProcess = false;
+            IsAssigned = false;
             OcrCodeList = new List<OCRInfo>();
         }
 
@@ -77,6 +79,8 @@ namespace TransferControl.Management
             this.DisplayDestination = Position.Replace("Load","");
             this.DestinationSlot = Slot;
             this.AssignTime = DateTime.Now;
+            RobotPoint point = PointManagement.GetMapPoint(Position, "300MM");
+            this.Offset = point.Offset;
         }
 
         public void UnAssignPort()

@@ -241,12 +241,12 @@ namespace TransferControl.Engine
                                     //    Mapping = "0000000110000000000000000";
                                     //}
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
-                                    //if (Node.Name.Equals("LOADPORT02"))
+                                    //if (Node.Name.Equals("LOADPORT01"))
                                     //{
                                     //    //Mapping = "1111111111111111111111111";
                                     //    Mapping = SystemConfig.Get().MappingData;
                                     //}
-                                    
+
                                     Node.MappingResult = Mapping;
                                     
                                     Node.IsMapping = true;
@@ -1185,7 +1185,7 @@ namespace TransferControl.Engine
             if (_HostReport != null)
             {
                 _HostReport.On_TaskJob_Aborted(Task, "", "ABS", Msg.Value);
-            }
+            }   
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");

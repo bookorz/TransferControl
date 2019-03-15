@@ -945,6 +945,10 @@ namespace TransferControl.Management
                                                 try
                                                 {
                                                     Node.ActionRequest req = new Node.ActionRequest();
+                                                    if (ConditionsStr.IndexOf("TRANSFER_GETW_") != -1)
+                                                    {
+
+                                                    }
                                                     if (Conditions.Length >= 5)
                                                     {
                                                         string[] Attrs = Conditions[4].Split(',');

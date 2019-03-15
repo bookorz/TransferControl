@@ -516,6 +516,7 @@ namespace TransferControl.Operation
                                             {
                                                 LDRobot_Arm = wafer.Slot;
                                                 wafer.NeedProcess = false;
+                                                
                                                 break;
                                             }
                                         }

@@ -1051,6 +1051,14 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Align(AdrNo, txn.Seq, txn.Value, "1", "0", "0");
                                 break;
                             case Transaction.Command.AlignerType.AlignOffset://使用上次Align結果，不用先回Home
+                                if (txn.Value.Equals(""))
+                                {
+                                    
+                                    //if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
+                                    //{
+                                    //    RobotPoint point = PointManagement.GetMapPoint(txn.Position, txn.RecipeID);
+                                    //}
+                                }
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Align(AdrNo, txn.Seq, txn.Value, "0", "0", "0");
                                 break;
                             case Transaction.Command.AlignerType.Retract:
