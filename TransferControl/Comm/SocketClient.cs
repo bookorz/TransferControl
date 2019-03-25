@@ -406,13 +406,13 @@ namespace TransferControl.Comm
 
 
                     S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
-                    if (S.IndexOf(Convert.ToChar(3)) != -1)
+                    if (S.LastIndexOf(Convert.ToChar(3)) != -1)
                     {
                         //logger.Debug("s:" + S);
-                        data = S.Substring(0, S.IndexOf(Convert.ToChar(3)) + 1);
+                        data = S.Substring(0, S.LastIndexOf(Convert.ToChar(3)) + 1);
                         //logger.Debug("data:" + data);
 
-                        S = S.Substring(S.IndexOf(Convert.ToChar(3)) + 1);
+                        S = S.Substring(S.LastIndexOf(Convert.ToChar(3)) + 1);
                         //logger.Debug("s:" + S);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         break;
@@ -424,13 +424,13 @@ namespace TransferControl.Comm
 
                     S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
 
-                    if (S.IndexOf("\r") != -1)
+                    if (S.LastIndexOf("\r") != -1)
                     {
                         //logger.Debug("s:" + S);
-                        data = S.Substring(0, S.IndexOf("\r"));
+                        data = S.Substring(0, S.LastIndexOf("\r"));
                         //logger.Debug("data:" + data);
 
-                        S = S.Substring(S.IndexOf("\r") + 1);
+                        S = S.Substring(S.LastIndexOf("\r") + 1);
                         //logger.Debug("s:" + S);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         break;
