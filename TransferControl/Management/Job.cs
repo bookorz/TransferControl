@@ -79,7 +79,9 @@ namespace TransferControl.Management
             this.DisplayDestination = Position.Replace("Load","");
             this.DestinationSlot = Slot;
             this.AssignTime = DateTime.Now;
-            RobotPoint point = PointManagement.GetMapPoint(Position, "300MM");
+            //設定UnloadPort的補償角度
+            string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
+            RobotPoint point = PointManagement.GetPoint(ULDRobot,Position, "300MM");
             this.Offset = point.Offset;
         }
 

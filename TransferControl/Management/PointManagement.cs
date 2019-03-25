@@ -104,22 +104,22 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static RobotPoint GetMapPoint(string Position, string RecipeID)
-        {
-            RobotPoint result = null;
-            List<RobotPoint> tmp;
-            if (PointList.TryGetValue(RecipeID, out tmp))
-            {
-                var findPoint = from point in tmp
-                                where point.Position.ToUpper().Equals(Position.ToUpper()) && point.PositionType.Equals("MAPPER")
-                                select point;
-                if (findPoint.Count() != 0)
-                {
-                    result = findPoint.First();
-                }
+        //public static RobotPoint GetMapPoint(string RobotName,string Position, string RecipeID)
+        //{
+        //    RobotPoint result = null;
+        //    List<RobotPoint> tmp;
+        //    if (PointList.TryGetValue(RecipeID, out tmp))
+        //    {
+        //        var findPoint = from point in tmp
+        //                        where point.Position.ToUpper().Equals(Position.ToUpper()) && point.NodeName.ToUpper().Equals(RobotName)// && point.PositionType.Equals("MAPPER")
+        //                        select point;
+        //        if (findPoint.Count() != 0)
+        //        {
+        //            result = findPoint.First();
+        //        }
 
-            }
-            return result;
-        }
+        //    }
+        //    return result;
+        //}
     }
 }

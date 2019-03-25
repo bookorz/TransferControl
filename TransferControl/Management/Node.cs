@@ -549,14 +549,14 @@ namespace TransferControl.Management
                         }
                     }
                     RobotPoint point;
-                    if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
-                    {
-                        point = PointManagement.GetMapPoint(txn.Position, txn.RecipeID);
-                    }
-                    else
-                    {
+                    //if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
+                    //{
+                    //    point = PointManagement.GetMapPoint(this.Name,txn.Position, txn.RecipeID);
+                    //}
+                    //else
+                    //{
                         point = PointManagement.GetPoint(Name, txn.Position, txn.RecipeID);
-                    }
+                    //}
                     if (point == null)
                     {
                         logger.Error("point " + txn.Position + " not found!");
@@ -582,14 +582,14 @@ namespace TransferControl.Management
                     //}
                     if (!txn.Position2.Equals(""))
                     {
-                        if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
-                        {
-                            point = PointManagement.GetMapPoint(txn.Position2, txn.RecipeID);
-                        }
-                        else
-                        {
+                        //if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
+                        //{
+                        //    point = PointManagement.GetMapPoint(txn.Position2, txn.RecipeID);
+                        //}
+                        //else
+                        //{
                             point = PointManagement.GetPoint(Name, txn.Position2, txn.RecipeID);
-                        }
+                        //}
                         if (point == null)
                         {
                             logger.Error("point " + txn.Position2 + " not found!");
