@@ -1310,6 +1310,7 @@ namespace TransferControl.Management
                             }
                             string[] ExcuteObjs = ExcuteObjStr.Split(';');
                             //e.g. ALIGNER01:SCRIPT:AlignerInit:NONE;LOADPORT01:SCRIPT:LoadPortInit:NONE;LOADPORT02:SCRIPT:LoadPortInit:NONE;
+                            bool NodeDisabled = false;
                             foreach (string eachExcuteObj in ExcuteObjs)
                             {
                                 if (eachExcuteObj.Trim().Equals(""))
@@ -1326,6 +1327,7 @@ namespace TransferControl.Management
                                         if (!target.Enable)
                                         {
                                             logger.Debug("Node disabled:"+ eachExcuteObj);
+                                            NodeDisabled = true;
                                             continue;
                                         }
                                     }
@@ -1464,7 +1466,14 @@ namespace TransferControl.Management
                             }
                             if (CurrTask.CheckList.Count == 0)
                             {
-                                return false;
+                                if (NodeDisabled)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
                             }
                             foreach (TaskJob.Excuted ex in CurrTask.CheckList.ToList())
                             {

@@ -56,7 +56,7 @@ namespace TransferControl.Comm
         public void Start()
         {
             checkSocketState();
-
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(FirstCheck));
         }
 
         public void WaitForData(bool Enable)
@@ -530,6 +530,11 @@ namespace TransferControl.Comm
         }
 
         ///
+
+        private void FirstCheck(object input)
+        {
+            checkSocketState();
+        }
 
         /// 檢測socket的狀態
         /// 
