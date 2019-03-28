@@ -72,10 +72,10 @@ namespace TransferControl.Management
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public bool IsTask(string Id ,out CurrentProceedTask tk)
+        public bool IsTask(string Id, out CurrentProceedTask tk)
         {
             tk = null;
-            if (CurrentProceedTasks.TryGetValue(Id,out tk))
+            if (CurrentProceedTasks.TryGetValue(Id, out tk))
             {
                 return true;
             }
@@ -201,7 +201,7 @@ namespace TransferControl.Management
                         ExcutedTask.Params = new Dictionary<string, string>();
                     }
 
-                    
+
                     string[] ExcuteObjs = ConditionsStr.Split(';');
                     if (ExcutedTask.ProceedTask.CheckCondition.Trim().Equals(""))
                     {
@@ -404,7 +404,7 @@ namespace TransferControl.Management
                                     int slotNo = 0;
                                     switch (FunctionName)
                                     {
-                                        
+
                                         case "Put_Safty_Check":
                                             if (PositionName.Equals(""))
                                             {
@@ -593,7 +593,8 @@ namespace TransferControl.Management
                                                         {
                                                             result = true;
                                                         }
-                                                        else if (ToPosition != null && ToSlot != null && FromSlot != null) {
+                                                        else if (ToPosition != null && ToSlot != null && FromSlot != null)
+                                                        {
                                                             if (FromPosition.Equals(ToPosition) && (Convert.ToInt32(ToSlot) - 1) == Convert.ToInt32(FromSlot))
                                                             {//因放片時，會造成干涉的Slot已被取走，所以不會有問題
                                                                 result = true;
@@ -1262,7 +1263,7 @@ namespace TransferControl.Management
                                 }
                                 tmp1.Add(eachTask);
                             }
-                            
+
                         }
 
 
@@ -1326,53 +1327,14 @@ namespace TransferControl.Management
                                     {
                                         if (!target.Enable)
                                         {
-                                            logger.Debug("Node disabled:"+ eachExcuteObj);
+                                            logger.Debug("Node disabled:" + eachExcuteObj);
                                             NodeDisabled = true;
                                             continue;
                                         }
                                     }
                                     string Type = ExcuteObj[1];
 
-                                    if (Type.ToUpper().Equals("SCRIPT"))
-                                    {
-                                        string ScriptName = ExcuteObj[2];
-                                        string[] Params = ExcuteObj[3].Split(',');
-
-                                        foreach (string eachParam in Params)
-                                        {
-                                            if (eachParam.Equals("NONE"))
-                                            {
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                string[] tmp = eachParam.Split('=');
-                                                if (tmp.Length == 2)
-                                                {
-                                                    param.Add(tmp[0], tmp[1]);
-                                                }
-                                                else
-                                                {
-                                                    logger.Error("Task Parameter 解析失敗，Task Name:" + taskName);
-                                                    CurrentProceedTasks.TryRemove(Id, out tmpTk);
-                                                    //throw new Exception("Task Parameter 解析失敗，Task Name:" + taskName);
-                                                    ErrorMessage = "Task Parameter 解析失敗，Task Name:" + taskName;
-                                                    return false;
-                                                }
-                                            }
-                                        }
-
-
-                                        TaskJob.Excuted ex = new TaskJob.Excuted();
-                                        ex.NodeName = NodeName;
-                                        ex.ExcuteName = ScriptName;
-                                        ex.ExcuteType = Type;
-                                        ex.FinishTrigger = "Finished";
-                                        ex.param = param;
-                                        CurrTask.CheckList.Add(ex);
-
-                                    }
-                                    else if (Type.ToUpper().Equals("CMD"))
+                                    if (Type.ToUpper().Equals("CMD"))
                                     {
                                         string Method = ExcuteObj[2];
                                         string[] Param = ExcuteObj[3].Split(',');
@@ -1468,6 +1430,7 @@ namespace TransferControl.Management
                             {
                                 if (NodeDisabled)
                                 {
+                                    _TaskReport.On_Task_NoExcuted(CurrTask);
                                     return true;
                                 }
                                 else
@@ -1521,7 +1484,7 @@ namespace TransferControl.Management
                     {
                         logger.Info("已找不到Task，完成工作，TaskId:" + Id);
                         Remove(Id);
-                        
+
                         //throw new Exception("已找不到Task，完成工作，TaskId:" + Id);
                         //ErrorMessage = "已找不到Task，完成工作，TaskId:" + Id;
                         return false;
