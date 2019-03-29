@@ -8,6 +8,6 @@ namespace TransferControl.Operation
 {
     public interface IXfeStateReport
     {
-        void On_Transfer_Complete(XfeCrossZone xfe);
+        void On_Transfer_Complete(XfeControl xfe);
     }
 }

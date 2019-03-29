@@ -21,7 +21,7 @@ namespace TransferControl.Operation
 
         //run time data
         public int PJState;
-        private XfeCrossZone xfe;
+        private XfeControl xfe;
         IProcessJobReport _report;
 
         public ProcessJob()
@@ -37,7 +37,7 @@ namespace TransferControl.Operation
             SlotID = new int[0];
             Seq = DateTime.Now.Ticks;
             PJState = 0;
-            xfe = new XfeCrossZone(this);
+            xfe = new XfeControl(this);
         }
 
         public void SetReport(IProcessJobReport report)
@@ -50,7 +50,7 @@ namespace TransferControl.Operation
             return xfe.Start(CarrierID);
         }
 
-        public void On_Transfer_Complete(XfeCrossZone xfe)
+        public void On_Transfer_Complete(XfeControl xfe)
         {
             if (_report != null)
             {

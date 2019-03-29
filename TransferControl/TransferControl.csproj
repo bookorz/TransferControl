@@ -96,7 +96,7 @@
     <Compile Include="Management\TaskJobManagment.cs" />
     <Compile Include="Management\Transaction.cs" />
     <Compile Include="Management\TransactionRecord.cs" />
-    <Compile Include="Operation\XfeCrossZone.cs" />
+    <Compile Include="Operation\XfeControl.cs" />
     <Compile Include="Parser\ASYSTParser.cs" />
     <Compile Include="Parser\IParser.cs" />
     <Compile Include="Parser\MessageParser.cs" />

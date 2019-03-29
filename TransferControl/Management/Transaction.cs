@@ -149,6 +149,7 @@ namespace TransferControl.Management
                 public const string GetSV = "GetSV";
                 public const string Mapping = "Mapping";
                 public const string GetMapping = "GetMapping";
+                public const string SetSV = "SetSV";
             }
             //Aligner
             public class AlignerType

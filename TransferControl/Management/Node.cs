@@ -124,7 +124,7 @@ namespace TransferControl.Management
         /// 紀錄伸出的是哪支手臂
         /// </summary>
         public string PutOutArm { get; set; }
-        
+
         /// <summary>
         /// 是否需要Initial
         /// </summary>
@@ -283,7 +283,7 @@ namespace TransferControl.Management
 
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
-        public Dictionary<string,ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
+        public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
         private static DBUtil dBUtil = new DBUtil();
 
         public class ActionRequest
@@ -294,7 +294,7 @@ namespace TransferControl.Management
             public string Slot2 { get; set; }
             public string Arm { get; set; }
             public string Value { get; set; }
-           
+
             public long TimeStamp { get; set; }
 
             public ActionRequest()
@@ -305,7 +305,7 @@ namespace TransferControl.Management
                 Slot2 = "";
                 Arm = "";
                 Value = "";
-                
+
             }
         }
 
@@ -365,7 +365,7 @@ namespace TransferControl.Management
             GetMutex = true;
             //InterLock = false;
             Reserve = false;
-           
+
             Available = true;
             HasPresent = false;
             CheckStatus = false;
@@ -435,10 +435,10 @@ namespace TransferControl.Management
         public void SetEnable(bool enable)
         {
             this.Enable = enable;
-            string SQL = @"update config_node set enable_flg = "+ Convert.ToByte(enable).ToString()+" where equipment_model_id = '"+ SystemConfig.Get().SystemMode + "' and node_id = '"+this.Name+"'";
+            string SQL = @"update config_node set enable_flg = " + Convert.ToByte(enable).ToString() + " where equipment_model_id = '" + SystemConfig.Get().SystemMode + "' and node_id = '" + this.Name + "'";
             dBUtil.ExecuteNonQuery(SQL, null);
         }
-        
+
         /// <summary>
         /// 傳送命令
         /// </summary>
@@ -555,7 +555,7 @@ namespace TransferControl.Management
                     //}
                     //else
                     //{
-                        point = PointManagement.GetPoint(Name, txn.Position, txn.RecipeID);
+                    point = PointManagement.GetPoint(Name, txn.Position, txn.RecipeID);
                     //}
                     if (point == null)
                     {
@@ -588,7 +588,7 @@ namespace TransferControl.Management
                         //}
                         //else
                         //{
-                            point = PointManagement.GetPoint(Name, txn.Position2, txn.RecipeID);
+                        point = PointManagement.GetPoint(Name, txn.Position2, txn.RecipeID);
                         //}
                         if (point == null)
                         {
@@ -622,19 +622,19 @@ namespace TransferControl.Management
                         {
                             case Transaction.Command.SmartTagType.Hello:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.Hello();
-                               
+
                                 break;
                             case Transaction.Command.SmartTagType.GetLCDData:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.GetLCDData();
-                               
+
                                 break;
                             case Transaction.Command.SmartTagType.SelectLCDData:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.SelectLCDData();
-                              
+
                                 break;
                             case Transaction.Command.SmartTagType.SetLCDData:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().SmartTag.SetLCDData(txn.Value);
-                               
+
                                 break;
                         }
                         break;
@@ -860,18 +860,18 @@ namespace TransferControl.Management
                             case Transaction.Command.LoadPortType.TweekUp:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekUp);
                                 break;
-                            //case Transaction.Command.LoadPortType.SetSlotOffset:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
-                            //    break;
-                            //case Transaction.Command.LoadPortType.SetWaferOffset:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
-                            //    break;
-                            //case Transaction.Command.LoadPortType.SetSlotPitch:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
-                            //    break;
-                            //case Transaction.Command.LoadPortType.SetTweekDistance:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
-                            //    break;
+                                //case Transaction.Command.LoadPortType.SetSlotOffset:
+                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
+                                //    break;
+                                //case Transaction.Command.LoadPortType.SetWaferOffset:
+                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
+                                //    break;
+                                //case Transaction.Command.LoadPortType.SetSlotPitch:
+                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
+                                //    break;
+                                //case Transaction.Command.LoadPortType.SetTweekDistance:
+                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
+                                //    break;
                         }
                         break;
                     case "ROBOT":
@@ -952,7 +952,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToContinue(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
                                 break;
                             case Transaction.Command.RobotType.PutWithoutBack:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToDown(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);                                
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToDown(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 break;
                             case Transaction.Command.RobotType.GetWithoutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToUp(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
@@ -995,6 +995,9 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.RobotType.Speed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSpeed(AdrNo, txn.Seq, txn.Value);
+                                break;
+                            case Transaction.Command.RobotType.SetSV:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSv(AdrNo, txn.Seq, txn.Arm, txn.Value);
                                 break;
                         }
                         break;
@@ -1053,7 +1056,7 @@ namespace TransferControl.Management
                             case Transaction.Command.AlignerType.AlignOffset://使用上次Align結果，不用先回Home
                                 if (txn.Value.Equals(""))
                                 {
-                                    
+
                                     //if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
                                     //{
                                     //    RobotPoint point = PointManagement.GetMapPoint(txn.Position, txn.RecipeID);
@@ -1194,7 +1197,7 @@ namespace TransferControl.Management
                 {
                     IsWaitData = true;
                 }
-                
+
 
                 if (Ctrl.DoWork(txn, IsWaitData))
                 {

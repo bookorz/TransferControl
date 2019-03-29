@@ -31,7 +31,6 @@ namespace TransferControl.Management
             public string GotoIndex = "";
             public int ExcutedCount = 0;
             public bool Finished = false;
-            public bool Finished2 = false;
         }
         public TaskJobManagment(ITaskJobReport TaskReport)
         {
@@ -255,8 +254,19 @@ namespace TransferControl.Management
                                         NodeName = Conditions[1];
                                         Attr = Conditions[2].Split('=')[0];
                                         Value = Conditions[2].Split('=')[1];
-                                        string times = Conditions[3];
-                                        string interval = Conditions[4];
+                                        int times = Convert.ToInt32(Conditions[3]);
+                                        int interval = Convert.ToInt32(Conditions[4]);
+                                        if(ExcutedTask.ExcutedCount>= times)
+                                        {
+                                            //次數達成就離開迴圈
+                                            result = true;
+                                            ExcutedTask.ExcutedCount = 0;
+                                            break;
+                                        }
+                                        ExcutedTask.ExcutedCount++;
+                                        //delay
+                                        SpinWait.SpinUntil(() => false, interval);
+
                                         Node = NodeManagement.Get(NodeName);
                                         if (!Node.Enable)
                                         {
@@ -266,12 +276,13 @@ namespace TransferControl.Management
                                         if (Node != null)
                                         {
                                             string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
-                                            if (AttrVal.Equals(Value.ToUpper()))
+                                            if (!AttrVal.Equals(Value.ToUpper()))
                                             {
+                                                //如果條件尚未達成，再做一次
                                                 ExcutedTask.GotoIndex = ExcutedTask.ProceedTask.TaskIndex.ToString();
 
                                             }
-
+                                            result = true;
                                         }
                                         else
                                         {
@@ -1082,10 +1093,7 @@ namespace TransferControl.Management
             logger.Debug("Delete Task ID:" + Id);
             CurrentProceedTask tmp;
             CurrentProceedTasks.TryRemove(Id, out tmp);
-            if (tmp != null)
-            {
-                tmp.Finished = true;
-            }
+           
             return tmp;
         }
 
@@ -1274,7 +1282,16 @@ namespace TransferControl.Management
 
                     if (tk.Count != 0)
                     {
-                        CurrentProceedTask CurrTask = new CurrentProceedTask();
+                        CurrentProceedTask CurrTask;
+                        if (ExcutedTask == null)
+                        {
+                             CurrTask = new CurrentProceedTask();
+                        }
+                        else
+                        {
+                            CurrTask = ExcutedTask;
+                        }
+                        
                         CurrTask.ProceedTask = tk.First();
                         CurrTask.CheckList.Clear();
                         if (param == null)

@@ -11,9 +11,9 @@ using TransferControl.Management;
 
 namespace TransferControl.Operation
 {
-    public class XfeCrossZone
+    public class XfeControl
     {
-        private ILog logger = LogManager.GetLogger(typeof(XfeCrossZone));
+        private ILog logger = LogManager.GetLogger(typeof(XfeControl));
         public static bool Running = false;
         private static Dictionary<string, string> usedList = new Dictionary<string, string>();
         public string LDRobot = "";
@@ -29,7 +29,7 @@ namespace TransferControl.Operation
 
         IXfeStateReport _Report;
 
-        public XfeCrossZone(IXfeStateReport Report)
+        public XfeControl(IXfeStateReport Report)
         {
             _Report = Report;
             RunID = Guid.NewGuid().ToString();
@@ -675,12 +675,7 @@ namespace TransferControl.Operation
                         param.Add("@ULDRobot", ULDRobot);
                         TaskJobManagment.CurrentProceedTask Task;
                         RouteControl.Instance.TaskJob.Excute(id, out Message, out Task, req.TaskName, param);
-                        //這邊要卡住直到Task完成
-                        logger.Debug(NodeName + " 等待Task完成");
-                        while (!Task.Finished && Running)
-                        {
-                            SpinWait.SpinUntil(() => Task.Finished || !Running, 99999999);
-                        }
+                      
                         if (Running)
                         {
                             logger.Debug(NodeName + " Task完成");
