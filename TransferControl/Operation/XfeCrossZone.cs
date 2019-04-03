@@ -11,16 +11,18 @@ using TransferControl.Management;
 
 namespace TransferControl.Operation
 {
-    public class XfeControl
+    public class XfeCrossZone
     {
-        private ILog logger = LogManager.GetLogger(typeof(XfeControl));
+        private ILog logger = LogManager.GetLogger(typeof(XfeCrossZone));
         public static bool Running = false;
-        private static Dictionary<string, string> usedList = new Dictionary<string, string>();
+
         public string LDRobot = "";
         public string LDRobot_Arm = "";
         public string ULDRobot = "";
         public string ULDRobot_Arm = "";
         public string LD = "";
+        public List<string> ULD_List = new List<string>();
+        public string tmpULD = "";
         public double ProcessTime = 0;
         public double ProcessCount = 0;
         public bool SingleAligner = false;
@@ -29,93 +31,137 @@ namespace TransferControl.Operation
 
         IXfeStateReport _Report;
 
-        public XfeControl(IXfeStateReport Report)
+        public XfeCrossZone(IXfeStateReport Report)
         {
             _Report = Report;
             RunID = Guid.NewGuid().ToString();
+
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ROBOT01");
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ROBOT02");
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ALIGNER01");
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ALIGNER02");
+            foreach (Node node in NodeManagement.GetList())
+            {
+                if (node.Type.ToUpper().Equals("ROBOT") || node.Type.ToUpper().Equals("ALIGNER") || node.Type.ToUpper().Equals("LOADPORT"))
+                {
+                    if (node.Enable)
+                    {
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), node.Name.ToUpper());
+                    }
+                }
+            }
+
+        }
+
+        public void Initial()
+        {
+            Running = false;
+
+            LDRobot = "";
+            LDRobot_Arm = "";
+            ULDRobot = "";
+            ULDRobot_Arm = "";
+            LD = "";
+            ULD_List = new List<string>();
+            tmpULD = "";
+            ProcessTime = 0;
+            ProcessCount = 0;
+            SingleAligner = false;
+            RunID = "";
         }
 
         public bool Start(string LDPort)
         {
-            lock (usedList)
+            if (Running)
             {
-                watch = System.Diagnostics.Stopwatch.StartNew();
-                //開始前先重設
-                foreach (Node each in NodeManagement.GetList())
-                {
-                    each.RequestQueue.Clear();
-                    each.LockOn = "";
-                }
-                LDRobot = "";
-                LDRobot_Arm = "";
-
-                ULDRobot_Arm = "";
-                LD = "";
-
-                //找到LD
-                Node nodeLD = NodeManagement.Get(LDPort);
-                Node LROB = NodeManagement.Get(nodeLD.Associated_Node);
-                LDRobot = LROB.Name;
-
-                LD = nodeLD.Name;
-
-
-
-                var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                     where eachSlot.NeedProcess
-                                     select eachSlot;
-                ProcessCount = AvailableSlots.Count();
-
-                var crossRunSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                    where !NodeManagement.Get(eachSlot.Destination).Equals(LDRobot)
-                                    select eachSlot;
-                if (crossRunSlots.Count() == 0)
-                {//只會用到第一支ROBOT
-                    if (usedList.ContainsKey(LDRobot) || usedList.ContainsKey(LROB.Associated_Node))
-                    {//資源取得失敗
-                        return false;
-                    }
-                    usedList.Add(LDRobot, RunID);
-                    usedList.Add(LROB.Associated_Node, RunID);
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), LDRobot);
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), LROB.Associated_Node);
-                }
-                else
-                {//兩隻ROBOT都會用到
-                   if(usedList.ContainsKey("ROBOT01") || usedList.ContainsKey("ROBOT02") || usedList.ContainsKey("ALIGNER01") || usedList.ContainsKey("ALIGNER02"))
-                    {//資源取得失敗
-                        return false;
-                    }
-
-                    usedList.Add("ROBOT01", RunID);
-                    usedList.Add("ROBOT02", RunID);
-                    usedList.Add("ALIGNER01", RunID);
-                    usedList.Add("ALIGNER02", RunID);
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ROBOT01");
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ROBOT02");
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ALIGNER01");
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ALIGNER02");
-                }
-
-                Node.ActionRequest request = new Node.ActionRequest();
-                request.TaskName = "TRANSFER_GET_LOADPORT";
-                lock (LROB.RequestQueue)
-                {
-                    if (!LROB.RequestQueue.ContainsKey(request.TaskName))
-                    {
-                        LROB.RequestQueue.Add(request.TaskName, request);
-                    }
-                }
-                Running = true;
-
+                return false;
             }
+            Initial();
+            watch = System.Diagnostics.Stopwatch.StartNew();
+            //開始前先重設
+            foreach (Node each in NodeManagement.GetList())
+            {
+                each.RequestQueue.Clear();
+                each.LockOn = "";
+                each.ReadyForGet = true;
+                each.ReadyForPut = true;
+            }
+            LDRobot = "";
+            LDRobot_Arm = "";
+
+            ULDRobot_Arm = "";
+            LD = "";
+            ULD_List.Clear();
+            //找到LD
+            Node nodeLD = NodeManagement.Get(LDPort);
+            Node LROB = NodeManagement.Get(nodeLD.Associated_Node);
+            LDRobot = LROB.Name;
+
+            LD = nodeLD.Name;
+
+
+
+            var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
+                                 where eachSlot.NeedProcess
+
+                                 select eachSlot;
+            ProcessCount = AvailableSlots.Count();
+
+            //var crossRunSlots = from eachSlot in nodeLD.JobList.Values.ToList()
+            //                    where !NodeManagement.Get(eachSlot.Destination).Equals(LDRobot)
+            //                    select eachSlot;
+            //if (crossRunSlots.Count() == 0)
+            //{//只會用到第一支ROBOT
+            //    if (usedList.ContainsKey(LDRobot) || usedList.ContainsKey(LROB.Associated_Node))
+            //    {//資源取得失敗
+            //        return false;
+            //    }
+            //    usedList.Add(LDRobot, RunID);
+            //    usedList.Add(LROB.Associated_Node, RunID);
+            //    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), LDRobot);
+            //    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), LROB.Associated_Node);
+            //}
+            //else
+            //{//兩隻ROBOT都會用到
+            //   if(usedList.ContainsKey("ROBOT01") || usedList.ContainsKey("ROBOT02") || usedList.ContainsKey("ALIGNER01") || usedList.ContainsKey("ALIGNER02"))
+            //    {//資源取得失敗
+            //        return false;
+            //    }
+
+            //    usedList.Add("ROBOT01", RunID);
+            //    usedList.Add("ROBOT02", RunID);
+            //    usedList.Add("ALIGNER01", RunID);
+            //    usedList.Add("ALIGNER02", RunID);
+            //    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ROBOT01");
+            //    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ROBOT02");
+            //    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ALIGNER01");
+            //    ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ALIGNER02");
+            //}
+
+
+
+            Node.ActionRequest request = new Node.ActionRequest();
+            request.TaskName = "TRANSFER_GET_LOADPORT";
+            lock (LROB.RequestQueue)
+            {
+                if (!LROB.RequestQueue.ContainsKey(request.TaskName))
+                {
+                    LROB.RequestQueue.Add(request.TaskName, request);
+                }
+            }
+            Running = true;
+
+            //NodeStatusUpdate.UpdateCurrentState("RUN");
             return Running;
         }
 
         public static void Stop()
         {
+            string Message = "";
             Running = false;
-            usedList.Clear();
+            TaskJobManagment.CurrentProceedTask Task;
+            RouteControl.Instance.TaskJob.Excute(Guid.NewGuid().ToString(), out Message, out Task, "STOP", null);
+            //NodeStatusUpdate.UpdateCurrentState("IDLE");
         }
 
         private bool CheckQueue(Node Target)
@@ -179,6 +225,7 @@ namespace TransferControl.Operation
             bool result = false;
             bool a = false;
             bool b = false;
+            bool c = false;
             //找到所有被取出FOUP的WAFER
             var ProcessList = from Job in JobManagement.GetJobList()
                               where Job.InProcess
@@ -189,37 +236,48 @@ namespace TransferControl.Operation
                 Node dest = NodeManagement.Get(each.Destination);
                 //找尋到達目的地需要此ROBOT搬運的WAFER
                 //同時也不在此ROBOT手上
-                if (dest.Associated_Node.ToUpper().Equals(Robot.Name.ToUpper()) && !each.Position.ToUpper().Equals(Robot.Name.ToUpper()))
+                if ((dest.Associated_Node.ToUpper().Equals(Robot.Name.ToUpper()) && !each.Position.ToUpper().Equals(Robot.Name.ToUpper())) )
                 {
                     a = true;
                     break;
                 }
             }
 
-            if (Robot.JobList.Count != 2)
+            //if (Robot.JobList.Count != 2)
+            //{
+            //    b = true;
+            //}
+
+            ProcessList = from Job in JobManagement.GetJobList()
+                          where Job.InProcess && Job.NeedProcess
+                          select Job;
+
+            if (ProcessList.Count() != 0)
             {
-                b = true;
+                c = true;
             }
-            result = a && b;
+
+            result = (a || b || c) && Robot.JobList.Count != 2;
             return result;
         }
 
 
         private void Engine(object NodeName)
         {
-            try
-            {
-                Node Target = NodeManagement.Get(NodeName.ToString());
-                if (Target == null)
-                {
-                    return;
-                }
-                if (!Target.Enable)
-                {
-                    return;
-                }
 
-                while (true)
+            Node Target = NodeManagement.Get(NodeName.ToString());
+            if (Target == null)
+            {
+                return;
+            }
+            if (!Target.Enable)
+            {
+                return;
+            }
+
+            while (true)
+            {
+                try
                 {
                     while (!CheckQueue(Target) && Running)
                     {
@@ -285,7 +343,7 @@ namespace TransferControl.Operation
                                         req.Position = nodeLD.Name;
 
                                         var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                                             where eachSlot.NeedProcess
+                                                             where eachSlot.NeedProcess && eachSlot.MapFlag && !eachSlot.ErrPosition
                                                              select eachSlot;
                                         if (AvailableSlots.Count() != 0)
                                         {
@@ -468,8 +526,22 @@ namespace TransferControl.Operation
                                             else
                                             {
                                                 logger.Debug(NodeName + " Loadport沒有片可處理");
+
                                                 nodeLD.Fetchable = false;
-                                                //結束工作
+                                                //檢查是不是搬完了
+
+                                                //var Available = from each in JobManagement.GetJobList()
+                                                //                where each.NeedProcess && !each.Destination.Equals(each.Position)
+                                                //                select each;
+                                                //if (Available.Count() == 0)
+                                                //{
+                                                //    watch.Stop();
+                                                //    ProcessTime = watch.ElapsedMilliseconds;
+                                                //    logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+
+                                                //    _Report.On_Transfer_Complete(this);
+                                                //    //結束工作
+                                                //}
                                                 continue;
                                             }
                                         }
@@ -516,7 +588,7 @@ namespace TransferControl.Operation
                                             {
                                                 LDRobot_Arm = wafer.Slot;
                                                 wafer.NeedProcess = false;
-                                                
+
                                                 break;
                                             }
                                         }
@@ -557,6 +629,25 @@ namespace TransferControl.Operation
                                     case "TRANSFER_GET_ALIGNER02_2":
                                         Target.LockOn = "";
                                         ULDRobot_Arm = "";
+
+                                        if (NodeManagement.GetAlignerList().Count == 1)
+                                        {
+                                            //當只有一台ALIGNER使用邏輯
+                                            //觸發放第二片                                   
+                                            Node.ActionRequest request = new Node.ActionRequest();
+                                            request.TaskName = "TRANSFER_PUTW_" + req.Position;
+                                            request.Position = req.Position;
+                                            //request.Arm = wafer.Slot;
+                                            Node LDRbt = NodeManagement.Get(LDRobot);
+                                            lock (LDRbt.RequestQueue)
+                                            {
+                                                if (!LDRbt.RequestQueue.ContainsKey(request.TaskName))
+                                                {
+                                                    LDRbt.RequestQueue.Add(request.TaskName, request);
+                                                    break;
+                                                }
+                                            }
+                                        }
                                         break;
                                     case "TRANSFER_GETW_ALIGNER01":
                                     case "TRANSFER_GETW_ALIGNER02":
@@ -626,6 +717,14 @@ namespace TransferControl.Operation
 
                                         }
                                         Target.LockOn = req.Position;
+
+                                        var Match = from each in ULD_List
+                                                    where each.Equals(req.Position)
+                                                    select each;
+                                        if (Match.Count() == 0)
+                                        {
+                                            ULD_List.Add(req.Position);
+                                        }
                                         break;
                                 }
                                 break;
@@ -641,26 +740,61 @@ namespace TransferControl.Operation
                                         //找到回送ULD的ROBOT
                                         ULDRobot = NodeManagement.Get(Target.JobList["1"].Destination).Associated_Node;
 
-                                        //當只有一台ALIGNER使用邏輯
-                                        //觸發放第二片
-                                        Node.ActionRequest request = new Node.ActionRequest();
-                                        request.TaskName = "TRANSFER_PUTW_" + Target.Name;
-                                        request.Position = Target.Name;
-                                        //request.Arm = wafer.Slot;
-                                        Node LDRbt = NodeManagement.Get(LDRobot);
-                                        lock (LDRbt.RequestQueue)
-                                        {
-                                            if (!LDRbt.RequestQueue.ContainsKey(request.TaskName))
-                                            {
-                                                LDRbt.RequestQueue.Add(request.TaskName, request);
-                                                break;
-                                            }
-                                        }
+
+                                        break;
+
+                                    case "TRANSFER_ALIGNER_ALIGN":
+                                        ULDRobot = NodeManagement.Get(Target.JobList["1"].Destination).Associated_Node;
+                                        //放進UnloadPort補償角度
+                                        RobotPoint point = PointManagement.GetPoint(ULDRobot, Target.Name, "300MM");
+                                        Target.JobList["1"].Offset += point.Offset;
+                                        req.Value = (Target.JobList["1"].Offset+0).ToString();
+
                                         break;
                                 }
                                 break;
                             case "OCR":
 
+                                break;
+                            case "LOADPORT":
+                                switch (req.TaskName)
+                                {
+                                    case "TRANSFER_LOADPORT_CLOSE":
+                                        nodeLD = NodeManagement.Get(LD);
+                                        var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
+                                                             where eachSlot.NeedProcess
+                                                             select eachSlot;
+                                        if (AvailableSlots.Count() != 0)
+                                        {
+                                            //還沒取完片就取消動作
+                                            continue;
+                                        }
+                                        break;
+                                    case "TRANSFER_UNLOADPORT_CLOSE":
+                                        var Available = from each in JobManagement.GetJobList()
+                                                        where each.NeedProcess || (each.InProcess && !each.Destination.Equals(each.Position))
+                                                        select each;
+                                        if (Available.Count() != 0)
+                                        {
+                                            //還沒放完片就取消動作
+                                            continue;
+                                        }
+                                        watch.Stop();
+                                        ProcessTime = watch.ElapsedMilliseconds;
+                                        logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+
+                                        _Report.On_Transfer_Complete(this);
+                                        break;
+                                    case "TRANSFER_LOADPORT_CLOSE_FINISHED":
+                                        _Report.On_LoadPort_Complete(NodeName.ToString());
+                                        continue;
+
+                                    case "TRANSFER_UNLOADPORT_CLOSE_FINISHED":
+                                        Running = false;
+                                        _Report.On_UnLoadPort_Complete(NodeName.ToString());
+                                        continue;
+
+                                }
                                 break;
                         }
                         Dictionary<string, string> param = new Dictionary<string, string>();
@@ -675,42 +809,16 @@ namespace TransferControl.Operation
                         param.Add("@ULDRobot", ULDRobot);
                         TaskJobManagment.CurrentProceedTask Task;
                         RouteControl.Instance.TaskJob.Excute(id, out Message, out Task, req.TaskName, param);
-                      
+                        //這邊要卡住直到Task完成
+                        logger.Debug(NodeName + " 等待Task完成");
+                        while (!Task.Finished && Running)
+                        {
+                            SpinWait.SpinUntil(() => Task.Finished || !Running, 99999999);
+                        }
                         if (Running)
                         {
                             logger.Debug(NodeName + " Task完成");
-                            switch (req.TaskName)
-                            {
-                                case "TRANSFER_PUT_UNLOADPORT":
-                                    //檢查是不是搬完了
-                                    nodeLD = NodeManagement.Get(LD);
-                                    var Available = from each in JobManagement.GetJobList()
-                                                    where each.NeedProcess && !each.Destination.Equals(each.Position)
-                                                    select each;
-                                    if (Available.Count() == 0)
-                                    {
-                                        watch.Stop();
-                                        ProcessTime = watch.ElapsedMilliseconds;
-                                        logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                        List<string> keys =new List<string>();
-                                        lock (keys)
-                                        {
-                                            foreach (string key in usedList.Keys)
-                                            {
-                                                keys.Add(key);
-                                            }
-                                            foreach (string key in keys)
-                                            {
-                                                if (usedList[key].Equals(RunID))
-                                                {
-                                                    usedList.Remove(key);
-                                                }
-                                            }
-                                        }
-                                        _Report.On_Transfer_Complete(this);
-                                    }
-                                    break;
-                            }
+                            
                         }
                         else
                         {
@@ -728,11 +836,12 @@ namespace TransferControl.Operation
                         logger.Debug(NodeName + " 開始監控RequestQueue");
                     }
                 }
+                catch (Exception e)
+                {
+                    logger.Error(e.StackTrace);
+                }
             }
-            catch (Exception e)
-            {
-                logger.Error(e.StackTrace);
-            }
+
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace TransferControl.Management
 {
     public class Job
     {
+        ILog logger = LogManager.GetLogger(typeof(Job));
         public string Slot { get; set; }
         public string Job_Id { get; set; }
         public string Host_Job_Id { get; set; }
@@ -18,28 +20,23 @@ namespace TransferControl.Management
         public bool ProcessFlag { get; set; }
         public bool AlignerFlag { get; set; }
         public bool OCRFlag { get; set; }
-        public string DefaultOCR { get; set; }
-        public bool AlignerFinished { get; set; }
-        public bool OCRFinished { get; set; }
         public string OCRImgPath { get; set; }
         public string OCRScore { get; set; }
         public string Position { get; set; }
         public string FromPort { get; set; }
         public string FromPortSlot { get; set; }
-        public string Destination { get;  private set ; }
+        public string Destination { get; private set; }
         public string DisplayDestination { get; private set; }
         public string DestinationSlot { get; private set; }
+        public string ReservePort { get; set; }
+        public string ReserveSlot { get; set; }
         public string LastNode { get; set; }
         public string LastSlot { get; set; }
-        public string CurrentState { get; set; }
         public string WaitToDo { get; set; }
-        public string ProcessNode { get; set; }
         public string RecipeID { get; set; }
         public bool ErrPosition { get; set; }
         public bool MapFlag { get; set; }
         public int Offset { get; set; }
-        public int Angle { get; set; }
-        public bool IsAssigned { get; set; }
         public DateTime AssignTime { get; private set; }
 
         IJobReport _Report = null;
@@ -56,12 +53,13 @@ namespace TransferControl.Management
             RecipeID = "";
             ProcessFlag = false;
             MapFlag = false;
-            Angle = 270;
+            ReservePort = "";
+            ReserveSlot = "";
             AlignerFlag = false;
             NeedProcess = false;
             OCRFlag = false;
             InProcess = false;
-            IsAssigned = false;
+
             OcrCodeList = new List<OCRInfo>();
         }
 
@@ -73,24 +71,57 @@ namespace TransferControl.Management
             }
         }
 
-        public void AssignPort(string Position , string Slot)
+        public bool AssignPort(string Position, string Slot)
         {
-            this.Destination = Position;
-            this.DisplayDestination = Position.Replace("Load","");
-            this.DestinationSlot = Slot;
-            this.AssignTime = DateTime.Now;
-            //設定UnloadPort的補償角度
-            string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
-            RobotPoint point = PointManagement.GetPoint(ULDRobot,Position, "300MM");
-            this.Offset = point.Offset;
+            Node targetPort = NodeManagement.Get(Position);
+            if (targetPort == null)
+            {
+                return false;
+            }
+            Job targetSlot;
+            if (targetPort.JobList.TryGetValue(Slot, out targetSlot))
+            {
+                this.Destination = Position;
+                this.DisplayDestination = Position.Replace("Load", "");
+                this.DestinationSlot = Slot;
+                this.AssignTime = DateTime.Now;
+                //設定UnloadPort的補償角度
+                string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
+                RobotPoint point = PointManagement.GetPoint(ULDRobot, Position, "300MM");
+                if (point != null)
+                {
+                    this.Offset = point.Offset;
+                }
+                else
+                {
+                    logger.Error("Job AssignPort: point not exist. Node:" + ULDRobot + " Position:" + Position);
+                }
+                targetSlot.ReservePort = this.Position;
+                targetSlot.ReserveSlot = this.Slot;
+            }
+            else
+            {
+                return false;
+            }
+            return true;
         }
 
         public void UnAssignPort()
         {
+            Node targetPort = NodeManagement.Get(this.Destination);
+            if (targetPort != null)
+            {
+                Job targetSlot;
+                if (targetPort.JobList.TryGetValue(this.DestinationSlot, out targetSlot))
+                {
+                    targetSlot.ReservePort = "";
+                    targetSlot.ReserveSlot = "";
+                }
+            }
             this.Destination = "";
             this.DisplayDestination = "";
             this.DestinationSlot = "";
-            
+
         }
 
         public class State

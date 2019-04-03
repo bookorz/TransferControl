@@ -77,7 +77,6 @@
     <Compile Include="Management\ITaskJobReport.cs" />
     <Compile Include="Management\ITransactionReport.cs" />
     <Compile Include="Operation\IProcessJobReport.cs" />
-    <Compile Include="Operation\IXfeStateReport.cs" />
     <Compile Include="Management\Job.cs" />
     <Compile Include="Management\JobManagement.cs" />
     <Compile Include="Management\Node.cs" />
@@ -86,6 +85,7 @@
     <Compile Include="Management\OCRInfo.cs" />
     <Compile Include="Management\Path.cs" />
     <Compile Include="Management\PointManagement.cs" />
+    <Compile Include="Operation\IXfeStateReport.cs" />
     <Compile Include="Operation\ProcessJob.cs" />
     <Compile Include="Operation\ControlJobManagement.cs" />
     <Compile Include="Operation\ProcessJobManagement.cs" />
@@ -96,7 +96,7 @@
     <Compile Include="Management\TaskJobManagment.cs" />
     <Compile Include="Management\Transaction.cs" />
     <Compile Include="Management\TransactionRecord.cs" />
-    <Compile Include="Operation\XfeControl.cs" />
+    <Compile Include="Operation\XfeCrossZone.cs" />
     <Compile Include="Parser\ASYSTParser.cs" />
     <Compile Include="Parser\IParser.cs" />
     <Compile Include="Parser\MessageParser.cs" />
