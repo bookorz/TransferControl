@@ -167,6 +167,8 @@ namespace TransferControl.Management
         //Demo用Condition
         public bool PortUnloadAndLoadFinished { get; set; }
 
+        public string CarrierType { get; set; }
+
         public bool Busy { get; set; }
 
         public bool OPACCESS { get; set; }

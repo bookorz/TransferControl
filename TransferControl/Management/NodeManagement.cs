@@ -37,7 +37,8 @@ namespace TransferControl.Management
                             t.R_Flip_Degree as R_Flip_Degree,
                             t.associated_node as Associated_Node,
                             t.r_arm as RArmActive,
-                            t.l_arm as LArmActive
+                            t.l_arm as LArmActive,
+                            t.carrier_type AS CarrierType
                         FROM config_node t
                         WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
