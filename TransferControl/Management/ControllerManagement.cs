@@ -35,12 +35,9 @@ namespace TransferControl.Management
             string Sql = @"SELECT UPPER(t.device_name) as DeviceName,t.device_type as DeviceType,
 										UPPER(t.vendor) as vendor,
                             case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
-                            case when t.conn_type = 'Socket' then  CONVERT(t.conn_prot,SIGNED) else 0 end as Port ,
-                            case when t.conn_type = 'Comport' then   CONVERT(t.conn_prot,SIGNED) else 0 end as BaudRate ,
-                            case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,
-                            t.com_parity_bit as ParityBit,
-                            ifnull(CONVERT(t.com_data_bits,SIGNED),0) as DataBits,
-                            t.com_stop_bit as StopBit,
+                            case when t.conn_type = 'Socket' then  CONVERT(t.conn_port,SIGNED) else 0 end as Port ,
+                            case when t.conn_type = 'Comport' then   CONVERT(t.conn_port,SIGNED) else 0 end as BaudRate ,
+                            case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,                            
                             t.conn_type as ConnectionType,
                             t.enable_flg as Enable
                             FROM config_controller_setting t
@@ -50,18 +47,18 @@ namespace TransferControl.Management
             DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
             string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
 
-            List<DeviceConfig> ctrlList = JsonConvert.DeserializeObject<List<DeviceConfig>>(str_json);
+            List<DeviceController> ctrlList = JsonConvert.DeserializeObject<List<DeviceController>>(str_json);
            
 
-            foreach (DeviceConfig each in ctrlList)
+            foreach (DeviceController each in ctrlList)
             {
                 if (each.Enable)
                 {
                     //each.ConnectionType = "Socket";
                     //each.IPAdress = "127.0.0.1";
                     //each.Port = 9527;
-                    DeviceController tmp = new DeviceController(each, Report);
-                    Controllers.TryAdd(each.DeviceName, tmp);
+                    each.SetReport(Report);
+                    Controllers.TryAdd(each.DeviceName, each);
                 }
             }
         }
@@ -90,7 +87,7 @@ namespace TransferControl.Management
 
         public static void ConnectAll()
         {
-            foreach (IController each in Controllers.Values.ToList())
+            foreach (DeviceController each in Controllers.Values.ToList())
             {
                 ThreadPool.QueueUserWorkItem(new WaitCallback(each.Start));
             }
@@ -118,7 +115,7 @@ namespace TransferControl.Management
         public static bool CheckAllConnection()
         {
             var find = from ctrl in Controllers.Values.ToList()
-                       where !ctrl.Status.Equals("Connected") && ctrl._Config.Enable
+                       where !ctrl.Status.Equals("Connected") && ctrl.Enable
                        select ctrl;
 
             if (find.Count() == 0)
@@ -134,7 +131,7 @@ namespace TransferControl.Management
         public static void ClearTransactionList()
         {
             var find = from ctrl in Controllers.Values.ToList()
-                       where ctrl._Config.Enable
+                       where ctrl.Enable
                        select ctrl;
 
             foreach(DeviceController Ctrl in find)

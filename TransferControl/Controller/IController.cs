@@ -15,6 +15,6 @@ namespace TransferControl.Controller
         bool DoWork(Transaction Txn,bool WaitForData = false);
         string GetNextSeq();
         SANWA.Utility.Encoder GetEncoder();
-        DeviceConfig GetConfig();
+        DeviceController GetConfig();
     }
 }

@@ -31,6 +31,7 @@ namespace TransferControl.Management
             public string GotoIndex = "";
             public int ExcutedCount = 0;
             public bool Finished = false;
+            public string MainTaskId = "";
         }
         public TaskJobManagment(ITaskJobReport TaskReport)
         {
@@ -106,7 +107,6 @@ namespace TransferControl.Management
             if (ExcuteName.Equals("DoublePut"))
             {
                 ExcuteName = "Put";
-
             }
             logger.Debug("CurrentProceedTasks Count = " + CurrentProceedTasks.Count());
             if (CurrentProceedTasks.TryGetValue(Id, out tk))
@@ -1106,7 +1106,7 @@ namespace TransferControl.Management
             CurrentProceedTasks.Clear();
         }
 
-        public bool Excute(string Id, out string ErrorMessage, out CurrentProceedTask Task, string taskName = "", Dictionary<string, string> param = null)
+        public bool Excute(string Id, out string ErrorMessage, out CurrentProceedTask Task, string taskName = "", Dictionary<string, string> param = null,string MainTaskId = "")
         {
             bool result = false;
             Task = null;
@@ -1291,6 +1291,17 @@ namespace TransferControl.Management
                         {
                             CurrTask = ExcutedTask;
                         }
+                        if (!MainTaskId.Equals(""))
+                        {//記下mainTask ID
+                            CurrTask.MainTaskId = MainTaskId;
+                        }
+                        else
+                        {
+                            if (Id.Equals(CurrTask.MainTaskId))
+                            {
+                                CurrTask.MainTaskId = "";//sub task已做完，清除main task id
+                            }
+                        }
                         
                         CurrTask.ProceedTask = tk.First();
                         CurrTask.CheckList.Clear();
@@ -1339,6 +1350,16 @@ namespace TransferControl.Management
                                 if (ExcuteObj.Length == 4)
                                 {
                                     string NodeName = ExcuteObj[0];
+                                    if (NodeName.ToUpper().Equals("TASK"))
+                                    {//do sub task
+                                        string TaskName = ExcuteObj[1];
+                                        string errStr = "";
+                                        CurrentProceedTask tmpTask;
+                                        Excute(Guid.NewGuid().ToString(), out errStr, out tmpTask, TaskName);
+                                        return true;
+                                    }
+
+
                                     Node target = NodeManagement.Get(NodeName);
                                     if (target != null)
                                     {

@@ -18,9 +18,9 @@ namespace TransferControl.Engine
 {
     public class RouteControl : AlarmMapping, Controller.ICommandReport, IDIOTriggerReport, IJobReport, ITaskJobReport
     {
-         //git upload test4
+        //git upload test4
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
-        
+
         public bool IsInitial = false;
         //DateTime StartTime = new DateTime();
         IUserInterfaceReport _UIReport;
@@ -43,21 +43,21 @@ namespace TransferControl.Engine
         {
             Instance = this;
             EqpState = "Idle";
-           
+
             _UIReport = ReportUI;
             _HostReport = ReportHost;
             //初始化所有Controller
             DIO = new DIO(this);
 
-            
+
 
             ControllerManagement.LoadConfig(this);
 
             //初始化所有Node
             NodeManagement.LoadConfig();
 
-            
-            
+
+
             //初始化命令參數轉換表
             CmdParamManagement.Initialize();
             //初始化Robot點位表
@@ -76,10 +76,10 @@ namespace TransferControl.Engine
             ControllerManagement.ConnectAll();
             DIO.Connect();
 
-            
+
         }
-        
-        
+
+
 
 
 
@@ -144,7 +144,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.LoadPortType.InitialPos:
                                 case Transaction.Command.LoadPortType.ForceInitialPos:
                                     //LoadPort卸載時打開安全鎖
-                                   // Node.InterLock = true;
+                                    // Node.InterLock = true;
                                     //標記尚未Mapping
                                     Node.IsMapping = false;
                                     //刪除所有帳
@@ -249,7 +249,7 @@ namespace TransferControl.Engine
                                     //}
 
                                     Node.MappingResult = Mapping;
-                                    
+
                                     Node.IsMapping = true;
                                     if (_HostReport != null)
                                     {
@@ -327,7 +327,7 @@ namespace TransferControl.Engine
                                         }
 
                                     }
-                                    
+
                                     break;
 
                             }
@@ -338,7 +338,7 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.RobotType.GetSpeed:
-                                    if (Msg.Value.Equals("0") && (Node.Brand.Equals("ATEL_NEW")|| Node.Brand.Equals("SANWA")))
+                                    if (Msg.Value.Equals("0") && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
                                     {
                                         Msg.Value = "100";
                                     }
@@ -364,7 +364,7 @@ namespace TransferControl.Engine
                                         {
                                             case "Servo":
                                                 Node.Servo = each.Value;
-                                                break;                                            
+                                                break;
                                         }
                                     }
                                     break;
@@ -459,7 +459,7 @@ namespace TransferControl.Engine
                                                     Node.LArmUnClamp = false;
                                                 }
                                                 break;
-                                            
+
                                         }
                                     }
 
@@ -539,7 +539,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                             }
-                            
+
                             break;
                         case "ALIGNER":
                         case "OCR":
@@ -584,7 +584,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                             }
-                            
+
                             break;
 
                     }
@@ -592,12 +592,12 @@ namespace TransferControl.Engine
                     _UIReport.On_Command_Excuted(Node, Txn, Msg);
 
                     TaskJobManagment.CurrentProceedTask Task;
-                    if (TaskJob.IsTask(Txn.FormName,out Task))//如果是帶TaskID才檢查
+                    if (TaskJob.IsTask(Txn.FormName, out Task))//如果是帶TaskID才檢查
                     {
                         string ErrorMessage = "";
                         string Report = "";
                         string Location = "";
-                        if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Excuted", out ErrorMessage, out Report,out Location))
+                        if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Excuted", out ErrorMessage, out Report, out Location))
                         {//還沒做完
                             if (Report.Equals("ACK"))
                             {
@@ -609,32 +609,52 @@ namespace TransferControl.Engine
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
                                 TaskJob.Remove(Txn.FormName);
+                                if (!Task.MainTaskId.Equals(""))
+                                {
+                                    TaskJob.Remove(Task.MainTaskId);
+                                    Task.Id = Task.MainTaskId;
+                                }
                                 if (_HostReport != null)
                                 {
 
                                     _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
                                 }
                                 _UIReport.On_TaskJob_Aborted(Task, Node.Name, Report, ErrorMessage);
+                                
                             }
                             //檢查到不是Task，不做事
                         }
                         else
                         {//做完且通過檢查，開始進行下一個Task
-                            
-                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage,out Task))
+
+                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage, out Task))
                             {//如果沒有可以執行的Task，回報完成
 
                                 if (ErrorMessage.Equals(""))
                                 {
-                                    if (_HostReport != null)
+                                    if (Task.MainTaskId.Equals(""))
                                     {
-                                        _HostReport.On_TaskJob_Finished(Task);
-                                    }
+                                        if (_HostReport != null)
+                                        {
+                                            _HostReport.On_TaskJob_Finished(Task);
+                                        }
 
-                                    _UIReport.On_TaskJob_Finished(Task);
+                                        _UIReport.On_TaskJob_Finished(Task);
+                                    }
+                                    else
+                                    {
+                                        //sub task 做完不能報完成，繼續做main task
+                                        TaskJob.Excute(Task.MainTaskId, out ErrorMessage, out Task);
+
+                                    }
                                 }
                                 else
                                 {
+                                    if (!Task.MainTaskId.Equals(""))
+                                    {
+                                        TaskJob.Remove(Task.MainTaskId);
+                                        Task.Id = Task.MainTaskId;
+                                    }
                                     if (_HostReport != null)
                                     {
                                         _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
@@ -699,7 +719,7 @@ namespace TransferControl.Engine
                                     break;
                             }
 
-                            
+
 
                             break;
                         case "ALIGNER":
@@ -784,7 +804,7 @@ namespace TransferControl.Engine
                                     }
                                 }
                             }
-                            
+
                             break;
                         case "LOADPORT":
                             UpdateNodeStatus(Node, Txn);
@@ -824,7 +844,7 @@ namespace TransferControl.Engine
                     //    Node.InterLock = false;
                     //}
                     TaskJobManagment.CurrentProceedTask Task;
-                    if (TaskJob.IsTask(Txn.FormName,out Task))//如果是帶TaskID才檢查
+                    if (TaskJob.IsTask(Txn.FormName, out Task))//如果是帶TaskID才檢查
                     {
                         string ErrorMessage = "";
                         string Report = "";
@@ -841,6 +861,11 @@ namespace TransferControl.Engine
                             if (!ErrorMessage.Equals(""))
                             {//做完但沒通過檢查
                                 TaskJob.Remove(Txn.FormName);
+                                if (!Task.MainTaskId.Equals(""))
+                                {
+                                    TaskJob.Remove(Task.MainTaskId);
+                                    Task.Id = Task.MainTaskId;
+                                }
                                 if (_HostReport != null)
                                 {
                                     _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
@@ -851,8 +876,8 @@ namespace TransferControl.Engine
                         }
                         else
                         {//做完且通過檢查，開始進行下一個Task
-                            
-                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage,out Task))
+
+                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage, out Task))
                             {//如果沒有可以執行的Task，回報完成
                                 if (Report.Equals("ACK"))
                                 {
@@ -863,11 +888,21 @@ namespace TransferControl.Engine
                                 }
                                 if (ErrorMessage.Equals(""))
                                 {
-                                    if (_HostReport != null)
+                                    if (Task.MainTaskId.Equals(""))
                                     {
-                                        _HostReport.On_TaskJob_Finished(Task);
+                                        if (_HostReport != null)
+                                        {
+                                            _HostReport.On_TaskJob_Finished(Task);
+                                        }
+
+                                        _UIReport.On_TaskJob_Finished(Task);
                                     }
-                                    _UIReport.On_TaskJob_Finished(Task);
+                                    else
+                                    {
+                                        //sub task 做完不能報完成，繼續做main task
+                                        TaskJob.Excute(Task.MainTaskId, out ErrorMessage, out Task);
+
+                                    }
                                 }
                                 else
                                 {
@@ -924,7 +959,7 @@ namespace TransferControl.Engine
 
                             if (Node.Phase.Equals("2"))
                             {
-                                
+
 
                                 Node NextRobot = NodeManagement.GetNextRobot(Txn.TargetJobs[0].Destination);
 
@@ -956,7 +991,7 @@ namespace TransferControl.Engine
                             Node.CurrentPoint = Txn.Point;
                             if (Node.Phase.Equals("2"))
                             {
-                                
+
                                 Node.GetAvailable = true;
                                 Node.GetMutex = true;
                                 Node.UnLockByJob = "";
@@ -1011,14 +1046,14 @@ namespace TransferControl.Engine
                     {
                         case Transaction.Command.LoadPortType.MappingLoad:
 
-                           // Node.InterLock = false;
+                            // Node.InterLock = false;
                             _UIReport.On_Node_State_Changed(Node, "Load Complete");
                             break;
                         case Transaction.Command.LoadPortType.Unload:
                             _UIReport.On_Node_State_Changed(Node, "UnLoad Complete");
                             break;
                         default:
-                           // Node.InterLock = true;
+                            // Node.InterLock = true;
                             break;
                     }
                     break;
@@ -1026,7 +1061,7 @@ namespace TransferControl.Engine
             //logger.Debug(JsonConvert.SerializeObject(Node));
 
         }
-       
+
         /// <summary>
         /// 命令超時
         /// </summary>
@@ -1039,6 +1074,11 @@ namespace TransferControl.Engine
             {
                 logger.Debug("Transaction TimeOut:" + Txn.CommandEncodeStr);
                 Node.HasAlarm = true;
+                if (!Task.MainTaskId.Equals(""))
+                {
+                    TaskJob.Remove(Task.MainTaskId);
+                    Task.Id = Task.MainTaskId;
+                }
                 if (_HostReport != null)
                 {
                     _HostReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", "TimeOut");
@@ -1076,7 +1116,7 @@ namespace TransferControl.Engine
                                 IO_State_Change(Node.Name, "Foup_Placement", false);
                                 if (_HostReport != null)
                                 {
-                                    _HostReport.On_Foup_Presence(Node.Name,false);
+                                    _HostReport.On_Foup_Presence(Node.Name, false);
                                 }
                                 break;
                             case "PODON":
@@ -1132,7 +1172,7 @@ namespace TransferControl.Engine
             var find = from node in NodeManagement.GetList()
                        where node.Controller.Equals(Device_ID)
                        select node;
-            foreach(Node each in find)
+            foreach (Node each in find)
             {
                 switch (Status)
                 {
@@ -1144,10 +1184,10 @@ namespace TransferControl.Engine
                         each.Connected = false;
                         break;
                 }
-                _UIReport.On_Node_Connection_Changed(each.Name,Status);
+                _UIReport.On_Node_Connection_Changed(each.Name, Status);
             }
             logger.Debug(Device_ID + " " + Status);
-           
+
         }
 
 
@@ -1183,10 +1223,15 @@ namespace TransferControl.Engine
             {
                 Msg.Value = Msg.Command;
             }
+            if (!Task.MainTaskId.Equals(""))
+            {
+                TaskJob.Remove(Task.MainTaskId);
+                Task.Id = Task.MainTaskId;
+            }
             if (_HostReport != null)
             {
                 _HostReport.On_TaskJob_Aborted(Task, "", "ABS", Msg.Value);
-            }   
+            }
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
@@ -1259,7 +1304,7 @@ namespace TransferControl.Engine
             string ErrorMessage = "";
             string Report = "";
             string Location = "";
-            if (!TaskJob.CheckTask(Task.Id, "", "","", "", out ErrorMessage, out Report, out Location))
+            if (!TaskJob.CheckTask(Task.Id, "", "", "", "", out ErrorMessage, out Report, out Location))
             {//還沒做完
                 if (Report.Equals("ACK"))
                 {
@@ -1271,6 +1316,11 @@ namespace TransferControl.Engine
                 if (!ErrorMessage.Equals(""))
                 {//做完但沒通過檢查
                     TaskJob.Remove(Task.Id);
+                    if (!Task.MainTaskId.Equals(""))
+                    {
+                        TaskJob.Remove(Task.MainTaskId);
+                        Task.Id = Task.MainTaskId;
+                    }
                     if (_HostReport != null)
                     {
 
@@ -1282,17 +1332,27 @@ namespace TransferControl.Engine
             }
             else
             {//做完且通過檢查，開始進行下一個Task
-                
-                if (!TaskJob.Excute(Task.Id, out ErrorMessage,out Task))
+
+                if (!TaskJob.Excute(Task.Id, out ErrorMessage, out Task))
                 {//如果沒有可以執行的Task，回報完成
 
                     if (ErrorMessage.Equals(""))
                     {
-                        if (_HostReport != null)
+                        if (Task.MainTaskId.Equals(""))
                         {
-                            _HostReport.On_TaskJob_Finished(Task);
+                            if (_HostReport != null)
+                            {
+                                _HostReport.On_TaskJob_Finished(Task);
+                            }
+
+                            _UIReport.On_TaskJob_Finished(Task);
                         }
-                        _UIReport.On_TaskJob_Finished(Task);
+                        else
+                        {
+                            //sub task 做完不能報完成，繼續做main task
+                            TaskJob.Excute(Task.MainTaskId, out ErrorMessage, out Task);
+
+                        }
                     }
                     else
                     {

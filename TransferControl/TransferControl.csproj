@@ -59,7 +59,6 @@
     <Compile Include="Comm\TcpCommClient.cs" />
     <Compile Include="Config\ConfigTool.cs" />
     <Compile Include="Config\ConnectSettig.cs" />
-    <Compile Include="Controller\DeviceConfig.cs" />
     <Compile Include="Controller\DeviceController.cs" />
     <Compile Include="Controller\ICommandReport.cs" />
     <Compile Include="Controller\IController.cs" />

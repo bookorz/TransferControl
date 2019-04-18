@@ -16,50 +16,51 @@ namespace TransferControl.Comm
         private static readonly ILog logger = LogManager.GetLogger(typeof(ComPortClient));
         private SerialPort port;
         IConnectionReport ConnReport;
-        DeviceConfig cfg;
+        DeviceController cfg;
         public bool _WaitForData = false;
 
-        public ComPortClient(DeviceConfig _Config, IConnectionReport _ConnReport)
+        public ComPortClient(DeviceController _Config, IConnectionReport _ConnReport)
         {
             cfg = _Config;
             ConnReport = _ConnReport;
             Parity p = Parity.None;
-            switch (_Config.ParityBit)
-            {
-                case "Even":
-                    p = Parity.Even;
-                    break;
-                case "Mark":
-                    p = Parity.Mark;
-                    break;
-                case "None":
-                    p = Parity.None;
-                    break;
-                case "Odd":
-                    p = Parity.Odd;
-                    break;
-                case "Space":
-                    p = Parity.Space;
-                    break;
-            }
+            //switch (_Config.ParityBit)
+            //{
+            //    case "Even":
+            //        p = Parity.Even;
+            //        break;
+            //    case "Mark":
+            //        p = Parity.Mark;
+            //        break;
+            //    case "None":
+            //        p = Parity.None;
+            //        break;
+            //    case "Odd":
+            //        p = Parity.Odd;
+            //        break;
+            //    case "Space":
+            //        p = Parity.Space;
+            //        break;
+            //}
             StopBits s = StopBits.One;
-            switch (_Config.StopBit)
-            {
-                case "None":
-                    s = StopBits.None;
-                    break;
-                case "One":
-                    s = StopBits.One;
-                    break;
-                case "OnePointFive":
-                    s = StopBits.OnePointFive;
-                    break;
-                case "Two":
-                    s = StopBits.Two;
-                    break;
-            }
+            //switch (_Config.StopBit)
+            //{
+            //    case "None":
+            //        s = StopBits.None;
+            //        break;
+            //    case "One":
+            //        s = StopBits.One;
+            //        break;
+            //    case "OnePointFive":
+            //        s = StopBits.OnePointFive;
+            //        break;
+            //    case "Two":
+            //        s = StopBits.Two;
+            //        break;
+            //}
+        
 
-            port = new SerialPort(_Config.PortName, _Config.BaudRate, p, _Config.DataBits, s);
+            port = new SerialPort(_Config.PortName, _Config.BaudRate, p, 8, s);
             if (_Config.Vendor.Equals("SMARTTAG"))
             {
                 port.Handshake = Handshake.None;
@@ -75,10 +76,19 @@ namespace TransferControl.Comm
         }
     
 
-        public void Close()
+        public void Reconnect()
         {
             port.Close();
             ConnReport.On_Connection_Disconnected("Close");
+
+            port = new SerialPort(cfg.PortName, cfg.BaudRate, Parity.None, 8, StopBits.One);
+            if (cfg.Vendor.Equals("SMARTTAG"))
+            {
+                port.Handshake = Handshake.None;
+                port.RtsEnable = true;
+                port.ReadTimeout = 5000;
+                port.WriteTimeout = 5000;
+            }
         }
 
         public void Start()

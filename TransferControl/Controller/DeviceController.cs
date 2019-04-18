@@ -11,12 +11,12 @@ using System.Threading;
 
 namespace TransferControl.Controller
 {
-    public class DeviceController : IController, IConnectionReport, ITransactionReport
+    public class DeviceController : IConnectionReport, ITransactionReport
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(DeviceController));
         public ICommandReport _ReportTarget;
         IConnection conn;
-        public DeviceConfig _Config;
+        
         SANWA.Utility.Decoder _Decoder;
         public SANWA.Utility.Encoder Encoder;
         ConcurrentDictionary<string, Transaction> TransactionList = new ConcurrentDictionary<string, Transaction>();
@@ -28,35 +28,45 @@ namespace TransferControl.Controller
         string ReturnForSync = "";
         string ReturnTypeForSync = "";
 
-        public DeviceController(DeviceConfig Config, ICommandReport ReportTarget)
+        public string DeviceName { get; set; }
+        public string DeviceType { get; set; }
+        public string Vendor { get; set; }
+        public string IPAdress { get; set; }
+        public int Port { get; set; }
+        public string ConnectionType { get; set; }
+        public string PortName { get; set; }
+        public int BaudRate { get; set; }
+        public bool Enable { get; set; }
+
+        public void SetReport( ICommandReport ReportTarget)
         {
             _ReportTarget = ReportTarget;
-            _Config = Config;
+            
 
-            switch (Config.ConnectionType)
+            switch (ConnectionType)
             {
                 case "Socket":
                     //conn = new SocketClient(Config, this);
-                    conn = new SocketClient(Config, this);
+                    conn = new SocketClient(this, this);
                     break;
                 case "ComPort":
-                    conn = new ComPortClient(Config, this);
+                    conn = new ComPortClient(this, this);
                     break;
 
             }
-            _Decoder = new SANWA.Utility.Decoder(Config.Vendor);
+            _Decoder = new SANWA.Utility.Decoder(Vendor);
 
-            Encoder = new SANWA.Utility.Encoder(Config.Vendor);
+            Encoder = new SANWA.Utility.Encoder(Vendor);
 
 
-            this.Name = _Config.DeviceName;
+            this.Name = DeviceName;
             this.Status = "";
             this._IsConnected = false;
         }
 
-        public DeviceConfig GetConfig()
+        public DeviceController GetConfig()
         {
-            return _Config;
+            return this;
         }
 
         public bool IsConnected()
@@ -73,19 +83,19 @@ namespace TransferControl.Controller
             TransactionList.Clear();
         }
 
-        //public void Close()
-        //{
-        //    try
-        //    {
-        //        conn.Close();
-        //    }
-        //    catch (Exception e)
-        //    {
+        public void Reconnect()
+        {
+            try
+            {
+                conn.Reconnect();
+            }
+            catch (Exception e)
+            {
 
-        //        logger.Error(_Config.DeviceName + "(DisconnectServer " + _Config.IPAdress + ":" + _Config.Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
+                logger.Error(DeviceName + "(DisconnectServer " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
 
-        //    }
-        //}
+            }
+        }
 
         //public void Connect()
         //{
@@ -110,7 +120,7 @@ namespace TransferControl.Controller
             }
             catch (Exception e)
             {
-                logger.Error(_Config.DeviceName + "(ConnectToServer " + _Config.IPAdress + ":" + _Config.Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
+                logger.Error(DeviceName + "(ConnectToServer " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
             }
 
         }
@@ -160,16 +170,16 @@ namespace TransferControl.Controller
                 //Txn.CommandType = "";
             }
             string key = "";
-            if (_Config.Vendor.ToUpper().Equals("KAWASAKI"))
+            if (Vendor.ToUpper().Equals("KAWASAKI"))
             {
 
                 key = Txn.Seq;
             }
-            else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
+            else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
             {
                 key = "1" + Txn.Type;
             }
-            else if (_Config.Vendor.ToUpper().Equals("ASYST"))
+            else if (Vendor.ToUpper().Equals("ASYST"))
             {
                 key = Txn.AdrNo;
             }
@@ -192,7 +202,7 @@ namespace TransferControl.Controller
                 {
                     waferids += each.Job_Id + " ";
                 }
-                logger.Debug(_Config.DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
+                logger.Debug(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
 
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS")!=-1 )
@@ -201,7 +211,7 @@ namespace TransferControl.Controller
                 }
 
 
-                if (this._Config.Vendor.Equals("SMARTTAG"))
+                if (this.Vendor.Equals("SMARTTAG"))
                 {
                     result = sendWith4Byte(Txn.CommandEncodeStr);
                 }
@@ -214,7 +224,7 @@ namespace TransferControl.Controller
             {
                 Transaction workingTxn;
                 TransactionList.TryGetValue(key, out workingTxn);
-                logger.Debug(_Config.DeviceName + "(DoWork " + _Config.IPAdress + ":" + _Config.Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
+                logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
 
                 result = false;
             }
@@ -251,7 +261,7 @@ namespace TransferControl.Controller
             try
             {
                 string Msg = (string)MsgObj;
-                logger.Debug(_Config.DeviceName + " Recieve:" + Msg.Replace("\r", ""));
+                logger.Debug(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
 
 
 
@@ -312,16 +322,16 @@ namespace TransferControl.Controller
                     }
 
                     string key = "";
-                    if (_Config.Vendor.ToUpper().Equals("KAWASAKI"))
+                    if (Vendor.ToUpper().Equals("KAWASAKI"))
                     {
                         key = ReturnMsg.Seq;
 
                     }
-                    else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
+                    else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
                     {
                         key = "1" + ReturnMsg.Command;
                     }
-                    else if (_Config.Vendor.ToUpper().Equals("ASYST"))
+                    else if (Vendor.ToUpper().Equals("ASYST"))
                     {
                         key = ReturnMsg.NodeAdr;
                     }
@@ -337,7 +347,7 @@ namespace TransferControl.Controller
                         Node Node = null;
                         if (ReturnMsg != null)
                         {
-                            if (_Config.Vendor.ToUpper().Equals("KAWASAKI"))
+                            if (Vendor.ToUpper().Equals("KAWASAKI"))
                             {
                                 if (TransactionList.TryGetValue(key, out Txn))
                                 {
@@ -365,7 +375,7 @@ namespace TransferControl.Controller
                                     return;
                                 }
                             }
-                            else if (_Config.Vendor.ToUpper().Equals("TDK"))
+                            else if (Vendor.ToUpper().Equals("TDK"))
                             {
                                 if (TransactionList.TryGetValue(key, out Txn))
                                 {
@@ -377,16 +387,16 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    Node = NodeManagement.GetByController(_Config.DeviceName, ReturnMsg.NodeAdr);
+                                    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
                                 }
                             }
                             else
                             {
 
-                                Node = NodeManagement.GetByController(_Config.DeviceName, ReturnMsg.NodeAdr);
+                                Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
                                 if (Node == null)
                                 {
-                                    Node = NodeManagement.GetOCRByController(_Config.DeviceName);
+                                    Node = NodeManagement.GetOCRByController(DeviceName);
                                 }
                             }
                             //lock (TransactionList)
@@ -446,16 +456,16 @@ namespace TransferControl.Controller
                                             Txn.SetTimeOutMonitor(false);
                                             Node.IsExcuting = false;
                                             //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
-                                            if (_Config.Vendor.ToUpper().Equals("TDK")|| _Config.Vendor.ToUpper().Equals("SMARTTAG"))
+                                            if (Vendor.ToUpper().Equals("TDK")|| Vendor.ToUpper().Equals("SMARTTAG"))
                                             {
                                                 conn.Send(ReturnMsg.FinCommand);
-                                                logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                                logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
                                             }
                                             break;
                                         case ReturnMessage.ReturnType.Information:
                                             logger.Debug("Txn timmer stoped.");
                                             Txn.SetTimeOutMonitor(false);
-                                            if (_Config.Vendor.ToUpper().Equals("TDK") && Txn.CommandType.Equals("SET"))
+                                            if (Vendor.ToUpper().Equals("TDK") && Txn.CommandType.Equals("SET"))
                                             {
                                                 ReturnMsg.Type = ReturnMessage.ReturnType.Excuted;
                                                 Node.IsExcuting = false;
@@ -468,7 +478,7 @@ namespace TransferControl.Controller
                                             SpinWait.SpinUntil(() => false, 50);
                                             //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                             conn.Send(ReturnMsg.FinCommand);
-                                            logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                            logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
                                             break;
                                     }
                                 }
@@ -480,7 +490,7 @@ namespace TransferControl.Controller
                                         {
                                             //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                             conn.Send(ReturnMsg.FinCommand);
-                                            logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                            logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
                                         }
                                         else
                                         {
@@ -492,10 +502,10 @@ namespace TransferControl.Controller
                                                 Txn.SetTimeOutMonitor(false);
                                                 Node.IsExcuting = false;
                                                 //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
-                                                if (_Config.Vendor.ToUpper().Equals("TDK") || _Config.Vendor.ToUpper().Equals("SMARTTAG"))
+                                                if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
                                                 {
                                                     conn.Send(ReturnMsg.FinCommand);
-                                                    logger.Debug(_Config.DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                                    logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
                                                 }
 
                                                 TransactionList.TryRemove(TransactionList.First().Key, out Txn);
@@ -503,14 +513,14 @@ namespace TransferControl.Controller
                                             else
                                             {
 
-                                                logger.Debug(_Config.DeviceName + "(On_Connection_Message Txn is not found. msg:" + Msg);
+                                                logger.Debug(DeviceName + "(On_Connection_Message Txn is not found. msg:" + Msg);
                                                 return;
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        logger.Debug(_Config.DeviceName + "(On_Connection_Message Return type is null. msg:" + Msg);
+                                        logger.Debug(DeviceName + "(On_Connection_Message Return type is null. msg:" + Msg);
                                         return;
                                     }
                                 }
@@ -568,18 +578,18 @@ namespace TransferControl.Controller
                         }
                         else
                         {
-                            logger.Debug(_Config.DeviceName + "(On_Connection_Message Message decode fail:" + Msg);
+                            logger.Debug(DeviceName + "(On_Connection_Message Message decode fail:" + Msg);
                         }
                     }
                     catch (Exception e)
                     {
-                        logger.Error(_Config.DeviceName + "(On_Connection_Message " + _Config.IPAdress + ":" + _Config.Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
+                        logger.Error(DeviceName + "(On_Connection_Message " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
                     }
                 }
             }
             catch (Exception e)
             {
-                logger.Error(_Config.DeviceName + "(On_Connection_Message " + _Config.IPAdress + ":" + _Config.Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
+                logger.Error(DeviceName + "(On_Connection_Message " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -599,7 +609,7 @@ namespace TransferControl.Controller
             this._IsConnected = true;
             this.Status = "Connected";
             ChangeNodeConnectionStatus("Connected");
-            _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Connected");
+            _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
 
         }
 
@@ -608,7 +618,7 @@ namespace TransferControl.Controller
             this._IsConnected = false;
             this.Status = "Connecting";
             ChangeNodeConnectionStatus("Connecting");
-            _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Connecting");
+            _ReportTarget.On_Controller_State_Changed(DeviceName, "Connecting");
 
         }
 
@@ -617,7 +627,7 @@ namespace TransferControl.Controller
             this._IsConnected = false;
             this.Status = "Disconnected";
             ChangeNodeConnectionStatus("Disconnected");
-            _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Disconnected");
+            _ReportTarget.On_Controller_State_Changed(DeviceName, "Disconnected");
 
         }
 
@@ -630,24 +640,24 @@ namespace TransferControl.Controller
             }
             TransactionList.Clear();
             ChangeNodeConnectionStatus("Connection_Error");
-            _ReportTarget.On_Controller_State_Changed(_Config.DeviceName, "Connection_Error");
+            _ReportTarget.On_Controller_State_Changed(DeviceName, "Connection_Error");
         }
 
         public void On_Transaction_TimeOut(Transaction Txn)
         {
-            logger.Debug(_Config.DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
+            logger.Debug(DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
 
             string key = "";
-            if (_Config.Vendor.ToUpper().Equals("KAWASAKI"))
+            if (Vendor.ToUpper().Equals("KAWASAKI"))
             {
                 key = Txn.Seq;
 
             }
-            else if (_Config.Vendor.ToUpper().Equals("HST") || _Config.Vendor.ToUpper().Equals("COGNEX"))
+            else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
             {
                 key = "1";
             }
-            else if (_Config.Vendor.ToUpper().Equals("ASYST"))
+            else if (Vendor.ToUpper().Equals("ASYST"))
             {
                 key = Txn.AdrNo;
 
@@ -661,7 +671,7 @@ namespace TransferControl.Controller
             Txn.SetTimeOutMonitor(false);
             if (TransactionList.TryRemove(key, out Txn))
             {
-                Node Node = NodeManagement.GetByController(_Config.DeviceName, Txn.AdrNo);
+                Node Node = NodeManagement.GetByController(DeviceName, Txn.AdrNo);
                 if (Node.State.Equals("Pause"))
                 {
                     logger.Debug("Txn timeout,but state is pause. ignore this.");
@@ -674,12 +684,12 @@ namespace TransferControl.Controller
                 }
                 else
                 {
-                    logger.Debug(_Config.DeviceName + "(On_Transaction_TimeOut Get Node fail.");
+                    logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
                 }
             }
             else
             {
-                logger.Debug(_Config.DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
+                logger.Debug(DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
             }
         }
 

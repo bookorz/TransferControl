@@ -12,5 +12,6 @@ namespace TransferControl.Comm
         bool SendHexData(object Message);
         void Start();
         void WaitForData(bool Enable);
+        void Reconnect();
     }
 }

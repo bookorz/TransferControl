@@ -15,12 +15,12 @@ namespace TransferControl.Comm
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(TcpCommClient));
         IConnectionReport ConnReport;
-        DeviceConfig Config;
+        DeviceController Config;
 
         //先建立一個TcpClient;
         TcpClient tcpClient = new TcpClient();
 
-        public TcpCommClient(DeviceConfig _Config, IConnectionReport _ConnReport)
+        public TcpCommClient(DeviceController _Config, IConnectionReport _ConnReport)
         {
             Config = _Config;
 
@@ -273,6 +273,11 @@ namespace TransferControl.Comm
         public void WaitForData(bool Enable)
         {
             //throw new NotImplementedException();
+        }
+
+        public void Reconnect()
+        {
+            throw new NotImplementedException();
         }
     }
 }

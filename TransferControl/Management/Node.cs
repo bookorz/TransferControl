@@ -311,7 +311,7 @@ namespace TransferControl.Management
             }
         }
 
-        public IController GetController()
+        public DeviceController GetController()
         {
             return ControllerManagement.Get(Controller);
         }
@@ -500,7 +500,7 @@ namespace TransferControl.Management
 
                 }
 
-                IController Ctrl = this.GetController();
+                DeviceController Ctrl = this.GetController();
                 if (this.Brand.ToUpper().Equals("KAWASAKI"))
                 {
 

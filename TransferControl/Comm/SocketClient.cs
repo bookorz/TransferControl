@@ -33,7 +33,7 @@ namespace TransferControl.Comm
         private bool IsconnectSuccess = false; //異步連接情況，由異步連接回調函數置位
         private object lockObj_IsConnectSuccess = new object();
         IConnectionReport ConnReport;
-        DeviceConfig Config;
+        DeviceController Config;
         int RDataLen = 100;  //固定長度傳送資料~ 可以針對自己的需要改長度 
         ///
 
@@ -41,7 +41,7 @@ namespace TransferControl.Comm
         /// 
         /// 
         /// 
-        public SocketClient(DeviceConfig _Config, IConnectionReport _ConnReport)
+        public SocketClient(DeviceController _Config, IConnectionReport _ConnReport)
         {
             Config = _Config;
             remoteHost = _Config.IPAdress;
@@ -191,7 +191,7 @@ namespace TransferControl.Comm
         /// 斷線重連函數
         /// 
         /// 
-        private bool Reconnect()
+        public void Reconnect()
         {
             //關閉socket
             theSocket.Shutdown(SocketShutdown.Both);
@@ -202,7 +202,7 @@ namespace TransferControl.Comm
             theSocket.Close();
 
             //創建socket
-            return socket_create_connect();
+            socket_create_connect();
         }
 
         ///
