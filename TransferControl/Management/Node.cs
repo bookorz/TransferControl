@@ -48,10 +48,7 @@ namespace TransferControl.Management
         /// Robot專用，搬送階段
         /// </summary>
         public string Phase { get; set; }
-        /// <summary>
-        /// 目前Foup的ID
-        /// </summary>
-        public string FoupID { get; set; }
+       
         /// <summary>
         /// Control Job ID
         /// </summary>
@@ -116,10 +113,7 @@ namespace TransferControl.Management
         /// 手臂伸出中
         /// </summary>
         public bool PutOut { get; set; }
-        /// <summary>
-        /// 由Wafer鎖定直到完成該Wafer所要求的命令
-        /// </summary>
-        public string UnLockByJob { get; set; }
+      
         /// <summary>
         /// 紀錄伸出的是哪支手臂
         /// </summary>
@@ -287,6 +281,7 @@ namespace TransferControl.Management
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
         private static DBUtil dBUtil = new DBUtil();
+        public Carrier Carrier { get; set; }
 
         public class ActionRequest
         {
@@ -332,14 +327,14 @@ namespace TransferControl.Management
             AccessAutoMode = false;
             MappingResult = "";
             CurrentLoadPort = "";
-            FoupID = "";
+           
             PrID = "";
             CjID = "";
             R_Flip_Degree = "0";
             L_Flip_Degree = "0";
             CurrentPosition = "";
             PutOutArm = "";
-            UnLockByJob = "";
+           
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
             State = "UNORG";

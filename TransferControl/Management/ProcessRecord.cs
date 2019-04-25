@@ -58,7 +58,7 @@ namespace TransferControl.Management
                                     values(@pr_id,@foup_id,@slot_list,@process_cnt,@create_time,@time_stamp)";
 
                 keyValues.Add("@pr_id", Port.PrID);               
-                keyValues.Add("@foup_id", Port.FoupID);
+                keyValues.Add("@foup_id", Port.Carrier.CarrierID);
 
                 var findJob = from j in Port.JobList.Values.ToList()
                               where j.NeedProcess
@@ -193,8 +193,8 @@ values(@pr_id,@host_id,@from_position,@from_position_slot,@to_position,
                     keyValues.Add("@from_position_slot", Job.FromPortSlot);
                     keyValues.Add("@to_position", Job.Destination);
                     keyValues.Add("@to_position_slot", Job.DestinationSlot);
-                    keyValues.Add("@from_foup_id", FromPort.FoupID);
-                    keyValues.Add("@to_foup_id", ToPort.FoupID);
+                    keyValues.Add("@from_foup_id", FromPort.Carrier.CarrierID);
+                    keyValues.Add("@to_foup_id", ToPort.Carrier.CarrierID);
                     keyValues.Add("@job_status", "QUEUED");
                     keyValues.Add("@ocr_result", "");
                     keyValues.Add("@ocr_path", "");

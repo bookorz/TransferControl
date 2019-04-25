@@ -218,7 +218,7 @@ namespace TransferControl.Management
         {
             Node result = null;
             var findPort = from port in NodeList.Values.ToList()
-                           where port.Type.Equals("LOADPORT") && port.Enable && port.FoupID.ToUpper().Equals(FoupId.ToUpper())
+                           where port.Type.Equals("LOADPORT") && port.Enable && port.Carrier.CarrierID.ToUpper().Equals(FoupId.ToUpper())
                            select port;
             if (findPort.Count() != 0)
             {

@@ -64,5 +64,18 @@ namespace TransferControl.Management
             CarrierRejectFlag = 0;  // 1:Carrier need reject
             CJ_index = 0;
         }
+
+        public void SetLocation(string LocationID)
+        {
+            Node TargetNode = NodeManagement.Get(LocationID);
+            if (TargetNode != null) {
+                if (TargetNode.Carrier != null)
+                {
+                    CarrierManagement.Remove(TargetNode.Carrier);
+                }
+                TargetNode.Carrier = this;
+            }
+            this.LocationID = LocationID;
+        }
     }
 }

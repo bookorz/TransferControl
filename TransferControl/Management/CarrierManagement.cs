@@ -19,7 +19,7 @@ namespace TransferControl.Management
         public static int GetNewIndex()
         {
             int currentIdx = 1;
-            
+
             lock (CarrierList)
             {
                 while (true)
@@ -34,7 +34,7 @@ namespace TransferControl.Management
                     currentIdx++;
                 }
             }
-           
+
         }
 
         public static List<Carrier> GetCarrierList()
@@ -45,7 +45,7 @@ namespace TransferControl.Management
             {
                 lock (CarrierList)
                 {
-                    result = CarrierList;                    
+                    result = CarrierList;
                 }
             }
             return result;
@@ -85,17 +85,14 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static bool Add(Carrier Carrier)
+        public static Carrier Add()
         {
-            bool result = false;
+            Carrier Carrier = new Carrier();
             lock (CarrierList)
             {
-                
-                    CarrierList.Add(Carrier);
-                    result = true;
-                
+                CarrierList.Add(Carrier);
             }
-            return result;
+            return Carrier;
         }
 
         public static bool Remove(Carrier Carrier)
@@ -103,7 +100,11 @@ namespace TransferControl.Management
             bool result = false;
             lock (CarrierList)
             {
-                Carrier tmp;
+                Node orgNode = NodeManagement.Get(Carrier.LocationID);
+                if (orgNode != null)
+                {
+                    orgNode.Carrier = null;
+                }
                 result = CarrierList.Remove(Carrier);
 
             }

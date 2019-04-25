@@ -129,7 +129,7 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.SmartTagType.GetLCDData:
-                                    Node.FoupID = Msg.Value;
+                                    Node.Carrier.CarrierID = Msg.Value;
                                     break;
                             }
                             break;
@@ -704,7 +704,7 @@ namespace TransferControl.Engine
                             {
                                 case Transaction.Command.SmartTagType.GetLCDData:
 
-                                    Node.FoupID = Msg.Value;
+                                    Node.Carrier.CarrierID = Msg.Value;
                                     break;
                             }
                             break;
@@ -980,7 +980,7 @@ namespace TransferControl.Engine
 
                                 Node.PutOut = false;
                                 Node.GetMutex = true;
-                                Node.UnLockByJob = "";
+                              
                                 //4port use only
                                 Node.PutAvailable = true;
                             }
@@ -994,7 +994,7 @@ namespace TransferControl.Engine
 
                                 Node.GetAvailable = true;
                                 Node.GetMutex = true;
-                                Node.UnLockByJob = "";
+                              
                                 Node.PutAvailable = true;
                                 Node.PutOut = false;
 
@@ -1032,7 +1032,7 @@ namespace TransferControl.Engine
                         case Transaction.Command.AlignerType.Retract:
                         case Transaction.Command.AlignerType.Home:
                             Node.Available = true;
-                            Node.UnLockByJob = "";
+                           
 
                             Node.GetAvailable = false;
                             Node.GetMutex = false;
@@ -1112,6 +1112,8 @@ namespace TransferControl.Engine
                                 IO_State_Change(Node.Name, "Foup_Presence", false);
                                 break;
                             case "PODOF":
+                                CarrierManagement.Remove(Node.Carrier);
+                                
                                 IO_State_Change(Node.Name, "Foup_Presence", true);
                                 IO_State_Change(Node.Name, "Foup_Placement", false);
                                 if (_HostReport != null)
@@ -1120,6 +1122,7 @@ namespace TransferControl.Engine
                                 }
                                 break;
                             case "PODON":
+                                CarrierManagement.Add().SetLocation(Node.Name);
                                 IO_State_Change(Node.Name, "Foup_Presence", false);
                                 IO_State_Change(Node.Name, "Foup_Placement", true);
                                 if (_HostReport != null)
