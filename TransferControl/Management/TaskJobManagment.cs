@@ -31,6 +31,7 @@ namespace TransferControl.Management
             public string GotoIndex = "";
             public int ExcutedCount = 0;
             public bool Finished = false;
+            public bool HasError = false;
             public string MainTaskId = "";
         }
         public TaskJobManagment(ITaskJobReport TaskReport)

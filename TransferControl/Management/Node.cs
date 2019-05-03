@@ -277,6 +277,8 @@ namespace TransferControl.Management
 
         public bool ByPassCheck { get; set; }
 
+        public string FoupID { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -334,8 +336,8 @@ namespace TransferControl.Management
             L_Flip_Degree = "0";
             CurrentPosition = "";
             PutOutArm = "";
-           
-            Status = new Dictionary<string, string>();
+            FoupID = "";
+             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
             State = "UNORG";
             CarryCount = 0;

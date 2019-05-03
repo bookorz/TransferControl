@@ -640,6 +640,7 @@ namespace TransferControl.Engine
                                         }
 
                                         _UIReport.On_TaskJob_Finished(Task);
+                                        Task.Finished = true;
                                     }
                                     else
                                     {
@@ -896,6 +897,7 @@ namespace TransferControl.Engine
                                         }
 
                                         _UIReport.On_TaskJob_Finished(Task);
+                                        Task.Finished = true;
                                     }
                                     else
                                     {
@@ -1070,13 +1072,17 @@ namespace TransferControl.Engine
         public void On_Command_TimeOut(Node Node, Transaction Txn)
         {
             TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
+            Task.HasError = true;
+            Task.Finished = true;
             if (!Node.IsPause)
             {
                 logger.Debug("Transaction TimeOut:" + Txn.CommandEncodeStr);
                 Node.HasAlarm = true;
                 if (!Task.MainTaskId.Equals(""))
                 {
-                    TaskJob.Remove(Task.MainTaskId);
+                    TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
+                    MTask.HasError = true;
+                    MTask.Finished = true;
                     Task.Id = Task.MainTaskId;
                 }
                 if (_HostReport != null)
@@ -1222,13 +1228,17 @@ namespace TransferControl.Engine
             Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
+            Task.HasError = true;
+            Task.Finished = true;
             if (Msg.Value.Equals(""))
             {
                 Msg.Value = Msg.Command;
             }
             if (!Task.MainTaskId.Equals(""))
             {
-                TaskJob.Remove(Task.MainTaskId);
+                TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
+                MTask.HasError = true;
+                MTask.Finished = true;
                 Task.Id = Task.MainTaskId;
             }
             if (_HostReport != null)
@@ -1349,6 +1359,7 @@ namespace TransferControl.Engine
                             }
 
                             _UIReport.On_TaskJob_Finished(Task);
+                            Task.Finished = true;
                         }
                         else
                         {
