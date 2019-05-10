@@ -152,7 +152,12 @@ namespace TransferControl.Controller
             conn.WaitForData(WaitForData);
             bool result = false;
             // lock (TransactionList)
-            
+            if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
+            {
+                logger.Debug("Txn timmer stoped.");
+                Txn.SetTimeOutMonitor(false);
+                
+            }
 
             if (!Txn.NodeType.Equals("OCR"))
             {
@@ -186,9 +191,22 @@ namespace TransferControl.Controller
             else
             {
                 key = Txn.AdrNo + Txn.Type;
+                //支援同時多發命令
+                for (int seq = 0; seq <= 99; seq++)
+                {
+                    key = key + seq.ToString("00");
+                    if (!TransactionList.ContainsKey(key))
+                    {
+                        break;
+                    }
+                    if (seq == 99)
+                    {
+                        logger.Error("seq is run out!");
+                    }
+                }
             }
+           
 
-            
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
             {
 
@@ -338,8 +356,20 @@ namespace TransferControl.Controller
                     else
                     {
                         key = ReturnMsg.NodeAdr + ReturnMsg.Command;
+                        for (int seq = 0; seq <= 99; seq++)
+                        {
+                            key = key + seq.ToString("00");
+                            if (TransactionList.ContainsKey(key))
+                            {
+                                break;
+                            }
+                            if (seq == 99)
+                            {
+                                logger.Error("seq is run out!");
+                            }
+                        }
                     }
-
+                    
 
                     try
                     {

@@ -37,6 +37,8 @@ namespace TransferControl.Management
         public bool ErrPosition { get; set; }
         public bool MapFlag { get; set; }
         public int Offset { get; set; }
+
+        public bool IsAssigned { get; set; }
         public DateTime AssignTime { get; private set; }
 
         IJobReport _Report = null;
@@ -59,6 +61,7 @@ namespace TransferControl.Management
             NeedProcess = false;
             OCRFlag = false;
             InProcess = false;
+            IsAssigned = false;
 
             OcrCodeList = new List<OCRInfo>();
         }

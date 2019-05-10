@@ -48,7 +48,7 @@ namespace TransferControl.Management
         /// Robot專用，搬送階段
         /// </summary>
         public string Phase { get; set; }
-       
+
         /// <summary>
         /// Control Job ID
         /// </summary>
@@ -113,7 +113,7 @@ namespace TransferControl.Management
         /// 手臂伸出中
         /// </summary>
         public bool PutOut { get; set; }
-      
+
         /// <summary>
         /// 紀錄伸出的是哪支手臂
         /// </summary>
@@ -279,6 +279,12 @@ namespace TransferControl.Management
 
         public string FoupID { get; set; }
 
+        private bool isPool { get; set; }
+
+        private bool PoolThread { get; set; }
+
+        public int PoolInterval { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -329,7 +335,7 @@ namespace TransferControl.Management
             AccessAutoMode = false;
             MappingResult = "";
             CurrentLoadPort = "";
-           
+
             PrID = "";
             CjID = "";
             R_Flip_Degree = "0";
@@ -337,7 +343,7 @@ namespace TransferControl.Management
             CurrentPosition = "";
             PutOutArm = "";
             FoupID = "";
-             Status = new Dictionary<string, string>();
+            Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
             State = "UNORG";
             CarryCount = 0;
@@ -429,10 +435,51 @@ namespace TransferControl.Management
             LArmUnClamp = false;
 
             IsDock = false;
+            isPool = false;
+            PoolThread = false;
+            PoolInterval = 50;
         }
+        public void PoolStart(string TaskName)
+        {
+            this.isPool = false;
+            SpinWait.SpinUntil(() => !PoolThread, 999999999);
+            this.isPool = true;
+            ThreadPool.QueueUserWorkItem(new WaitCallback(PoolState), TaskName);
 
+        }
+        public void PoolStop()
+        {
+            this.isPool = false;
+        }
+        private void PoolState(object TaskJob)
+        {
+            PoolThread = true;
+            Dictionary<string, string> param = new Dictionary<string, string>();
+            string Message = "";
+            string TaskName = "";
+            TaskJobManagment.CurrentProceedTask CurrTask;
+            TaskName = TaskJob.ToString();
+            param.Add("@Target", this.Name);
+            while (this.isPool)
+            {
+                try
+                {
+                    
+                    RouteControl.Instance.TaskJob.Excute(this.Name+"_PoolState", out Message, out CurrTask, TaskName, param);
+                    SpinWait.SpinUntil(() => CurrTask.Finished, 99999999);
+                    SpinWait.SpinUntil(() => false, PoolInterval);
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e.StackTrace);
+                }
+
+            }
+            PoolThread = false;
+        }
         public void SetEnable(bool enable)
         {
+            this.isPool = enable;
             this.Enable = enable;
             string SQL = @"update config_node set enable_flg = " + Convert.ToByte(enable).ToString() + " where equipment_model_id = '" + SystemConfig.Get().SystemMode + "' and node_id = '" + this.Name + "'";
             dBUtil.ExecuteNonQuery(SQL, null);
