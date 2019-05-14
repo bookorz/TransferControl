@@ -739,7 +739,14 @@ namespace TransferControl.Engine
 
                                         //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
                                         NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
-
+                                        if (OCRResult[0].IndexOf("*") == -1)
+                                        {
+                                            Node.OCRSuccess = true;
+                                        }
+                                        else
+                                        {
+                                            Node.OCRSuccess = false;
+                                        }
                                         switch (Node.Brand)
                                         {
                                             case "HST":

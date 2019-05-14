@@ -285,6 +285,8 @@ namespace TransferControl.Management
 
         public int PoolInterval { get; set; }
 
+        public bool OCRSuccess { get; set; }
+
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -370,7 +372,7 @@ namespace TransferControl.Management
             GetMutex = true;
             //InterLock = false;
             Reserve = false;
-
+            OCRSuccess = false;
             Available = true;
             HasPresent = false;
             CheckStatus = false;
