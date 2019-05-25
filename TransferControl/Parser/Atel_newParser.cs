@@ -32,6 +32,9 @@ namespace TransferControl.Parser
             string[] MsgAry = Message.Split(',');
             switch (MsgAry[0])
             {
+                case "27":
+                    result.Add("R_Presure_switch", MsgAry[1]);
+                    break;
                 case "31":
                     result.Add("R_UnClamp_Sensor", MsgAry[1]);                   
                     break;

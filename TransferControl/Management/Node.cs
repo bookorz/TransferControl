@@ -286,6 +286,7 @@ namespace TransferControl.Management
         public int PoolInterval { get; set; }
 
         public bool OCRSuccess { get; set; }
+        public string CurrentStatus { get; set; }
 
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
@@ -337,7 +338,7 @@ namespace TransferControl.Management
             AccessAutoMode = false;
             MappingResult = "";
             CurrentLoadPort = "";
-
+            CurrentStatus = "";
             PrID = "";
             CjID = "";
             R_Flip_Degree = "0";
@@ -943,9 +944,9 @@ namespace TransferControl.Management
                             case Transaction.Command.RobotType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Status(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.RobotType.GetCombineStatus:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.CombinedStatus(AdrNo, txn.Seq);
-                                break;
+                            //case Transaction.Command.RobotType.GetCombineStatus:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.CombinedStatus(AdrNo, txn.Seq);
+                            //    break;
                             case Transaction.Command.RobotType.GetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Speed(AdrNo, txn.Seq);
                                 break;
@@ -1045,7 +1046,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSpeed(AdrNo, txn.Seq, txn.Value);
                                 break;
                             case Transaction.Command.RobotType.SetSV:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSv(AdrNo, txn.Seq, txn.Arm, txn.Value);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSolenoidValve(AdrNo, txn.Seq, txn.Arm, txn.Value);
                                 break;
                         }
                         break;
@@ -1061,9 +1062,9 @@ namespace TransferControl.Management
                             case Transaction.Command.AlignerType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Status(AdrNo, txn.Seq);
                                 break;
-                            case Transaction.Command.AlignerType.GetCombineStatus:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.CombinedStatus(AdrNo, txn.Seq);
-                                break;
+                            //case Transaction.Command.AlignerType.GetCombineStatus:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.CombinedStatus(AdrNo, txn.Seq);
+                            //    break;
                             case Transaction.Command.AlignerType.GetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Speed(AdrNo, txn.Seq);
                                 break;

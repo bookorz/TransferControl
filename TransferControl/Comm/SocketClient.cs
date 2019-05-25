@@ -99,6 +99,7 @@ namespace TransferControl.Comm
             theSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             theSocket.SendTimeout = 1000;
             theSocket.ReceiveTimeout = 1000;
+            
             SetHeartBeat();//设置心跳参数
 
             #region 异步连接代码

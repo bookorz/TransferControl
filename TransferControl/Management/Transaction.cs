@@ -248,6 +248,7 @@ namespace TransferControl.Management
 
         private void TimeOutMonitor(object sender, System.Timers.ElapsedEventArgs e)
         {
+            SetTimeOutMonitor(false);
             if (TimeOutReport != null)
             {
                 TimeOutReport.On_Transaction_TimeOut(this);

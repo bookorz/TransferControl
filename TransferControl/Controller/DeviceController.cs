@@ -184,7 +184,7 @@ namespace TransferControl.Controller
             {
                 key = "1" + Txn.Type;
             }
-            else if (Vendor.ToUpper().Equals("ASYST"))
+            else if (Vendor.ToUpper().Equals("ASYST")|| Vendor.ToUpper().Equals("SMARTTAG"))
             {
                 key = Txn.AdrNo;
             }
@@ -349,7 +349,7 @@ namespace TransferControl.Controller
                     {
                         key = "1" + ReturnMsg.Command;
                     }
-                    else if (Vendor.ToUpper().Equals("ASYST"))
+                    else if (Vendor.ToUpper().Equals("ASYST")|| Vendor.ToUpper().Equals("SMARTTAG"))
                     {
                         key = ReturnMsg.NodeAdr;
                     }
@@ -379,31 +379,31 @@ namespace TransferControl.Controller
                         {
                             if (Vendor.ToUpper().Equals("KAWASAKI"))
                             {
-                                if (TransactionList.TryGetValue(key, out Txn))
-                                {
-                                    Node = NodeManagement.Get(Txn.NodeName);
-                                    if (!Txn.CommandType.Equals("GET") && !Txn.CommandType.Equals("SET") && !Txn.CommandType.Equals("CMD"))
-                                    {
-                                        Txn.CommandType = Encoder.GetCommandType(Txn.CommandType);
-                                    }
-                                    if (!Txn.CommandType.Equals("CMD"))
-                                    {
-                                        if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Excuted))
-                                        {
-                                            continue;
-                                        }
-                                        else if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Finished))
-                                        {
-                                            ReturnMsg.Type = ReturnMessage.ReturnType.Excuted;
-                                        }
-                                    }
+                                //if (TransactionList.TryGetValue(key, out Txn))
+                                //{
+                                //    Node = NodeManagement.Get(Txn.NodeName);
+                                //    if (!Txn.CommandType.Equals("GET") && !Txn.CommandType.Equals("SET") && !Txn.CommandType.Equals("CMD"))
+                                //    {
+                                //        Txn.CommandType = Encoder.GetCommandType(Txn.CommandType);
+                                //    }
+                                //    if (!Txn.CommandType.Equals("CMD"))
+                                //    {
+                                //        if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Excuted))
+                                //        {
+                                //            continue;
+                                //        }
+                                //        else if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Finished))
+                                //        {
+                                //            ReturnMsg.Type = ReturnMessage.ReturnType.Excuted;
+                                //        }
+                                //    }
 
-                                }
-                                else
-                                {
-                                    logger.Debug("Transaction not exist:key=" + key);
-                                    return;
-                                }
+                                //}
+                                //else
+                                //{
+                                //    logger.Debug("Transaction not exist:key=" + key);
+                                //    return;
+                                //}
                             }
                             else if (Vendor.ToUpper().Equals("TDK"))
                             {
@@ -687,15 +687,26 @@ namespace TransferControl.Controller
             {
                 key = "1";
             }
-            else if (Vendor.ToUpper().Equals("ASYST"))
+            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG"))
             {
                 key = Txn.AdrNo;
 
             }
             else
             {
-
-                key = Txn.AdrNo + Txn.Type;
+                key = Txn.AdrNo + Txn.Method;
+                for (int seq = 0; seq <= 99; seq++)
+                {
+                    key = key + seq.ToString("00");
+                    if (TransactionList.ContainsKey(key))
+                    {
+                        break;
+                    }
+                    if (seq == 99)
+                    {
+                        logger.Error("seq is run out!");
+                    }
+                }
             }
 
             Txn.SetTimeOutMonitor(false);

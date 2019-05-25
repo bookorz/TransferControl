@@ -236,7 +236,7 @@ namespace TransferControl.Operation
                 Node dest = NodeManagement.Get(each.Destination);
                 //找尋到達目的地需要此ROBOT搬運的WAFER
                 //同時也不在此ROBOT手上
-                if ((dest.Associated_Node.ToUpper().Equals(Robot.Name.ToUpper()) && !each.Position.ToUpper().Equals(Robot.Name.ToUpper())) )
+                if ((dest.Associated_Node.ToUpper().Equals(Robot.Name.ToUpper()) && !each.Position.ToUpper().Equals(Robot.Name.ToUpper())))
                 {
                     a = true;
                     break;
@@ -257,7 +257,7 @@ namespace TransferControl.Operation
                 c = true;
             }
 
-            result = (a || b || c) && Robot.JobList.Count != 2;
+            result = (a || b || c)/* && Robot.JobList.Count != 2*/;
             return result;
         }
 
@@ -542,6 +542,7 @@ namespace TransferControl.Operation
                                                 //    _Report.On_Transfer_Complete(this);
                                                 //    //結束工作
                                                 //}
+                                                
                                                 continue;
                                             }
                                         }
@@ -748,7 +749,7 @@ namespace TransferControl.Operation
                                         //放進UnloadPort補償角度
                                         RobotPoint point = PointManagement.GetPoint(ULDRobot, Target.Name, "300MM");
                                         Target.JobList["1"].Offset += point.Offset;
-                                        req.Value = (Target.JobList["1"].Offset+0).ToString();
+                                        req.Value = (Target.JobList["1"].Offset + 0).ToString();
 
                                         break;
                                 }
@@ -762,7 +763,7 @@ namespace TransferControl.Operation
                                     case "TRANSFER_LOADPORT_CLOSE":
                                         nodeLD = NodeManagement.Get(LD);
                                         var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                                             where eachSlot.NeedProcess
+                                                             where eachSlot.MapFlag && !eachSlot.ErrPosition
                                                              select eachSlot;
                                         if (AvailableSlots.Count() != 0)
                                         {
@@ -771,19 +772,32 @@ namespace TransferControl.Operation
                                         }
                                         break;
                                     case "TRANSFER_UNLOADPORT_CLOSE":
-                                        var Available = from each in JobManagement.GetJobList()
-                                                        where each.NeedProcess || (each.InProcess && !each.Destination.Equals(each.Position))
+
+
+                                        var Available = from each in Target.JobList.Values
+                                                        where !each.MapFlag && !each.ErrPosition
                                                         select each;
                                         if (Available.Count() != 0)
                                         {
-                                            //還沒放完片就取消動作
+                                            //還沒滿就取消動作
+                                            Available = from each in JobManagement.GetJobList()
+                                                        where (each.NeedProcess && each.FromPort.ToUpper().Equals(LD.ToUpper())) || (each.InProcess && !each.Destination.Equals(each.Position))
+                                                        select each;
+                                            if (Available.Count() == 0)
+                                            {//處理完成
+                                                Running = false;
+                                                watch.Stop();
+                                                ProcessTime = watch.ElapsedMilliseconds;
+                                                logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+
+                                                _Report.On_Transfer_Complete(this);
+                                            }
                                             continue;
                                         }
                                         watch.Stop();
                                         ProcessTime = watch.ElapsedMilliseconds;
-                                        logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+                                        
 
-                                        _Report.On_Transfer_Complete(this);
                                         break;
                                     case "TRANSFER_LOADPORT_CLOSE_FINISHED":
                                         _Report.On_LoadPort_Complete(NodeName.ToString());
@@ -792,6 +806,8 @@ namespace TransferControl.Operation
                                     case "TRANSFER_UNLOADPORT_CLOSE_FINISHED":
                                         Running = false;
                                         _Report.On_UnLoadPort_Complete(NodeName.ToString());
+                                        _Report.On_Transfer_Complete(this);
+                                        logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
                                         continue;
 
                                 }
@@ -818,7 +834,7 @@ namespace TransferControl.Operation
                         if (Running)
                         {
                             logger.Debug(NodeName + " Task完成");
-                            
+
                         }
                         else
                         {

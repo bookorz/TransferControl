@@ -97,6 +97,10 @@ namespace TransferControl.Management
 
         public static bool Remove(Carrier Carrier)
         {
+            if (Carrier == null)
+            {
+                return true;
+            }
             bool result = false;
             lock (CarrierList)
             {

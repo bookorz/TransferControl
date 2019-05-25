@@ -387,7 +387,7 @@ namespace TransferControl.Management
                                     }
 
 
-                                    string CurrVal = RouteControl.Instance.DIO.GetIO("IN", Param);
+                                    string CurrVal = RouteControl.Instance.DIO.GetIO("DIN", Param);
                                     if (CurrVal.ToUpper().Equals(Value.ToUpper()))
                                     {
                                         result = true;
@@ -1169,7 +1169,14 @@ namespace TransferControl.Management
                     Dictionary<string, string> CurrParam = null;
                     if (param == null)
                     {
-                        CurrParam = LastParam;//拿之前的
+                        if (LastParam != null)
+                        {
+                            CurrParam = LastParam;//拿之前的
+                        }
+                        else
+                        {
+                            CurrParam = new Dictionary<string, string>();
+                        }
                     }
                     else
                     {
@@ -1348,7 +1355,8 @@ namespace TransferControl.Management
                                     continue;
                                 }
                                 string[] ExcuteObj = eachExcuteObj.Split(':');
-                                if (ExcuteObj.Length == 4)
+                                //if (ExcuteObj.Length == 4)
+                                if(true)
                                 {
                                     string NodeName = ExcuteObj[0];
                                     if (NodeName.ToUpper().Equals("TASK"))
@@ -1356,7 +1364,7 @@ namespace TransferControl.Management
                                         string TaskName = ExcuteObj[1];
                                         string errStr = "";
                                         CurrentProceedTask tmpTask;
-                                        Excute(Guid.NewGuid().ToString(), out errStr, out tmpTask, TaskName);
+                                        Excute(Guid.NewGuid().ToString(), out errStr, out tmpTask, TaskName,null,Id);
                                         return true;
                                     }
 

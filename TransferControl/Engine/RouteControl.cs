@@ -235,6 +235,7 @@ namespace TransferControl.Engine
                                     break;
                                 case Transaction.Command.LoadPortType.GetMapping:
                                     //產生Mapping資料
+                                    Node.LoadTime = DateTime.Now;
                                     string Mapping = Msg.Value;
                                     //string Mapping = "1111111111111111111111111";
                                     //if (!Mapping.Equals("0000000000000000000000000"))
@@ -242,11 +243,18 @@ namespace TransferControl.Engine
                                     //    Mapping = "0000000110000000000000000";
                                     //}
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
-                                    //if (Node.Name.Equals("LOADPORT01"))
-                                    //{
-                                    //    //Mapping = "1111111111111111111111111";
-                                    //    Mapping = SystemConfig.Get().MappingData;
-                                    //}
+                                    if (Node.Name.Equals("LOADPORT01"))
+                                    {
+                                        Mapping = "1111111110000000000000000";
+                                        //Mapping = "1110000000000000000000000";
+
+                                        //Mapping = SystemConfig.Get().MappingData;
+                                    }
+                                    if (Node.Name.Equals("LOADPORT02"))
+                                    {
+                                        Mapping = "1111111110000000000000000";
+                                        //Mapping = SystemConfig.Get().MappingData;
+                                    }
 
                                     Node.MappingResult = Mapping;
 
@@ -264,6 +272,49 @@ namespace TransferControl.Engine
                                         wafer.FromPortSlot = wafer.Slot;
                                         wafer.Position = Node.Name;
                                         wafer.AlignerFlag = false;
+                                        if (i == 0)
+                                        {
+                                            wafer.PreviousSlotNotEmpty = false;
+                                            if (Mapping[1].Equals('0'))
+                                            {
+                                                wafer.NextSlotNotEmpty = false;
+                                            }
+                                            else
+                                            {
+                                                wafer.NextSlotNotEmpty = true;
+                                            }
+                                        }
+                                        else if (i == 24)
+                                        {
+                                            wafer.NextSlotNotEmpty = false;
+                                            if (Mapping[23].Equals('0'))
+                                            {
+                                                wafer.PreviousSlotNotEmpty = false;
+                                            }
+                                            else
+                                            {
+                                                wafer.PreviousSlotNotEmpty = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Mapping[i+1].Equals('0'))
+                                            {
+                                                wafer.NextSlotNotEmpty = false;
+                                            }
+                                            else
+                                            {
+                                                wafer.NextSlotNotEmpty = true;
+                                            }
+                                            if (Mapping[i-1].Equals('0'))
+                                            {
+                                                wafer.PreviousSlotNotEmpty = false;
+                                            }
+                                            else
+                                            {
+                                                wafer.PreviousSlotNotEmpty = true;
+                                            }
+                                        }
                                         string Slot = (i + 1).ToString("00");
                                         switch (Mapping[i])
                                         {
@@ -393,6 +444,16 @@ namespace TransferControl.Engine
                                         Node.IO.Add(each.Key, each.Value);
                                         switch (each.Key)
                                         {
+                                            case "R_Presure_switch":
+                                                if (each.Value.Equals("1"))
+                                                {
+                                                    Node.R_Presence = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.R_Presence = false;
+                                                }
+                                                break;
                                             case "R_Present":
                                                 if (each.Value.Equals("1"))
                                                 {
@@ -620,7 +681,7 @@ namespace TransferControl.Engine
                                     _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
                                 }
                                 _UIReport.On_TaskJob_Aborted(Task, Node.Name, Report, ErrorMessage);
-                                
+
                             }
                             //檢查到不是Task，不做事
                         }
@@ -739,14 +800,7 @@ namespace TransferControl.Engine
 
                                         //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
                                         NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
-                                        if (OCRResult[0].IndexOf("*") == -1)
-                                        {
-                                            Node.OCRSuccess = true;
-                                        }
-                                        else
-                                        {
-                                            Node.OCRSuccess = false;
-                                        }
+
                                         switch (Node.Brand)
                                         {
                                             case "HST":
@@ -758,17 +812,33 @@ namespace TransferControl.Engine
                                                 {
                                                     Txn.TargetJobs[0].OCRScore = "0";
                                                 }
-
+                                                if (OCRResult[0].IndexOf("*") == -1)
+                                                {
+                                                    Node.OCRSuccess = true;
+                                                }
+                                                else
+                                                {
+                                                    Node.OCRSuccess = false;
+                                                }
                                                 break;
                                             case "COGNEX":
-                                                if (OCRResult.Length >= 2)
+                                                if (OCRResult.Length >= 3)
                                                 {
                                                     Txn.TargetJobs[0].OCRScore = OCRResult[1];
+                                                    if (!OCRResult[2].Equals("0.000"))
+                                                    {
+                                                        Node.OCRSuccess = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        Node.OCRSuccess = false;
+                                                    }
                                                 }
                                                 else
                                                 {
                                                     Txn.TargetJobs[0].OCRScore = "0";
                                                 }
+
                                                 break;
                                         }
 
@@ -989,7 +1059,7 @@ namespace TransferControl.Engine
 
                                 Node.PutOut = false;
                                 Node.GetMutex = true;
-                              
+
                                 //4port use only
                                 Node.PutAvailable = true;
                             }
@@ -1003,7 +1073,7 @@ namespace TransferControl.Engine
 
                                 Node.GetAvailable = true;
                                 Node.GetMutex = true;
-                              
+
                                 Node.PutAvailable = true;
                                 Node.PutOut = false;
 
@@ -1041,7 +1111,7 @@ namespace TransferControl.Engine
                         case Transaction.Command.AlignerType.Retract:
                         case Transaction.Command.AlignerType.Home:
                             Node.Available = true;
-                           
+
 
                             Node.GetAvailable = false;
                             Node.GetMutex = false;
@@ -1125,8 +1195,10 @@ namespace TransferControl.Engine
                                 IO_State_Change(Node.Name, "Foup_Presence", false);
                                 break;
                             case "PODOF":
+
                                 CarrierManagement.Remove(Node.Carrier);
-                                
+                                Node.Foup_Presence = false;
+
                                 IO_State_Change(Node.Name, "Foup_Presence", true);
                                 IO_State_Change(Node.Name, "Foup_Placement", false);
                                 if (_HostReport != null)
@@ -1136,6 +1208,8 @@ namespace TransferControl.Engine
                                 break;
                             case "PODON":
                                 CarrierManagement.Add().SetLocation(Node.Name);
+                                Node.Foup_Presence = true;
+
                                 IO_State_Change(Node.Name, "Foup_Presence", false);
                                 IO_State_Change(Node.Name, "Foup_Placement", true);
                                 if (_HostReport != null)
@@ -1258,14 +1332,14 @@ namespace TransferControl.Engine
 
         }
 
-        public void On_Data_Chnaged(string Parameter, string Value)
+        public void On_Data_Chnaged(string Parameter, string Value, string Type)
         {
             if (_HostReport != null)
             {
                 string DIO_Data = DIO.GetALL();
                 _HostReport.On_Event_Trigger("SIGSTAT", "SYSTEM", Parameter, DIO_Data);
             }
-            _UIReport.On_Data_Chnaged(Parameter, Value);
+            _UIReport.On_Data_Chnaged(Parameter, Value, Type);
         }
 
         public void On_Connection_Error(string DIOName, string ErrorMsg)
