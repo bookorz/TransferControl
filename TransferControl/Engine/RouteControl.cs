@@ -255,10 +255,16 @@ namespace TransferControl.Engine
                                         Mapping = "1111111110000000000000000";
                                         //Mapping = SystemConfig.Get().MappingData;
                                     }
+                                    //if (Node.Name.Equals("LOADPORT04"))
+                                    //{
+                                    //    Mapping = "1111111111111111111100000";
+                                    //    //Mapping = SystemConfig.Get().MappingData;
+                                    //}
 
                                     Node.MappingResult = Mapping;
 
                                     Node.IsMapping = true;
+                                    
                                     if (_HostReport != null)
                                     {
                                         _HostReport.On_Event_Trigger("MAPDT", "", Node.Name, Msg.Value);

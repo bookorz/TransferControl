@@ -129,6 +129,7 @@ namespace TransferControl.Management
         /// LoadPort專用，Mapping完成
         /// </summary>
         public bool IsMapping { get; set; }
+        public bool MappingHasError = false;
         /// <summary>
         /// LoadPort專用，目前可以取片
         /// </summary>

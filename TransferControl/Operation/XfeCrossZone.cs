@@ -774,13 +774,13 @@ namespace TransferControl.Operation
                                     case "TRANSFER_UNLOADPORT_CLOSE":
 
 
-                                        var Available = from each in Target.JobList.Values
-                                                        where !each.MapFlag && !each.ErrPosition
-                                                        select each;
-                                        if (Available.Count() != 0)
-                                        {
+                                        //var Available = from each in Target.JobList.Values
+                                        //                where !each.MapFlag && !each.ErrPosition
+                                        //                select each;
+                                        //if (Available.Count() != 0)
+                                        //{
                                             //還沒滿就取消動作
-                                            Available = from each in JobManagement.GetJobList()
+                                            var Available = from each in JobManagement.GetJobList()
                                                         where (each.NeedProcess && each.FromPort.ToUpper().Equals(LD.ToUpper())) || (each.InProcess && !each.Destination.Equals(each.Position))
                                                         select each;
                                             if (Available.Count() == 0)
@@ -789,23 +789,23 @@ namespace TransferControl.Operation
                                                 watch.Stop();
                                                 ProcessTime = watch.ElapsedMilliseconds;
                                                 logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-
+                                                _Report.On_UnLoadPort_Complete(Target);
                                                 _Report.On_Transfer_Complete(this);
                                             }
                                             continue;
-                                        }
-                                        watch.Stop();
-                                        ProcessTime = watch.ElapsedMilliseconds;
+                                        //}
+                                        //watch.Stop();
+                                        //ProcessTime = watch.ElapsedMilliseconds;
                                         
 
                                         break;
                                     case "TRANSFER_LOADPORT_CLOSE_FINISHED":
-                                        _Report.On_LoadPort_Complete(NodeName.ToString());
+                                       // _Report.On_LoadPort_Complete(NodeName.ToString());
                                         continue;
 
                                     case "TRANSFER_UNLOADPORT_CLOSE_FINISHED":
                                         Running = false;
-                                        _Report.On_UnLoadPort_Complete(NodeName.ToString());
+                                        //_Report.On_UnLoadPort_Complete(NodeName.ToString());
                                         _Report.On_Transfer_Complete(this);
                                         logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
                                         continue;
