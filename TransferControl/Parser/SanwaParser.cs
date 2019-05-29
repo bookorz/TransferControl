@@ -19,12 +19,30 @@ namespace TransferControl.Parser
                     return ParsePosition(Message);
                 case Transaction.Command.RobotType.GetStatus:
                     return ParseStatus(Message);
+                case Transaction.Command.RobotType.GetSV:
+                    return ParseSV(Message);
                 default:
                     throw new Exception(Command + " Not support");
             }
 
         }
+        private Dictionary<string, string> ParseSV(string Message)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
 
+            string[] MsgAry = Message.Split(',');
+            switch (MsgAry[0])
+            {
+                case "01":
+                    result.Add("R_Vacuum_Solenoid", MsgAry[1]);
+                    break;
+                case "02":
+                    result.Add("L_Vacuum_Solenoid", MsgAry[1]);
+                    break;
+
+            }
+            return result;
+        }
         private Dictionary<string, string> ParseRIO(string Message)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();

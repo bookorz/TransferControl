@@ -237,24 +237,26 @@ namespace TransferControl.Engine
                                     //產生Mapping資料
                                     Node.LoadTime = DateTime.Now;
                                     string Mapping = Msg.Value;
-                                    //string Mapping = "1111111111111111111111111";
+                                    // string Mapping = "1111111111111111111111111";
                                     //if (!Mapping.Equals("0000000000000000000000000"))
                                     //{
                                     //    Mapping = "0000000110000000000000000";
                                     //}
-                                    //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
-                                    if (Node.Name.Equals("LOADPORT01"))
-                                    {
-                                        Mapping = "1111111110000000000000000";
-                                        //Mapping = "1110000000000000000000000";
+                                    // WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
 
-                                        //Mapping = SystemConfig.Get().MappingData;
-                                    }
-                                    if (Node.Name.Equals("LOADPORT02"))
-                                    {
-                                        Mapping = "1111111110000000000000000";
-                                        //Mapping = SystemConfig.Get().MappingData;
-                                    }
+
+                                    //if (Node.Name.Equals("LOADPORT01"))
+                                    //{
+                                    //    //Mapping = "1111111110000000000000000";
+                                    //    Mapping = "1110000000000000000000000";
+
+                                    //    //Mapping = SystemConfig.Get().MappingData;
+                                    //}
+                                    //if (Node.Name.Equals("LOADPORT02"))
+                                    //{
+                                    //    Mapping = "1110000000000000000000000";
+                                    //    //Mapping = SystemConfig.Get().MappingData;
+                                    //}
                                     //if (Node.Name.Equals("LOADPORT04"))
                                     //{
                                     //    Mapping = "1111111111111111111100000";
@@ -264,7 +266,7 @@ namespace TransferControl.Engine
                                     Node.MappingResult = Mapping;
 
                                     Node.IsMapping = true;
-                                    
+
                                     if (_HostReport != null)
                                     {
                                         _HostReport.On_Event_Trigger("MAPDT", "", Node.Name, Msg.Value);
@@ -272,6 +274,18 @@ namespace TransferControl.Engine
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
                                     {
+                                        if (Node.CarrierType != null)
+                                        {
+                                            if (Node.CarrierType.Equals("OPEN"))
+                                            {
+
+                                                if ((i + 1) > 13)
+                                                {
+                                                    continue;
+                                                }
+
+                                            }
+                                        }
                                         Job wafer = RouteControl.CreateJob();
                                         wafer.Slot = (i + 1).ToString();
                                         wafer.FromPort = Node.Name;
@@ -304,7 +318,7 @@ namespace TransferControl.Engine
                                         }
                                         else
                                         {
-                                            if (Mapping[i+1].Equals('0'))
+                                            if (Mapping[i + 1].Equals('0'))
                                             {
                                                 wafer.NextSlotNotEmpty = false;
                                             }
@@ -312,7 +326,7 @@ namespace TransferControl.Engine
                                             {
                                                 wafer.NextSlotNotEmpty = true;
                                             }
-                                            if (Mapping[i-1].Equals('0'))
+                                            if (Mapping[i - 1].Equals('0'))
                                             {
                                                 wafer.PreviousSlotNotEmpty = false;
                                             }
@@ -322,6 +336,8 @@ namespace TransferControl.Engine
                                             }
                                         }
                                         string Slot = (i + 1).ToString("00");
+                                        
+                                        
                                         switch (Mapping[i])
                                         {
                                             case '0':
@@ -394,6 +410,7 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             switch (Txn.Method)
                             {
+
                                 case Transaction.Command.RobotType.GetSpeed:
                                     if (Msg.Value.Equals("0") && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
                                     {
@@ -531,6 +548,22 @@ namespace TransferControl.Engine
                                     }
 
                                     break;
+                                case Transaction.Command.RobotType.GetSV:
+                                    parser = new MessageParser(Node.Brand);
+                                    Dictionary<string, string> SVResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in SVResult)
+                                    {
+                                        switch (each.Key)
+                                        {
+                                            case "R_Vacuum_Solenoid":
+                                                Node.R_Vacuum_Solenoid = each.Value;
+                                                break;
+                                            case "L_Vacuum_Solenoid":
+                                                Node.L_Vacuum_Solenoid = each.Value;
+                                                break;
+                                        }
+                                    }
+                                    break;
                                 case Transaction.Command.RobotType.GetMapping:
                                     //產生Mapping資料
                                     string Mapping = Msg.Value;
@@ -646,6 +679,19 @@ namespace TransferControl.Engine
                                                 break;
                                             case "L-Hold Status":
                                                 Node.L_Hold_Status = each.Value;
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case Transaction.Command.RobotType.GetSV:
+                                     parser = new MessageParser(Node.Brand);
+                                    Dictionary<string, string> SVResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in SVResult)
+                                    {
+                                        switch (each.Key)
+                                        {
+                                            case "R_Vacuum_Solenoid":
+                                                Node.R_Vacuum_Solenoid = each.Value;
                                                 break;
                                         }
                                     }
@@ -1391,6 +1437,7 @@ namespace TransferControl.Engine
 
         public void On_Job_Position_Changed(Job Job)
         {
+
             _UIReport.On_Job_Location_Changed(Job);
         }
 

@@ -106,7 +106,12 @@ namespace TransferControl.Operation
 
                                  select eachSlot;
             ProcessCount = AvailableSlots.Count();
-
+            //if (ProcessCount == 0)
+            //{
+            //    Running = false;
+            //    _Report.On_Transfer_Complete(this);
+            //    return true;
+            //}
             //var crossRunSlots = from eachSlot in nodeLD.JobList.Values.ToList()
             //                    where !NodeManagement.Get(eachSlot.Destination).Equals(LDRobot)
             //                    select eachSlot;
@@ -343,7 +348,7 @@ namespace TransferControl.Operation
                                         req.Position = nodeLD.Name;
 
                                         var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                                             where eachSlot.NeedProcess && eachSlot.MapFlag && !eachSlot.ErrPosition
+                                                             where eachSlot.NeedProcess && eachSlot.MapFlag && !eachSlot.ErrPosition && !eachSlot.AbortProcess
                                                              select eachSlot;
                                         if (AvailableSlots.Count() != 0)
                                         {
@@ -427,14 +432,41 @@ namespace TransferControl.Operation
                                                 }
                                                 else//只能單取
                                                 {
-                                                    j = AvailableSlotsList.First();
-                                                    req.Slot = j.Slot;
-                                                    if (!Target.JobList.ContainsKey("1") && Target.RArmActive)//R沒片且R為可用狀態
+                                                    //j = AvailableSlotsList.First();
+                                                    //req.Slot = j.Slot;
+                                                    //if (!Target.JobList.ContainsKey("1") && Target.RArmActive)//R沒片且R為可用狀態
+                                                    //{
+                                                    //    req.Arm = "1";
+                                                    //}
+                                                    //else if (!Target.JobList.ContainsKey("2") && Target.LArmActive)//L沒片且L為可用狀態
+                                                    //{
+                                                    //    req.Arm = "2";
+                                                    //}
+                                                    if (!Target.JobList.ContainsKey("1") && Target.RArmActive && !Target.JobList.ContainsKey("2") && Target.LArmActive && AvailableSlotsList.Count() >= 2)
+                                                    {//R & L 都可用且有兩片能取
+                                                        
+                                                       
+                                                        j = AvailableSlotsList.First();
+                                                        req.Slot = j.Slot;
+                                                        if (Convert.ToInt16(AvailableSlotsList[0].DestinationSlot) > Convert.ToInt16(AvailableSlotsList[1].DestinationSlot))
+                                                        {//如果最下面那片的目的Slot比較高 用R取(R軸在上面L軸在下 以便雙放)
+                                                            req.Arm = "1";
+                                                        }
+                                                        else
+                                                        {
+                                                            req.Arm = "2";
+                                                        }
+                                                    }
+                                                    else if (!Target.JobList.ContainsKey("1") && Target.RArmActive)//R沒片且R為可用狀態
                                                     {
+                                                        j = AvailableSlotsList.First();
+                                                        req.Slot = j.Slot;
                                                         req.Arm = "1";
                                                     }
                                                     else if (!Target.JobList.ContainsKey("2") && Target.LArmActive)//L沒片且L為可用狀態
                                                     {
+                                                        j = AvailableSlotsList.First();
+                                                        req.Slot = j.Slot;
                                                         req.Arm = "2";
                                                     }
                                                     else
@@ -535,14 +567,14 @@ namespace TransferControl.Operation
                                                 //                select each;
                                                 //if (Available.Count() == 0)
                                                 //{
-                                                //    watch.Stop();
-                                                //    ProcessTime = watch.ElapsedMilliseconds;
-                                                //    logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-
-                                                //    _Report.On_Transfer_Complete(this);
+                                                watch.Stop();
+                                                ProcessTime = watch.ElapsedMilliseconds;
+                                                logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+                                                Running = false;
+                                                _Report.On_Transfer_Complete(this);
                                                 //    //結束工作
                                                 //}
-                                                
+
                                                 continue;
                                             }
                                         }
@@ -690,10 +722,13 @@ namespace TransferControl.Operation
                                             }
                                             else
                                             {//目的地不同 OR Slot不連續，只能單放
-                                                //先前置放R手臂
-                                                req.Position = Target.JobList["1"].Destination;
-                                                req.Arm = "1";
-                                                req.Slot = Target.JobList["1"].DestinationSlot;
+                                             //看哪一片的Slot在上面就先放
+
+                                                var ArmWafers = (from each in Target.JobList.Values
+                                                                 select each).OrderByDescending(x => x.DestinationSlot);
+                                                req.Position = ArmWafers.First().Destination;
+                                                req.Arm = ArmWafers.First().Slot;
+                                                req.Slot = ArmWafers.First().DestinationSlot;
                                             }
                                         }
                                         else
@@ -763,13 +798,13 @@ namespace TransferControl.Operation
                                     case "TRANSFER_LOADPORT_CLOSE":
                                         nodeLD = NodeManagement.Get(LD);
                                         var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                                             where eachSlot.MapFlag && !eachSlot.ErrPosition
+                                                             where eachSlot.MapFlag && !eachSlot.ErrPosition && !eachSlot.Locked
                                                              select eachSlot;
-                                        if (AvailableSlots.Count() != 0)
+                                        if (AvailableSlots.Count() == 0)
                                         {
-                                            //還沒取完片就取消動作
-                                            continue;
+                                            _Report.On_LoadPort_Complete(Target);
                                         }
+                                        continue;
                                         break;
                                     case "TRANSFER_UNLOADPORT_CLOSE":
 
@@ -779,28 +814,28 @@ namespace TransferControl.Operation
                                         //                select each;
                                         //if (Available.Count() != 0)
                                         //{
-                                            //還沒滿就取消動作
-                                            var Available = from each in JobManagement.GetJobList()
+                                        //還沒滿就取消動作
+                                        var Available = from each in JobManagement.GetJobList()
                                                         where (each.NeedProcess && each.FromPort.ToUpper().Equals(LD.ToUpper())) || (each.InProcess && !each.Destination.Equals(each.Position))
                                                         select each;
-                                            if (Available.Count() == 0)
-                                            {//處理完成
-                                                Running = false;
-                                                watch.Stop();
-                                                ProcessTime = watch.ElapsedMilliseconds;
-                                                logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                                _Report.On_UnLoadPort_Complete(Target);
-                                                _Report.On_Transfer_Complete(this);
-                                            }
-                                            continue;
+                                        if (Available.Count() == 0)
+                                        {//處理完成
+                                            Running = false;
+                                            watch.Stop();
+                                            ProcessTime = watch.ElapsedMilliseconds;
+                                            logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+                                            _Report.On_UnLoadPort_Complete(Target);
+                                            _Report.On_Transfer_Complete(this);
+                                        }
+                                        continue;
                                         //}
                                         //watch.Stop();
                                         //ProcessTime = watch.ElapsedMilliseconds;
-                                        
+
 
                                         break;
                                     case "TRANSFER_LOADPORT_CLOSE_FINISHED":
-                                       // _Report.On_LoadPort_Complete(NodeName.ToString());
+                                        // _Report.On_LoadPort_Complete(NodeName.ToString());
                                         continue;
 
                                     case "TRANSFER_UNLOADPORT_CLOSE_FINISHED":

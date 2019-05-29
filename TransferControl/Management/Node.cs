@@ -288,7 +288,8 @@ namespace TransferControl.Management
 
         public bool OCRSuccess { get; set; }
         public string CurrentStatus { get; set; }
-
+        public string R_Vacuum_Solenoid { get; set; }
+        public string L_Vacuum_Solenoid { get; set; }
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -394,7 +395,7 @@ namespace TransferControl.Management
             if (Type.Equals("LOADPORT"))
             {
                 Available = false;
-                Mode = "UD";
+               // Mode = "UD";
             }
             Fetchable = false;
             FoupReady = false;

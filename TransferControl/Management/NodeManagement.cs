@@ -38,7 +38,8 @@ namespace TransferControl.Management
                             t.associated_node as Associated_Node,
                             t.r_arm as RArmActive,
                             t.l_arm as LArmActive,
-                            t.carrier_type AS CarrierType
+                            t.carrier_type AS CarrierType,
+                            t.mode as Mode
                         FROM config_node t
                         WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);

@@ -17,6 +17,7 @@ namespace TransferControl.Management
         public List<OCRInfo> OcrCodeList { get; set; }
         public bool InProcess { get; set; }
         public bool NeedProcess { get; set; }
+        public bool AbortProcess { get; set; }
         public bool ProcessFlag { get; set; }
         public bool AlignerFlag { get; set; }
         public bool OCRFlag { get; set; }
@@ -61,6 +62,7 @@ namespace TransferControl.Management
             ReserveSlot = "";
             AlignerFlag = false;
             NeedProcess = false;
+            AbortProcess = false;
             OCRFlag = false;
             InProcess = false;
             IsAssigned = false;
@@ -72,6 +74,11 @@ namespace TransferControl.Management
 
         public void PositionChangeReport()
         {
+            if(this.Position.ToUpper().Equals(this.Destination.ToUpper()) && this.Slot.Equals(this.DestinationSlot))
+            {
+                this.Destination = "";
+                this.DestinationSlot = "";
+            }
             if (_Report != null)
             {
                 _Report.On_Job_Position_Changed(this);
@@ -88,10 +95,14 @@ namespace TransferControl.Management
             Job targetSlot;
             if (targetPort.JobList.TryGetValue(Slot, out targetSlot))
             {
+                this.FromPort = this.Position;
+                this.FromPortSlot = this.Slot;
                 this.Destination = Position;
                 this.DisplayDestination = Position.Replace("Load", "");
                 this.DestinationSlot = Slot;
                 this.AssignTime = DateTime.Now;
+                this.NeedProcess = true;
+                this.AbortProcess = false;
                 //設定UnloadPort的補償角度
                 string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
                 RobotPoint point = PointManagement.GetPoint(ULDRobot, Position, "300MM");
@@ -128,7 +139,7 @@ namespace TransferControl.Management
             this.Destination = "";
             this.DisplayDestination = "";
             this.DestinationSlot = "";
-
+            this.NeedProcess = false;
         }
 
         public class State
