@@ -100,5 +100,15 @@ namespace TransferControl.Operation
         {
             throw new NotImplementedException();
         }
+
+        public void On_LoadPort_Selected(Node Port)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void On_UnLoadPort_Selected(Node Port)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

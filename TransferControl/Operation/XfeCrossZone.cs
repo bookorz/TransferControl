@@ -55,6 +55,7 @@ namespace TransferControl.Operation
 
         public void Initial()
         {
+            logger.Debug("XfeCrossZone Initial");
             Running = false;
 
             LDRobot = "";
@@ -94,6 +95,12 @@ namespace TransferControl.Operation
             ULD_List.Clear();
             //找到LD
             Node nodeLD = NodeManagement.Get(LDPort);
+            if (nodeLD == null)
+            {
+                logger.Error("XfeCrossZone Start fail:Node "+LDPort + " not found");
+                return false;
+            }
+            _Report.On_LoadPort_Selected(nodeLD);
             Node LROB = NodeManagement.Get(nodeLD.Associated_Node);
             LDRobot = LROB.Name;
 
@@ -102,10 +109,21 @@ namespace TransferControl.Operation
 
 
             var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                 where eachSlot.NeedProcess
-
+                                 where eachSlot.NeedProcess && eachSlot.MapFlag && !eachSlot.ErrPosition && !eachSlot.AbortProcess
                                  select eachSlot;
             ProcessCount = AvailableSlots.Count();
+
+            var UnloadPortSlots = from eachSlot in AvailableSlots
+                                  group eachSlot by eachSlot.Destination into g
+                                  select g.First();
+            foreach(Job eachSlot in UnloadPortSlots)
+            {
+                Node port = NodeManagement.Get(eachSlot.Destination);
+                if (port != null)
+                {
+                    _Report.On_UnLoadPort_Selected(port);
+                }
+            }
             //if (ProcessCount == 0)
             //{
             //    Running = false;
@@ -155,7 +173,7 @@ namespace TransferControl.Operation
                 }
             }
             Running = true;
-
+            logger.Debug("XfeCrossZone Start");
             //NodeStatusUpdate.UpdateCurrentState("RUN");
             return Running;
         }
@@ -163,6 +181,7 @@ namespace TransferControl.Operation
         public static void Stop()
         {
             string Message = "";
+            
             Running = false;
             TaskJobManagment.CurrentProceedTask Task;
             RouteControl.Instance.TaskJob.Excute(Guid.NewGuid().ToString(), out Message, out Task, "STOP", null);
@@ -570,8 +589,11 @@ namespace TransferControl.Operation
                                                 watch.Stop();
                                                 ProcessTime = watch.ElapsedMilliseconds;
                                                 logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+                                                logger.Debug("XfeCrossZone Stop");
                                                 Running = false;
+                                                
                                                 _Report.On_Transfer_Complete(this);
+
                                                 //    //結束工作
                                                 //}
 
@@ -820,11 +842,20 @@ namespace TransferControl.Operation
                                                         select each;
                                         if (Available.Count() == 0)
                                         {//處理完成
+                                            logger.Debug("XfeCrossZone Stop");
                                             Running = false;
+
                                             watch.Stop();
                                             ProcessTime = watch.ElapsedMilliseconds;
                                             logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                            _Report.On_UnLoadPort_Complete(Target);
+                                            foreach (string uld in ULD_List)
+                                            {
+                                                Node EachULD = NodeManagement.Get(uld);
+                                                if (EachULD != null)
+                                                {
+                                                    _Report.On_UnLoadPort_Complete(EachULD);
+                                                }
+                                            }
                                             _Report.On_Transfer_Complete(this);
                                         }
                                         continue;
@@ -839,6 +870,7 @@ namespace TransferControl.Operation
                                         continue;
 
                                     case "TRANSFER_UNLOADPORT_CLOSE_FINISHED":
+                                        logger.Debug("XfeCrossZone Stop");
                                         Running = false;
                                         //_Report.On_UnLoadPort_Complete(NodeName.ToString());
                                         _Report.On_Transfer_Complete(this);

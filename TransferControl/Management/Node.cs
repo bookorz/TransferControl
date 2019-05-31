@@ -290,6 +290,7 @@ namespace TransferControl.Management
         public string CurrentStatus { get; set; }
         public string R_Vacuum_Solenoid { get; set; }
         public string L_Vacuum_Solenoid { get; set; }
+        public bool Home_Position { get; set; }
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
@@ -357,6 +358,8 @@ namespace TransferControl.Management
             E87_TransferState = 0;
             E87_ReservationState = 0;
             E87_AssociationState = 0;
+            Home_Position = false;
+           
             //if (Type.Equals("LOADPORT"))
             //{
             //    State = "Ready To Load";

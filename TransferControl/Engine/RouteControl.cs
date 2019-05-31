@@ -212,12 +212,12 @@ namespace TransferControl.Engine
                                                 if (each.Value.Equals("None"))
                                                 {
                                                     Node.Foup_Placement = false;
-                                                    Node.Foup_Presence = true;
+                                                    Node.Foup_Presence = false;
                                                 }
                                                 else if (each.Value.Equals("Normal position"))
                                                 {
                                                     Node.Foup_Placement = true;
-                                                    Node.Foup_Presence = false;
+                                                    Node.Foup_Presence = true;
                                                 }
                                                 else if (each.Value.Equals("Error load"))
                                                 {
@@ -244,19 +244,21 @@ namespace TransferControl.Engine
                                     //}
                                     // WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
 
+                                    if (SystemConfig.Get().FakeData)
+                                    {
+                                        if (Node.Name.Equals("LOADPORT01"))
+                                        {
+                                            Mapping = "1111111110000000000000000";
+                                            //Mapping = "1110000000000000000000000";
 
-                                    //if (Node.Name.Equals("LOADPORT01"))
-                                    //{
-                                    //    //Mapping = "1111111110000000000000000";
-                                    //    Mapping = "1110000000000000000000000";
-
-                                    //    //Mapping = SystemConfig.Get().MappingData;
-                                    //}
-                                    //if (Node.Name.Equals("LOADPORT02"))
-                                    //{
-                                    //    Mapping = "1110000000000000000000000";
-                                    //    //Mapping = SystemConfig.Get().MappingData;
-                                    //}
+                                            //Mapping = SystemConfig.Get().MappingData;
+                                        }
+                                        if (Node.Name.Equals("LOADPORT02"))
+                                        {
+                                            Mapping = "1111111110000000000000000";
+                                            //Mapping = SystemConfig.Get().MappingData;
+                                        }
+                                    }
                                     //if (Node.Name.Equals("LOADPORT04"))
                                     //{
                                     //    Mapping = "1111111111111111111100000";
@@ -837,10 +839,31 @@ namespace TransferControl.Engine
 
                             break;
                         case "ALIGNER":
+                            UpdateNodeStatus(Node, Txn);
+                            if (Txn.Method.Equals(Transaction.Command.AlignerType.Align) || Txn.Method.Equals(Transaction.Command.AlignerType.AlignOption))
+                            {
+                                if (Txn.TargetJobs.Count != 0)
+                                {
+                                    Txn.TargetJobs[0].ProcessFlag = true;
+                                }
+                            }
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.RobotType.Home:
+                                    Node.State = "READY";
+                                    Node.Home_Position = true;
+                                    
+                                    break;
+                                case Transaction.Command.RobotType.OrginSearch:
+                                    Node.State = "READY";
+                                    Node.OrgSearchComplete = true;
+                                    Node.Home_Position = false;
+                                    break;
+                            }
+                            break;
                         case "OCR":
                             UpdateNodeStatus(Node, Txn);
-                            if (Node.Type.Equals("OCR"))
-                            {
+                            
                                 //Update Wafer ID by OCR result
                                 if (Txn.Method.Equals(Transaction.Command.OCRType.Read))
                                 {
@@ -923,17 +946,7 @@ namespace TransferControl.Engine
 
                                     _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
                                 }
-                            }
-                            else if (Node.Type.ToUpper().Equals("ALIGNER"))
-                            {
-                                if (Txn.Method.Equals(Transaction.Command.AlignerType.Align) || Txn.Method.Equals(Transaction.Command.AlignerType.AlignOption))
-                                {
-                                    if (Txn.TargetJobs.Count != 0)
-                                    {
-                                        Txn.TargetJobs[0].ProcessFlag = true;
-                                    }
-                                }
-                            }
+                            
 
                             break;
                         case "LOADPORT":

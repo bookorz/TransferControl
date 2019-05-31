@@ -336,6 +336,7 @@ namespace TransferControl.Management
                                             J.Job_Id = JobManagement.GetNewID();
                                             J.Position = FNode.Name;
                                             J.Slot = FromSlot;
+                                            JobManagement.Add(J.Job_Id,J);
                                         }
                                         if (FNode.Type.ToUpper().Equals("LOADPORT"))
                                         {
