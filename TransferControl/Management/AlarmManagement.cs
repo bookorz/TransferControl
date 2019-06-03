@@ -66,12 +66,12 @@ namespace TransferControl.Management
 
             try
             {
-                string SQL = @"SELECT * from log_alarm_his t 
+                string SQL = @"SELECT t.node_name AS NodeName,t.system_alarm_code AS SystemAlarmCode,t.alarm_code AS AlarmCode,t.alarm_desc AS 'DESC',t.alarm_eng_desc AS EngDesc,t.alarm_type AS AlarmType from log_alarm_his t
                                 where t.time_stamp between
                                 STR_TO_DATE(@From, '%Y-%m-%d %H:%i:%s') and
                                 STR_TO_DATE(@To, '%Y-%m-%d %H:%i:%s')";
-                keyValues.Add("@From", From.ToString("yyyy/MM/dd HH:mm:ss"));
-                keyValues.Add("@To", To.ToString("yyyy/MM/dd HH:mm:ss"));
+                keyValues.Add("@From", From.ToString("yyyy-MM-dd HH:mm:ss"));
+                keyValues.Add("@To", To.ToString("yyyy-MM-dd HH:mm:ss"));
                 dtTemp = dBUtil.GetDataTable(SQL, keyValues);
 
                 string str_json = JsonConvert.SerializeObject(dtTemp, Formatting.Indented);

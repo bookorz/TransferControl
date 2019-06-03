@@ -1,4 +1,5 @@
 ﻿using log4net;
+using SANWA.Utility.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace TransferControl.Operation
         public bool SingleAligner = false;
         private string RunID = "";
         System.Diagnostics.Stopwatch watch;
-
+        Recipe rcp = null;
         IXfeStateReport _Report;
 
         public XfeCrossZone(IXfeStateReport Report)
@@ -69,6 +70,7 @@ namespace TransferControl.Operation
             ProcessCount = 0;
             SingleAligner = false;
             RunID = "";
+            rcp = Recipe.Get(SystemConfig.Get().CurrentRecipe);
         }
 
         public bool Start(string LDPort)
@@ -806,8 +808,9 @@ namespace TransferControl.Operation
                                         //放進UnloadPort補償角度
                                         RobotPoint point = PointManagement.GetPoint(ULDRobot, Target.Name, "300MM");
                                         Target.JobList["1"].Offset += point.Offset;
-                                        req.Value = (Target.JobList["1"].Offset + 0).ToString();
-
+                                        req.Value3 = (Target.JobList["1"].Offset + Convert.ToInt32(rcp.notch_angle)).ToString();
+                                        req.Value = rcp.aligner1_angle;
+                                        req.Value2 = rcp.aligner2_angle;
                                         break;
                                 }
                                 break;
@@ -887,6 +890,8 @@ namespace TransferControl.Operation
                         param.Add("@2Slot", req.Slot2);
                         param.Add("@Arm", req.Arm);
                         param.Add("@Value", req.Value);
+                        param.Add("@Value2", req.Value2);
+                        param.Add("@Value3", req.Value3);
                         param.Add("@Position", req.Position);
                         param.Add("@LDRobot", LDRobot);
                         param.Add("@ULDRobot", ULDRobot);

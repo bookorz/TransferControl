@@ -305,7 +305,8 @@ namespace TransferControl.Management
             public string Slot2 { get; set; }
             public string Arm { get; set; }
             public string Value { get; set; }
-
+            public string Value2 { get; set; }
+            public string Value3 { get; set; }
             public long TimeStamp { get; set; }
 
             public ActionRequest()
@@ -316,7 +317,8 @@ namespace TransferControl.Management
                 Slot2 = "";
                 Arm = "";
                 Value = "";
-
+                Value2 = "";
+                Value3 = "";
             }
         }
 

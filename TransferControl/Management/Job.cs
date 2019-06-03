@@ -116,6 +116,7 @@ namespace TransferControl.Management
                 }
                 targetSlot.ReservePort = this.Position;
                 targetSlot.ReserveSlot = this.Slot;
+                targetSlot.IsAssigned = true;
             }
             else
             {
@@ -134,6 +135,7 @@ namespace TransferControl.Management
                 {
                     targetSlot.ReservePort = "";
                     targetSlot.ReserveSlot = "";
+                    targetSlot.IsAssigned = false;
                 }
             }
             this.Destination = "";

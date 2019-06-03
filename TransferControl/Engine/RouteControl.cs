@@ -402,7 +402,12 @@ namespace TransferControl.Engine
                                         }
 
                                     }
-
+                                    if (!Node.IsMapping)
+                                    {
+                                        ReturnMessage rem = new ReturnMessage();
+                                        rem.Value = "/MAPERR";
+                                        _UIReport.On_Command_Error(Node,Txn, rem);
+                                    }
                                     break;
 
                             }
