@@ -155,7 +155,7 @@ namespace TransferControl.Engine
                                     Node.JobList.Clear();
                                     Node.ReserveList.Clear();
                                     JobManagement.ClearAssignJobByPort(Node.Name);
-
+                                    Node.FoupID = "";
 
                                     break;
 

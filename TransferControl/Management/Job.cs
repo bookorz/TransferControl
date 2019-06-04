@@ -43,7 +43,8 @@ namespace TransferControl.Management
         public bool IsAssigned { get; set; }
         public bool Locked { get; set; }
         public DateTime AssignTime { get; private set; }
-
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         IJobReport _Report = null;
 
         public Job(IJobReport Report)
@@ -70,6 +71,7 @@ namespace TransferControl.Management
             NextSlotNotEmpty = false;
             Locked = false;
             OcrCodeList = new List<OCRInfo>();
+
         }
 
         public void PositionChangeReport()

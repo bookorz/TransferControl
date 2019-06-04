@@ -349,11 +349,13 @@ namespace TransferControl.Management
                                             FNode.JobList.TryAdd(tmp.Slot, tmp);
                                             //從LOADPORT取出，處理開始
                                             J.InProcess = true;
+                                            J.StartTime = DateTime.Now;
                                         }
                                         if (TNode.Type.ToUpper().Equals("LOADPORT"))
                                         {
                                             //放回UNLOADPORT，處理結束
                                             J.InProcess = false;
+                                            J.EndTime = DateTime.Now;
                                         }
 
                                         J.LastNode = J.Position;
