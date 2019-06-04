@@ -808,9 +808,9 @@ namespace TransferControl.Operation
                                         //放進UnloadPort補償角度
                                         RobotPoint point = PointManagement.GetPoint(ULDRobot, Target.Name, "300MM");
                                         Target.JobList["1"].Offset += point.Offset;
-                                        req.Value3 = (Target.JobList["1"].Offset + Convert.ToInt32(rcp.notch_angle)).ToString();
+                                        req.V3 = (Target.JobList["1"].Offset + Convert.ToInt32(rcp.notch_angle)).ToString();
                                         req.Value = rcp.aligner1_angle;
-                                        req.Value2 = rcp.aligner2_angle;
+                                        req.V2 = rcp.aligner2_angle;
                                         break;
                                 }
                                 break;
@@ -890,8 +890,14 @@ namespace TransferControl.Operation
                         param.Add("@2Slot", req.Slot2);
                         param.Add("@Arm", req.Arm);
                         param.Add("@Value", req.Value);
-                        param.Add("@Value2", req.Value2);
-                        param.Add("@Value3", req.Value3);
+                        param.Add("@V2", req.V2);
+                        param.Add("@V3", req.V3);
+                        param.Add("@V4", req.V4);
+                        param.Add("@V5", req.V5);
+                        param.Add("@V6", req.V6);
+                        param.Add("@V7", req.V7);
+                        param.Add("@V8", req.V8);
+                        param.Add("@V9", req.V9);
                         param.Add("@Position", req.Position);
                         param.Add("@LDRobot", LDRobot);
                         param.Add("@ULDRobot", ULDRobot);

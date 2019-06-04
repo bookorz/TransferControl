@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using TransferControl.Engine;
 
@@ -336,7 +337,7 @@ namespace TransferControl.Management
                                             J.Job_Id = JobManagement.GetNewID();
                                             J.Position = FNode.Name;
                                             J.Slot = FromSlot;
-                                            JobManagement.Add(J.Job_Id,J);
+                                            JobManagement.Add(J.Job_Id, J);
                                         }
                                         if (FNode.Type.ToUpper().Equals("LOADPORT"))
                                         {
@@ -423,7 +424,218 @@ namespace TransferControl.Management
                                         int slotNo = 0;
                                         switch (FunctionName)
                                         {
+                                            case "Get_OCR_Config":
+                                                Recipe rcp = Recipe.Get(SystemConfig.Get().CurrentRecipe);
+                                                TarNode = NodeManagement.Get(TargetName);
+                                                TarNode = NodeManagement.Get(TarNode.Associated_Node);
+                                                TarNode.OCR_Read_TTL = rcp.is_use_ocr_ttl;
 
+                                                string OnList = "";
+                                                string OffList = "";
+                                                string[] cfg;
+                                                string NewConfig = "";
+
+                                                NewConfig = "";
+                                                OnList = "";
+                                                OffList = "";
+                                                cfg = rcp.ocr_ttl_config.Split(',');
+
+                                                for (int i = 0; i < TarNode.ConfigList.Length; i++)
+                                                {
+                                                    bool isFound = false;
+                                                    foreach (string each in cfg)
+                                                    {//搜尋ttl設定是否有
+                                                        if (each.Equals(i.ToString()))
+                                                        {//設定檔有出現
+                                                            if (TarNode.ConfigList[i].Equals('0'))
+                                                            {//沒開啟的話加入開啟列表
+                                                                OnList += i.ToString() + ",1,";
+                                                                
+                                                                
+                                                            }
+                                                            NewConfig += "1";
+                                                            isFound = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!isFound)
+                                                    {//設定檔沒出現
+                                                        if (TarNode.ConfigList[i].Equals('1'))
+                                                        {//有開啟的話加入關閉列表
+                                                            OffList += i.ToString() + ",0,";
+                                                           
+                                                        }
+                                                        NewConfig += "0";
+                                                    }
+
+                                                }
+                                                //更新OCR設定檔資訊
+                                                TarNode.ConfigList = NewConfig;
+                                                if (OnList.Length != 0)
+                                                {
+                                                    OnList = OnList.Substring(0, OnList.Length - 1);
+                                                }
+                                                else
+                                                {
+                                                    OnList = "0,"+ NewConfig[0].ToString();
+                                                }
+                                                if (OffList.Length != 0)
+                                                {
+                                                    OffList = OffList.Substring(0, OffList.Length - 1);
+                                                }
+                                                else
+                                                {
+                                                    OffList = "0," + NewConfig[0].ToString();
+                                                }
+                                                ExcutedTask.Params.Remove("@V4");
+                                                ExcutedTask.Params.Add("@V4", OnList);
+                                                ExcutedTask.Params.Remove("@V5");
+                                                ExcutedTask.Params.Add("@V5", OffList);
+                                                result = true;
+                                                break;
+                                            case "Get_M12_OCR_Config":
+                                                rcp = Recipe.Get(SystemConfig.Get().CurrentRecipe);
+                                                TarNode = NodeManagement.Get(TargetName);
+                                                TarNode = NodeManagement.Get(TarNode.Associated_Node);
+
+                                                TarNode.OCR_Read_M12 = rcp.is_use_ocr_m12;
+
+                                                OnList = "";
+                                                OffList = "";
+
+                                                NewConfig = "";
+
+
+
+                                                NewConfig = "";
+                                                OnList = "";
+                                                OffList = "";
+                                                cfg = rcp.ocr_m12_config.Split(',');
+
+                                                for (int i = 0; i < TarNode.ConfigList.Length; i++)
+                                                {
+                                                    bool isFound = false;
+                                                    foreach (string each in cfg)
+                                                    {//搜尋ttl設定是否有
+                                                        if (each.Equals(i.ToString()))
+                                                        {//設定檔有出現
+                                                            if (TarNode.ConfigList[i].Equals('0'))
+                                                            {//沒開啟的話加入開啟列表
+                                                                OnList += i.ToString() + ",1,";
+                                                            }
+                                                            NewConfig += "1";
+                                                            isFound = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!isFound)
+                                                    {//設定檔沒出現
+                                                        if (TarNode.ConfigList[i].Equals('1'))
+                                                        {//有開啟的話加入關閉列表
+                                                            OffList += i.ToString() + ",0,";
+
+                                                        }
+                                                        NewConfig += "0";
+                                                    }
+
+                                                }
+                                                //更新OCR設定檔資訊
+                                                TarNode.ConfigList = NewConfig;
+                                                if (OnList.Length != 0)
+                                                {
+                                                    OnList = OnList.Substring(0, OnList.Length - 1);
+                                                }
+                                                else
+                                                {
+                                                    OnList = "0," + NewConfig[0].ToString();
+                                                }
+                                                if (OffList.Length != 0)
+                                                {
+                                                    OffList = OffList.Substring(0, OffList.Length - 1);
+                                                }
+                                                else
+                                                {
+                                                    OffList = "0," + NewConfig[0].ToString();
+                                                }
+                                                ExcutedTask.Params.Remove("@V6");
+                                                ExcutedTask.Params.Add("@V6", OnList);
+                                                ExcutedTask.Params.Remove("@V7");
+                                                ExcutedTask.Params.Add("@V7", OffList);
+
+
+                                                result = true;
+                                                break;
+                                            case "Get_T7_OCR_Config":
+                                                rcp = Recipe.Get(SystemConfig.Get().CurrentRecipe);
+                                                TarNode = NodeManagement.Get(TargetName);
+                                                TarNode = NodeManagement.Get(TarNode.Associated_Node);
+
+                                                TarNode.OCR_Read_T7 = rcp.is_use_ocr_t7;
+                                                OnList = "";
+                                                OffList = "";
+
+                                                NewConfig = "";
+
+
+                                                NewConfig = "";
+                                                OnList = "";
+                                                OffList = "";
+                                                cfg = rcp.ocr_t7_config.Split(',');
+
+                                                for (int i = 0; i < TarNode.ConfigList.Length; i++)
+                                                {
+                                                    bool isFound = false;
+                                                    foreach (string each in cfg)
+                                                    {//搜尋ttl設定是否有
+                                                        if (each.Equals(i.ToString()))
+                                                        {//設定檔有出現
+                                                            if (TarNode.ConfigList[i].Equals('0'))
+                                                            {//沒開啟的話加入開啟列表
+                                                                OnList += i.ToString() + ",1,";
+                                                                
+                                                            }
+                                                            NewConfig += "1";
+                                                            isFound = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!isFound)
+                                                    {//設定檔沒出現
+                                                        if (TarNode.ConfigList[i].Equals('1'))
+                                                        {//有開啟的話加入關閉列表
+                                                            OffList += i.ToString() + ",0,";
+
+                                                        }
+                                                        NewConfig += "0";
+                                                    }
+
+                                                }
+                                                //更新OCR設定檔資訊
+                                                TarNode.ConfigList = NewConfig;
+                                                if (OnList.Length != 0)
+                                                {
+                                                    OnList = OnList.Substring(0, OnList.Length - 1);
+                                                }
+                                                else
+                                                {
+                                                    OnList = "0," + NewConfig[0].ToString();
+                                                }
+                                                if (OffList.Length != 0)
+                                                {
+                                                    OffList = OffList.Substring(0, OffList.Length - 1);
+                                                }
+                                                else
+                                                {
+                                                    OffList = "0," + NewConfig[0].ToString();
+                                                }
+
+                                                ExcutedTask.Params.Remove("@V8");
+                                                ExcutedTask.Params.Add("@V8", OnList);
+                                                ExcutedTask.Params.Remove("@V9");
+                                                ExcutedTask.Params.Add("@V9", OffList);
+
+                                                result = true;
+                                                break;
                                             case "Put_Safty_Check":
                                                 if (PositionName.Equals(""))
                                                 {
@@ -1395,7 +1607,12 @@ namespace TransferControl.Management
                                         if (Type.ToUpper().Equals("CMD"))
                                         {
                                             string Method = ExcuteObj[2];
-                                            string[] Param = ExcuteObj[3].Split(',');
+                                            //string[] Param = ExcuteObj[3].Split(',');
+                                            string pattern = "(?<=^|,)(\\\"(?:[^\\\"]|\\\"\\\")*\\\"|[^,]*)";
+
+                                            MatchCollection matchs = Regex.Matches(ExcuteObj[3], pattern, RegexOptions.IgnoreCase);
+                                            
+
 
                                             string Position = "";
                                             string Arm = "";
@@ -1404,11 +1621,12 @@ namespace TransferControl.Management
                                             string Arm2 = "";
                                             string Slot2 = "";
                                             string Value = "";
+
                                             string FinishTrigger = "";
 
-                                            foreach (string each in Param)
+                                            foreach (Match each in matchs)
                                             {
-                                                string[] tmp = each.Split('=');
+                                                string[] tmp = each.ToString().Replace("\"","").Split('=');
                                                 if (tmp.Length == 2)
                                                 {
                                                     switch (tmp[0].ToUpper())

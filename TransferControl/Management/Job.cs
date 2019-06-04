@@ -23,6 +23,13 @@ namespace TransferControl.Management
         public bool OCRFlag { get; set; }
         public string OCRImgPath { get; set; }
         public string OCRScore { get; set; }
+        public string OCRResult { get; set; }
+        public string OCR_M12_ImgPath { get; set; }
+        public string OCR_M12_Score { get; set; }
+        public string OCR_M12_Result { get; set; }
+        public string OCR_T7_ImgPath { get; set; }
+        public string OCR_T7_Score { get; set; }
+        public string OCR_T7_Result { get; set; }
         public string Position { get; set; }
         public string FromPort { get; set; }
         public string FromPortSlot { get; set; }

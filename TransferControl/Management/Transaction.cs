@@ -183,11 +183,13 @@ namespace TransferControl.Management
             public class OCRType
             {
                 public const string Read = "Read";
+                public const string ReadM12 = "ReadM12";
+                public const string ReadT7 = "ReadT7";
                 public const string Online = "Online";
                 public const string Offline = "Offline";
                 public const string GetOnline = "GetOnline";
                 public const string ReadConfig = "ReadConfig";
-
+                public const string SetConfigEnable = "SetConfigEnable";
             }
         }
 

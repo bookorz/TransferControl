@@ -338,8 +338,8 @@ namespace TransferControl.Engine
                                             }
                                         }
                                         string Slot = (i + 1).ToString("00");
-                                        
-                                        
+
+
                                         switch (Mapping[i])
                                         {
                                             case '0':
@@ -406,7 +406,7 @@ namespace TransferControl.Engine
                                     {
                                         ReturnMessage rem = new ReturnMessage();
                                         rem.Value = "/MAPERR";
-                                        _UIReport.On_Command_Error(Node,Txn, rem);
+                                        _UIReport.On_Command_Error(Node, Txn, rem);
                                     }
                                     break;
 
@@ -691,7 +691,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                                 case Transaction.Command.RobotType.GetSV:
-                                     parser = new MessageParser(Node.Brand);
+                                    parser = new MessageParser(Node.Brand);
                                     Dictionary<string, string> SVResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in SVResult)
                                     {
@@ -857,7 +857,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.Home:
                                     Node.State = "READY";
                                     Node.Home_Position = true;
-                                    
+
                                     break;
                                 case Transaction.Command.RobotType.OrginSearch:
                                     Node.State = "READY";
@@ -868,10 +868,13 @@ namespace TransferControl.Engine
                             break;
                         case "OCR":
                             UpdateNodeStatus(Node, Txn);
-                            
-                                //Update Wafer ID by OCR result
-                                if (Txn.Method.Equals(Transaction.Command.OCRType.Read))
-                                {
+
+                            //Update Wafer ID by OCR result
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.OCRType.Read:
+                                case Transaction.Command.OCRType.ReadM12:
+                                case Transaction.Command.OCRType.ReadT7:
                                     if (Txn.TargetJobs.Count != 0)
                                     {
                                         string[] OCRResult;
@@ -880,17 +883,53 @@ namespace TransferControl.Engine
 
                                         //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
                                         NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
-
+                                        switch (Txn.Method)
+                                        {
+                                            case Transaction.Command.OCRType.Read:
+                                                NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRResult = OCRResult[0];
+                                                break;
+                                            case Transaction.Command.OCRType.ReadM12:
+                                                NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Result = OCRResult[0];
+                                                break;
+                                            case Transaction.Command.OCRType.ReadT7:
+                                                NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Result = OCRResult[0];
+                                                break;
+                                        }
                                         switch (Node.Brand)
                                         {
                                             case "HST":
                                                 if (OCRResult.Length >= 3)
                                                 {
-                                                    Txn.TargetJobs[0].OCRScore = OCRResult[2];
+
+
+                                                    switch (Txn.Method)
+                                                    {
+                                                        case Transaction.Command.OCRType.Read:
+                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = OCRResult[2];
+                                                            break;
+                                                        case Transaction.Command.OCRType.ReadM12:
+                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = OCRResult[2];
+                                                            break;
+                                                        case Transaction.Command.OCRType.ReadT7:
+                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = OCRResult[2];
+                                                            break;
+                                                    }
                                                 }
                                                 else
                                                 {
-                                                    Txn.TargetJobs[0].OCRScore = "0";
+
+                                                    switch (Txn.Method)
+                                                    {
+                                                        case Transaction.Command.OCRType.Read:
+                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = "0";
+                                                            break;
+                                                        case Transaction.Command.OCRType.ReadM12:
+                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = "0";
+                                                            break;
+                                                        case Transaction.Command.OCRType.ReadT7:
+                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = "0";
+                                                            break;
+                                                    }
                                                 }
                                                 if (OCRResult[0].IndexOf("*") == -1)
                                                 {
@@ -924,9 +963,9 @@ namespace TransferControl.Engine
 
                                         _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
                                     }
-                                }
-                                else if (Txn.Method.Equals(Transaction.Command.OCRType.ReadConfig))
-                                {
+                                    break;
+                                case Transaction.Command.OCRType.ReadConfig:
+
 
                                     if (Txn.TargetJobs.Count != 0)
                                     {
@@ -950,8 +989,8 @@ namespace TransferControl.Engine
                                     }
 
                                     _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
-                                }
-                            
+                                    break;
+                            }
 
                             break;
                         case "LOADPORT":

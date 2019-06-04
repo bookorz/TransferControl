@@ -290,6 +290,10 @@ namespace TransferControl.Management
         public string CurrentStatus { get; set; }
         public string R_Vacuum_Solenoid { get; set; }
         public string L_Vacuum_Solenoid { get; set; }
+        public string ConfigList { get; set; }
+        public bool OCR_Read_TTL { get; set; }
+        public bool OCR_Read_M12 { get; set; }
+        public bool OCR_Read_T7 { get; set; }
         public bool Home_Position { get; set; }
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
@@ -305,8 +309,14 @@ namespace TransferControl.Management
             public string Slot2 { get; set; }
             public string Arm { get; set; }
             public string Value { get; set; }
-            public string Value2 { get; set; }
-            public string Value3 { get; set; }
+            public string V2 { get; set; }
+            public string V3 { get; set; }
+            public string V4 { get; set; }
+            public string V5 { get; set; }
+            public string V6 { get; set; }
+            public string V7 { get; set; }
+            public string V8 { get; set; }
+            public string V9 { get; set; }
             public long TimeStamp { get; set; }
 
             public ActionRequest()
@@ -317,8 +327,14 @@ namespace TransferControl.Management
                 Slot2 = "";
                 Arm = "";
                 Value = "";
-                Value2 = "";
-                Value3 = "";
+                V2 = "";
+                V3 = "";
+                V4 = "";
+                V5 = "";
+                V6 = "";
+                V7 = "";
+                V8 = "";
+                V9 = "";
             }
         }
 
@@ -337,6 +353,7 @@ namespace TransferControl.Management
                 Phase = "2";
             }
             Speed = "";
+            ConfigList = "";
             ByPassCheck = false;
             Connected = false;
             OPACCESS = false;
@@ -1164,11 +1181,22 @@ namespace TransferControl.Management
                                 txn.CommandType = "";
                                 break;
                             case Transaction.Command.OCRType.Read:
+                            case Transaction.Command.OCRType.ReadM12:
+                            case Transaction.Command.OCRType.ReadT7:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.Read();
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.OCRType.ReadConfig:
                                 txn.CommandEncodeStr = "Ev ReadConfig(A4," + txn.Value + ",0)";
+                                txn.CommandType = "CMD";
+                                break;
+                            case Transaction.Command.OCRType.SetConfigEnable:
+                                string tmp = "";
+                                for(int i = 1;i<= txn.Value.Length;i++)
+                                {
+                                    tmp += i.ToString() + "," + txn.Value[i - 1].ToString();
+                                }
+                                txn.CommandEncodeStr = "Ev SetConfigEnable(A4," + txn.Value + ")";
                                 txn.CommandType = "CMD";
                                 break;
                         }
