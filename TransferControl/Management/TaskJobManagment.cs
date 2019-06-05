@@ -351,12 +351,18 @@ namespace TransferControl.Management
                                             //從LOADPORT取出，處理開始
                                             J.InProcess = true;
                                             J.StartTime = DateTime.Now;
+                                            J.FromPort = FNode.Name;
+                                            J.FromPortSlot = FromSlot;
+                                            J.FromFoupID = FNode.FoupID;
                                         }
                                         if (TNode.Type.ToUpper().Equals("LOADPORT"))
                                         {
                                             //放回UNLOADPORT，處理結束
                                             J.InProcess = false;
                                             J.EndTime = DateTime.Now;
+                                            J.ToFoupID = TNode.FoupID;
+                                            J.ToPort = TNode.Name;
+                                            J.ToPortSlot = ToSlot;
                                         }
 
                                         J.LastNode = J.Position;

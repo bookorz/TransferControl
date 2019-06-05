@@ -504,6 +504,60 @@ namespace TransferControl.Management
             }
             PoolThread = false;
         }
+        public bool CheckForward(string Slot)
+        {
+            bool result = false;
+
+            var wafers = from wafer in this.JobList.Values
+                         where wafer.MapFlag && !wafer.ErrPosition && !wafer.NeedProcess && Convert.ToInt16(wafer.Slot) < Convert.ToInt16(Slot)
+                         select wafer;
+            if (wafers.Count() != 0)
+            {
+                result = true;
+            }
+            return result;
+        }
+        public bool CheckPrevious(string Slot)
+        {
+            bool result = false;
+
+            var wafers = from wafer in this.JobList.Values
+                         where wafer.MapFlag && !wafer.ErrPosition && !wafer.NeedProcess && (Convert.ToInt16(Slot) - Convert.ToInt16(wafer.Slot)) == 1
+                         select wafer;
+            if (wafers.Count() != 0)
+            {
+                result = true;
+            }
+            return result;
+        }
+        public bool CheckForwardPresence(string Slot)
+        {
+            bool result = false;
+
+            var wafers = from wafer in this.JobList.Values
+                          where wafer.MapFlag && Convert.ToInt16(wafer.Slot) < Convert.ToInt16(Slot)
+                          select wafer;
+            if (wafers.Count() != 0)
+            {
+                result = true;
+            }
+            return result;
+        }
+
+        public bool CheckPreviousPresence(string Slot)
+        {
+            bool result = false;
+
+            var wafers = from wafer in this.JobList.Values
+                         where wafer.MapFlag && (Convert.ToInt16(Slot) - Convert.ToInt16(wafer.Slot)) == 1
+                         select wafer;
+            if (wafers.Count() != 0)
+            {
+                result = true;
+            }
+            return result;
+        }
+
         public void SetEnable(bool enable)
         {
             this.isPool = enable;

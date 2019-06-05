@@ -259,6 +259,7 @@ namespace TransferControl.Engine
                                             //Mapping = SystemConfig.Get().MappingData;
                                         }
                                     }
+
                                     //if (Node.Name.Equals("LOADPORT04"))
                                     //{
                                     //    Mapping = "1111111111111111111100000";
@@ -294,49 +295,7 @@ namespace TransferControl.Engine
                                         wafer.FromPortSlot = wafer.Slot;
                                         wafer.Position = Node.Name;
                                         wafer.AlignerFlag = false;
-                                        if (i == 0)
-                                        {
-                                            wafer.PreviousSlotNotEmpty = false;
-                                            if (Mapping[1].Equals('0'))
-                                            {
-                                                wafer.NextSlotNotEmpty = false;
-                                            }
-                                            else
-                                            {
-                                                wafer.NextSlotNotEmpty = true;
-                                            }
-                                        }
-                                        else if (i == 24)
-                                        {
-                                            wafer.NextSlotNotEmpty = false;
-                                            if (Mapping[23].Equals('0'))
-                                            {
-                                                wafer.PreviousSlotNotEmpty = false;
-                                            }
-                                            else
-                                            {
-                                                wafer.PreviousSlotNotEmpty = true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (Mapping[i + 1].Equals('0'))
-                                            {
-                                                wafer.NextSlotNotEmpty = false;
-                                            }
-                                            else
-                                            {
-                                                wafer.NextSlotNotEmpty = true;
-                                            }
-                                            if (Mapping[i - 1].Equals('0'))
-                                            {
-                                                wafer.PreviousSlotNotEmpty = false;
-                                            }
-                                            else
-                                            {
-                                                wafer.PreviousSlotNotEmpty = true;
-                                            }
-                                        }
+                                        
                                         string Slot = (i + 1).ToString("00");
 
 
@@ -882,7 +841,9 @@ namespace TransferControl.Engine
                                         OCRResult = Msg.Value.Replace("[", "").Replace("]", "").Split(',');
 
                                         //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
+
                                         NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
+
                                         switch (Txn.Method)
                                         {
                                             case Transaction.Command.OCRType.Read:

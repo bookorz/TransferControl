@@ -31,8 +31,12 @@ namespace TransferControl.Management
         public string OCR_T7_Score { get; set; }
         public string OCR_T7_Result { get; set; }
         public string Position { get; set; }
+        public string FromFoupID { get; set; }
+        public string ToFoupID { get; set; }
         public string FromPort { get; set; }
+        public string ToPort { get; set; }
         public string FromPortSlot { get; set; }
+        public string ToPortSlot { get; set; }
         public string Destination { get; private set; }
         public string DisplayDestination { get; private set; }
         public string DestinationSlot { get; private set; }
@@ -45,8 +49,6 @@ namespace TransferControl.Management
         public bool ErrPosition { get; set; }
         public bool MapFlag { get; set; }
         public int Offset { get; set; }
-        public bool PreviousSlotNotEmpty { get; set; }
-        public bool NextSlotNotEmpty { get; set; }
         public bool IsAssigned { get; set; }
         public bool Locked { get; set; }
         public DateTime AssignTime { get; private set; }
@@ -63,22 +65,25 @@ namespace TransferControl.Management
             Destination = "";
             DestinationSlot = "";
             OCRImgPath = "";
+            OCR_M12_ImgPath = "";
+            OCR_T7_ImgPath = "";
             RecipeID = "";
             ProcessFlag = false;
             MapFlag = false;
             ReservePort = "";
             ReserveSlot = "";
+            FromFoupID = "";
+            ToFoupID = "";
             AlignerFlag = false;
             NeedProcess = false;
             AbortProcess = false;
             OCRFlag = false;
             InProcess = false;
             IsAssigned = false;
-            PreviousSlotNotEmpty = false;
-            NextSlotNotEmpty = false;
             Locked = false;
             OcrCodeList = new List<OCRInfo>();
-
+            ToPort = "";
+            ToPortSlot = "";
         }
 
         public void PositionChangeReport()
