@@ -93,7 +93,16 @@ namespace TransferControl.Management
             lock (JobList)
             {
                 Job tmp;
-                result = JobList.TryRemove(Job_Id ,out tmp);
+                if(JobList.TryRemove(Job_Id ,out tmp))
+                {
+                    Node pos = NodeManagement.Get(tmp.Position);
+
+                    if (pos != null)
+                    {
+                        Job tmpj;
+                        pos.JobList.TryRemove(tmp.Slot, out tmpj);
+                    }
+                }
 
             }
             return result;

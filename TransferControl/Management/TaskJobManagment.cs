@@ -213,8 +213,13 @@ namespace TransferControl.Management
                             return true;
                         }
                         //e.g. ALIGNER01:InitialComplete=TRUE;LOADPORT01:InitialComplete=TRUE;LOADPORT01:InitialComplete=TRUE;
+                        bool IsEscape = false;
                         foreach (string eachExcuteObj in ExcuteObjs)
                         {
+                            if (IsEscape)
+                            {
+                                break;
+                            }
                             if (eachExcuteObj.Trim().Equals(""))
                             {
                                 continue;
@@ -269,7 +274,8 @@ namespace TransferControl.Management
                                                 ExcutedTask.ExcutedCount = 0;
                                                 break;
                                             }
-                                            ExcutedTask.ExcutedCount++;
+                                            logger.Debug("Repeat "+ ExcutedTask.ExcutedCount.ToString()+"/" + times.ToString());
+                                            //ExcutedTask.ExcutedCount++;
                                             //delay
                                             SpinWait.SpinUntil(() => false, interval);
 
@@ -286,7 +292,7 @@ namespace TransferControl.Management
                                                 {
                                                     //如果條件尚未達成，再做一次
                                                     ExcutedTask.GotoIndex = ExcutedTask.ProceedTask.TaskIndex.ToString();
-
+                                                    IsEscape = true;
                                                 }
                                                 result = true;
                                             }
@@ -301,6 +307,7 @@ namespace TransferControl.Management
                                         {
                                             logger.Error("REPEAT error: " + eachExcuteObj);
                                         }
+                                       
                                         break;
                                     case "DELAY":
                                         int DelayTime = Convert.ToInt32(Attr);

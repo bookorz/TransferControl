@@ -34,6 +34,7 @@ namespace TransferControl.Management
         public string ScriptIndex { get; set; }
         public bool LastOneScript { get; set; }
         public string FormName { get; set; }
+        public bool ByPassTimeout { get; set; }
 
         //逾時
         private System.Timers.Timer timeOutTimer = new System.Timers.Timer();
@@ -214,7 +215,7 @@ namespace TransferControl.Management
             FormName = "";
             RecipeID = "";
             TargetJobs = new List<Job>();
-
+            ByPassTimeout = false;
             timeOutTimer.Enabled = false;
 
             //timeOutTimer.Interval = 10000;
@@ -231,7 +232,6 @@ namespace TransferControl.Management
 
         public void SetTimeOutMonitor(bool Enabled)
         {
-
             if (Enabled)
             {
                 timeOutTimer.Start();
@@ -240,7 +240,6 @@ namespace TransferControl.Management
             {
                 timeOutTimer.Stop();
             }
-
         }
 
         public void SetTimeOutReport(ITransactionReport _TimeOutReport)
@@ -253,7 +252,14 @@ namespace TransferControl.Management
             SetTimeOutMonitor(false);
             if (TimeOutReport != null)
             {
-                TimeOutReport.On_Transaction_TimeOut(this);
+                if (ByPassTimeout)
+                {
+                    TimeOutReport.On_Transaction_BypassTimeOut(this);
+                }
+                else
+                {
+                    TimeOutReport.On_Transaction_TimeOut(this);
+                }
             }
         }
     }

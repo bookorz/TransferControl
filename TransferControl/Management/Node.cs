@@ -295,6 +295,7 @@ namespace TransferControl.Management
         public bool OCR_Read_M12 { get; set; }
         public bool OCR_Read_T7 { get; set; }
         public bool Home_Position { get; set; }
+        public bool ManaulControl { get; set; }
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();

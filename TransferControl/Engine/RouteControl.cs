@@ -1545,7 +1545,10 @@ namespace TransferControl.Engine
         public void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task)
         {
             //TaskJob.Remove(Id);
-            _HostReport.On_TaskJob_Aborted(Task, "SYSTEM", "ABS", "S0300170");
+            if (_HostReport != null)
+            {
+                _HostReport.On_TaskJob_Aborted(Task, "SYSTEM", "ABS", "S0300170");
+            }
         }
     }
 }

@@ -9,5 +9,6 @@ namespace TransferControl.Management
     public interface ITransactionReport
     {
         void On_Transaction_TimeOut(Transaction Txn);
+        void On_Transaction_BypassTimeOut(Transaction Txn);
     }
 }

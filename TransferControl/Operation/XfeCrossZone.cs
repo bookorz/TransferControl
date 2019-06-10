@@ -99,7 +99,7 @@ namespace TransferControl.Operation
             Node nodeLD = NodeManagement.Get(LDPort);
             if (nodeLD == null)
             {
-                logger.Error("XfeCrossZone Start fail:Node "+LDPort + " not found");
+                logger.Error("XfeCrossZone Start fail:Node " + LDPort + " not found");
                 return false;
             }
             _Report.On_LoadPort_Selected(nodeLD);
@@ -118,7 +118,7 @@ namespace TransferControl.Operation
             var UnloadPortSlots = from eachSlot in AvailableSlots
                                   group eachSlot by eachSlot.Destination into g
                                   select g.First();
-            foreach(Job eachSlot in UnloadPortSlots)
+            foreach (Job eachSlot in UnloadPortSlots)
             {
                 Node port = NodeManagement.Get(eachSlot.Destination);
                 if (port != null)
@@ -183,7 +183,7 @@ namespace TransferControl.Operation
         public static void Stop()
         {
             string Message = "";
-            
+
             Running = false;
             TaskJobManagment.CurrentProceedTask Task;
             RouteControl.Instance.TaskJob.Excute(Guid.NewGuid().ToString(), out Message, out Task, "STOP", null);
@@ -465,8 +465,8 @@ namespace TransferControl.Operation
                                                     //}
                                                     if (!Target.JobList.ContainsKey("1") && Target.RArmActive && !Target.JobList.ContainsKey("2") && Target.LArmActive && AvailableSlotsList.Count() >= 2)
                                                     {//R & L 都可用且有兩片能取
-                                                        
-                                                       
+
+
                                                         j = AvailableSlotsList.First();
                                                         req.Slot = j.Slot;
                                                         if (Convert.ToInt16(AvailableSlotsList[0].DestinationSlot) > Convert.ToInt16(AvailableSlotsList[1].DestinationSlot))
@@ -593,7 +593,7 @@ namespace TransferControl.Operation
                                                 logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
                                                 logger.Debug("XfeCrossZone Stop");
                                                 Running = false;
-                                                
+
                                                 _Report.On_Transfer_Complete(this);
 
                                                 //    //結束工作
@@ -827,7 +827,11 @@ namespace TransferControl.Operation
                                                              select eachSlot;
                                         if (AvailableSlots.Count() == 0)
                                         {
-                                            _Report.On_LoadPort_Complete(Target);
+                                            new Thread(() =>
+                                            {
+                                                Thread.CurrentThread.IsBackground = true;
+                                                _Report.On_LoadPort_Complete(Target);
+                                            }).Start();
                                         }
                                         continue;
                                         break;
@@ -856,7 +860,11 @@ namespace TransferControl.Operation
                                                 Node EachULD = NodeManagement.Get(uld);
                                                 if (EachULD != null)
                                                 {
-                                                    _Report.On_UnLoadPort_Complete(EachULD);
+                                                    new Thread(() =>
+                                                    {
+                                                        Thread.CurrentThread.IsBackground = true;
+                                                        _Report.On_UnLoadPort_Complete(EachULD);
+                                                    }).Start();
                                                 }
                                             }
                                             _Report.On_Transfer_Complete(this);

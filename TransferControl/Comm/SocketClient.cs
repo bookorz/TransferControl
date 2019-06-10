@@ -194,16 +194,7 @@ namespace TransferControl.Comm
         /// 
         public void Reconnect()
         {
-            //關閉socket
-            theSocket.Shutdown(SocketShutdown.Both);
-
-            theSocket.Disconnect(true);
-            IsconnectSuccess = false;
-
-            theSocket.Close();
-
-            //創建socket
-            socket_create_connect();
+            checkSocketState();
         }
 
         ///
