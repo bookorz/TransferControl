@@ -745,6 +745,17 @@ namespace TransferControl.Management
 
                 switch (this.Type)
                 {
+                    case "FFU":
+                        switch (txn.Method)
+                        {
+                            case Transaction.Command.FFUType.SetSpeed:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.SetSpeed(AdrNo, txn.Value);
+                                break;
+                            case Transaction.Command.FFUType.GetStatus:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.GetStatus(AdrNo);
+                                break;
+                        }
+                        break;
                     case "SMARTTAG":
                         switch (txn.Method)
                         {

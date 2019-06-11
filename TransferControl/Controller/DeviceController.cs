@@ -43,13 +43,13 @@ namespace TransferControl.Controller
             _ReportTarget = ReportTarget;
 
 
-            switch (ConnectionType)
+            switch (ConnectionType.ToUpper())
             {
-                case "Socket":
+                case "SOCKET":
                     //conn = new SocketClient(Config, this);
                     conn = new SocketClient(this, this);
                     break;
-                case "ComPort":
+                case "COMPORT":
                     conn = new ComPortClient(this, this);
                     break;
 
@@ -184,7 +184,7 @@ namespace TransferControl.Controller
             {
                 key = "1" + Txn.Type;
             }
-            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG"))
+            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
             {
                 key = Txn.AdrNo;
             }
@@ -220,8 +220,17 @@ namespace TransferControl.Controller
                 {
                     waferids += each.Job_Id + " ";
                 }
-                logger.Debug(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
+                if (Vendor.ToUpper().Equals("ACDT"))
+                {
+                    byte[] byteAry = Encoding.ASCII.GetBytes(Txn.CommandEncodeStr);
+                        
 
+                    logger.Debug(DeviceName + " Send:" + BitConverter.ToString(byteAry) + " Wafer:" + waferids);
+                }
+                else
+                {
+                    logger.Debug(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
+                }
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
                 {
@@ -279,8 +288,17 @@ namespace TransferControl.Controller
             try
             {
                 string Msg = (string)MsgObj;
-                logger.Debug(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
+                if (Vendor.ToUpper().Equals("ACDT"))
+                {
+                    byte[] byteAry = Encoding.ASCII.GetBytes(Msg);
+                    
 
+                    logger.Debug(DeviceName + " Recieve:" + BitConverter.ToString(byteAry));
+                }
+                else
+                {
+                    logger.Debug(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
+                }
 
 
                 List<ReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
@@ -358,7 +376,7 @@ namespace TransferControl.Controller
                                 {
                                     key = "1" + ReturnMsg.Command;
                                 }
-                                else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG"))
+                                else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
                                 {
                                     key = ReturnMsg.NodeAdr;
                                 }
@@ -688,7 +706,7 @@ namespace TransferControl.Controller
             {
                 key = "1";
             }
-            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG"))
+            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
             {
                 key = Txn.AdrNo;
 
@@ -756,6 +774,67 @@ namespace TransferControl.Controller
         public SANWA.Utility.Encoder GetEncoder()
         {
             return Encoder;
+        }
+
+        public void On_Transaction_BypassTimeOut(Transaction Txn)
+        {
+            logger.Debug(DeviceName + "(On_Transaction_BypassTimeOut Txn is timeout:" + Txn.CommandEncodeStr);
+
+            string key = "";
+            if (Vendor.ToUpper().Equals("KAWASAKI"))
+            {
+                key = Txn.Seq;
+
+            }
+            else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
+            {
+                key = "1";
+            }
+            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
+            {
+                key = Txn.AdrNo;
+
+            }
+            else
+            {
+                key = Txn.AdrNo + Txn.Method;
+                for (int seq = 0; seq <= 99; seq++)
+                {
+                    key = key + seq.ToString("00");
+                    if (TransactionList.ContainsKey(key))
+                    {
+                        break;
+                    }
+                    if (seq == 99)
+                    {
+                        logger.Error("seq is run out!");
+                    }
+                }
+            }
+
+            Txn.SetTimeOutMonitor(false);
+            if (TransactionList.TryRemove(key, out Txn))
+            {
+                Node Node = NodeManagement.GetByController(DeviceName, Txn.AdrNo);
+                if (Node.State.Equals("Pause"))
+                {
+                    logger.Debug("Txn timeout,but state is pause. ignore this.");
+                    TransactionList.TryAdd(key, Txn);
+                    return;
+                }
+                if (Node != null)
+                {
+                    //_ReportTarget.On_Command_TimeOut(Node, Txn);
+                }
+                else
+                {
+                    logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
+                }
+            }
+            else
+            {
+                logger.Debug(DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
+            }
         }
     }
 }

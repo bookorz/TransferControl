@@ -810,6 +810,7 @@ namespace TransferControl.Engine
                                 {
                                     Txn.TargetJobs[0].ProcessFlag = true;
                                 }
+                                Node.Home_Position = false;
                             }
                             switch (Txn.Method)
                             {

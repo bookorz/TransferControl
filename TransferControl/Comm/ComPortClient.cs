@@ -144,6 +144,7 @@ namespace TransferControl.Comm
                 switch (cfg.Vendor.ToUpper())
                 {
                     case "TDK":
+                    case "ACDT":
                         port.DataReceived += new SerialDataReceivedEventHandler(TDK_DataReceived);
                         break;
                     case "ATEL_NEW":

@@ -192,6 +192,13 @@ namespace TransferControl.Management
                 public const string ReadConfig = "ReadConfig";
                 public const string SetConfigEnable = "SetConfigEnable";
             }
+
+            //FFU
+            public class FFUType
+            {
+                public const string SetSpeed = "SetSpeed";
+                public const string GetStatus = "GetStatus";
+            }
         }
 
         public Transaction()
