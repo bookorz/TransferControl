@@ -58,7 +58,7 @@ namespace TransferControl.Comm
             //        s = StopBits.Two;
             //        break;
             //}
-        
+
 
             port = new SerialPort(_Config.PortName, _Config.BaudRate, p, 8, s);
             if (_Config.Vendor.Equals("SMARTTAG"))
@@ -74,7 +74,7 @@ namespace TransferControl.Comm
         {
             _WaitForData = Enable;
         }
-    
+
 
         public void Reconnect()
         {
@@ -105,8 +105,21 @@ namespace TransferControl.Comm
         {
             try
             {
-
-                port.Write(Message.ToString());
+                if (cfg.Vendor.ToUpper().Equals("ACDT"))
+                {
+                    string hexString = Message.ToString().Replace("-", "");
+                    byte[] byteOUT = new byte[hexString.Length / 2];
+                    for (int i = 0; i < hexString.Length; i = i + 2)
+                    {
+                        //每2位16進位數字轉換為一個10進位整數
+                        byteOUT[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
+                    }
+                    port.Write(byteOUT, 0, byteOUT.Length);
+                }
+                else
+                {
+                    port.Write(Message.ToString());
+                }
                 return true;
             }
             catch (Exception e)
@@ -143,8 +156,11 @@ namespace TransferControl.Comm
                 ConnReport.On_Connection_Connected("Connected! ");
                 switch (cfg.Vendor.ToUpper())
                 {
-                    case "TDK":
                     case "ACDT":
+                        port.DataReceived += new SerialDataReceivedEventHandler(ACDT_DataReceived);
+                        break;
+                    case "TDK":
+
                         port.DataReceived += new SerialDataReceivedEventHandler(TDK_DataReceived);
                         break;
                     case "ATEL_NEW":
@@ -219,6 +235,39 @@ namespace TransferControl.Comm
                 //        break;
                 //}
 
+                ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+            }
+            catch (Exception e1)
+            {
+                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
+                ConnReport.On_Connection_Error("(TDK_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+            }
+        }
+        int currentIdx = 0;
+        byte[] readB = new byte[100];
+        private void ACDT_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                string data = "";
+                //switch (cfg.DeviceType)
+                //{
+                //    case "TDKController":
+                //data = port.ReadTo("\r");
+
+                //        break;
+                //    case "SanwaController":
+                //data = port.ReadTo(((char)3).ToString());
+                while (((readB[currentIdx] = Convert.ToByte(port.ReadByte())) != 3) || (readB[1]==105 && currentIdx < 7))
+                {
+
+                    currentIdx++;
+                }
+                data = BitConverter.ToString(readB.Take(currentIdx + 1).ToArray());
+                //        break;
+                //}
+                currentIdx = 0;
+                readB = new byte[100];
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
             }
             catch (Exception e1)

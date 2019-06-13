@@ -205,10 +205,13 @@ namespace TransferControl.Controller
                     }
                 }
             }
-
+            
 
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
             {
+                
+
+                    
 
                 Txn.SetTimeOutReport(this);
                 Txn.SetTimeOutMonitor(true);
@@ -220,17 +223,17 @@ namespace TransferControl.Controller
                 {
                     waferids += each.Job_Id + " ";
                 }
-                if (Vendor.ToUpper().Equals("ACDT"))
-                {
-                    byte[] byteAry = Encoding.ASCII.GetBytes(Txn.CommandEncodeStr);
+                //if (Vendor.ToUpper().Equals("ACDT"))
+                //{
+                //    byte[] byteAry = Encoding.UTF8.GetBytes(Txn.CommandEncodeStr);
                         
 
-                    logger.Debug(DeviceName + " Send:" + BitConverter.ToString(byteAry) + " Wafer:" + waferids);
-                }
-                else
-                {
+                //    logger.Debug(DeviceName + " Send:" + BitConverter.ToString(byteAry) + " Wafer:" + waferids);
+                //}
+                //else
+                //{
                     logger.Debug(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
-                }
+               //}
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
                 {
@@ -288,17 +291,17 @@ namespace TransferControl.Controller
             try
             {
                 string Msg = (string)MsgObj;
-                if (Vendor.ToUpper().Equals("ACDT"))
-                {
-                    byte[] byteAry = Encoding.ASCII.GetBytes(Msg);
+                //if (Vendor.ToUpper().Equals("ACDT"))
+                //{
+                //    byte[] byteAry = Encoding.ASCII.GetBytes(Msg);
                     
 
-                    logger.Debug(DeviceName + " Recieve:" + BitConverter.ToString(byteAry));
-                }
-                else
-                {
+                //    logger.Debug(DeviceName + " Recieve:" + BitConverter.ToString(byteAry));
+                //}
+                //else
+                //{
                     logger.Debug(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
-                }
+                //}
 
 
                 List<ReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);

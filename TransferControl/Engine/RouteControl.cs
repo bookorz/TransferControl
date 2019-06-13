@@ -604,6 +604,7 @@ namespace TransferControl.Engine
                                         Port.IsMapping = true;
                                     }
                                     break;
+                                   
                             }
 
                             break;
@@ -665,95 +666,19 @@ namespace TransferControl.Engine
                             }
 
                             break;
-
+                        case "FFU":
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.FFUType.GetStatus:
+                                    Node.Speed = Msg.Value;
+                                    break;
+                            }
+                            break;
                     }
 
                     _UIReport.On_Command_Excuted(Node, Txn, Msg);
 
-                    TaskJobManagment.CurrentProceedTask Task;
-                    if (TaskJob.IsTask(Txn.FormName, out Task))//如果是帶TaskID才檢查
-                    {
-                        string ErrorMessage = "";
-                        string Report = "";
-                        string Location = "";
-                        if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Excuted", out ErrorMessage, out Report, out Location))
-                        {//還沒做完
-                            if (Report.Equals("ACK"))
-                            {
-                                if (_HostReport != null)
-                                {
-                                    _HostReport.On_TaskJob_Ack(Task);
-                                }
-                            }
-                            if (!ErrorMessage.Equals(""))
-                            {//做完但沒通過檢查
-                                TaskJob.Remove(Txn.FormName);
-                                if (!Task.MainTaskId.Equals(""))
-                                {
-                                    TaskJob.Remove(Task.MainTaskId);
-                                    Task.Id = Task.MainTaskId;
-                                }
-                                if (_HostReport != null)
-                                {
-
-                                    _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
-                                }
-                                _UIReport.On_TaskJob_Aborted(Task, Node.Name, Report, ErrorMessage);
-
-                            }
-                            //檢查到不是Task，不做事
-                        }
-                        else
-                        {//做完且通過檢查，開始進行下一個Task
-
-                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage, out Task))
-                            {//如果沒有可以執行的Task，回報完成
-
-                                if (ErrorMessage.Equals(""))
-                                {
-                                    if (Task.MainTaskId.Equals(""))
-                                    {
-                                        if (_HostReport != null)
-                                        {
-                                            _HostReport.On_TaskJob_Finished(Task);
-                                        }
-
-                                        _UIReport.On_TaskJob_Finished(Task);
-                                        Task.Finished = true;
-                                    }
-                                    else
-                                    {
-                                        //sub task 做完不能報完成，繼續做main task
-                                        TaskJob.Excute(Task.MainTaskId, out ErrorMessage, out Task);
-
-                                    }
-                                }
-                                else
-                                {
-                                    if (!Task.MainTaskId.Equals(""))
-                                    {
-                                        TaskJob.Remove(Task.MainTaskId);
-                                        Task.Id = Task.MainTaskId;
-                                    }
-                                    if (_HostReport != null)
-                                    {
-                                        _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
-                                    }
-                                    _UIReport.On_TaskJob_Aborted(Task, Node.Name, Report, ErrorMessage);
-                                }
-                            }
-                            else
-                            {
-                                if (Report.Equals("ACK"))
-                                {
-                                    if (_HostReport != null)
-                                    {
-                                        _HostReport.On_TaskJob_Ack(Task);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    TaskJob.Next(Node,Txn, "Excuted");
                 }
             }
             catch (Exception e)
@@ -987,93 +912,8 @@ namespace TransferControl.Engine
                     _UIReport.On_Command_Finished(Node, Txn, Msg);
 
 
-
-                    //if (!Node.Type.Equals("LOADPORT"))//LoadPort 只能在Mapping完成後關閉安全鎖
-                    //{
-                    //    Node.InterLock = false;
-                    //}
-                    TaskJobManagment.CurrentProceedTask Task;
-                    if (TaskJob.IsTask(Txn.FormName, out Task))//如果是帶TaskID才檢查
-                    {
-                        string ErrorMessage = "";
-                        string Report = "";
-                        string Location = "";
-                        if (!TaskJob.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, "Finished", out ErrorMessage, out Report, out Location))
-                        {//還沒做完
-                            if (Report.Equals("ACK"))
-                            {
-                                if (_HostReport != null)
-                                {
-                                    _HostReport.On_TaskJob_Ack(Task);
-                                }
-                            }
-                            if (!ErrorMessage.Equals(""))
-                            {//做完但沒通過檢查
-                                TaskJob.Remove(Txn.FormName);
-                                if (!Task.MainTaskId.Equals(""))
-                                {
-                                    TaskJob.Remove(Task.MainTaskId);
-                                    Task.Id = Task.MainTaskId;
-                                }
-                                if (_HostReport != null)
-                                {
-                                    _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
-                                }
-                                _UIReport.On_TaskJob_Aborted(Task, Node.Name, Report, ErrorMessage);
-                            }
-                            //檢查到不是Task，不做事
-                        }
-                        else
-                        {//做完且通過檢查，開始進行下一個Task
-
-                            if (!TaskJob.Excute(Txn.FormName, out ErrorMessage, out Task))
-                            {//如果沒有可以執行的Task，回報完成
-                                if (Report.Equals("ACK"))
-                                {
-                                    if (_HostReport != null)
-                                    {
-                                        _HostReport.On_TaskJob_Ack(Task);
-                                    }
-                                }
-                                if (ErrorMessage.Equals(""))
-                                {
-                                    if (Task.MainTaskId.Equals(""))
-                                    {
-                                        if (_HostReport != null)
-                                        {
-                                            _HostReport.On_TaskJob_Finished(Task);
-                                        }
-
-                                        _UIReport.On_TaskJob_Finished(Task);
-                                        Task.Finished = true;
-                                    }
-                                    else
-                                    {
-                                        //sub task 做完不能報完成，繼續做main task
-                                        TaskJob.Excute(Task.MainTaskId, out ErrorMessage, out Task);
-
-                                    }
-                                }
-                                else
-                                {
-                                    if (_HostReport != null)
-                                    {
-                                        _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (Report.Equals("ACK"))
-                                {
-                                    if (_HostReport != null)
-                                    {
-                                        _HostReport.On_TaskJob_Ack(Task);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    TaskJob.Next(Node, Txn, "Finished");
+                    
                 }
             }
             catch (Exception e)
@@ -1220,6 +1060,10 @@ namespace TransferControl.Engine
         public void On_Command_TimeOut(Node Node, Transaction Txn)
         {
             TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
+            if (Task == null)
+            {
+                Task = new TaskJobManagment.CurrentProceedTask();
+            }
             Task.HasError = true;
             Task.Finished = true;
             if (!Node.IsPause)
@@ -1425,11 +1269,11 @@ namespace TransferControl.Engine
 
         public void On_Alarm_Happen(string DIOName, string ErrorCode)
         {
-            if (ErrorCode.Equals("00100007"))
-            {
-                ControllerManagement.ClearTransactionList();
-                TaskJob.Clear();
-            }
+            //if (ErrorCode.Equals("00100007"))
+            //{
+            //    ControllerManagement.ClearTransactionList();
+            //    TaskJob.Clear();
+            //}
             _UIReport.On_Alarm_Happen(DIOName, ErrorCode);
         }
 
@@ -1465,90 +1309,32 @@ namespace TransferControl.Engine
             return new Job(RouteControl.Instance);
         }
 
-        public void On_Task_NoExcuted(TaskJobManagment.CurrentProceedTask Task)
-        {
-            string ErrorMessage = "";
-            string Report = "";
-            string Location = "";
-            if (!TaskJob.CheckTask(Task.Id, "", "", "", "", out ErrorMessage, out Report, out Location))
-            {//還沒做完
-                if (Report.Equals("ACK"))
-                {
-                    if (_HostReport != null)
-                    {
-                        _HostReport.On_TaskJob_Ack(Task);
-                    }
-                }
-                if (!ErrorMessage.Equals(""))
-                {//做完但沒通過檢查
-                    TaskJob.Remove(Task.Id);
-                    if (!Task.MainTaskId.Equals(""))
-                    {
-                        TaskJob.Remove(Task.MainTaskId);
-                        Task.Id = Task.MainTaskId;
-                    }
-                    if (_HostReport != null)
-                    {
+        
 
-                        _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
-                    }
-                    _UIReport.On_TaskJob_Aborted(Task, "", Report, ErrorMessage);
-                }
-                //檢查到不是Task，不做事
-            }
-            else
-            {//做完且通過檢查，開始進行下一個Task
-
-                if (!TaskJob.Excute(Task.Id, out ErrorMessage, out Task))
-                {//如果沒有可以執行的Task，回報完成
-
-                    if (ErrorMessage.Equals(""))
-                    {
-                        if (Task.MainTaskId.Equals(""))
-                        {
-                            if (_HostReport != null)
-                            {
-                                _HostReport.On_TaskJob_Finished(Task);
-                            }
-
-                            _UIReport.On_TaskJob_Finished(Task);
-                            Task.Finished = true;
-                        }
-                        else
-                        {
-                            //sub task 做完不能報完成，繼續做main task
-                            TaskJob.Excute(Task.MainTaskId, out ErrorMessage, out Task);
-
-                        }
-                    }
-                    else
-                    {
-                        if (_HostReport != null)
-                        {
-                            _HostReport.On_TaskJob_Aborted(Task, Location, Report, ErrorMessage);
-                        }
-                        _UIReport.On_TaskJob_Aborted(Task, "", Report, ErrorMessage);
-                    }
-                }
-                else
-                {
-                    if (Report.Equals("ACK"))
-                    {
-                        if (_HostReport != null)
-                        {
-                            _HostReport.On_TaskJob_Ack(Task);
-                        }
-                    }
-                }
-            }
-        }
-
-        public void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task)
+        public void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task, string Location, string ReportType, string Message)
         {
             //TaskJob.Remove(Id);
             if (_HostReport != null)
             {
-                _HostReport.On_TaskJob_Aborted(Task, "SYSTEM", "ABS", "S0300170");
+                _HostReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
+            }
+            _UIReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
+        }
+
+        public void On_Task_Finished(TaskJobManagment.CurrentProceedTask Task)
+        {
+            if (_HostReport != null)
+            {
+                _HostReport.On_TaskJob_Finished(Task);
+            }
+            _UIReport.On_TaskJob_Finished(Task);
+        }
+
+        public void On_Task_Ack(TaskJobManagment.CurrentProceedTask Task)
+        {
+            if (_HostReport != null)
+            {
+                _HostReport.On_TaskJob_Ack(Task);
             }
         }
     }

@@ -69,6 +69,96 @@ namespace TransferControl.Management
             }
 
         }
+        public void ForceFinishTask(string TaskName)
+        {
+
+            var findTasks = from eachTask in CurrentProceedTasks.Values
+                            where eachTask.ProceedTask.TaskName.Equals(TaskName)
+                            select eachTask;
+            foreach (CurrentProceedTask tk in findTasks)
+            {
+                CurrentProceedTask tmp;
+                CurrentProceedTasks.TryRemove(tk.Id, out tmp);
+                _TaskReport.On_Task_Finished(tmp);
+            }
+
+        }
+
+        public void Next(Node Node, Transaction Txn, string ReturnType)
+        {
+            TaskJobManagment.CurrentProceedTask Task;
+            lock (CurrentProceedTasks)
+            {
+                if (this.IsTask(Txn.FormName, out Task))//如果是帶TaskID才檢查
+                {
+                    string ErrorMessage = "";
+                    string Report = "";
+                    string Location = "";
+                    if (!this.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, ReturnType, out ErrorMessage, out Report, out Location))
+                    {//還沒做完
+                        if (Report.Equals("ACK"))
+                        {
+                            _TaskReport.On_Task_Ack(Task);
+                        }
+                        if (!ErrorMessage.Equals(""))
+                        {//做完但沒通過檢查
+                            this.Remove(Txn.FormName);
+                            if (!Task.MainTaskId.Equals(""))
+                            {
+                                this.Remove(Task.MainTaskId);
+                                Task.Id = Task.MainTaskId;
+                            }
+
+                            _TaskReport.On_Task_Abort(Task, Node.Name, Report, ErrorMessage);
+
+                        }
+                        //檢查到不是Task，不做事
+                    }
+                    else
+                    {//做完且通過檢查，開始進行下一個Task
+
+                        if (!this.Excute(Txn.FormName, out ErrorMessage, out Task))
+                        {//如果沒有可以執行的Task，回報完成
+                            if (Task == null)
+                            {
+                                Task = new CurrentProceedTask();
+                            }
+                            if (ErrorMessage.Equals(""))
+                            {
+                                if (Task.MainTaskId.Equals(""))
+                                {
+                                    _TaskReport.On_Task_Finished(Task);
+                                    Task.Finished = true;
+                                }
+                                else
+                                {
+                                    //sub task 做完不能報完成，繼續做main task
+                                    this.Excute(Task.MainTaskId, out ErrorMessage, out Task);
+
+                                }
+                            }
+                            else
+                            {
+                                if (!Task.MainTaskId.Equals(""))
+                                {
+                                    this.Remove(Task.MainTaskId);
+                                    Task.Id = Task.MainTaskId;
+                                }
+
+                                _TaskReport.On_Task_Abort(Task, Node.Name, Report, ErrorMessage);
+                            }
+                        }
+                        else
+                        {
+                            if (Report.Equals("ACK"))
+                            {
+                                _TaskReport.On_Task_Ack(Task);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         /// <summary>
         /// 檢查是否為有效TaskID
         /// </summary>
@@ -77,6 +167,7 @@ namespace TransferControl.Management
         public bool IsTask(string Id, out CurrentProceedTask tk)
         {
             tk = null;
+
             if (CurrentProceedTasks.TryGetValue(Id, out tk))
             {
                 return true;
@@ -85,6 +176,7 @@ namespace TransferControl.Management
             {
                 return false;
             }
+
         }
         /// <summary>
         /// 標記完成Task內的工作
@@ -274,7 +366,7 @@ namespace TransferControl.Management
                                                 ExcutedTask.ExcutedCount = 0;
                                                 break;
                                             }
-                                            logger.Debug("Repeat "+ ExcutedTask.ExcutedCount.ToString()+"/" + times.ToString());
+                                            logger.Debug("Repeat " + ExcutedTask.ExcutedCount.ToString() + "/" + times.ToString());
                                             //ExcutedTask.ExcutedCount++;
                                             //delay
                                             SpinWait.SpinUntil(() => false, interval);
@@ -307,7 +399,7 @@ namespace TransferControl.Management
                                         {
                                             logger.Error("REPEAT error: " + eachExcuteObj);
                                         }
-                                       
+
                                         break;
                                     case "DELAY":
                                         int DelayTime = Convert.ToInt32(Attr);
@@ -463,8 +555,8 @@ namespace TransferControl.Management
                                                             if (TarNode.ConfigList[i].Equals('0'))
                                                             {//沒開啟的話加入開啟列表
                                                                 OnList += i.ToString() + ",1,";
-                                                                
-                                                                
+
+
                                                             }
                                                             NewConfig += "1";
                                                             isFound = true;
@@ -476,7 +568,7 @@ namespace TransferControl.Management
                                                         if (TarNode.ConfigList[i].Equals('1'))
                                                         {//有開啟的話加入關閉列表
                                                             OffList += i.ToString() + ",0,";
-                                                           
+
                                                         }
                                                         NewConfig += "0";
                                                     }
@@ -490,7 +582,7 @@ namespace TransferControl.Management
                                                 }
                                                 else
                                                 {
-                                                    OnList = "0,"+ NewConfig[0].ToString();
+                                                    OnList = "0," + NewConfig[0].ToString();
                                                 }
                                                 if (OffList.Length != 0)
                                                 {
@@ -605,7 +697,7 @@ namespace TransferControl.Management
                                                             if (TarNode.ConfigList[i].Equals('0'))
                                                             {//沒開啟的話加入開啟列表
                                                                 OnList += i.ToString() + ",1,";
-                                                                
+
                                                             }
                                                             NewConfig += "1";
                                                             isFound = true;
@@ -1333,14 +1425,14 @@ namespace TransferControl.Management
             return tmp;
         }
 
-        public void Clear()
-        {
-            foreach (CurrentProceedTask tk in CurrentProceedTasks.Values)
-            {
-                _TaskReport.On_Task_Abort(tk);
-            }
-            CurrentProceedTasks.Clear();
-        }
+        //public void Clear()
+        //{
+        //    foreach (CurrentProceedTask tk in CurrentProceedTasks.Values)
+        //    {
+        //        _TaskReport.On_Task_Abort(tk);
+        //    }
+        //    CurrentProceedTasks.Clear();
+        //}
 
         public bool Excute(string Id, out string ErrorMessage, out CurrentProceedTask Task, string taskName = "", Dictionary<string, string> param = null, string MainTaskId = "")
         {
@@ -1565,7 +1657,9 @@ namespace TransferControl.Management
 
                                 if (ExcuteObjStr.Trim().Equals(""))
                                 {
-                                    _TaskReport.On_Task_NoExcuted(CurrTask);
+                                    Transaction t = new Transaction();
+                                    t.FormName = Id;
+                                    Next(new Node(), t, "");
                                     return true;
                                 }
 
@@ -1624,7 +1718,7 @@ namespace TransferControl.Management
                                             string pattern = "(?<=^|,)(\\\"(?:[^\\\"]|\\\"\\\")*\\\"|[^,]*)";
 
                                             MatchCollection matchs = Regex.Matches(ExcuteObj[3], pattern, RegexOptions.IgnoreCase);
-                                            
+
 
 
                                             string Position = "";
@@ -1639,7 +1733,7 @@ namespace TransferControl.Management
 
                                             foreach (Match each in matchs)
                                             {
-                                                string[] tmp = each.ToString().Replace("\"","").Split('=');
+                                                string[] tmp = each.ToString().Replace("\"", "").Split('=');
                                                 if (tmp.Length == 2)
                                                 {
                                                     switch (tmp[0].ToUpper())
@@ -1719,7 +1813,9 @@ namespace TransferControl.Management
                                 {
                                     if (NodeDisabled)
                                     {
-                                        _TaskReport.On_Task_NoExcuted(CurrTask);
+                                        Transaction t = new Transaction();
+                                        t.FormName = Id;
+                                        Next(new Node(), t, "");
                                         return true;
                                     }
                                     else
