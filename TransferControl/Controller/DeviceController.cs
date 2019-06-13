@@ -8,6 +8,7 @@ using log4net;
 using System.Collections.Concurrent;
 using SANWA.Utility;
 using System.Threading;
+using SANWA.Utility.Config;
 
 namespace TransferControl.Controller
 {
@@ -237,7 +238,7 @@ namespace TransferControl.Controller
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
                 {
-                    Txn.SetTimeOut(5000);
+                    Txn.SetTimeOut(1000);
                 }
 
 
@@ -490,7 +491,7 @@ namespace TransferControl.Controller
                                                     else
                                                     {
                                                         Txn.SetTimeOutMonitor(false);
-                                                        Txn.SetTimeOut(60000);
+                                                        Txn.SetTimeOut(Convert.ToInt32(Recipe.Get(SystemConfig.Get().CurrentRecipe).motion_timeout)*1000);
                                                         Txn.SetTimeOutMonitor(true);
                                                         TransactionList.TryAdd(key, Txn);
                                                     }
