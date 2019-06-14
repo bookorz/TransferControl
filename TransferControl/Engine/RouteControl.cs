@@ -41,6 +41,7 @@ namespace TransferControl.Engine
         /// <param name="ReportTarget"></param>
         public RouteControl(IUserInterfaceReport ReportUI, IHostInterfaceReport ReportHost = null)
         {
+            ArchiveLog.doWork(@"D:\log\", @"D:\log_backup\");//自動壓縮LOG檔案
             Instance = this;
             EqpState = "Idle";
 

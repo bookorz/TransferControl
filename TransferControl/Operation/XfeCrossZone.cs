@@ -733,7 +733,7 @@ namespace TransferControl.Operation
                                             Target.LockOn = "";
                                             continue;
                                         }
-                                        if (Target.DoubleArmActive && Target.JobList.Count == 2)
+                                        if (Target.DoubleArmActive && Target.RArmActive && Target.LArmActive && Target.JobList.Count == 2)
                                         {//支援雙放
                                             if (Target.JobList["1"].Destination.Equals(Target.JobList["2"].Destination) && Convert.ToInt32(Target.JobList["1"].DestinationSlot) - Convert.ToInt32(Target.JobList["2"].DestinationSlot) == 1)
                                             {//目的地Slot連續且順序正確

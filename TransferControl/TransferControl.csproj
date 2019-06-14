@@ -44,6 +44,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -67,6 +68,7 @@
     <Compile Include="Engine\RouteControl.cs" />
     <Compile Include="Management\AlarmInfo.cs" />
     <Compile Include="Management\AlarmManagement.cs" />
+    <Compile Include="Management\ArchiveLog.cs" />
     <Compile Include="Management\Carrier.cs" />
     <Compile Include="Management\CarrierManagement.cs" />
     <Compile Include="Management\CmdParamManagement.cs" />
