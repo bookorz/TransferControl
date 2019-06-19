@@ -19,7 +19,7 @@ namespace TransferControl.Engine
         public bool IsInitial = false;
         //DateTime StartTime = new DateTime();
         IUserInterfaceReport _UIReport;
-        IHostInterfaceReport _HostReport;
+        
         //int LapsedWfCount = 0;
         //int LapsedLotCount = 0;
         public string EqpState = "";
@@ -34,14 +34,13 @@ namespace TransferControl.Engine
         /// 建構子，傳入一個事件回報對象
         /// </summary>
         /// <param name="ReportTarget"></param>
-        public RouteControl(IUserInterfaceReport ReportUI, IHostInterfaceReport ReportHost = null)
+        public RouteControl(IUserInterfaceReport ReportUI)
         {
             ArchiveLog.doWork(@"D:\log\", @"D:\log_backup\");//自動壓縮LOG檔案
             Instance = this;
             EqpState = "Idle";
 
             _UIReport = ReportUI;
-            _HostReport = ReportHost;
             //初始化所有Controller
             DIO = new DIO(this);
 
@@ -223,10 +222,7 @@ namespace TransferControl.Engine
                                                 break;
                                         }
                                     }
-                                    if (_HostReport != null)
-                                    {
-                                        _HostReport.On_Event_Trigger("SIGSTAT", "PORT", Node.Name, "ALL");
-                                    }
+                                   
 
                                     break;
                                 case Transaction.Command.LoadPortType.GetMapping:
@@ -266,10 +262,7 @@ namespace TransferControl.Engine
 
                                     Node.IsMapping = true;
 
-                                    if (_HostReport != null)
-                                    {
-                                        _HostReport.On_Event_Trigger("MAPDT", "", Node.Name, Msg.Value);
-                                    }
+                                    
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
                                     {
@@ -881,18 +874,18 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.LoadPortType.MappingLoad:
-                                    IO_State_Change(Node.Name, "Foup_Lock", true);
+                                    //IO_State_Change(Node.Name, "Foup_Lock", true);
                                     break;
                                 case Transaction.Command.LoadPortType.Unload:
                                 case Transaction.Command.LoadPortType.MappingUnload:
                                 case Transaction.Command.LoadPortType.UnDock:
-                                    IO_State_Change(Node.Name, "Foup_Lock", false);
+                                    //IO_State_Change(Node.Name, "Foup_Lock", false);
                                     _UIReport.On_Node_State_Changed(Node, "UnLoad Complete");
                                     break;
                                 case Transaction.Command.LoadPortType.InitialPos:
                                 case Transaction.Command.LoadPortType.ForceInitialPos:
                                     _UIReport.On_Node_State_Changed(Node, "Ready To Load");
-                                    IO_State_Change(Node.Name, "Foup_Lock", false);
+                                    //IO_State_Change(Node.Name, "Foup_Lock", false);
                                     Node.State = "READY";
                                     break;
                                 case Transaction.Command.LoadPortType.Clamp:
@@ -1073,10 +1066,7 @@ namespace TransferControl.Engine
                     MTask.Finished = true;
                     Task.Id = Task.MainTaskId;
                 }
-                if (_HostReport != null)
-                {
-                    _HostReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", "TimeOut");
-                }
+               
                 _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", "TimeOut");
                 _UIReport.On_Command_TimeOut(Node, Txn);
             }
@@ -1097,48 +1087,42 @@ namespace TransferControl.Engine
                         switch (Msg.Command)
                         {
                             case "MANSW":
-                                IO_State_Change(Node.Name, "Access_SW", true);
+                                //IO_State_Change(Node.Name, "Access_SW", true);
                                 break;
                             case "MANOF":
-                                IO_State_Change(Node.Name, "Access_SW", false);
+                                //IO_State_Change(Node.Name, "Access_SW", false);
                                 break;
                             case "SMTON":
-                                IO_State_Change(Node.Name, "Foup_Presence", false);
+                                //IO_State_Change(Node.Name, "Foup_Presence", false);
                                 break;
                             case "PODOF":
 
                                 CarrierManagement.Remove(Node.Carrier);
                                 Node.Foup_Presence = false;
 
-                                IO_State_Change(Node.Name, "Foup_Presence", true);
-                                IO_State_Change(Node.Name, "Foup_Placement", false);
-                                if (_HostReport != null)
-                                {
-                                    _HostReport.On_Foup_Presence(Node.Name, false);
-                                }
+                                //IO_State_Change(Node.Name, "Foup_Presence", true);
+                                //IO_State_Change(Node.Name, "Foup_Placement", false);
+                                
                                 break;
                             case "PODON":
                                 CarrierManagement.Add().SetLocation(Node.Name);
                                 Node.Foup_Presence = true;
 
-                                IO_State_Change(Node.Name, "Foup_Presence", false);
-                                IO_State_Change(Node.Name, "Foup_Placement", true);
-                                if (_HostReport != null)
-                                {
-                                    _HostReport.On_Foup_Presence(Node.Name, true);
-                                }
+                                //IO_State_Change(Node.Name, "Foup_Presence", false);
+                                //IO_State_Change(Node.Name, "Foup_Placement", true);
+                                
                                 break;
                             case "ABNST":
-                                IO_State_Change(Node.Name, "Foup_Placement", false);
+                                //IO_State_Change(Node.Name, "Foup_Placement", false);
                                 break;
                             case "POD_ARRIVED":
-                                IO_State_Change(Node.Name, "Foup_Presence", false);
-                                IO_State_Change(Node.Name, "Foup_Placement", true);
+                                //IO_State_Change(Node.Name, "Foup_Presence", false);
+                                //IO_State_Change(Node.Name, "Foup_Placement", true);
                                 break;
 
                             case "POD_REMOVED":
-                                IO_State_Change(Node.Name, "Foup_Presence", true);
-                                IO_State_Change(Node.Name, "Foup_Placement", false);
+                                //IO_State_Change(Node.Name, "Foup_Presence", true);
+                                //IO_State_Change(Node.Name, "Foup_Placement", false);
                                 break;
                         }
                         break;
@@ -1233,10 +1217,7 @@ namespace TransferControl.Engine
                 MTask.Finished = true;
                 Task.Id = Task.MainTaskId;
             }
-            if (_HostReport != null)
-            {
-                _HostReport.On_TaskJob_Aborted(Task, "", "ABS", Msg.Value);
-            }
+           
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
@@ -1245,11 +1226,7 @@ namespace TransferControl.Engine
 
         public void On_Data_Chnaged(string Parameter, string Value, string Type)
         {
-            if (_HostReport != null)
-            {
-                string DIO_Data = DIO.GetALL();
-                _HostReport.On_Event_Trigger("SIGSTAT", "SYSTEM", Parameter, DIO_Data);
-            }
+            
             _UIReport.On_Data_Chnaged(Parameter, Value, Type);
         }
 
@@ -1273,26 +1250,7 @@ namespace TransferControl.Engine
             _UIReport.On_Alarm_Happen(DIOName, ErrorCode);
         }
 
-        private void IO_State_Change(string Source, string Attr, object Value)
-        {
-            try
-            {
-                Node src = NodeManagement.Get(Source);
-                if (src != null)
-                {
-
-                    src.GetType().GetProperty(Attr).SetValue(src, Value);
-                    if (_HostReport != null)
-                    {
-                        _HostReport.On_Event_Trigger("SIGSTAT", "PORT", Source, "ALL");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                logger.Error(e.StackTrace);
-            }
-        }
+        
 
         public void On_Job_Position_Changed(Job Job)
         {
@@ -1310,28 +1268,19 @@ namespace TransferControl.Engine
         public void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task, string Location, string ReportType, string Message)
         {
             //TaskJob.Remove(Id);
-            if (_HostReport != null)
-            {
-                _HostReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
-            }
+            
             _UIReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
         }
 
         public void On_Task_Finished(TaskJobManagment.CurrentProceedTask Task)
         {
-            if (_HostReport != null)
-            {
-                _HostReport.On_TaskJob_Finished(Task);
-            }
+            
             _UIReport.On_TaskJob_Finished(Task);
         }
 
         public void On_Task_Ack(TaskJobManagment.CurrentProceedTask Task)
         {
-            if (_HostReport != null)
-            {
-                _HostReport.On_TaskJob_Ack(Task);
-            }
+            _UIReport.On_TaskJob_Ack(Task);
         }
     }
 }

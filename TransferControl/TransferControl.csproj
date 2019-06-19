@@ -92,7 +92,6 @@
     <Compile Include="Digital_IO\Controller\SanwaDigitalController.cs" />
     <Compile Include="Digital_IO\DIO.cs" />
     <Compile Include="Digital_IO\IDIOTriggerReport.cs" />
-    <Compile Include="Engine\IHostInterfaceReport.cs" />
     <Compile Include="Engine\IUserInterfaceReport.cs" />
     <Compile Include="Engine\RouteControl.cs" />
     <Compile Include="Management\AlarmInfo.cs" />
@@ -103,12 +102,10 @@
     <Compile Include="Management\Carrier.cs" />
     <Compile Include="Management\CarrierManagement.cs" />
     <Compile Include="Management\CmdParamManagement.cs" />
-    <Compile Include="Operation\ControlJob.cs" />
     <Compile Include="Management\ControllerManagement.cs" />
     <Compile Include="Management\IJobReport.cs" />
     <Compile Include="Management\ITaskJobReport.cs" />
     <Compile Include="Management\ITransactionReport.cs" />
-    <Compile Include="Operation\IProcessJobReport.cs" />
     <Compile Include="Management\Job.cs" />
     <Compile Include="Management\JobManagement.cs" />
     <Compile Include="Management\Node.cs" />
@@ -117,9 +114,6 @@
     <Compile Include="Management\OCRInfo.cs" />
     <Compile Include="Management\PointManagement.cs" />
     <Compile Include="Operation\IXfeStateReport.cs" />
-    <Compile Include="Operation\ProcessJob.cs" />
-    <Compile Include="Operation\ControlJobManagement.cs" />
-    <Compile Include="Operation\ProcessJobManagement.cs" />
     <Compile Include="Management\ProcessRecord.cs" />
     <Compile Include="Management\RobotPoint.cs" />
     <Compile Include="Management\TaskJob.cs" />
