@@ -15,12 +15,12 @@ namespace TransferControl.Comm
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(TcpCommClient));
         IConnectionReport ConnReport;
-        DeviceController Config;
+        IController Config;
 
         //先建立一個TcpClient;
         TcpClient tcpClient = new TcpClient();
 
-        public TcpCommClient(DeviceController _Config, IConnectionReport _ConnReport)
+        public TcpCommClient(IController _Config, IConnectionReport _ConnReport)
         {
             Config = _Config;
 
@@ -72,10 +72,10 @@ namespace TransferControl.Comm
         {
             ConnReport.On_Connection_Connecting("Connecting");
             //先建立IPAddress物件,IP為欲連線主機之IP
-            IPAddress ipa = IPAddress.Parse(Config.IPAdress);
+            IPAddress ipa = IPAddress.Parse(Config.GetIPAdress());
 
             //建立IPEndPoint
-            IPEndPoint ipe = new IPEndPoint(ipa, Config.Port);
+            IPEndPoint ipe = new IPEndPoint(ipa, Config.GetPort());
             
             //開始連線
             try
@@ -155,7 +155,7 @@ namespace TransferControl.Comm
         {
 
             string data = "";
-            switch (Config.Vendor.ToUpper())
+            switch (Config.GetVendor().ToUpper())
             {
                 case "TDK":
 

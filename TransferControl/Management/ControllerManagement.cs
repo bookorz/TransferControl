@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using log4net;
-using SANWA.Utility;
 using System.Data;
 using Newtonsoft.Json;
-using SANWA.Utility.Config;
 using System.Threading;
+using TransferControl.Config;
+using TransferControl.Comm;
 
 namespace TransferControl.Management
 {
@@ -19,7 +19,7 @@ namespace TransferControl.Management
         static ILog logger = LogManager.GetLogger(typeof(ControllerManagement));
         
         private static DBUtil dBUtil = new DBUtil();
-        private static ConcurrentDictionary<string, DeviceController> Controllers;
+        private static ConcurrentDictionary<string, IController> Controllers;
 
         public static void LoadConfig(ICommandReport Report)
         {
@@ -31,7 +31,7 @@ namespace TransferControl.Management
             //    }
             //}
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            Controllers = new ConcurrentDictionary<string, DeviceController>();
+            Controllers = new ConcurrentDictionary<string, IController>();
             string Sql = @"SELECT UPPER(t.device_name) as DeviceName,t.device_type as DeviceType,
 										UPPER(t.vendor) as vendor,
                             case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
@@ -50,28 +50,28 @@ namespace TransferControl.Management
             List<DeviceController> ctrlList = JsonConvert.DeserializeObject<List<DeviceController>>(str_json);
            
 
-            foreach (DeviceController each in ctrlList)
+            foreach (IController each in ctrlList)
             {
-                if (each.Enable)
+                if (each.GetEnable())
                 {
                     //each.ConnectionType = "Socket";
                     //each.IPAdress = "127.0.0.1";
                     //each.Port = 9527;
                     each.SetReport(Report);
-                    Controllers.TryAdd(each.DeviceName, each);
+                    Controllers.TryAdd(each.GetDeviceName(), each);
                 }
             }
         }
 
-        public static DeviceController Get(string Name)
+        public static IController Get(string Name)
         {
-            DeviceController result = null;
+            IController result = null;
 
             Controllers.TryGetValue(Name.ToUpper(), out result);
 
             return result;
         }
-        public static bool Add(string Name, DeviceController Controller)
+        public static bool Add(string Name, IController Controller)
         {
             bool result = false;
 
@@ -112,32 +112,8 @@ namespace TransferControl.Management
         //    }
         //}
 
-        public static bool CheckAllConnection()
-        {
-            var find = from ctrl in Controllers.Values.ToList()
-                       where !ctrl.Status.Equals("Connected") && ctrl.Enable
-                       select ctrl;
+        
 
-            if (find.Count() == 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public static void ClearTransactionList()
-        {
-            var find = from ctrl in Controllers.Values.ToList()
-                       where ctrl.Enable
-                       select ctrl;
-
-            foreach(DeviceController Ctrl in find)
-            {
-                Ctrl.ClearTransactionList();
-            }
-        }
+      
     }
 }

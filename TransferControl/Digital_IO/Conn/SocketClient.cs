@@ -1,16 +1,13 @@
 ﻿using log4net;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using TransferControl.Controller;
 
 
-namespace TransferControl.Comm
+
+namespace TransferControl.Digital_IO.Comm
 {
     class SocketClient : IConnection
     {
@@ -25,15 +22,15 @@ namespace TransferControl.Comm
         delSocketDisconnected socketDisconnected;
 
         public Socket theSocket = null;
-        private string remoteHost = "192.168.1.71";
-        private int remotePort = 6666;
-
+        public string remoteHost = "192.168.1.71";
+        public int remotePort = 6666;
+        public string Vendor = "SANWA";
         private string SockErrorStr = null;
         private ManualResetEvent TimeoutObject = new ManualResetEvent(false);
         private bool IsconnectSuccess = false; //異步連接情況，由異步連接回調函數置位
         private object lockObj_IsConnectSuccess = new object();
         IConnectionReport ConnReport;
-        IController Config;
+        
         int RDataLen = 100;  //固定長度傳送資料~ 可以針對自己的需要改長度 
         ///
 
@@ -41,19 +38,22 @@ namespace TransferControl.Comm
         /// 
         /// 
         /// 
-        public SocketClient(IController _Config, IConnectionReport _ConnReport)
+        public SocketClient(IConnectionReport _ConnReport)
         {
-            Config = _Config;
-            remoteHost = _Config.GetIPAdress();
-            remotePort = _Config.GetPort();
-            ConnReport = _ConnReport;
 
+
+            ConnReport = _ConnReport;
             socketDataArrival = socketDataArrivalHandler;
             socketDisconnected = socketDisconnectedHandler;
 
         }
 
         public void Start()
+        {
+            checkSocketState();
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(FirstCheck));
+        }
+        public void Start(object obj)
         {
             checkSocketState();
             //ThreadPool.QueueUserWorkItem(new WaitCallback(FirstCheck));
@@ -99,7 +99,6 @@ namespace TransferControl.Comm
             theSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             theSocket.SendTimeout = 1000;
             theSocket.ReceiveTimeout = 1000;
-            
             SetHeartBeat();//设置心跳参数
 
             #region 异步连接代码
@@ -194,7 +193,16 @@ namespace TransferControl.Comm
         /// 
         public void Reconnect()
         {
-            checkSocketState();
+            //關閉socket
+            theSocket.Shutdown(SocketShutdown.Both);
+
+            theSocket.Disconnect(true);
+            IsconnectSuccess = false;
+
+            theSocket.Close();
+
+            //創建socket
+            socket_create_connect();
         }
 
         ///
@@ -392,7 +400,7 @@ namespace TransferControl.Comm
 
             byte[] clientData = new byte[RDataLen];
             string data = "";
-            switch (Config.GetVendor().ToUpper())
+            switch (Vendor.ToUpper())
             {
                 case "TDK":
 

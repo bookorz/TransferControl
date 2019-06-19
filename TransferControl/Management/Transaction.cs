@@ -1,9 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace TransferControl.Management
 {
@@ -28,6 +23,12 @@ namespace TransferControl.Management
         public string Value { get; set; }
         public string CommandType { get; set; }
         public string CommandEncodeStr { get; set; }
+        public byte ModbusSlaveID { get; set; }
+        public string ModbusMethod { get; set; }
+        public ushort ModbusRegisterAddress { get; set; }
+        public ushort ModbusStartAddress { get; set; }
+        public ushort ModbusNumOfPoints { get; set; }
+        public ushort ModbusValue { get; set; }
         public string Type { get; set; }
         public int Piority { get; set; }
         public string ScriptName { get; set; }
@@ -42,6 +43,11 @@ namespace TransferControl.Management
 
         public class Command
         {
+            public class ModbusMethod
+            {
+                public const string ReadHoldingRegisters = "ReadHoldingRegisters";
+                public const string WriteSingleRegister = "WriteSingleRegister";
+            }
             public class SmartTagType
             {
                 public const string Hello = "Hello";

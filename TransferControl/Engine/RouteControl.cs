@@ -1,22 +1,17 @@
 ﻿using log4net;
-using Newtonsoft.Json;
-using SANWA.Utility;
 using TransferControl.Config;
 using TransferControl.Controller;
 using TransferControl.Management;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TransferControl.Parser;
-using SANWA.Utility.Config;
-using DIOControl;
+using TransferControl.CommandConvert;
+using TransferControl.Digital_IO;
 
 namespace TransferControl.Engine
 {
-    public class RouteControl : AlarmMapping, Controller.ICommandReport, IDIOTriggerReport, IJobReport, ITaskJobReport
+    public class RouteControl : AlarmMapping, ICommandReport, IDIOTriggerReport, IJobReport, ITaskJobReport
     {
         //git upload test4
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
@@ -90,7 +85,7 @@ namespace TransferControl.Engine
         /// <param name="Node"></param>
         /// <param name="Txn"></param>
         /// <param name="Msg"></param>
-        public void On_Command_Excuted(Node Node, Transaction Txn, ReturnMessage Msg)
+        public void On_Command_Excuted(Node Node, Transaction Txn, CommandReturnMessage Msg)
         {
             //string Message = "";
             try
@@ -364,7 +359,7 @@ namespace TransferControl.Engine
                                     }
                                     if (!Node.IsMapping)
                                     {
-                                        ReturnMessage rem = new ReturnMessage();
+                                        CommandReturnMessage rem = new CommandReturnMessage();
                                         rem.Value = "/MAPERR";
                                         _UIReport.On_Command_Error(Node, Txn, rem);
                                     }
@@ -688,7 +683,7 @@ namespace TransferControl.Engine
             }
         }
 
-        public void On_Command_Finished(Node Node, Transaction Txn, ReturnMessage Msg)
+        public void On_Command_Finished(Node Node, Transaction Txn, CommandReturnMessage Msg)
         {
 
             //string Message = "";
@@ -1091,7 +1086,7 @@ namespace TransferControl.Engine
         /// </summary>
         /// <param name="Node"></param>
         /// <param name="Msg"></param>
-        public void On_Event_Trigger(Node Node, ReturnMessage Msg)
+        public void On_Event_Trigger(Node Node, CommandReturnMessage Msg)
         {
             try
             {
@@ -1219,7 +1214,7 @@ namespace TransferControl.Engine
         /// <param name="Node"></param>
         /// <param name="Txn"></param>
         /// <param name="Msg"></param>
-        public void On_Command_Error(Node Node, Transaction Txn, ReturnMessage Msg)
+        public void On_Command_Error(Node Node, Transaction Txn, CommandReturnMessage Msg)
         {
             Node.InitialComplete = false;
             Node.OrgSearchComplete = false;

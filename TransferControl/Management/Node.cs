@@ -1,14 +1,12 @@
 ﻿using log4net;
-using Newtonsoft.Json;
-using SANWA.Utility;
-using SANWA.Utility.Config;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using TransferControl.Comm;
+using TransferControl.CommandConvert;
+using TransferControl.Config;
 using TransferControl.Controller;
 using TransferControl.Engine;
 
@@ -339,7 +337,7 @@ namespace TransferControl.Management
             }
         }
 
-        public DeviceController GetController()
+        public IController GetController()
         {
             return ControllerManagement.Get(Controller);
         }
@@ -626,7 +624,7 @@ namespace TransferControl.Management
 
                 }
 
-                DeviceController Ctrl = this.GetController();
+                IController Ctrl = this.GetController();
                 if (this.Brand.ToUpper().Equals("KAWASAKI"))
                 {
 
@@ -749,7 +747,7 @@ namespace TransferControl.Management
                         switch (txn.Method)
                         {
                             case Transaction.Command.FFUType.SetSpeed:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.SetSpeed(AdrNo, txn.Value);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.SetSpeed(AdrNo, txn.Value,ref txn);
                                 break;
                             case Transaction.Command.FFUType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.GetStatus(AdrNo);

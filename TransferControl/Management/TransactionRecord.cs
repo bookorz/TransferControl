@@ -1,11 +1,9 @@
 ﻿using log4net;
-using SANWA.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TransferControl.Comm;
+using TransferControl.CommandConvert;
 
 namespace TransferControl.Management
 {
@@ -90,7 +88,7 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static bool Update(Transaction Txn, ReturnMessage Msg)
+        public static bool Update(Transaction Txn, CommandReturnMessage Msg)
         {
             bool result = false;
 

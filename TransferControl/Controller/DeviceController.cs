@@ -6,28 +6,26 @@ using System.Linq;
 using System.Text;
 using log4net;
 using System.Collections.Concurrent;
-using SANWA.Utility;
 using System.Threading;
-using SANWA.Utility.Config;
+using TransferControl.CommandConvert;
+using TransferControl.Config;
 
 namespace TransferControl.Controller
 {
-    public class DeviceController : IConnectionReport, ITransactionReport
+    public class DeviceController : IConnectionReport, ITransactionReport,IController
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(DeviceController));
         public ICommandReport _ReportTarget;
         IConnection conn;
 
-        SANWA.Utility.Decoder _Decoder;
-        public SANWA.Utility.Encoder Encoder;
+        CommandDecoder _Decoder;
+        public CommandEncoder Encoder;
         ConcurrentDictionary<string, Transaction> TransactionList = new ConcurrentDictionary<string, Transaction>();
         public string Name { get; set; }
         public string Status = "Disconnected";
         private bool _IsConnected { get; set; }
         public int TrxNo = 1;
-        bool WaitingForSync = false;
-        string ReturnForSync = "";
-        string ReturnTypeForSync = "";
+        
 
         public string DeviceName { get; set; }
         public string DeviceType { get; set; }
@@ -38,7 +36,42 @@ namespace TransferControl.Controller
         public string PortName { get; set; }
         public int BaudRate { get; set; }
         public bool Enable { get; set; }
-
+        public string GetDeviceName()
+        {
+            return this.Name;
+        }
+        public bool GetEnable()
+        {
+            return this.Enable;
+        }
+        public string GetIPAdress()
+        {
+            return this.IPAdress;
+        }
+        public int GetPort()
+        {
+            return this.Port;
+        }
+        public string GetVendor()
+        {
+            return this.Vendor;
+        }
+        public string GetPortName()
+        {
+            return this.PortName;
+        }
+        public int GetBaudRate()
+        {
+            return this.BaudRate;
+        }
+        public string GetStatus()
+        {
+            return this.Status;
+        }
+        public void SetStatus(string Status)
+        {
+            this.Status = Status;
+        }
         public void SetReport(ICommandReport ReportTarget)
         {
             _ReportTarget = ReportTarget;
@@ -55,9 +88,9 @@ namespace TransferControl.Controller
                     break;
 
             }
-            _Decoder = new SANWA.Utility.Decoder(Vendor);
+            _Decoder = new CommandConvert.CommandDecoder(Vendor);
 
-            Encoder = new SANWA.Utility.Encoder(Vendor);
+            Encoder = new CommandEncoder(Vendor);
 
 
             this.Name = DeviceName;
@@ -65,10 +98,7 @@ namespace TransferControl.Controller
             this._IsConnected = false;
         }
 
-        public DeviceController GetConfig()
-        {
-            return this;
-        }
+        
 
         public bool IsConnected()
         {
@@ -126,27 +156,7 @@ namespace TransferControl.Controller
 
         }
 
-        public string DoWorkSync(string Cmd, string Type, int Timeout = 30000)
-        {
-            string result = "";
-            WaitingForSync = true;
-            ReturnTypeForSync = Type;
-            conn.Send(Cmd);
-
-            SpinWait.SpinUntil(() => !WaitingForSync, Timeout);
-            if (WaitingForSync)
-            {
-                result = "Command time out!";
-            }
-            else
-            {
-                result = ReturnForSync;
-                ReturnForSync = "";
-                ReturnTypeForSync = "";
-            }
-            WaitingForSync = false;
-            return result;
-        }
+       
 
         public bool DoWork(Transaction Txn, bool WaitForData = false)
         {
@@ -162,7 +172,7 @@ namespace TransferControl.Controller
 
             if (!Txn.NodeType.Equals("OCR"))
             {
-                List<ReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
+                List<CommandReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
 
                 if (msgList.Count != 0)
                 {
@@ -305,8 +315,8 @@ namespace TransferControl.Controller
                 //}
 
 
-                List<ReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
-                foreach (ReturnMessage ReturnMsg in ReturnMsgList)
+                List<CommandReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
+                foreach (CommandReturnMessage ReturnMsg in ReturnMsgList)
                 {
 
                     try
@@ -334,41 +344,7 @@ namespace TransferControl.Controller
                                         }
                                     }
                                 }
-                                if (WaitingForSync)
-                                {
-                                    if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Error))
-                                    {
-                                        ReturnForSync = Msg;
-                                        WaitingForSync = false;
-                                        return;
-                                    }
-                                    else if (ReturnTypeForSync.Equals("CMD"))
-                                    {
-                                        if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Finished))
-                                        {
-                                            ReturnForSync = Msg;
-                                            WaitingForSync = false;
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Excuted))
-                                        {
-                                            ReturnForSync = Msg;
-                                            WaitingForSync = false;
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                }
+                               
 
                                 string key = "";
                                 if (Vendor.ToUpper().Equals("KAWASAKI"))
@@ -433,7 +409,7 @@ namespace TransferControl.Controller
                                     if (TransactionList.TryGetValue(key, out Txn))
                                     {
                                         Node = NodeManagement.Get(Txn.NodeName);
-                                        if (Txn.CommandType.Equals("SET") && ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Excuted))
+                                        if (Txn.CommandType.Equals("SET") && ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Excuted))
                                         {
                                             continue;
                                         }
@@ -457,7 +433,7 @@ namespace TransferControl.Controller
                                 lock (Node)
                                 {
 
-                                    if (ReturnMsg.Type == ReturnMessage.ReturnType.Event)
+                                    if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Event)
                                     {
                                         //_ReportTarget.On_Event_Trigger(Node, ReturnMsg);
                                     }
@@ -466,7 +442,7 @@ namespace TransferControl.Controller
                                         // Node.InitialComplete = false;
                                         switch (ReturnMsg.Type)
                                         {
-                                            case ReturnMessage.ReturnType.Excuted:
+                                            case CommandReturnMessage.ReturnType.Excuted:
                                                 if (!Txn.CommandType.Equals("CMD") && !Txn.CommandType.Equals("MOV") && !Txn.CommandType.Equals("HCS"))
                                                 {
                                                     logger.Debug("Txn timmer stoped.");
@@ -498,13 +474,13 @@ namespace TransferControl.Controller
                                                 }
                                                 //_ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
                                                 break;
-                                            case ReturnMessage.ReturnType.Finished:
+                                            case CommandReturnMessage.ReturnType.Finished:
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
                                                 Node.IsExcuting = false;
                                                 //_ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                                 break;
-                                            case ReturnMessage.ReturnType.Error:
+                                            case CommandReturnMessage.ReturnType.Error:
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
                                                 Node.IsExcuting = false;
@@ -515,17 +491,17 @@ namespace TransferControl.Controller
                                                     logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
                                                 }
                                                 break;
-                                            case ReturnMessage.ReturnType.Information:
+                                            case CommandReturnMessage.ReturnType.Information:
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
                                                 if (Vendor.ToUpper().Equals("TDK") && Txn.CommandType.Equals("SET"))
                                                 {
-                                                    ReturnMsg.Type = ReturnMessage.ReturnType.Excuted;
+                                                    ReturnMsg.Type = CommandReturnMessage.ReturnType.Excuted;
                                                     Node.IsExcuting = false;
                                                 }
                                                 else
                                                 {
-                                                    ReturnMsg.Type = ReturnMessage.ReturnType.Finished;
+                                                    ReturnMsg.Type = CommandReturnMessage.ReturnType.Finished;
                                                     Node.IsExcuting = false;
                                                 }
                                                 SpinWait.SpinUntil(() => false, 50);
@@ -539,7 +515,7 @@ namespace TransferControl.Controller
                                     {
                                         if (ReturnMsg.Type != null)
                                         {
-                                            if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Information))
+                                            if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Information))
                                             {
                                                 //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                                 conn.Send(ReturnMsg.FinCommand);
@@ -581,8 +557,8 @@ namespace TransferControl.Controller
                             }
                             switch (ReturnMsg.Type)
                             {
-                                case ReturnMessage.ReturnType.Information:
-                                case ReturnMessage.ReturnType.Event:
+                                case CommandReturnMessage.ReturnType.Information:
+                                case CommandReturnMessage.ReturnType.Event:
                                     Transaction t = new Transaction();
                                     t.NodeName = Node.Name;
                                     t.NodeType = Node.Type;
@@ -593,7 +569,7 @@ namespace TransferControl.Controller
                                     //TransactionRecord.AddDetail(TransactionRecord.GetUUID(), Node.Name,Node.Type,ReturnMsg.Type,ReturnMsg.Value);
                                     _ReportTarget.On_Event_Trigger(Node, ReturnMsg);
                                     break;
-                                case ReturnMessage.ReturnType.Excuted:
+                                case CommandReturnMessage.ReturnType.Excuted:
                                     TransactionRecord.Update(Txn, ReturnMsg);
                                     _ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
                                     if (Txn.CommandType.Equals("CMD") && !Node.Type.Equals("LOADPORT"))
@@ -601,7 +577,7 @@ namespace TransferControl.Controller
                                         _ReportTarget.On_Node_State_Changed(Node, "Busy");
                                     }
                                     break;
-                                case ReturnMessage.ReturnType.Finished:
+                                case CommandReturnMessage.ReturnType.Finished:
                                     TransactionRecord.Update(Txn, ReturnMsg);
                                     //if (Node.Type.Equals("LOADPORT"))
                                     //{
@@ -615,7 +591,7 @@ namespace TransferControl.Controller
 
 
                                     break;
-                                case ReturnMessage.ReturnType.Error:
+                                case CommandReturnMessage.ReturnType.Error:
                                     TransactionRecord.Update(Txn, ReturnMsg);
                                     //if (Node.Type.Equals("LOADPORT"))
                                     //{
@@ -775,7 +751,7 @@ namespace TransferControl.Controller
             return result;
         }
 
-        public SANWA.Utility.Encoder GetEncoder()
+        public CommandEncoder GetEncoder()
         {
             return Encoder;
         }

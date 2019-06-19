@@ -31,8 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\SANWA-Function-For-Test\log4net.dll</HintPath>
+      <HintPath>..\..\Sachiel\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="mysql.data, Version=5.2.7.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -41,6 +40,9 @@
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SANWAFunction\SANWA\SANWA\Lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NModbus4, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\Sachiel\packages\NModbus4.2.1.0\lib\net40\NModbus4.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,21 +55,50 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandConvert\CommandDecoder.cs" />
+    <Compile Include="CommandConvert\CommandEncoder.cs" />
+    <Compile Include="CommandConvert\EncoderFFU.cs" />
+    <Compile Include="CommandConvert\Encoder_Aligner.cs" />
+    <Compile Include="CommandConvert\Encoder_LoadPort.cs" />
+    <Compile Include="CommandConvert\Encoder_OCR.cs" />
+    <Compile Include="CommandConvert\Encoder_Robot.cs" />
+    <Compile Include="CommandConvert\Encoder_SmartTag.cs" />
+    <Compile Include="CommandConvert\CommandReturnMessage.cs" />
     <Compile Include="Comm\ComPortClient.cs" />
+    <Compile Include="Comm\DBUtil.cs" />
+    <Compile Include="Comm\FTP.cs" />
     <Compile Include="Comm\IConnection.cs" />
     <Compile Include="Comm\IConnectionReport.cs" />
     <Compile Include="Comm\SocketClient.cs" />
     <Compile Include="Comm\TcpCommClient.cs" />
     <Compile Include="Config\ConfigTool.cs" />
-    <Compile Include="Config\ConnectSettig.cs" />
+    <Compile Include="Config\Global.cs" />
+    <Compile Include="Config\Recipe.cs" />
+    <Compile Include="Config\SystemConfig.cs" />
     <Compile Include="Controller\DeviceController.cs" />
     <Compile Include="Controller\ICommandReport.cs" />
     <Compile Include="Controller\IController.cs" />
+    <Compile Include="Controller\ModbusController.cs" />
+    <Compile Include="Digital_IO\ChangeHisRecord.cs" />
+    <Compile Include="Digital_IO\Config\ConfigTool.cs" />
+    <Compile Include="Digital_IO\Config\CtrlConfig.cs" />
+    <Compile Include="Digital_IO\Config\ParamConfig.cs" />
+    <Compile Include="Digital_IO\Conn\IConnection.cs" />
+    <Compile Include="Digital_IO\Conn\IConnectionReport.cs" />
+    <Compile Include="Digital_IO\Conn\SocketClient.cs" />
+    <Compile Include="Digital_IO\Controller\ICPconDigitalController.cs" />
+    <Compile Include="Digital_IO\Controller\IDIOController.cs" />
+    <Compile Include="Digital_IO\Controller\IDIOReport.cs" />
+    <Compile Include="Digital_IO\Controller\SanwaDigitalController.cs" />
+    <Compile Include="Digital_IO\DIO.cs" />
+    <Compile Include="Digital_IO\IDIOTriggerReport.cs" />
     <Compile Include="Engine\IHostInterfaceReport.cs" />
     <Compile Include="Engine\IUserInterfaceReport.cs" />
     <Compile Include="Engine\RouteControl.cs" />
     <Compile Include="Management\AlarmInfo.cs" />
     <Compile Include="Management\AlarmManagement.cs" />
+    <Compile Include="Management\AlarmMapping.cs" />
+    <Compile Include="Management\AlarmMessage.cs" />
     <Compile Include="Management\ArchiveLog.cs" />
     <Compile Include="Management\Carrier.cs" />
     <Compile Include="Management\CarrierManagement.cs" />
@@ -84,7 +115,6 @@
     <Compile Include="Management\NodeManagement.cs" />
     <Compile Include="Management\NodeState.cs" />
     <Compile Include="Management\OCRInfo.cs" />
-    <Compile Include="Management\Path.cs" />
     <Compile Include="Management\PointManagement.cs" />
     <Compile Include="Operation\IXfeStateReport.cs" />
     <Compile Include="Operation\ProcessJob.cs" />
@@ -92,7 +122,6 @@
     <Compile Include="Operation\ProcessJobManagement.cs" />
     <Compile Include="Management\ProcessRecord.cs" />
     <Compile Include="Management\RobotPoint.cs" />
-    <Compile Include="Management\StateRecord.cs" />
     <Compile Include="Management\TaskJob.cs" />
     <Compile Include="Management\TaskJobManagment.cs" />
     <Compile Include="Management\Transaction.cs" />
@@ -110,19 +139,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DIOControl\DIOControl\DIOControl.csproj">
-      <Project>{21adfcfc-11c7-4982-af57-09002ed8e961}</Project>
-      <Name>DIOControl</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\SANWAFunction\SANWA\SANWA\SANWA.csproj">
-      <Project>{4eed2ed4-a72e-4f24-8d80-ef2f0b24fcf1}</Project>
-      <Name>SANWA</Name>
-    </ProjectReference>
+    <Folder Include="Lib\" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Lib\log4net.dll" />
-    <Content Include="Lib\nmodbuspc.dll" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

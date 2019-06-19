@@ -16,10 +16,10 @@ namespace TransferControl.Comm
         private static readonly ILog logger = LogManager.GetLogger(typeof(ComPortClient));
         private SerialPort port;
         IConnectionReport ConnReport;
-        DeviceController cfg;
+        IController cfg;
         public bool _WaitForData = false;
 
-        public ComPortClient(DeviceController _Config, IConnectionReport _ConnReport)
+        public ComPortClient(IController _Config, IConnectionReport _ConnReport)
         {
             cfg = _Config;
             ConnReport = _ConnReport;
@@ -60,8 +60,8 @@ namespace TransferControl.Comm
             //}
 
 
-            port = new SerialPort(_Config.PortName, _Config.BaudRate, p, 8, s);
-            if (_Config.Vendor.Equals("SMARTTAG"))
+            port = new SerialPort(_Config.GetPortName(), _Config.GetBaudRate(), p, 8, s);
+            if (_Config.GetVendor().Equals("SMARTTAG"))
             {
                 port.Handshake = Handshake.None;
                 port.RtsEnable = true;
@@ -81,8 +81,8 @@ namespace TransferControl.Comm
             port.Close();
             ConnReport.On_Connection_Disconnected("Close");
 
-            port = new SerialPort(cfg.PortName, cfg.BaudRate, Parity.None, 8, StopBits.One);
-            if (cfg.Vendor.Equals("SMARTTAG"))
+            port = new SerialPort(cfg.GetPortName(), cfg.GetBaudRate(), Parity.None, 8, StopBits.One);
+            if (cfg.GetVendor().Equals("SMARTTAG"))
             {
                 port.Handshake = Handshake.None;
                 port.RtsEnable = true;
@@ -105,7 +105,7 @@ namespace TransferControl.Comm
         {
             try
             {
-                if (cfg.Vendor.ToUpper().Equals("ACDT"))
+                if (cfg.GetVendor().ToUpper().Equals("ACDT"))
                 {
                     string hexString = Message.ToString().Replace("-", "");
                     byte[] byteOUT = new byte[hexString.Length / 2];
@@ -154,7 +154,7 @@ namespace TransferControl.Comm
                 ConnReport.On_Connection_Connecting("Connecting to ");
                 port.Open();
                 ConnReport.On_Connection_Connected("Connected! ");
-                switch (cfg.Vendor.ToUpper())
+                switch (cfg.GetVendor().ToUpper())
                 {
                     case "ACDT":
                         port.DataReceived += new SerialDataReceivedEventHandler(ACDT_DataReceived);

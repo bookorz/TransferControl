@@ -1,7 +1,5 @@
 ﻿using log4net;
 using Newtonsoft.Json;
-using SANWA.Utility;
-using SANWA.Utility.Config;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,6 +7,8 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using TransferControl.Comm;
+using TransferControl.Config;
 using TransferControl.Engine;
 
 
@@ -37,7 +37,7 @@ namespace TransferControl.Management
         }
         public TaskJobManagment(ITaskJobReport TaskReport)
         {
-            SaftyCheckByPass = SANWA.Utility.Config.SystemConfig.Get().SaftyCheckByPass;
+            SaftyCheckByPass = SystemConfig.Get().SaftyCheckByPass;
             _TaskReport = TaskReport;
             TaskJobList = new ConcurrentDictionary<string, List<TaskJob>>();
             CurrentProceedTasks = new ConcurrentDictionary<string, CurrentProceedTask>();
@@ -164,7 +164,7 @@ namespace TransferControl.Management
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public bool IsTask(string Id, out CurrentProceedTask tk)
+        private bool IsTask(string Id, out CurrentProceedTask tk)
         {
             tk = null;
 
@@ -186,7 +186,7 @@ namespace TransferControl.Management
         /// <param name="ExcuteName"></param>
         /// <param name="ReturnType">Executed/Finished</param>
         /// <returns>true:當工作全部完成</returns>
-        public bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message, out string Report, out string Location)
+        private bool CheckTask(string Id, string NodeName, string ExcuteType, string ExcuteName, string ReturnType, out string Message, out string Report, out string Location)
         {
             bool result = false;
             Message = "";
@@ -258,7 +258,7 @@ namespace TransferControl.Management
             return result;
         }
 
-        public bool CheckCondition(string Id, out string Message, out string Report, out string Location)
+        private bool CheckCondition(string Id, out string Message, out string Report, out string Location)
         {
             bool result = false;
             string taskName = "";
@@ -1602,7 +1602,7 @@ namespace TransferControl.Management
                                         else
                                         {
                                             logger.Error("SkipCondition失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
-                                            throw new Exception("SkipCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
+                                            //throw new Exception("SkipCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
                                         }
                                     }
                                     tmp1.Add(eachTask);
@@ -1708,6 +1708,10 @@ namespace TransferControl.Management
                                                 NodeDisabled = true;
                                                 continue;
                                             }
+                                        }
+                                        else
+                                        {
+                                            logger.Error("ExcuteObj失敗，找不到Node:" + NodeName + "，Task :" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
                                         }
                                         string Type = ExcuteObj[1];
 
