@@ -746,6 +746,9 @@ namespace TransferControl.Management
                     case "FFU":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.FFUType.Start:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.Start(AdrNo, ref txn);
+                                break;
                             case Transaction.Command.FFUType.SetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.SetSpeed(AdrNo, txn.Value,ref txn);
                                 break;

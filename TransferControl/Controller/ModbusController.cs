@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.IO.Ports;
 using System.Net.Sockets;
+using System.Threading;
 using TransferControl.CommandConvert;
 using TransferControl.Management;
 
@@ -22,6 +23,7 @@ namespace TransferControl.Controller
         private bool _IsConnected { get; set; }
         public string DeviceName { get; set; }
         public string DeviceType { get; set; }
+        public string ControllerType { get; set; }
         public string Vendor { get; set; }
         public string IPAdress { get; set; }
         public int Port { get; set; }
@@ -36,20 +38,29 @@ namespace TransferControl.Controller
         public bool DoWork(Transaction Txn, bool WaitForData = false)
         {
             bool result = false;
+            SpinWait.SpinUntil(() => conn!=null, 999999999);
             CommandReturnMessage msg = new CommandReturnMessage();
             lock (conn)
             {
-                Txn.SetTimeOut(1000);
-                Txn.SetTimeOutReport(this);
-                Txn.SetTimeOutMonitor(true);
+                string waferids = "";
+                foreach (Job each in Txn.TargetJobs)
+                {
+                    waferids += each.Job_Id + " ";
+                }
+                logger.Debug(DeviceName + " Send:" + Txn.ModbusMethod + " Wafer:" + waferids);
+                //Txn.SetTimeOut(1000);
+                //Txn.SetTimeOutReport(this);
+                //Txn.SetTimeOutMonitor(true);
                 switch (Txn.ModbusMethod)
                 {
                     case Transaction.Command.ModbusMethod.ReadHoldingRegisters:
                         ushort[] regs = conn.ReadHoldingRegisters(Txn.ModbusSlaveID, Txn.ModbusStartAddress, Txn.ModbusNumOfPoints);
+                        msg.Type = CommandReturnMessage.ReturnType.Excuted;
                         _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
                         break;
                     case Transaction.Command.ModbusMethod.WriteSingleRegister:
                         conn.WriteSingleRegister(Txn.ModbusSlaveID, Txn.ModbusRegisterAddress, Txn.ModbusValue);
+                        msg.Type = CommandReturnMessage.ReturnType.Excuted;
                         _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
                         break;
                 }
@@ -60,48 +71,37 @@ namespace TransferControl.Controller
 
         public void On_Transaction_TimeOut(Transaction Txn)
         {
-            logger.Debug(DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
+            //logger.Debug(DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
 
-            string key = "";
+            //string key = "";
 
-            key = Txn.AdrNo + Txn.Method;
-            for (int seq = 0; seq <= 99; seq++)
-            {
-                key = key + seq.ToString("00");
-                if (TransactionList.ContainsKey(key))
-                {
-                    break;
-                }
-                if (seq == 99)
-                {
-                    logger.Error("seq is run out!");
-                }
-            }
+            //key = Txn.AdrNo + Txn.Method;
+           
 
 
-            Txn.SetTimeOutMonitor(false);
-            if (TransactionList.TryRemove(key, out Txn))
-            {
-                Node Node = NodeManagement.GetByController(DeviceName, Txn.AdrNo);
-                if (Node.State.Equals("Pause"))
-                {
-                    logger.Debug("Txn timeout,but state is pause. ignore this.");
-                    TransactionList.TryAdd(key, Txn);
-                    return;
-                }
-                if (Node != null)
-                {
-                    _ReportTarget.On_Command_TimeOut(Node, Txn);
-                }
-                else
-                {
-                    logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
-                }
-            }
-            else
-            {
-                logger.Debug(DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
-            }
+            //Txn.SetTimeOutMonitor(false);
+            //if (TransactionList.TryRemove(key, out Txn))
+            //{
+            //    Node Node = NodeManagement.GetByController(DeviceName, Txn.AdrNo);
+            //    if (Node.State.Equals("Pause"))
+            //    {
+            //        logger.Debug("Txn timeout,but state is pause. ignore this.");
+            //        TransactionList.TryAdd(key, Txn);
+            //        return;
+            //    }
+            //    if (Node != null)
+            //    {
+            //        _ReportTarget.On_Command_TimeOut(Node, Txn);
+            //    }
+            //    else
+            //    {
+            //        logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
+            //    }
+            //}
+            //else
+            //{
+            //    logger.Debug(DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
+            //}
         }
         public void On_Transaction_BypassTimeOut(Transaction Txn)
         {
@@ -183,6 +183,10 @@ namespace TransferControl.Controller
         public string GetStatus()
         {
             return this.Status;
+        }
+        public string GetControllerType()
+        {
+            return this.ControllerType;
         }
         public void SetStatus(string Status)
         {

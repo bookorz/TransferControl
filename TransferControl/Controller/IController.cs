@@ -14,6 +14,7 @@ namespace TransferControl.Controller
         void SetReport(ICommandReport ReportTarget);
         string GetDeviceName();
         bool GetEnable();
+        string GetControllerType();
         string GetIPAdress();
         int GetPort();
         string GetVendor();

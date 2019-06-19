@@ -39,26 +39,55 @@ namespace TransferControl.Management
                             case when t.conn_type = 'Comport' then   CONVERT(t.conn_port,SIGNED) else 0 end as BaudRate ,
                             case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,                            
                             t.conn_type as ConnectionType,
-                            t.enable_flg as Enable
+                            t.enable_flg as Enable,
+                            t.controller_type as ControllerType
                             FROM config_controller_setting t
                             WHERE t.equipment_model_id = @equipment_model_id
                             AND t.device_type <> 'DIO'";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
             DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
-
-            List<DeviceController> ctrlList = JsonConvert.DeserializeObject<List<DeviceController>>(str_json);
-           
-
-            foreach (IController each in ctrlList)
+            foreach(DataRow row in dt.Rows)
             {
-                if (each.GetEnable())
+                IController ctrl=null;
+                if (row["ControllerType"].ToString().Equals("ASCII"))
+                {
+                    DeviceController d = new DeviceController();
+                    d.DeviceName = row["DeviceName"].ToString();
+                    d.DeviceType = row["DeviceType"].ToString();
+                    d.Vendor = row["vendor"].ToString();
+                    d.IPAdress = row["IPAdress"].ToString();
+                    d.Port = Convert.ToInt32(row["Port"].ToString());
+                    d.BaudRate = Convert.ToInt32(row["BaudRate"].ToString());
+                    d.PortName = row["PortName"].ToString();
+                    d.ConnectionType = row["ConnectionType"].ToString();
+                    d.Enable =Convert.ToBoolean(Convert.ToInt32(row["Enable"].ToString()));
+                    d.ControllerType = row["ControllerType"].ToString();
+                    ctrl = d;
+                }
+                else if (row["ControllerType"].ToString().Equals("MODBUS"))
+                {
+                    ModbusController m = new ModbusController();
+                    m.DeviceName = row["DeviceName"].ToString();
+                    m.DeviceType = row["DeviceType"].ToString();
+                    m.Vendor = row["vendor"].ToString();
+                    m.IPAdress = row["IPAdress"].ToString();
+                    m.Port = Convert.ToInt32(row["Port"].ToString());
+                    m.BaudRate = Convert.ToInt32(row["BaudRate"].ToString());
+                    m.PortName = row["PortName"].ToString();
+                    m.ConnectionType = row["ConnectionType"].ToString();
+                    m.Enable = Convert.ToBoolean(Convert.ToInt32(row["Enable"].ToString()));
+                    m.ControllerType = row["ControllerType"].ToString();
+                    ctrl = m;
+                }
+
+
+                if (ctrl.GetEnable())
                 {
                     //each.ConnectionType = "Socket";
                     //each.IPAdress = "127.0.0.1";
                     //each.Port = 9527;
-                    each.SetReport(Report);
-                    Controllers.TryAdd(each.GetDeviceName(), each);
+                    ctrl.SetReport(Report);
+                    Controllers.TryAdd(ctrl.GetDeviceName(), ctrl);
                 }
             }
         }
@@ -87,7 +116,7 @@ namespace TransferControl.Management
 
         public static void ConnectAll()
         {
-            foreach (DeviceController each in Controllers.Values.ToList())
+            foreach (IController each in Controllers.Values.ToList())
             {
                 ThreadPool.QueueUserWorkItem(new WaitCallback(each.Start));
             }

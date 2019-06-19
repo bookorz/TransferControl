@@ -29,6 +29,7 @@ namespace TransferControl.Controller
 
         public string DeviceName { get; set; }
         public string DeviceType { get; set; }
+        public string ControllerType { get; set; }
         public string Vendor { get; set; }
         public string IPAdress { get; set; }
         public int Port { get; set; }
@@ -36,6 +37,10 @@ namespace TransferControl.Controller
         public string PortName { get; set; }
         public int BaudRate { get; set; }
         public bool Enable { get; set; }
+        public string GetControllerType()
+        {
+            return this.ControllerType;
+        }
         public string GetDeviceName()
         {
             return this.Name;
