@@ -491,7 +491,7 @@ namespace TransferControl.Controller
                                                     else
                                                     {
                                                         Txn.SetTimeOutMonitor(false);
-                                                        Txn.SetTimeOut(Convert.ToInt32(Recipe.Get(SystemConfig.Get().CurrentRecipe).motion_timeout)*1000);
+                                                        Txn.SetTimeOut(30000);
                                                         Txn.SetTimeOutMonitor(true);
                                                         TransactionList.TryAdd(key, Txn);
                                                     }
