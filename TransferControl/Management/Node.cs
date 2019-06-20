@@ -638,28 +638,28 @@ namespace TransferControl.Management
                 txn.AdrNo = AdrNo;
                 txn.NodeName = this.Name;
                 txn.NodeType = Type;
-                if (txn.Value != null)
-                {
-                    if (!txn.Value.Equals(""))
-                    {
-                        CmdParamManagement.ParamMapping Mapping = CmdParamManagement.FindMapping(this.Brand.ToUpper(), txn.Method, "Value", txn.Value);
-                        if (Mapping != null)
-                        {
-                            txn.Value = Mapping.MappingCode;
-                        }
-                    }
-                }
-                if (txn.Arm != null)
-                {
-                    if (!txn.Arm.Equals(""))
-                    {
-                        CmdParamManagement.ParamMapping Mapping = CmdParamManagement.FindMapping(this.Brand.ToUpper(), txn.Method, "Arm", txn.Arm);
-                        if (Mapping != null)
-                        {
-                            txn.Arm = Mapping.MappingCode;
-                        }
-                    }
-                }
+                //if (txn.Value != null)
+                //{
+                //    if (!txn.Value.Equals(""))
+                //    {
+                //        CmdParamManagement.ParamMapping Mapping = CmdParamManagement.FindMapping(this.Brand.ToUpper(), txn.Method, "Value", txn.Value);
+                //        if (Mapping != null)
+                //        {
+                //            txn.Value = Mapping.MappingCode;
+                //        }
+                //    }
+                //}
+                //if (txn.Arm != null)
+                //{
+                //    if (!txn.Arm.Equals(""))
+                //    {
+                //        CmdParamManagement.ParamMapping Mapping = CmdParamManagement.FindMapping(this.Brand.ToUpper(), txn.Method, "Arm", txn.Arm);
+                //        if (Mapping != null)
+                //        {
+                //            txn.Arm = Mapping.MappingCode;
+                //        }
+                //    }
+                //}
 
                 if (!txn.Position.Equals(""))
                 {

@@ -469,6 +469,7 @@ namespace TransferControl.CommandConvert
                     CommandReturnMessage each = new CommandReturnMessage();
                     each.OrgMsg = Msg;
                     each.Command = Msg.Substring(Msg.IndexOf('<') + 1, Msg.IndexOf('>') - Msg.IndexOf('<') - 1);
+                    each.CommandType = "CMD";
                     string[] content = each.Command.Split(',');
                     for (int i = 0; i < content.Length; i++)
                     {
@@ -504,7 +505,7 @@ namespace TransferControl.CommandConvert
                                             each.Value = content[2] + ":" + content[4];
                                         break;
                                     default:
-                                        each.CommandType = content[1];
+                                        
                                         break;
                                 }
                                 break;

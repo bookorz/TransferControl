@@ -11,7 +11,7 @@ namespace TransferControl.CommandConvert
     public class EncoderRobot
     {
         private string Supplier;
-  
+
 
         /// <summary>
         /// Robot Encoder
@@ -23,7 +23,7 @@ namespace TransferControl.CommandConvert
             try
             {
                 Supplier = supplier;
-          
+
             }
             catch (Exception ex)
             {
@@ -306,6 +306,20 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}SET:SERVO:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, sv) + EndCode();
                     break;
+                case "KAWASAKI":
+                    if (sv.Equals("1"))
+                    {
+                        commandStr = "{0},SERV,{1}";
+                        commandStr = string.Format(commandStr, Convert.ToInt16(Sequence).ToString("000"), Address);
+                        commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    }
+                    else
+                    {
+                        commandStr = "{0},STOP,{1}";
+                        commandStr = string.Format(commandStr, Convert.ToInt16(Sequence).ToString("000"), Address);
+                        commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    }
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -334,6 +348,12 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "0") + EndCode();
+                    break;
+                case "KAWASAKI":
+
+                    commandStr = "{0},GETS,{1},{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -365,6 +385,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "3") + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "GAH");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -388,6 +413,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:GETW_:{2},{3},{4}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot,"GBH");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -418,6 +448,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "1") + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "GBX");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -447,12 +482,31 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "2") + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "GAX");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
             return commandStr;
         }
-
+        public string GetPresence(string Address, string Sequence, string Arm)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "KAWASAKI":
+                    commandStr = "{0},SENS,{1},{2}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm));
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr;
+        }
         /// <summary>
         /// 各軸移動至 HOME 位置:Normal Home [ SANWA, KAWASAKI ]
         /// </summary>
@@ -468,6 +522,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:HOME_";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},HOMA,{1}";
+                    commandStr = string.Format(commandStr, Sequence, Address);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -606,6 +665,20 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}SET:MODE_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, vl) + EndCode();
                     break;
+                case "KAWASAKI":
+                    switch (vl)
+                    {
+                        case "0":
+                            vl = "Real";
+                            break;
+                        case "1":
+                            vl = "Simu";
+                            break;
+                    }
+                    commandStr = "{0},SMOD,{1}";
+                    commandStr = string.Format(commandStr, Sequence, vl);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -627,6 +700,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}GET:MODE_";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},RMOD";
+                    commandStr = string.Format(commandStr, Sequence);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -944,6 +1022,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "0") + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},PUTS,{1},{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -968,6 +1051,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "3") + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "PAH");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -995,6 +1083,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "2") + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "PAX");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1019,6 +1112,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:PUTW_:{2},{3},{4}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "PBH");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1045,6 +1143,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "1") + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "PBX");
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1066,6 +1169,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:RET__";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},HOMH,{1}";
+                    commandStr = string.Format(commandStr, Sequence, Address);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1195,6 +1303,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}SET:SP___:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, vl) + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},SSPD,{1},{2}";
+                    commandStr = string.Format(commandStr, Sequence, Address, vl);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1272,8 +1385,8 @@ namespace TransferControl.CommandConvert
             return commandStr;
         }
 
-        
-       
+
+
         /// <summary>
         /// 取得指定點位欄位的資訊
         /// </summary>
@@ -1290,7 +1403,7 @@ namespace TransferControl.CommandConvert
                 case "SANWA":
                 case "ATEL_NEW":
                     commandStr = "${0}{1}GET:PDATA:{2},{3}";
-                    commandStr = string.Format(commandStr, Address, Sequence, pno,no) + EndCode();
+                    commandStr = string.Format(commandStr, Address, Sequence, pno, no) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1315,6 +1428,7 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}GET:MAPT_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, no) + EndCode();
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1360,13 +1474,18 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}GET:SP___";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},RSPD,{1}";
+                    commandStr = string.Format(commandStr, Sequence, Address);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
             return commandStr;
         }
 
-      
+
 
         /// <summary>
         /// Robot 狀態取得 [ SANWA, KAWASAKI, ATEL ]
@@ -1405,7 +1524,7 @@ namespace TransferControl.CommandConvert
                 case "SANWA":
                 case "ATEL_NEW":
                     commandStr = "${0}{1}GET:RIO__:{2}";
-                    commandStr = string.Format(commandStr, Address, Sequence,nol) + EndCode();
+                    commandStr = string.Format(commandStr, Address, Sequence, nol) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1450,14 +1569,14 @@ namespace TransferControl.CommandConvert
                 case "SANWA":
                 case "ATEL_NEW":
                     commandStr = "${0}{1}GET:TEACH:{2}";
-                    commandStr = string.Format(commandStr, Address, Sequence,pno) + EndCode();
+                    commandStr = string.Format(commandStr, Address, Sequence, pno) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
             }
             return commandStr;
         }
-   
+
         /// <summary>
         /// Panel(Wafer)保持  : Panel(Wafer) Hold
         /// </summary>
@@ -1474,6 +1593,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:WHLD_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, arm) + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},HOLD,{1},{2}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(arm));
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1497,6 +1621,11 @@ namespace TransferControl.CommandConvert
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:WRLS_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, arm) + EndCode();
+                    break;
+                case "KAWASAKI":
+                    commandStr = "{0},RELS,{1},{2}";
+                    commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(arm));
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1528,8 +1657,24 @@ namespace TransferControl.CommandConvert
             return commandStr;
         }
 
-        
 
+        public string KawasakiArm(string Arm)
+        {
+            string result = "";
+            switch (Arm)
+            {
+                case "1":
+                    result = "H2";
+                    break;
+                case "2":
+                    result = "H1";
+                    break;
+                case "3":
+                    result = "HA";
+                    break;
+            }
+            return result;
+        }
         public string KawasakiCheckSum(string Parameter)
         {
             string strCheckSum = string.Empty;
@@ -1565,6 +1710,6 @@ namespace TransferControl.CommandConvert
             return strCheckSum;
         }
 
-      
+
     }
 }
