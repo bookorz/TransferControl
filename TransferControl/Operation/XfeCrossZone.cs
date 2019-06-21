@@ -440,7 +440,7 @@ namespace TransferControl.Operation
                                                     AllowDoubleArm = true;//連續Slot才能雙取
                                                 }
 
-                                                if (!Target.JobList.ContainsKey("1") && !Target.JobList.ContainsKey("2") && nodeLD.DoubleArmActive && Target.RArmActive && Target.LArmActive && AllowDoubleArm)//當可以雙取
+                                                if (!Target.JobList.ContainsKey("1") && !Target.JobList.ContainsKey("2") && Target.DoubleArmActive && Target.RArmActive && Target.LArmActive && AllowDoubleArm)//當可以雙取
                                                 {//RL全為空 & RL都可用 & 雙取啟動 & 兩片為連續Slot
                                                  //雙取要用第二片的Slot
                                                     req.Slot = AvailableSlotsList[1].Slot;

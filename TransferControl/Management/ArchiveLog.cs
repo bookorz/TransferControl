@@ -110,7 +110,7 @@ namespace TransferControl.Management
             }
             catch (Exception e)
             {
-                logger.Error(e.StackTrace);
+                logger.Error(e.Message + " bakPath:" + bakPath + "\n" + e.StackTrace);
                 isRun = false;//解除鎖定
             }
         }

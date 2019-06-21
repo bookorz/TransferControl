@@ -1503,6 +1503,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}GET:STS__";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},CSTA,{1}";
+                    commandStr = string.Format(commandStr, Sequence, Address);
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }

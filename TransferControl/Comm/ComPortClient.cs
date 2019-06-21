@@ -78,17 +78,17 @@ namespace TransferControl.Comm
 
         public void Reconnect()
         {
-            port.Close();
-            ConnReport.On_Connection_Disconnected("Close");
+            //port.Close();
+            //ConnReport.On_Connection_Disconnected("Close");
 
-            port = new SerialPort(cfg.GetPortName(), cfg.GetBaudRate(), Parity.None, 8, StopBits.One);
-            if (cfg.GetVendor().Equals("SMARTTAG"))
-            {
-                port.Handshake = Handshake.None;
-                port.RtsEnable = true;
-                port.ReadTimeout = 5000;
-                port.WriteTimeout = 5000;
-            }
+            //port = new SerialPort(cfg.GetPortName(), cfg.GetBaudRate(), Parity.None, 8, StopBits.One);
+            //if (cfg.GetVendor().Equals("SMARTTAG"))
+            //{
+            //    port.Handshake = Handshake.None;
+            //    port.RtsEnable = true;
+            //    port.ReadTimeout = 5000;
+            //    port.WriteTimeout = 5000;
+            //}
         }
 
         public void Start()
