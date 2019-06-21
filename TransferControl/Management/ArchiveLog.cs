@@ -88,6 +88,10 @@ namespace TransferControl.Management
                     File.Move(file, toFileName);
                 }
                 //壓縮檔案並刪除
+                if(!(Directory.Exists(bakPath)))
+                {
+                    Directory.CreateDirectory(bakPath);
+                }
                 string[] dir = Directory.GetDirectories(bakPath);
                 for (int n = 0; n < dir.Length; n++)
                 {
@@ -110,7 +114,7 @@ namespace TransferControl.Management
             }
             catch (Exception e)
             {
-                logger.Error(e.StackTrace);
+                logger.Error(e.Message + " bakPath:" + bakPath + "\n" + e.StackTrace);
                 isRun = false;//解除鎖定
             }
         }
