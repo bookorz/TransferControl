@@ -372,7 +372,14 @@ namespace TransferControl.Operation
                                         if (AvailableSlots.Count() != 0)
                                         {
                                             List<Job> AvailableSlotsList = AvailableSlots.ToList();
-                                            AvailableSlotsList.Sort((x, y) => { return Convert.ToInt32(x.Slot).CompareTo(Convert.ToInt32(y.Slot)); });
+                                            if (Recipe.Get(SystemConfig.Get().CurrentRecipe).auto_get_constrict.Equals("BOTTOM_UP"))
+                                            {
+                                                AvailableSlotsList.Sort((x, y) => { return Convert.ToInt32(x.Slot).CompareTo(Convert.ToInt32(y.Slot)); });
+                                            }
+                                            else
+                                            {
+                                                AvailableSlotsList.Sort((x, y) => { return -Convert.ToInt32(x.Slot).CompareTo(Convert.ToInt32(y.Slot)); });
+                                            }
                                             Job j;
                                             if (AvailableSlotsList.Count == 1)//Port剩下一片
                                             {
@@ -724,12 +731,14 @@ namespace TransferControl.Operation
                                     case "TRANSFER_PUT_UNLOADPORT":
                                         //檢查目前狀態是否要去放
 
-
-                                        if (CheckWIPForUnload(Target))
+                                        if (!Target.ForcePutToUnload)
                                         {
-                                            //還有片要處理
-                                            Target.LockOn = "";
-                                            continue;
+                                            if (CheckWIPForUnload(Target))
+                                            {
+                                                //還有片要處理
+                                                Target.LockOn = "";
+                                                continue;
+                                            }
                                         }
                                         if (Target.DoubleArmActive && Target.RArmActive && Target.LArmActive && Target.JobList.Count == 2)
                                         {//支援雙放

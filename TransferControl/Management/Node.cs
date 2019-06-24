@@ -87,6 +87,7 @@ namespace TransferControl.Management
         /// 鎖定Robot不能執行其他命令
         /// </summary>
         public bool GetMutex { get; set; }
+        public bool ForcePutToUnload { get; set; }
         /// <summary>
         /// LoadPort用於標記True為目前不能取放片，其他裝置用於標記True為正在執行命令中
         /// </summary>
@@ -377,12 +378,12 @@ namespace TransferControl.Management
             E87_ReservationState = 0;
             E87_AssociationState = 0;
             Home_Position = false;
-           
-            //if (Type.Equals("LOADPORT"))
-            //{
-            //    State = "Ready To Load";
-            //}
-            LockOn = "";
+            ForcePutToUnload = false;
+             //if (Type.Equals("LOADPORT"))
+             //{
+             //    State = "Ready To Load";
+             //}
+             LockOn = "";
             HasAlarm = false;
             LastFinMethod = "";
             CurrentPoint = "";

@@ -1615,41 +1615,43 @@ namespace TransferControl.Management
                         tk = tmp1;
 
                         tk.Sort((x, y) => { return x.TaskIndex.CompareTo(y.TaskIndex); });
-
+                        CurrentProceedTask CurrTask;
+                        if (ExcutedTask == null)
+                        {
+                            CurrTask = new CurrentProceedTask();
+                        }
+                        else
+                        {
+                            CurrTask = ExcutedTask;
+                        }
+                        if (!MainTaskId.Equals(""))
+                        {//記下mainTask ID
+                            CurrTask.MainTaskId = MainTaskId;
+                        }
+                        else
+                        {
+                            if (Id.Equals(CurrTask.MainTaskId))
+                            {
+                                CurrTask.MainTaskId = "";//sub task已做完，清除main task id
+                            }
+                        }
                         if (tk.Count != 0)
                         {
-                            CurrentProceedTask CurrTask;
-                            if (ExcutedTask == null)
-                            {
-                                CurrTask = new CurrentProceedTask();
-                            }
-                            else
-                            {
-                                CurrTask = ExcutedTask;
-                            }
-                            if (!MainTaskId.Equals(""))
-                            {//記下mainTask ID
-                                CurrTask.MainTaskId = MainTaskId;
-                            }
-                            else
-                            {
-                                if (Id.Equals(CurrTask.MainTaskId))
-                                {
-                                    CurrTask.MainTaskId = "";//sub task已做完，清除main task id
-                                }
-                            }
-
                             CurrTask.ProceedTask = tk.First();
-                            CurrTask.CheckList.Clear();
-                            if (param == null)
-                            {//拿之前的
-                                CurrTask.Params = LastParam;
-                            }
-                            else
-                            {//用傳入的
-                                CurrTask.Params = param;
-                            }
-                            CurrTask.Id = Id;
+                        }
+                        CurrTask.CheckList.Clear();
+                        if (param == null)
+                        {//拿之前的
+                            CurrTask.Params = LastParam;
+                        }
+                        else
+                        {//用傳入的
+                            CurrTask.Params = param;
+                        }
+                        CurrTask.Id = Id;
+                        if (tk.Count != 0)
+                        {
+
                             if (CurrentProceedTasks.TryAdd(Id, CurrTask))
                             {
                                 Task = CurrTask;
@@ -1872,6 +1874,7 @@ namespace TransferControl.Management
                         else
                         {
                             logger.Info("已找不到Task，完成工作，TaskId:" + Id);
+                            _TaskReport.On_Task_Finished(CurrTask);
                             Remove(Id);
 
                             //throw new Exception("已找不到Task，完成工作，TaskId:" + Id);
