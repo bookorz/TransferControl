@@ -66,6 +66,9 @@ namespace TransferControl.Config
         public Boolean is_use_aligner1 { get; set; }
         public Boolean is_use_aligner2 { get; set; }
         public string ocr_type { get; set; }
+        public string ocr_check_Rule { get; set; }
+        public string get_slot_order { get; set; }
+        public string put_slot_order { get; set; }
 
         ////ocr_config
         //public string ocr1_config { get; set; }
