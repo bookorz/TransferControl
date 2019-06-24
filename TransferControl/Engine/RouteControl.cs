@@ -749,97 +749,158 @@ namespace TransferControl.Engine
                                 case Transaction.Command.OCRType.Read:
                                 case Transaction.Command.OCRType.ReadM12:
                                 case Transaction.Command.OCRType.ReadT7:
-                                    if (Txn.TargetJobs.Count != 0)
+                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    Node Aligner = NodeManagement.Get(Node.Associated_Node);
+                                    if (Aligner == null)
                                     {
-                                        string[] OCRResult;
-
-                                        OCRResult = Msg.Value.Replace("[", "").Replace("]", "").Split(',');
-
-                                        //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
-
-                                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
-
-                                        switch (Txn.Method)
-                                        {
-                                            case Transaction.Command.OCRType.Read:
-                                                NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRResult = OCRResult[0];
-                                                break;
-                                            case Transaction.Command.OCRType.ReadM12:
-                                                NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Result = OCRResult[0];
-                                                break;
-                                            case Transaction.Command.OCRType.ReadT7:
-                                                NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Result = OCRResult[0];
-                                                break;
-                                        }
-                                        switch (Node.Brand)
-                                        {
-                                            case "HST":
-                                                if (OCRResult.Length >= 3)
-                                                {
-
-
-                                                    switch (Txn.Method)
-                                                    {
-                                                        case Transaction.Command.OCRType.Read:
-                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = OCRResult[2];
-                                                            break;
-                                                        case Transaction.Command.OCRType.ReadM12:
-                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = OCRResult[2];
-                                                            break;
-                                                        case Transaction.Command.OCRType.ReadT7:
-                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = OCRResult[2];
-                                                            break;
-                                                    }
-                                                }
-                                                else
-                                                {
-
-                                                    switch (Txn.Method)
-                                                    {
-                                                        case Transaction.Command.OCRType.Read:
-                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = "0";
-                                                            break;
-                                                        case Transaction.Command.OCRType.ReadM12:
-                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = "0";
-                                                            break;
-                                                        case Transaction.Command.OCRType.ReadT7:
-                                                            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = "0";
-                                                            break;
-                                                    }
-                                                }
-                                                if (OCRResult[0].IndexOf("*") == -1)
-                                                {
-                                                    Node.OCRSuccess = true;
-                                                }
-                                                else
-                                                {
-                                                    Node.OCRSuccess = false;
-                                                }
-                                                break;
-                                            case "COGNEX":
-                                                if (OCRResult.Length >= 3)
-                                                {
-                                                    Txn.TargetJobs[0].OCRScore = OCRResult[1];
-                                                    if (!OCRResult[2].Equals("0.000"))
-                                                    {
-                                                        Node.OCRSuccess = true;
-                                                    }
-                                                    else
-                                                    {
-                                                        Node.OCRSuccess = false;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    Txn.TargetJobs[0].OCRScore = "0";
-                                                }
-
-                                                break;
-                                        }
-
-                                        _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
+                                        logger.Error("Aligner is not found, Associated_Node setting incorrect.");
+                                        break;
                                     }
-                                    break;
+                                    Job j = Aligner.JobList["1"];
+                                    foreach (KeyValuePair<string, string> each in Node.Status)
+                                    {
+                                        switch (each.Key)
+                                        {
+                                            case "WAFER_ID":
+                                                if (!j.OCRPass && !j.OCR_M12_Pass && !j.OCR_T7_Pass)
+                                                {
+                                                    j.Host_Job_Id = each.Value;
+                                                }
+                                                switch (Txn.Method)
+                                                {
+                                                    case Transaction.Command.OCRType.Read:
+                                                        j.OCRResult = each.Value;
+                                                        break;
+                                                    case Transaction.Command.OCRType.ReadM12:
+                                                        j.OCR_M12_Result = each.Value;
+                                                        break;
+                                                    case Transaction.Command.OCRType.ReadT7:
+                                                        j.OCR_T7_Result = each.Value;
+                                                        break;
+                                                }
+                                                break;
+                                            case "SCORE":
+                                                switch (Txn.Method)
+                                                {
+                                                    case Transaction.Command.OCRType.Read:
+                                                        j.OCRScore = each.Value;
+                                                        break;
+                                                    case Transaction.Command.OCRType.ReadM12:
+                                                        j.OCR_M12_Score = each.Value;
+                                                        break;
+                                                    case Transaction.Command.OCRType.ReadT7:
+                                                        j.OCRScore = each.Value;
+                                                        break;
+                                                }
+                                                break;
+                                            case "PASS":
+                                                switch (Txn.Method)
+                                                {
+                                                    case Transaction.Command.OCRType.Read:
+                                                        j.OCRPass = bool.Parse(each.Value);
+                                                        break;
+                                                    case Transaction.Command.OCRType.ReadM12:
+                                                        j.OCR_M12_Pass = bool.Parse(each.Value);
+                                                        break;
+                                                    case Transaction.Command.OCRType.ReadT7:
+                                                        j.OCR_T7_Pass = bool.Parse(each.Value);
+                                                        break;
+                                                }
+                                                break;
+                                        }
+                                    }
+                                                //if (Txn.TargetJobs.Count != 0)
+                                                //{
+                                                //    string[] OCRResult;
+
+                                                //    OCRResult = Msg.Value.Replace("[", "").Replace("]", "").Split(',');
+
+                                                //    //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
+
+                                                //    NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
+
+                                                //    switch (Txn.Method)
+                                                //    {
+                                                //        case Transaction.Command.OCRType.Read:
+                                                //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRResult = OCRResult[0];
+                                                //            break;
+                                                //        case Transaction.Command.OCRType.ReadM12:
+                                                //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Result = OCRResult[0];
+                                                //            break;
+                                                //        case Transaction.Command.OCRType.ReadT7:
+                                                //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Result = OCRResult[0];
+                                                //            break;
+                                                //    }
+                                                //    switch (Node.Brand)
+                                                //    {
+                                                //        case "HST":
+                                                //            if (OCRResult.Length >= 3)
+                                                //            {
+
+
+                                                //                switch (Txn.Method)
+                                                //                {
+                                                //                    case Transaction.Command.OCRType.Read:
+                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = OCRResult[2];
+                                                //                        break;
+                                                //                    case Transaction.Command.OCRType.ReadM12:
+                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = OCRResult[2];
+                                                //                        break;
+                                                //                    case Transaction.Command.OCRType.ReadT7:
+                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = OCRResult[2];
+                                                //                        break;
+                                                //                }
+                                                //            }
+                                                //            else
+                                                //            {
+
+                                                //                switch (Txn.Method)
+                                                //                {
+                                                //                    case Transaction.Command.OCRType.Read:
+                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = "0";
+                                                //                        break;
+                                                //                    case Transaction.Command.OCRType.ReadM12:
+                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = "0";
+                                                //                        break;
+                                                //                    case Transaction.Command.OCRType.ReadT7:
+                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = "0";
+                                                //                        break;
+                                                //                }
+                                                //            }
+                                                //            if (OCRResult[0].IndexOf("*") == -1)
+                                                //            {
+                                                //                Node.OCRSuccess = true;
+                                                //            }
+                                                //            else
+                                                //            {
+                                                //                Node.OCRSuccess = false;
+                                                //            }
+                                                //            break;
+                                                //        case "COGNEX":
+                                                //            if (OCRResult.Length >= 3)
+                                                //            {
+                                                //                Txn.TargetJobs[0].OCRScore = OCRResult[1];
+                                                //                if (!OCRResult[2].Equals("0.000"))
+                                                //                {
+                                                //                    Node.OCRSuccess = true;
+                                                //                }
+                                                //                else
+                                                //                {
+                                                //                    Node.OCRSuccess = false;
+                                                //                }
+                                                //            }
+                                                //            else
+                                                //            {
+                                                //                Txn.TargetJobs[0].OCRScore = "0";
+                                                //            }
+
+                                                //            break;
+                                                //    }
+
+                                                //    _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
+                                                //}
+                                                break;
                                 case Transaction.Command.OCRType.ReadConfig:
 
 

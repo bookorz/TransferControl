@@ -122,6 +122,8 @@
     <Compile Include="Management\TransactionRecord.cs" />
     <Compile Include="Operation\XfeCrossZone.cs" />
     <Compile Include="Parser\ASYSTParser.cs" />
+    <Compile Include="Parser\COGNEXParser.cs" />
+    <Compile Include="Parser\HSTParser.cs" />
     <Compile Include="Parser\IParser.cs" />
     <Compile Include="Parser\MessageParser.cs" />
     <Compile Include="Parser\Atel_newParser.cs" />

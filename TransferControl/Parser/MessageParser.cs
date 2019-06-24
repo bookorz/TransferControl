@@ -25,6 +25,12 @@ namespace TransferControl.Parser
                 case "ASYST":
                     P = new ASYSTParser();
                     break;
+                case "HST":
+                    P = new HSTParser();
+                    break;
+                case "COGNEX":
+                    P = new COGNEXParser();
+                    break;
                 default:
                     throw new Exception(Supplier + " 不存在");
                     

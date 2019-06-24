@@ -24,12 +24,15 @@ namespace TransferControl.Management
         public string OCRImgPath { get; set; }
         public string OCRScore { get; set; }
         public string OCRResult { get; set; }
+        public bool OCRPass { get; set; }
         public string OCR_M12_ImgPath { get; set; }
         public string OCR_M12_Score { get; set; }
         public string OCR_M12_Result { get; set; }
+        public bool OCR_M12_Pass { get; set; }
         public string OCR_T7_ImgPath { get; set; }
         public string OCR_T7_Score { get; set; }
         public string OCR_T7_Result { get; set; }
+        public bool OCR_T7_Pass { get; set; }
         public string Position { get; set; }
         public string FromFoupID { get; set; }
         public string ToFoupID { get; set; }
