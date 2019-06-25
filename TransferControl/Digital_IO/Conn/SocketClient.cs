@@ -311,8 +311,9 @@ namespace TransferControl.Digital_IO.Comm
                 {
                     client.EndConnect(iar);
                     IsconnectSuccess = true;
-                    StartKeepAlive(); //開始KeppAlive檢測
                     ConnReport.On_Connection_Connected("Connected");
+                    StartKeepAlive(); //開始KeppAlive檢測
+                    
                 }
                 catch (Exception e)
                 {

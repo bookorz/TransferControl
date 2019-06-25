@@ -12,7 +12,7 @@ using TransferControl.Config;
 
 namespace TransferControl.Controller
 {
-    public class DeviceController : IConnectionReport, ITransactionReport,IController
+    public class DeviceController : IConnectionReport, ITransactionReport, IController
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(DeviceController));
         public ICommandReport _ReportTarget;
@@ -25,7 +25,7 @@ namespace TransferControl.Controller
         public string Status = "Disconnected";
         private bool _IsConnected { get; set; }
         public int TrxNo = 1;
-        
+
 
         public string DeviceName { get; set; }
         public string DeviceType { get; set; }
@@ -103,7 +103,7 @@ namespace TransferControl.Controller
             this._IsConnected = false;
         }
 
-        
+
 
         public bool IsConnected()
         {
@@ -161,7 +161,7 @@ namespace TransferControl.Controller
 
         }
 
-       
+
 
         public bool DoWork(Transaction Txn, bool WaitForData = false)
         {
@@ -200,11 +200,8 @@ namespace TransferControl.Controller
             {
                 key = "1" + Txn.Type;
             }
-            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
-            {
-                key = Txn.AdrNo;
-            }
-            else
+
+            else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Type;
                 //支援同時多發命令
@@ -221,13 +218,16 @@ namespace TransferControl.Controller
                     }
                 }
             }
-            
+            else
+            {
+                key = Txn.AdrNo;
+            }
 
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
             {
-                
 
-                    
+
+
 
                 Txn.SetTimeOutReport(this);
                 Txn.SetTimeOutMonitor(true);
@@ -242,14 +242,14 @@ namespace TransferControl.Controller
                 //if (Vendor.ToUpper().Equals("ACDT"))
                 //{
                 //    byte[] byteAry = Encoding.UTF8.GetBytes(Txn.CommandEncodeStr);
-                        
+
 
                 //    logger.Debug(DeviceName + " Send:" + BitConverter.ToString(byteAry) + " Wafer:" + waferids);
                 //}
                 //else
                 //{
-                    logger.Debug(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
-               //}
+                logger.Debug(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
+                //}
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
                 {
@@ -310,13 +310,13 @@ namespace TransferControl.Controller
                 //if (Vendor.ToUpper().Equals("ACDT"))
                 //{
                 //    byte[] byteAry = Encoding.ASCII.GetBytes(Msg);
-                    
+
 
                 //    logger.Debug(DeviceName + " Recieve:" + BitConverter.ToString(byteAry));
                 //}
                 //else
                 //{
-                    logger.Debug(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
+                logger.Debug(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
                 //}
 
 
@@ -349,7 +349,7 @@ namespace TransferControl.Controller
                                         }
                                     }
                                 }
-                               
+
 
                                 string key = "";
                                 if (Vendor.ToUpper().Equals("KAWASAKI"))
@@ -361,11 +361,8 @@ namespace TransferControl.Controller
                                 {
                                     key = "1" + ReturnMsg.Command;
                                 }
-                                else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
-                                {
-                                    key = ReturnMsg.NodeAdr;
-                                }
-                                else
+
+                                else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
                                 {
                                     key = ReturnMsg.NodeAdr + ReturnMsg.Command;
                                     for (int seq = 0; seq <= 99; seq++)
@@ -380,6 +377,10 @@ namespace TransferControl.Controller
                                             logger.Error("seq is run out!");
                                         }
                                     }
+                                }
+                                else
+                                {
+                                    key = ReturnMsg.NodeAdr;
                                 }
                                 if (Vendor.ToUpper().Equals("KAWASAKI"))
                                 {
@@ -472,7 +473,7 @@ namespace TransferControl.Controller
                                                     else
                                                     {
                                                         Txn.SetTimeOutMonitor(false);
-                                                        Txn.SetTimeOut(Convert.ToInt32(Recipe.Get(SystemConfig.Get().CurrentRecipe).motion_timeout)*1000);
+                                                        Txn.SetTimeOut(Convert.ToInt32(Recipe.Get(SystemConfig.Get().CurrentRecipe).motion_timeout) * 1000);
                                                         Txn.SetTimeOutMonitor(true);
                                                         TransactionList.TryAdd(key, Txn);
                                                     }
@@ -691,12 +692,8 @@ namespace TransferControl.Controller
             {
                 key = "1";
             }
-            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
-            {
-                key = Txn.AdrNo;
 
-            }
-            else
+            else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Method;
                 for (int seq = 0; seq <= 99; seq++)
@@ -712,7 +709,11 @@ namespace TransferControl.Controller
                     }
                 }
             }
+            else
+            {
+                key = Txn.AdrNo;
 
+            }
             Txn.SetTimeOutMonitor(false);
             if (TransactionList.TryRemove(key, out Txn))
             {
@@ -775,12 +776,8 @@ namespace TransferControl.Controller
             {
                 key = "1";
             }
-            else if (Vendor.ToUpper().Equals("ASYST") || Vendor.ToUpper().Equals("SMARTTAG") || Vendor.ToUpper().Equals("ACDT"))
-            {
-                key = Txn.AdrNo;
 
-            }
-            else
+            else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Method;
                 for (int seq = 0; seq <= 99; seq++)
@@ -796,7 +793,11 @@ namespace TransferControl.Controller
                     }
                 }
             }
+            else
+            {
+                key = Txn.AdrNo;
 
+            }
             Txn.SetTimeOutMonitor(false);
             if (TransactionList.TryRemove(key, out Txn))
             {

@@ -105,8 +105,9 @@ namespace TransferControl.Management
                             this.Remove(Txn.FormName);
                             if (!Task.MainTaskId.Equals(""))
                             {
-                                this.Remove(Task.MainTaskId);
-                                Task.Id = Task.MainTaskId;
+                                //this.Remove(Task.MainTaskId);
+                                //Task.Id = Task.MainTaskId;
+                                Task = this.Remove(Task.MainTaskId);
                             }
 
                             _TaskReport.On_Task_Abort(Task, Node.Name, Report, ErrorMessage);
@@ -434,8 +435,10 @@ namespace TransferControl.Management
                                         {
                                             J = RouteControl.CreateJob();//當沒有帳時強制建帳
                                             J.Job_Id = JobManagement.GetNewID();
+                                            J.Host_Job_Id = J.Job_Id;
                                             J.Position = FNode.Name;
                                             J.Slot = FromSlot;
+                                            J.MapFlag = true;
                                             JobManagement.Add(J.Job_Id, J);
                                         }
                                         if (FNode.Type.ToUpper().Equals("LOADPORT"))
@@ -458,6 +461,7 @@ namespace TransferControl.Management
                                         {
                                             //放回UNLOADPORT，處理結束
                                             J.InProcess = false;
+                                            J.NeedProcess = false;
                                             J.EndTime = DateTime.Now;
                                             J.ToFoupID = TNode.FoupID;
                                             J.ToPort = TNode.Name;
@@ -1835,18 +1839,18 @@ namespace TransferControl.Management
                                     Node Node = NodeManagement.Get(ex.NodeName);
                                     if (Node != null)
                                     {
-                                        if (Node.ByPass)
-                                        {
-                                            logger.Error("ExcuteObj失敗，Node:" + ex.NodeName + " 目前為Bypass模式!");
-                                            CurrentProceedTasks.TryRemove(Id, out tmpTk);
-                                            ErrorMessage = "Bypass Mode";
-                                            return false;
-                                        }
-                                        else
-                                        {
+                                        //if (Node.ByPass)
+                                        //{
+                                        //    logger.Error("ExcuteObj失敗，Node:" + ex.NodeName + " 目前為Bypass模式!");
+                                        //    CurrentProceedTasks.TryRemove(Id, out tmpTk);
+                                        //    ErrorMessage = "Bypass Mode";
+                                        //    return false;
+                                        //}
+                                        //else
+                                        //{
 
                                             result = Node.SendCommand(ex.Txn, out ErrorMessage);
-                                        }
+                                        //}
                                     }
                                     else
                                     {
@@ -1874,7 +1878,7 @@ namespace TransferControl.Management
                         else
                         {
                             logger.Info("已找不到Task，完成工作，TaskId:" + Id);
-                            _TaskReport.On_Task_Finished(CurrTask);
+                            //_TaskReport.On_Task_Finished(CurrTask);
                             Remove(Id);
 
                             //throw new Exception("已找不到Task，完成工作，TaskId:" + Id);

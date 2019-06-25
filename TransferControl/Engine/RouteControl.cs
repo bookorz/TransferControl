@@ -790,7 +790,7 @@ namespace TransferControl.Engine
                                                         j.OCR_M12_Score = each.Value;
                                                         break;
                                                     case Transaction.Command.OCRType.ReadT7:
-                                                        j.OCRScore = each.Value;
+                                                        j.OCR_T7_Score = each.Value;
                                                         break;
                                                 }
                                                 break;
@@ -798,13 +798,13 @@ namespace TransferControl.Engine
                                                 switch (Txn.Method)
                                                 {
                                                     case Transaction.Command.OCRType.Read:
-                                                        j.OCRPass = bool.Parse(each.Value);
+                                                        j.OCRPass = each.Value.Equals("1")?true:false;
                                                         break;
                                                     case Transaction.Command.OCRType.ReadM12:
-                                                        j.OCR_M12_Pass = bool.Parse(each.Value);
+                                                        j.OCR_M12_Pass = each.Value.Equals("1") ? true : false;
                                                         break;
                                                     case Transaction.Command.OCRType.ReadT7:
-                                                        j.OCR_T7_Pass = bool.Parse(each.Value);
+                                                        j.OCR_T7_Pass = each.Value.Equals("1") ? true : false;
                                                         break;
                                                 }
                                                 break;
@@ -1329,13 +1329,13 @@ namespace TransferControl.Engine
         public void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task, string Location, string ReportType, string Message)
         {
             //TaskJob.Remove(Id);
-            
+            logger.Debug("On_Task_Abort");
             _UIReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
         }
 
         public void On_Task_Finished(TaskJobManagment.CurrentProceedTask Task)
         {
-            
+            logger.Debug("On_Task_Finished");
             _UIReport.On_TaskJob_Finished(Task);
         }
 

@@ -764,18 +764,21 @@ namespace TransferControl.Operation
                                         }
                                         else
                                         {//只能單放
-                                            if (Target.JobList.ContainsKey("1"))
-                                            {//放R
-                                                req.Position = Target.JobList["1"].Destination;
-                                                req.Arm = "1";
-                                                req.Slot = Target.JobList["1"].DestinationSlot;
+                                            var ArmWafers = (from each in Target.JobList.Values
+                                                             select each).OrderBy(x => x.DestinationSlot);
+                                            
+                                            if (Recipe.Get(SystemConfig.Get().CurrentRecipe).auto_put_constrict.Equals("BOTTOM_UP"))
+                                            {
+                                                ArmWafers = (from each in Target.JobList.Values
+                                                                 select each).OrderByDescending(x => x.DestinationSlot);     
                                             }
-                                            else if (Target.JobList.ContainsKey("2"))
-                                            {//放L
-                                                req.Position = Target.JobList["2"].Destination;
-                                                req.Arm = "2";
-                                                req.Slot = Target.JobList["2"].DestinationSlot;
-                                            }
+                          
+                                            if (ArmWafers.Count()!=0)
+                                            {
+                                                req.Position = ArmWafers.First().Destination;
+                                                req.Arm = ArmWafers.First().Slot;
+                                                req.Slot = ArmWafers.First().DestinationSlot;
+                                            }                                            
                                             else
                                             {//沒東西放了
                                                 Target.LockOn = "";
@@ -902,7 +905,7 @@ namespace TransferControl.Operation
 
                         param.Add("@Target", NodeName.ToString());
                         param.Add("@Slot", req.Slot);
-                        param.Add("@2Slot", req.Slot2);
+                        param.Add("@S2", req.Slot2);
                         param.Add("@Arm", req.Arm);
                         param.Add("@Value", req.Value);
                         param.Add("@V2", req.V2);

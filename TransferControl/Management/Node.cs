@@ -616,14 +616,14 @@ namespace TransferControl.Management
             bool result = false;
             try
             {
-                if (this.ByPass)
-                {
+                //if (this.ByPass)
+                //{
 
-                    logger.Debug("Command cancel,Cause " + this.Name + " in by pass mode.");
-                    this.IsExcuting = false;
-                    return true;
+                //    logger.Debug("Command cancel,Cause " + this.Name + " in by pass mode.");
+                //    this.IsExcuting = false;
+                //    return true;
 
-                }
+                //}
 
                 IController Ctrl = this.GetController();
                 if (this.Brand.ToUpper().Equals("KAWASAKI"))
