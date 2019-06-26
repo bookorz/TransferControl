@@ -80,12 +80,12 @@
     <Compile Include="Controller\IController.cs" />
     <Compile Include="Controller\ModbusController.cs" />
     <Compile Include="Digital_IO\ChangeHisRecord.cs" />
+    <Compile Include="Digital_IO\Comm\IConnection.cs" />
+    <Compile Include="Digital_IO\Comm\IConnectionReport.cs" />
+    <Compile Include="Digital_IO\Comm\SocketClient.cs" />
     <Compile Include="Digital_IO\Config\ConfigTool.cs" />
     <Compile Include="Digital_IO\Config\CtrlConfig.cs" />
     <Compile Include="Digital_IO\Config\ParamConfig.cs" />
-    <Compile Include="Digital_IO\Conn\IConnection.cs" />
-    <Compile Include="Digital_IO\Conn\IConnectionReport.cs" />
-    <Compile Include="Digital_IO\Conn\SocketClient.cs" />
     <Compile Include="Digital_IO\Controller\ICPconDigitalController.cs" />
     <Compile Include="Digital_IO\Controller\IDIOController.cs" />
     <Compile Include="Digital_IO\Controller\IDIOReport.cs" />

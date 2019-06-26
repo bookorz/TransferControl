@@ -26,6 +26,7 @@ namespace TransferControl.Management
         public class CurrentProceedTask
         {
             public string Id { get; set; }
+            
             public TaskJob ProceedTask { get; set; }
             public Dictionary<string, string> Params { get; set; }
             public List<TaskJob.Excuted> CheckList = new List<TaskJob.Excuted>();
@@ -1469,6 +1470,10 @@ namespace TransferControl.Management
                             return false;
                         }
                     }
+                    else
+                    {
+                        logger.Info("開始新的Task:" + taskName);
+                    }
 
                     if (TaskJobList.TryGetValue(taskName, out tk))
                     {
@@ -1877,7 +1882,7 @@ namespace TransferControl.Management
                         }
                         else
                         {
-                            logger.Info("已找不到Task，完成工作，TaskId:" + Id);
+                            logger.Info("已找不到Task，完成工作，Task:" + CurrTask.ProceedTask.TaskName);
                             //_TaskReport.On_Task_Finished(CurrTask);
                             Remove(Id);
 

@@ -13,7 +13,7 @@ namespace TransferControl.Digital_IO.Comm
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(SocketClient));
 
-        
+
         //委托
         private delegate void delSocketDataArrival(byte[] data);
         delSocketDataArrival socketDataArrival;
@@ -30,7 +30,7 @@ namespace TransferControl.Digital_IO.Comm
         private bool IsconnectSuccess = false; //異步連接情況，由異步連接回調函數置位
         private object lockObj_IsConnectSuccess = new object();
         IConnectionReport ConnReport;
-        
+
         int RDataLen = 100;  //固定長度傳送資料~ 可以針對自己的需要改長度 
         ///
 
@@ -313,7 +313,7 @@ namespace TransferControl.Digital_IO.Comm
                     IsconnectSuccess = true;
                     ConnReport.On_Connection_Connected("Connected");
                     StartKeepAlive(); //開始KeppAlive檢測
-                    
+
                 }
                 catch (Exception e)
                 {

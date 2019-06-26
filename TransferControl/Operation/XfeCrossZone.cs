@@ -372,7 +372,7 @@ namespace TransferControl.Operation
                                         if (AvailableSlots.Count() != 0)
                                         {
                                             List<Job> AvailableSlotsList = AvailableSlots.ToList();
-                                            if (Recipe.Get(SystemConfig.Get().CurrentRecipe).auto_get_constrict.Equals("BOTTOM_UP"))
+                                            if (Recipe.Get(SystemConfig.Get().CurrentRecipe).get_slot_order.Equals("BOTTOM_UP"))
                                             {
                                                 AvailableSlotsList.Sort((x, y) => { return Convert.ToInt32(x.Slot).CompareTo(Convert.ToInt32(y.Slot)); });
                                             }
@@ -450,8 +450,8 @@ namespace TransferControl.Operation
                                                 if (!Target.JobList.ContainsKey("1") && !Target.JobList.ContainsKey("2") && Target.DoubleArmActive && Target.RArmActive && Target.LArmActive && AllowDoubleArm)//當可以雙取
                                                 {//RL全為空 & RL都可用 & 雙取啟動 & 兩片為連續Slot
                                                  //雙取要用第二片的Slot
-                                                    req.Slot = AvailableSlotsList[1].Slot;
-                                                    req.Slot2 = AvailableSlotsList[0].Slot;
+                                                    req.Slot = Convert.ToInt16(AvailableSlotsList[1].Slot) > Convert.ToInt16(AvailableSlotsList[0].Slot)? AvailableSlotsList[1].Slot: AvailableSlotsList[0].Slot;
+                                                    req.Slot2 = Convert.ToInt16(AvailableSlotsList[1].Slot) < Convert.ToInt16(AvailableSlotsList[0].Slot) ? AvailableSlotsList[1].Slot : AvailableSlotsList[0].Slot;
                                                     req.TaskName = "TRANSFER_GET_LOADPORT_2ARM";
                                                     req.Arm = "3";
 
@@ -765,20 +765,20 @@ namespace TransferControl.Operation
                                         else
                                         {//只能單放
                                             var ArmWafers = (from each in Target.JobList.Values
-                                                             select each).OrderBy(x => x.DestinationSlot);
-                                            
-                                            if (Recipe.Get(SystemConfig.Get().CurrentRecipe).auto_put_constrict.Equals("BOTTOM_UP"))
+                                                             select each).OrderByDescending(x => x.DestinationSlot);
+
+                                            if (Recipe.Get(SystemConfig.Get().CurrentRecipe).put_slot_order.Equals("BOTTOM_UP"))
                                             {
                                                 ArmWafers = (from each in Target.JobList.Values
-                                                                 select each).OrderByDescending(x => x.DestinationSlot);     
+                                                             select each).OrderBy(x => x.DestinationSlot);
                                             }
-                          
-                                            if (ArmWafers.Count()!=0)
+
+                                            if (ArmWafers.Count() != 0)
                                             {
                                                 req.Position = ArmWafers.First().Destination;
                                                 req.Arm = ArmWafers.First().Slot;
                                                 req.Slot = ArmWafers.First().DestinationSlot;
-                                            }                                            
+                                            }
                                             else
                                             {//沒東西放了
                                                 Target.LockOn = "";
@@ -867,15 +867,13 @@ namespace TransferControl.Operation
                                             logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
                                             foreach (string uld in ULD_List)
                                             {
-                                                Node EachULD = NodeManagement.Get(uld);
-                                                if (EachULD != null)
+                                                new Thread(() =>
                                                 {
-                                                    new Thread(() =>
-                                                    {
-                                                        Thread.CurrentThread.IsBackground = true;
-                                                        _Report.On_UnLoadPort_Complete(EachULD);
-                                                    }).Start();
-                                                }
+                                                    Thread.CurrentThread.IsBackground = true;
+                                                    Node EachULD = NodeManagement.Get(uld);
+                                                    _Report.On_UnLoadPort_Complete(EachULD);
+                                                }).Start();
+
                                             }
                                             _Report.On_Transfer_Complete(this);
                                         }

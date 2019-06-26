@@ -248,7 +248,7 @@ namespace TransferControl.Controller
                 //}
                 //else
                 //{
-                logger.Debug(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
+                logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
                 //}
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
@@ -316,7 +316,7 @@ namespace TransferControl.Controller
                 //}
                 //else
                 //{
-                logger.Debug(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
+                logger.Info(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
                 //}
 
 

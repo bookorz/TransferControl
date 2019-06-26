@@ -47,7 +47,7 @@ namespace TransferControl.Controller
                 {
                     waferids += each.Job_Id + " ";
                 }
-                logger.Debug(DeviceName + " Send:" + Txn.ModbusMethod + " Wafer:" + waferids);
+                logger.Info(DeviceName + " Send:" + Txn.ModbusMethod + " Wafer:" + waferids);
                 //Txn.SetTimeOut(1000);
                 //Txn.SetTimeOutReport(this);
                 //Txn.SetTimeOutMonitor(true);
