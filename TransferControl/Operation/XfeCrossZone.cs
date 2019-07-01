@@ -756,7 +756,12 @@ namespace TransferControl.Operation
                                              //看哪一片的Slot在上面就先放
 
                                                 var ArmWafers = (from each in Target.JobList.Values
-                                                                 select each).OrderByDescending(x => x.DestinationSlot);
+                                                                 select each).OrderByDescending(x => Convert.ToInt16(x.DestinationSlot));
+                                                if (Recipe.Get(SystemConfig.Get().CurrentRecipe).put_slot_order.Equals("BOTTOM_UP"))
+                                                {
+                                                    ArmWafers = (from each in Target.JobList.Values
+                                                                 select each).OrderBy(x => Convert.ToInt16(x.DestinationSlot));
+                                                }
                                                 req.Position = ArmWafers.First().Destination;
                                                 req.Arm = ArmWafers.First().Slot;
                                                 req.Slot = ArmWafers.First().DestinationSlot;
@@ -765,12 +770,12 @@ namespace TransferControl.Operation
                                         else
                                         {//只能單放
                                             var ArmWafers = (from each in Target.JobList.Values
-                                                             select each).OrderByDescending(x => x.DestinationSlot);
+                                                             select each).OrderByDescending(x => Convert.ToInt16(x.DestinationSlot));
 
                                             if (Recipe.Get(SystemConfig.Get().CurrentRecipe).put_slot_order.Equals("BOTTOM_UP"))
                                             {
                                                 ArmWafers = (from each in Target.JobList.Values
-                                                             select each).OrderBy(x => x.DestinationSlot);
+                                                             select each).OrderBy(x => Convert.ToInt16(x.DestinationSlot));
                                             }
 
                                             if (ArmWafers.Count() != 0)
