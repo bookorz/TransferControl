@@ -831,18 +831,14 @@ namespace TransferControl.Operation
                                 switch (req.TaskName)
                                 {
                                     case "TRANSFER_LOADPORT_CLOSE":
-                                        nodeLD = NodeManagement.Get(LD);
-                                        var AvailableSlots = from eachSlot in nodeLD.JobList.Values.ToList()
-                                                             where eachSlot.MapFlag && !eachSlot.ErrPosition && !eachSlot.Locked
-                                                             select eachSlot;
-                                        if (AvailableSlots.Count() == 0)
-                                        {
+                                        
+                                        
                                             new Thread(() =>
                                             {
                                                 Thread.CurrentThread.IsBackground = true;
                                                 _Report.On_LoadPort_Complete(Target);
                                             }).Start();
-                                        }
+                                        
                                         continue;
                                         break;
                                     case "TRANSFER_UNLOADPORT_CLOSE":
