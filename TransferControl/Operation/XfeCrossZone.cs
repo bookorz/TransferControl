@@ -854,6 +854,19 @@ namespace TransferControl.Operation
                                         //if (Available.Count() != 0)
                                         //{
                                         //還沒滿就取消動作
+                                        var LeftWafer = from each in JobManagement.GetJobList()
+                                                        where each.Destination.ToUpper().Equals(Target.Name.ToUpper()) && !each.Position.ToUpper().Equals(Target.Name.ToUpper())
+                                                        select each;
+                                        if (LeftWafer.Count() == 0)
+                                        {
+                                            new Thread(() =>
+                                                {
+                                                    Thread.CurrentThread.IsBackground = true;
+                                                   
+                                                    _Report.On_UnLoadPort_Complete(Target);
+                                                }).Start();
+                                        }
+
                                         var Available = from each in JobManagement.GetJobList()
                                                         where (each.NeedProcess && each.FromPort.ToUpper().Equals(LD.ToUpper())) || (each.InProcess && !each.Destination.Equals(each.Position))
                                                         select each;
@@ -865,16 +878,16 @@ namespace TransferControl.Operation
                                             watch.Stop();
                                             ProcessTime = watch.ElapsedMilliseconds;
                                             logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                            foreach (string uld in ULD_List)
-                                            {
-                                                new Thread(() =>
-                                                {
-                                                    Thread.CurrentThread.IsBackground = true;
-                                                    Node EachULD = NodeManagement.Get(uld);
-                                                    _Report.On_UnLoadPort_Complete(EachULD);
-                                                }).Start();
+                                            //foreach (string uld in ULD_List)
+                                            //{
+                                            //    new Thread(() =>
+                                            //    {
+                                            //        Thread.CurrentThread.IsBackground = true;
+                                            //        Node EachULD = NodeManagement.Get(uld);
+                                            //        _Report.On_UnLoadPort_Complete(EachULD);
+                                            //    }).Start();
 
-                                            }
+                                            //}
                                             _Report.On_Transfer_Complete(this);
                                         }
                                         continue;

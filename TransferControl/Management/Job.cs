@@ -18,6 +18,7 @@ namespace TransferControl.Management
         public bool InProcess { get; set; }
         public bool NeedProcess { get; set; }
         public bool AbortProcess { get; set; }
+        public bool IsReversed { get; set; }
         public bool ProcessFlag { get; set; }
         public bool AlignerFlag { get; set; }
         public bool OCRFlag { get; set; }
@@ -87,6 +88,7 @@ namespace TransferControl.Management
             OcrCodeList = new List<OCRInfo>();
             ToPort = "";
             ToPortSlot = "";
+            IsReversed = false;
         }
 
         public void PositionChangeReport()
@@ -159,6 +161,7 @@ namespace TransferControl.Management
             this.DisplayDestination = "";
             this.DestinationSlot = "";
             this.NeedProcess = false;
+            this.IsReversed = false;
         }
 
         public class State
