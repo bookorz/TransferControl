@@ -250,42 +250,55 @@ namespace TransferControl.Operation
             bool a = false;
             bool b = false;
             bool c = false;
-            //找到所有被取出FOUP的WAFER
-            var ProcessList = from Job in JobManagement.GetJobList()
-                              where Job.InProcess
-                              select Job;
-
-            foreach (Job each in ProcessList)
-            {
-                Node dest = NodeManagement.Get(each.Destination);
-                //找尋到達目的地需要此ROBOT搬運的WAFER
-                //同時也不在此ROBOT手上
-                if ((dest.Associated_Node.ToUpper().Equals(Robot.Name.ToUpper()) && !each.Position.ToUpper().Equals(Robot.Name.ToUpper())))
+            if (Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)
+            {//剛從Aligner上取一片，當令一片還沒處理，先放Aligner
+                var ProcessList = from Job in Robot.JobList.Values
+                                  where !Job.AlignerFlag
+                                  select Job;
+                if (ProcessList.Count() != 0)
                 {
-                    a = true;
-                    break;
+                    result = true;
                 }
             }
-
-            //if (Robot.JobList.Count != 2)
-            //{
-            //    b = true;
-            //}
-
-            ProcessList = from Job in JobManagement.GetJobList()
-                          where Job.InProcess && Job.NeedProcess
-                          select Job;
-
-            if (ProcessList.Count() != 0)
+            else
             {
-                c = true;
-            }
+                //找到所有被取出FOUP的WAFER
+                var ProcessList = from Job in JobManagement.GetJobList()
+                                  where Job.InProcess
+                                  select Job;
 
-            result = (a || b || c)/* && Robot.JobList.Count != 2*/;
+                foreach (Job each in ProcessList)
+                {
+                    Node dest = NodeManagement.Get(each.Destination);
+                    //找尋到達目的地需要此ROBOT搬運的WAFER
+                    //同時也不在此ROBOT手上
+                    if ((dest.Associated_Node.ToUpper().Equals(Robot.Name.ToUpper()) && !each.Position.ToUpper().Equals(Robot.Name.ToUpper())))
+                    {
+                        a = true;
+                        break;
+                    }
+                }
+
+                //if (Robot.JobList.Count != 2)
+                //{
+                //    b = true;
+                //}
+
+                ProcessList = from Job in JobManagement.GetJobList()
+                              where Job.InProcess && Job.NeedProcess
+                              select Job;
+
+                if (ProcessList.Count() != 0)
+                {
+                    c = true;
+                }
+
+                result = (a || b || c)/* && Robot.JobList.Count != 2*/;
+            }
             return result;
         }
 
-
+        
         private void Engine(object NodeName)
         {
 
@@ -355,7 +368,7 @@ namespace TransferControl.Operation
                                 switch (req.TaskName)
                                 {
                                     case "TRANSFER_GET_LOADPORT":
-                                        if (CheckWIPForLoad(Target))//混和模式
+                                        if (CheckWIPForLoad(Target)&& !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)//混和模式 && 不在Exchange模式
                                         {
                                             //還有片要處理
                                             Target.LockOn = "";
@@ -390,7 +403,7 @@ namespace TransferControl.Operation
                                                     req.Arm = "1";
 
                                                 }
-                                                else if (!Target.JobList.ContainsKey("2") && Target.LArmActive)//L沒片且L為可用狀態
+                                                else if (!Target.JobList.ContainsKey("2") && Target.LArmActive && !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)//L沒片且L為可用狀態 && 不在Exchange模式
                                                 {
                                                     req.Arm = "2";
 
@@ -410,9 +423,17 @@ namespace TransferControl.Operation
                                                                 {
                                                                     continue;
                                                                 }
+                                                                
                                                                 //佇列裡面沒有才加
                                                                 Node.ActionRequest request = new Node.ActionRequest();
-                                                                request.TaskName = "TRANSFER_PUTW_" + Aligner.Name;
+                                                                if (Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange && Aligner.JobList.Count() != 0)
+                                                                {
+                                                                    request.TaskName = "TRANSFER_GET_" + Aligner.Name;
+                                                                }
+                                                                else
+                                                                {
+                                                                    request.TaskName = "TRANSFER_PUTW_" + Aligner.Name;
+                                                                }
                                                                 request.Position = Aligner.Name;
                                                                 //request.Arm = wafer.Slot;
                                                                 lock (Target.RequestQueue)
@@ -442,9 +463,9 @@ namespace TransferControl.Operation
                                             else//Port 有兩片以上
                                             {
                                                 bool AllowDoubleArm = false;
-                                                if (Math.Abs(Convert.ToInt32(AvailableSlotsList[1].Slot) - Convert.ToInt32(AvailableSlotsList[0].Slot)) == 1)
+                                                if (Math.Abs(Convert.ToInt32(AvailableSlotsList[1].Slot) - Convert.ToInt32(AvailableSlotsList[0].Slot)) == 1 && !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)
                                                 {
-                                                    AllowDoubleArm = true;//連續Slot才能雙取
+                                                    AllowDoubleArm = true;//連續Slot才能雙取 && 不在Exchange模式
                                                 }
 
                                                 if (!Target.JobList.ContainsKey("1") && !Target.JobList.ContainsKey("2") && Target.DoubleArmActive && Target.RArmActive && Target.LArmActive && AllowDoubleArm)//當可以雙取
@@ -468,7 +489,7 @@ namespace TransferControl.Operation
                                                     //{
                                                     //    req.Arm = "2";
                                                     //}
-                                                    if (!Target.JobList.ContainsKey("1") && Target.RArmActive && !Target.JobList.ContainsKey("2") && Target.LArmActive && AvailableSlotsList.Count() >= 2)
+                                                    if (!Target.JobList.ContainsKey("1") && Target.RArmActive && !Target.JobList.ContainsKey("2") && Target.LArmActive && AvailableSlotsList.Count() >= 2 && Target.LArmActive && !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)
                                                     {//R & L 都可用且有兩片能取
 
 
@@ -489,7 +510,7 @@ namespace TransferControl.Operation
                                                         req.Slot = j.Slot;
                                                         req.Arm = "1";
                                                     }
-                                                    else if (!Target.JobList.ContainsKey("2") && Target.LArmActive)//L沒片且L為可用狀態
+                                                    else if (!Target.JobList.ContainsKey("2") && Target.LArmActive && !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)//L沒片且L為可用狀態 && 不在Exchange模式
                                                     {
                                                         j = AvailableSlotsList.First();
                                                         req.Slot = j.Slot;
@@ -510,9 +531,17 @@ namespace TransferControl.Operation
                                                                     {
                                                                         continue;
                                                                     }
+                                                                   
                                                                     //佇列裡面沒有才加
                                                                     Node.ActionRequest request = new Node.ActionRequest();
-                                                                    request.TaskName = "TRANSFER_PUTW_" + Aligner.Name;
+                                                                    if (Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange && Aligner.JobList.Count() != 0)
+                                                                    {
+                                                                        request.TaskName = "TRANSFER_GET_" + Aligner.Name;
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        request.TaskName = "TRANSFER_PUTW_" + Aligner.Name;
+                                                                    }
                                                                     request.Position = Aligner.Name;
                                                                     //request.Arm = wafer.Slot;
                                                                     lock (Target.RequestQueue)
@@ -555,9 +584,19 @@ namespace TransferControl.Operation
                                                         {
                                                             continue;
                                                         }
+                                                        
+                                                            
+                                                        
                                                         //佇列裡面沒有才加
                                                         Node.ActionRequest request = new Node.ActionRequest();
-                                                        request.TaskName = "TRANSFER_PUTW_" + Aligner.Name;
+                                                        if (Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange && Aligner.JobList.Count() != 0)
+                                                        {
+                                                            request.TaskName = "TRANSFER_GET_" + Aligner.Name;
+                                                        }
+                                                        else
+                                                        {
+                                                            request.TaskName = "TRANSFER_PUTW_" + Aligner.Name;
+                                                        }
                                                         request.Position = Aligner.Name;
                                                         //request.Arm = wafer.Slot;
                                                         lock (Target.RequestQueue)
@@ -588,19 +627,35 @@ namespace TransferControl.Operation
                                                 nodeLD.Fetchable = false;
                                                 //檢查是不是搬完了
 
-                                                //var Available = from each in JobManagement.GetJobList()
-                                                //                where each.NeedProcess && !each.Destination.Equals(each.Position)
-                                                //                select each;
-                                                //if (Available.Count() == 0)
-                                                //{
-                                                watch.Stop();
-                                                ProcessTime = watch.ElapsedMilliseconds;
-                                                logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                                logger.Debug("XfeCrossZone Stop");
-                                                Running = false;
+                                                var Available = from each in JobManagement.GetJobList()
+                                                                where each.InProcess && !each.Destination.Equals(each.Position)
+                                                                select each;
+                                                if (Available.Count() != 0)
+                                                {
+                                                    Node.ActionRequest request = new Node.ActionRequest();
+                                                    request.TaskName = "TRANSFER_GET_" + Available.First().Position;
+                                                    request.Position = Available.First().Position;
+                                                    lock (Target.RequestQueue)
+                                                    {
+                                                        if (!Target.RequestQueue.ContainsKey(request.TaskName))
+                                                        {
+                                                            Target.RequestQueue.Add(request.TaskName, request);
+                                                           
+                                                        }
+                                                    }
+                                                    Target.LockOn = "";
+                                                }
+                                                else
+                                                {
 
-                                                _Report.On_Transfer_Complete(this);
+                                                    watch.Stop();
+                                                    ProcessTime = watch.ElapsedMilliseconds;
+                                                    logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+                                                    logger.Debug("XfeCrossZone Stop");
+                                                    Running = false;
 
+                                                    _Report.On_Transfer_Complete(this);
+                                                }
                                                 //    //結束工作
                                                 //}
 
@@ -624,6 +679,7 @@ namespace TransferControl.Operation
                                         }
                                         logger.Debug(req.Position + " is ready now.");
                                         pos.ReadyForPut = false;
+                                        pos.ReadyForGet = false;
                                         break;
                                     case "TRANSFER_PUT_ALIGNER01_2":
                                     case "TRANSFER_PUT_ALIGNER02_2":
@@ -632,33 +688,46 @@ namespace TransferControl.Operation
                                         break;
                                     case "TRANSFER_PUTW_ALIGNER01":
                                     case "TRANSFER_PUTW_ALIGNER02":
-                                        //決定要放R或L
-                                        if (LDRobot_Arm.Equals(""))
+                                        if (Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)
                                         {
-                                            var Available = from each in Target.JobList.Values
-                                                            where each.NeedProcess
-                                                            select each;
-
-                                            if (Available.Count() == 0)
-                                            {//當只有一台ALIGNER，被觸發放第二片但沒有時，略過此命令
+                                            Node al = NodeManagement.Get(req.Position);
+                                            if (al.JobList.Count != 0)
+                                            {
                                                 continue;
                                             }
-                                            List<Job> tmpForSort = Available.ToList();
-                                            tmpForSort.Sort((x, y) => { return -Convert.ToInt32(x.DestinationSlot).CompareTo(Convert.ToInt32(y.DestinationSlot)); });
-                                            //先放目的地Slot位置比較高的，讓取片Robot先放在R軸，確保可以做雙ARM放片
-                                            foreach (Job wafer in tmpForSort)
-                                            {
-                                                LDRobot_Arm = wafer.Slot;
-                                                wafer.NeedProcess = false;
-
-                                                break;
-                                            }
                                         }
-                                        req.Arm = LDRobot_Arm;
-                                        Target.LockOn = req.Position;
+                                        //決定要放R或L
+                                        if (LDRobot_Arm.Equals(""))
+                                            {
+                                                var Available = from each in Target.JobList.Values
+                                                                where each.NeedProcess
+                                                                select each;
+
+                                                if (Available.Count() == 0)
+                                                {//當只有一台ALIGNER，被觸發放第二片但沒有時，略過此命令
+                                                    continue;
+                                                }
+                                                List<Job> tmpForSort = Available.ToList();
+                                                tmpForSort.Sort((x, y) => { return -Convert.ToInt32(x.DestinationSlot).CompareTo(Convert.ToInt32(y.DestinationSlot)); });
+                                                //先放目的地Slot位置比較高的，讓取片Robot先放在R軸，確保可以做雙ARM放片
+                                                foreach (Job wafer in tmpForSort)
+                                                {
+                                                    LDRobot_Arm = wafer.Slot;
+                                                    wafer.NeedProcess = false;
+
+                                                    break;
+                                                }
+                                            }
+                                            req.Arm = LDRobot_Arm;
+                                            Target.LockOn = req.Position;
+                                            
                                         break;
                                     case "TRANSFER_GET_ALIGNER01":
                                     case "TRANSFER_GET_ALIGNER02":
+                                        if (Target.RobotGetState == 1)
+                                        {
+                                            continue;
+                                        }
                                         //決定要用R或L取
                                         if (ULDRobot_Arm.Equals(""))
                                         {
@@ -684,7 +753,7 @@ namespace TransferControl.Operation
                                             continue;
                                         }
                                         logger.Debug(req.Position + " is ready now.");
-                                        pos.ReadyForGet = false;
+                                        //pos.ReadyForGet = false;
                                         break;
 
                                     case "TRANSFER_GET_ALIGNER01_2":
@@ -726,6 +795,10 @@ namespace TransferControl.Operation
                                             }
                                         }
                                         req.Arm = ULDRobot_Arm;
+                                        if (req.Arm.Equals(""))
+                                        {
+                                            continue;
+                                        }
                                         Target.LockOn = req.Position;
                                         break;
                                     case "TRANSFER_PUT_UNLOADPORT":

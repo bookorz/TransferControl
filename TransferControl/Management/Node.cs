@@ -300,7 +300,8 @@ namespace TransferControl.Management
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
         private static DBUtil dBUtil = new DBUtil();
         public Carrier Carrier { get; set; }
-
+        public int RobotGetState { get; set; }
+        public int RobotPutState { get; set; }
         public class ActionRequest
         {
             public string TaskName { get; set; }
@@ -352,6 +353,8 @@ namespace TransferControl.Management
             {
                 Phase = "2";
             }
+            RobotGetState = 0;
+            RobotPutState = 0;
             Speed = "";
             ConfigList = "";
             ByPassCheck = false;
@@ -1069,6 +1072,7 @@ namespace TransferControl.Management
                                 {
                                     txn.Method = Transaction.Command.RobotType.DoubleGet;
                                 }
+                                this.RobotGetState = 0;
                                 break;
                             case Transaction.Command.RobotType.Put:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWafer(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
@@ -1076,30 +1080,39 @@ namespace TransferControl.Management
                                 {
                                     txn.Method = Transaction.Command.RobotType.DoublePut;
                                 }
+                                this.RobotPutState = 0;
                                 break;
                             case Transaction.Command.RobotType.DoubleGet:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWafer(AdrNo, txn.Seq, "3", txn.Point, "0", txn.Slot);
+                                this.RobotGetState = 0;
                                 break;
                             case Transaction.Command.RobotType.DoublePut:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWafer(AdrNo, txn.Seq, "3", txn.Point, txn.Slot);
+                                this.RobotPutState = 0;
                                 break;
                             case Transaction.Command.RobotType.WaitBeforeGet:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToStandBy(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
+                                this.RobotGetState = 1;
                                 break;
                             case Transaction.Command.RobotType.WaitBeforePut:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToStandBy(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
+                                this.RobotPutState = 1;
                                 break;
                             case Transaction.Command.RobotType.GetAfterWait:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToContinue(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
+                                this.RobotGetState = 3;
                                 break;
                             case Transaction.Command.RobotType.PutWithoutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToDown(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
+                                this.RobotPutState = 2;
                                 break;
                             case Transaction.Command.RobotType.GetWithoutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToUp(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
+                                this.RobotGetState = 2;
                                 break;
                             case Transaction.Command.RobotType.PutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToContinue(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
+                                this.RobotPutState = 3;
                                 break;
                             case Transaction.Command.RobotType.GetWait:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToReady(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);

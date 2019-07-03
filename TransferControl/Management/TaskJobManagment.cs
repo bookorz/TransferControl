@@ -468,7 +468,10 @@ namespace TransferControl.Management
                                             J.ToPort = TNode.Name;
                                             J.ToPortSlot = ToSlot;
                                         }
-
+                                        if (TNode.Type.ToUpper().Equals("ALIGNER"))
+                                        {
+                                            J.AlignerFlag = true;
+                                        }
                                         J.LastNode = J.Position;
                                         J.LastSlot = J.Slot;
 
@@ -587,23 +590,23 @@ namespace TransferControl.Management
                                                     {
                                                         OnList = OnList.Substring(0, OnList.Length - 1);
                                                     }
-                                                    else
-                                                    {
-                                                        OnList = "0," + NewConfig[0].ToString();
-                                                    }
+                                                    //else
+                                                    //{
+                                                    //    OnList = "0," + NewConfig[0].ToString();
+                                                    //}
                                                     if (OffList.Length != 0)
                                                     {
                                                         OffList = OffList.Substring(0, OffList.Length - 1);
                                                     }
-                                                    else
-                                                    {
-                                                        OffList = "0," + NewConfig[0].ToString();
-                                                    }
+                                                    //else
+                                                    //{
+                                                    //    OffList = "0," + NewConfig[0].ToString();
+                                                    //}
                                                     ExcutedTask.Params.Remove("@V4");
                                                     ExcutedTask.Params.Add("@V4", OnList);
                                                     ExcutedTask.Params.Remove("@V5");
                                                     ExcutedTask.Params.Add("@V5", OffList);
-                                                }
+                                                } 
                                                 result = true;
                                                 break;
                                             case "Get_M12_OCR_Config":

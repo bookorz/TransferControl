@@ -240,14 +240,15 @@ namespace TransferControl.Engine
                                     {
                                         if (Node.Name.Equals("LOADPORT01"))
                                         {
-                                            Mapping = "1111111110000000000000000";
+                                            Mapping = "1111111111111000000000000";
                                             //Mapping = "1110000000000000000000000";
 
                                             //Mapping = SystemConfig.Get().MappingData;
                                         }
-                                        if (Node.Name.Equals("LOADPORT02"))
+                                        if (Node.Name.Equals("LOADPORT03"))
                                         {
-                                            Mapping = "1111111110000000000000000";
+                                            //Mapping = "1111111110000000000000000";
+                                            Mapping = "0000000000000000000000000";
                                             //Mapping = SystemConfig.Get().MappingData;
                                         }
                                     }
