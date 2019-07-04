@@ -16,7 +16,8 @@ namespace TransferControl.Management
     {
 
         ILog logger = LogManager.GetLogger(typeof(Node));
-
+        public int AckTimeOut { get; set; }
+        public int MotionTimeOut { get; set; }
         public string ConnectionStatus { get; set; }
         /// <summary>
         /// 名稱
@@ -468,6 +469,7 @@ namespace TransferControl.Management
             isPool = false;
             PoolThread = false;
             PoolInterval = 50;
+            Speed = "100";
         }
         public void PoolStart(string TaskName)
         {
@@ -1363,7 +1365,11 @@ namespace TransferControl.Management
                     IsWaitData = true;
                 }
 
-
+                txn.AckTimeOut = this.AckTimeOut;
+                logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
+                int rate = 101 - Convert.ToInt32(this.Speed);
+                txn.MotionTimeOut = this.MotionTimeOut * rate;
+                logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
                 if (Ctrl.DoWork(txn, IsWaitData))
                 {
                     result = true;

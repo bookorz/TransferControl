@@ -359,6 +359,7 @@ namespace TransferControl.CommandConvert
                         break;
                     case "-2\r\n":
                         each.Type = CommandReturnMessage.ReturnType.Error;
+                        each.Value = "-2";
                         break;
                     default:
                         each.Type = CommandReturnMessage.ReturnType.Finished;

@@ -35,7 +35,9 @@ namespace TransferControl.Management
                             t.r_arm as RArmActive,
                             t.l_arm as LArmActive,
                             t.carrier_type AS CarrierType,
-                            t.mode as Mode
+                            t.mode as Mode,
+                            t.ack_timeout as AckTimeOut,
+                            t.motion_timeout as MotionTimeOut
                         FROM config_node t
                         WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);

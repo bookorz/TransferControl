@@ -36,6 +36,8 @@ namespace TransferControl.Management
         public bool LastOneScript { get; set; }
         public string FormName { get; set; }
         public bool ByPassTimeout { get; set; }
+        public int AckTimeOut { get; set; }
+        public int MotionTimeOut { get; set; }
 
         //逾時
         private System.Timers.Timer timeOutTimer = new System.Timers.Timer();

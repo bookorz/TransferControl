@@ -62,6 +62,7 @@ namespace TransferControl.Management
                     d.ConnectionType = row["ConnectionType"].ToString();
                     d.Enable =Convert.ToBoolean(Convert.ToInt32(row["Enable"].ToString()));
                     d.ControllerType = row["ControllerType"].ToString();
+                  
                     ctrl = d;
                 }
                 else if (row["ControllerType"].ToString().Equals("MODBUS"))

@@ -122,12 +122,18 @@ namespace TransferControl.Config
         public Boolean is_use_r_arm { get; set; }
         public Boolean is_use_l_arm { get; set; }
 
+        static Dictionary<string, Recipe> tmp = new Dictionary<string, Recipe>();
 
         public static Recipe Get(string fileName)
         {
             Recipe Content;
-            ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
-            Content = SysCfg.ReadFile("recipe/" + fileName + ".json");
+            if(!tmp.TryGetValue(fileName,out Content))
+            {
+                ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
+                Content = SysCfg.ReadFile("recipe/" + fileName + ".json");
+                Content.is_use_burnin = false;
+                tmp.Add(fileName, Content);
+            }
             return Content;
         }
         public static void Set(string fileName, Recipe recipe)
@@ -136,6 +142,8 @@ namespace TransferControl.Config
             {
                 ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
                 SysCfg.WriteFile("recipe/" + fileName + ".json", recipe);
+                tmp.Remove(fileName);
+                tmp.Add(fileName, recipe);
             }
         }
         public static Boolean Delete(string fileName)

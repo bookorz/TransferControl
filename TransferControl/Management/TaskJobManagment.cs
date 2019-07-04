@@ -1714,7 +1714,7 @@ namespace TransferControl.Management
                                             string TaskName = ExcuteObj[1];
                                             string errStr = "";
                                             CurrentProceedTask tmpTask;
-                                            Excute(Guid.NewGuid().ToString(), out errStr, out tmpTask, TaskName, null, Id);
+                                            Excute(Guid.NewGuid().ToString(), out errStr, out tmpTask, TaskName, CurrParam, Id);
                                             return true;
                                         }
 

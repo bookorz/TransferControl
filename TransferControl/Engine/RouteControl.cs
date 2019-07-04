@@ -240,17 +240,17 @@ namespace TransferControl.Engine
                                     {
                                         if (Node.Name.Equals("LOADPORT01"))
                                         {
-                                            Mapping = "1111111111111000000000000";
-                                            //Mapping = "1110000000000000000000000";
+                                            //Mapping = "1111111111111000000000000";
+                                            Mapping = "1000000000000000000000000";
 
                                             //Mapping = SystemConfig.Get().MappingData;
                                         }
-                                        if (Node.Name.Equals("LOADPORT03"))
-                                        {
-                                            //Mapping = "1111111110000000000000000";
-                                            Mapping = "0000000000000000000000000";
-                                            //Mapping = SystemConfig.Get().MappingData;
-                                        }
+                                        //if (Node.Name.Equals("LOADPORT03"))
+                                        //{
+                                        //    //Mapping = "1111111110000000000000000";
+                                        //    Mapping = "0000000000000000000000000";
+                                        //    //Mapping = SystemConfig.Get().MappingData;
+                                        //}
                                     }
 
                                     //if (Node.Name.Equals("LOADPORT04"))
@@ -602,6 +602,14 @@ namespace TransferControl.Engine
                         case "OCR":
                             switch (Txn.Method)
                             {
+                                case Transaction.Command.RobotType.GetSpeed:
+                                    if (Msg.Value.Equals("0") && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
+                                    {
+                                        Msg.Value = "100";
+                                    }
+
+                                    Node.Speed = Msg.Value;
+                                    break;
                                 case Transaction.Command.RobotType.GetRIO:
                                     MessageParser parser = new MessageParser(Node.Brand);
                                     Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);

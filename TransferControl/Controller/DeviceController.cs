@@ -37,6 +37,7 @@ namespace TransferControl.Controller
         public string PortName { get; set; }
         public int BaudRate { get; set; }
         public bool Enable { get; set; }
+        
         public string GetControllerType()
         {
             return this.ControllerType;
@@ -251,10 +252,10 @@ namespace TransferControl.Controller
                 logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
                 //}
                 Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
-                if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
-                {
-                    Txn.SetTimeOut(1000);
-                }
+                //if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
+                //{
+                    Txn.SetTimeOut(Txn.AckTimeOut);
+                //}
 
 
                 if (this.Vendor.Equals("SMARTTAG"))
@@ -473,7 +474,7 @@ namespace TransferControl.Controller
                                                     else
                                                     {
                                                         Txn.SetTimeOutMonitor(false);
-                                                        Txn.SetTimeOut(Convert.ToInt32(Recipe.Get(SystemConfig.Get().CurrentRecipe).motion_timeout) * 1000);
+                                                        Txn.SetTimeOut(Txn.MotionTimeOut);
                                                         Txn.SetTimeOutMonitor(true);
                                                         TransactionList.TryAdd(key, Txn);
                                                     }

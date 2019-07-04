@@ -413,7 +413,7 @@ namespace TransferControl.Operation
                                                     //無法再取片
                                                     if (Target.JobList.Count() != 0)
                                                     {//開始放片至Aligner
-                                                        Target.RequestQueue.Clear();
+                                                        //Target.RequestQueue.Clear();
                                                         int Aidx = 1;
                                                         foreach (Job wafer in Target.JobList.Values)
                                                         {
@@ -438,6 +438,7 @@ namespace TransferControl.Operation
                                                                 //request.Arm = wafer.Slot;
                                                                 lock (Target.RequestQueue)
                                                                 {
+                                                                    //Target.RequestQueue.Clear();
                                                                     if (!Target.RequestQueue.ContainsKey(request.TaskName))
                                                                     {
                                                                         if (Aidx == 2)
@@ -521,7 +522,7 @@ namespace TransferControl.Operation
                                                         //無法再取片
                                                         if (Target.JobList.Count() != 0)
                                                         {//開始放片至Aligner
-                                                            Target.RequestQueue.Clear();
+                                                            //Target.RequestQueue.Clear();
                                                             int Aidx = 1;
                                                             foreach (Job wafer in Target.JobList.Values)
                                                             {
@@ -546,6 +547,7 @@ namespace TransferControl.Operation
                                                                     //request.Arm = wafer.Slot;
                                                                     lock (Target.RequestQueue)
                                                                     {
+                                                                        //Target.RequestQueue.Clear();
                                                                         if (!Target.RequestQueue.ContainsKey(request.TaskName))
                                                                         {
                                                                             if (Aidx == 2)
@@ -575,7 +577,7 @@ namespace TransferControl.Operation
                                             {
 
                                                 int Aidx = 1;
-                                                Target.RequestQueue.Clear();
+                                                //Target.RequestQueue.Clear();
                                                 foreach (Job wafer in Target.JobList.Values)
                                                 {
                                                     foreach (Node Aligner in NodeManagement.GetAlignerList())
@@ -601,6 +603,7 @@ namespace TransferControl.Operation
                                                         //request.Arm = wafer.Slot;
                                                         lock (Target.RequestQueue)
                                                         {
+                                                            //Target.RequestQueue.Clear();
                                                             if (!Target.RequestQueue.ContainsKey(request.TaskName))
                                                             {
                                                                 if (Aidx == 2)
@@ -690,8 +693,8 @@ namespace TransferControl.Operation
                                     case "TRANSFER_PUTW_ALIGNER02":
                                         if (Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)
                                         {
-                                            Node al = NodeManagement.Get(req.Position);
-                                            if (al.JobList.Count != 0)
+                                            Node alg = NodeManagement.Get(req.Position);
+                                            if (alg.JobList.Count != 0)
                                             {
                                                 continue;
                                             }
@@ -783,6 +786,11 @@ namespace TransferControl.Operation
                                     case "TRANSFER_GETW_ALIGNER01":
                                     case "TRANSFER_GETW_ALIGNER02":
                                         //決定要用R或L取
+                                        Node al = NodeManagement.Get(req.Position);
+                                        if (al.JobList.Count == 0)
+                                        {
+                                            continue;
+                                        }
                                         if (ULDRobot_Arm.Equals(""))
                                         {
                                             if (!Target.JobList.ContainsKey("1") && Target.RArmActive)//R沒片且R為可用狀態
@@ -909,14 +917,18 @@ namespace TransferControl.Operation
                                 switch (req.TaskName)
                                 {
                                     case "TRANSFER_LOADPORT_CLOSE":
-                                        
-                                        
+
+                                        var Available = from each in Target.JobList.Values
+                                                        where each.NeedProcess && !each.AbortProcess
+                                                        select each;
+                                        if (Available.Count() == 0)
+                                        {
                                             new Thread(() =>
                                             {
                                                 Thread.CurrentThread.IsBackground = true;
                                                 _Report.On_LoadPort_Complete(Target);
                                             }).Start();
-                                        
+                                        }
                                         continue;
                                         break;
                                     case "TRANSFER_UNLOADPORT_CLOSE":
@@ -941,29 +953,29 @@ namespace TransferControl.Operation
                                                 }).Start();
                                         }
 
-                                        var Available = from each in JobManagement.GetJobList()
-                                                        where (each.NeedProcess && each.FromPort.ToUpper().Equals(LD.ToUpper())) || (each.InProcess && !each.Destination.Equals(each.Position))
-                                                        select each;
-                                        if (Available.Count() == 0)
-                                        {//處理完成
-                                            logger.Debug("XfeCrossZone Stop");
-                                            Running = false;
+                                        //var Available = from each in JobManagement.GetJobList()
+                                        //                where (each.NeedProcess && each.FromPort.ToUpper().Equals(LD.ToUpper())) || (each.InProcess && !each.Destination.Equals(each.Position))
+                                        //                select each;
+                                        //if (Available.Count() == 0)
+                                        //{//處理完成
+                                        //    logger.Debug("XfeCrossZone Stop");
+                                        //    Running = false;
 
-                                            watch.Stop();
-                                            ProcessTime = watch.ElapsedMilliseconds;
-                                            logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                            //foreach (string uld in ULD_List)
-                                            //{
-                                            //    new Thread(() =>
-                                            //    {
-                                            //        Thread.CurrentThread.IsBackground = true;
-                                            //        Node EachULD = NodeManagement.Get(uld);
-                                            //        _Report.On_UnLoadPort_Complete(EachULD);
-                                            //    }).Start();
+                                        //    watch.Stop();
+                                        //    ProcessTime = watch.ElapsedMilliseconds;
+                                        //    logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+                                        //    //foreach (string uld in ULD_List)
+                                        //    //{
+                                        //    //    new Thread(() =>
+                                        //    //    {
+                                        //    //        Thread.CurrentThread.IsBackground = true;
+                                        //    //        Node EachULD = NodeManagement.Get(uld);
+                                        //    //        _Report.On_UnLoadPort_Complete(EachULD);
+                                        //    //    }).Start();
 
-                                            //}
-                                            _Report.On_Transfer_Complete(this);
-                                        }
+                                        //    //}
+                                        //    _Report.On_Transfer_Complete(this);
+                                        //}
                                         continue;
                                         //}
                                         //watch.Stop();
