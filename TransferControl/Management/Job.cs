@@ -124,6 +124,10 @@ namespace TransferControl.Management
                 this.AbortProcess = false;
                 //設定UnloadPort的補償角度
                 string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
+                if (!targetPort.CarrierType.Equals(""))
+                {
+                    Position += "_"+targetPort.CarrierType;
+                }
                 RobotPoint point = PointManagement.GetPoint(ULDRobot, Position, "300MM");
                 if (point != null)
                 {

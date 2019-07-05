@@ -944,25 +944,23 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.LoadPortType.MappingLoad:
-                                    //IO_State_Change(Node.Name, "Foup_Lock", true);
+                                case Transaction.Command.LoadPortType.Load:
+                                    Node.IsLoad = true;
                                     break;
                                 case Transaction.Command.LoadPortType.Unload:
                                 case Transaction.Command.LoadPortType.MappingUnload:
                                 case Transaction.Command.LoadPortType.UnDock:
-                                    //IO_State_Change(Node.Name, "Foup_Lock", false);
+                                    Node.IsLoad = false;
                                     _UIReport.On_Node_State_Changed(Node, "UnLoad Complete");
                                     break;
                                 case Transaction.Command.LoadPortType.InitialPos:
                                 case Transaction.Command.LoadPortType.ForceInitialPos:
+                                    Node.IsLoad = false;
                                     _UIReport.On_Node_State_Changed(Node, "Ready To Load");
-                                    //IO_State_Change(Node.Name, "Foup_Lock", false);
                                     Node.State = "READY";
                                     break;
-                                case Transaction.Command.LoadPortType.Clamp:
-                                    //IO_State_Change(Node.Name, "Foup_Lock", true);
-                                    break;
-                                case Transaction.Command.LoadPortType.UnClamp:
-                                    //IO_State_Change(Node.Name, "Foup_Lock", false);
+                                default:
+                                    Node.IsLoad = false;
                                     break;
                             }
                             break;
@@ -1169,7 +1167,7 @@ namespace TransferControl.Engine
 
                                 CarrierManagement.Remove(Node.Carrier);
                                 Node.Foup_Presence = false;
-
+                                Node.Foup_Placement = false;
                                 //IO_State_Change(Node.Name, "Foup_Presence", true);
                                 //IO_State_Change(Node.Name, "Foup_Placement", false);
                                 
@@ -1177,10 +1175,10 @@ namespace TransferControl.Engine
                             case "PODON":
                                 CarrierManagement.Add().SetLocation(Node.Name);
                                 Node.Foup_Presence = true;
-
+                                Node.Foup_Placement = true;
                                 //IO_State_Change(Node.Name, "Foup_Presence", false);
                                 //IO_State_Change(Node.Name, "Foup_Placement", true);
-                                
+
                                 break;
                             case "ABNST":
                                 //IO_State_Change(Node.Name, "Foup_Placement", false);

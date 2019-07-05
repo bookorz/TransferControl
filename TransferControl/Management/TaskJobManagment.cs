@@ -662,18 +662,18 @@ namespace TransferControl.Management
                                                     {
                                                         OnList = OnList.Substring(0, OnList.Length - 1);
                                                     }
-                                                    else
-                                                    {
-                                                        OnList = "0," + NewConfig[0].ToString();
-                                                    }
+                                                    //else
+                                                    //{
+                                                    //    OnList = "0," + NewConfig[0].ToString();
+                                                    //}
                                                     if (OffList.Length != 0)
                                                     {
                                                         OffList = OffList.Substring(0, OffList.Length - 1);
                                                     }
-                                                    else
-                                                    {
-                                                        OffList = "0," + NewConfig[0].ToString();
-                                                    }
+                                                    //else
+                                                    //{
+                                                    //    OffList = "0," + NewConfig[0].ToString();
+                                                    //}
                                                     ExcutedTask.Params.Remove("@V6");
                                                     ExcutedTask.Params.Add("@V6", OnList);
                                                     ExcutedTask.Params.Remove("@V7");
@@ -735,18 +735,18 @@ namespace TransferControl.Management
                                                     {
                                                         OnList = OnList.Substring(0, OnList.Length - 1);
                                                     }
-                                                    else
-                                                    {
-                                                        OnList = "0," + NewConfig[0].ToString();
-                                                    }
+                                                    //else
+                                                    //{
+                                                    //    OnList = "0," + NewConfig[0].ToString();
+                                                    //}
                                                     if (OffList.Length != 0)
                                                     {
                                                         OffList = OffList.Substring(0, OffList.Length - 1);
                                                     }
-                                                    else
-                                                    {
-                                                        OffList = "0," + NewConfig[0].ToString();
-                                                    }
+                                                    //else
+                                                    //{
+                                                    //    OffList = "0," + NewConfig[0].ToString();
+                                                    //}
 
                                                     ExcutedTask.Params.Remove("@V8");
                                                     ExcutedTask.Params.Add("@V8", OnList);
@@ -1543,6 +1543,7 @@ namespace TransferControl.Management
                                     SkipCondition = SkipCondition.Replace(item.Key, item.Value);
                                 }
                                 string[] SkipConditionAry = SkipCondition.Split(';');
+                                bool isSkip = false;
                                 foreach (string eachSkip in SkipConditionAry)
                                 {//過濾Task
                                     if (eachSkip.Trim().Equals(""))
@@ -1561,6 +1562,7 @@ namespace TransferControl.Management
                                             string AttrVal = CurrParam["@" + Attr].ToString().ToUpper();
                                             if (AttrVal.Equals(Value.ToUpper()))
                                             {
+                                                isSkip = true;
                                                 break;
                                             }
                                         }
@@ -1572,6 +1574,7 @@ namespace TransferControl.Management
                                             string AttrVal = CurrParam["@" + Attr].ToString().ToUpper();
                                             if (!AttrVal.Equals(Value.ToUpper()))
                                             {
+                                                isSkip = true;
                                                 break;
                                             }
                                         }
@@ -1595,7 +1598,7 @@ namespace TransferControl.Management
                                                 string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
                                                 if (AttrVal.Equals(Value.ToUpper()))
                                                 {
-                                                    tmp1.Remove(eachTask);
+                                                    isSkip = true;
                                                     break;
                                                 }
                                             }
@@ -1607,7 +1610,7 @@ namespace TransferControl.Management
                                                 string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
                                                 if (!AttrVal.Equals(Value.ToUpper()))
                                                 {
-                                                    tmp1.Remove(eachTask);
+                                                    isSkip = true;
                                                     break;
                                                 }
                                             }
@@ -1623,9 +1626,12 @@ namespace TransferControl.Management
                                             //throw new Exception("SkipCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
                                         }
                                     }
+                                    
+                                }
+                                if (!isSkip)
+                                {
                                     tmp1.Add(eachTask);
                                 }
-
                             }
 
 

@@ -233,6 +233,7 @@ namespace TransferControl.Management
         public bool LArmUnClamp { get; set; }
 
         public bool IsDock { get; set; }
+        public bool IsLoad { get; set; }
 
         public bool IsExcuting { get; set; }
 
@@ -410,6 +411,7 @@ namespace TransferControl.Management
             OrgSearchComplete = false;
             IsWaferHold = false;
             DesignatesAngle = "0";
+            IsLoad = false;
             IsExcuting = false;
             IsPause = false;
             CurrentSlotPosition = "??";
