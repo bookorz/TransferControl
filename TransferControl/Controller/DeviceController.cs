@@ -439,7 +439,19 @@ namespace TransferControl.Controller
                                 //{
                                 lock (Node)
                                 {
-
+                                    if (Node.Brand.ToUpper().Equals("COGNEX"))
+                                    {
+                                        if (ReturnMsg.Type == CommandReturnMessage.ReturnType.UserName)
+                                        {
+                                            conn.Send("admin\r\n");
+                                            continue;
+                                        }
+                                        if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Password)
+                                        {
+                                            conn.Send("\r\n");
+                                            continue;
+                                        }
+                                    }
                                     if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Event)
                                     {
                                         //_ReportTarget.On_Event_Trigger(Node, ReturnMsg);
@@ -550,14 +562,14 @@ namespace TransferControl.Controller
                                                 {
 
                                                     logger.Debug(DeviceName + "(On_Connection_Message Txn is not found. msg:" + Msg);
-                                                    return;
+                                                    continue;
                                                 }
                                             }
                                         }
                                         else
                                         {
                                             logger.Debug(DeviceName + "(On_Connection_Message Return type is null. msg:" + Msg);
-                                            return;
+                                            continue;
                                         }
                                     }
                                 }

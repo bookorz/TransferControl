@@ -28,9 +28,9 @@ namespace TransferControl.Parser
             string[] OCRResult;
 
             OCRResult = Message.Replace("[", "").Replace("]", "").Split(',');
-            result.Add("WaferID", OCRResult[0]);
+            result.Add("WAFER_ID", OCRResult[0]);
             result.Add("SCORE", OCRResult[1]);
-            result.Add("PASS", Convert.ToInt16(OCRResult[2]).ToString());
+            result.Add("PASS", Convert.ToInt32(Convert.ToDouble(OCRResult[2])).ToString());
             return result;
         }
     }

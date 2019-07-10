@@ -205,6 +205,9 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
+                    commandStr = "${0}{1}SET:STOP_:1";
+                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
                 case "ATEL_NEW":
                     commandStr = "${0}{1}SET:STOP_";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();

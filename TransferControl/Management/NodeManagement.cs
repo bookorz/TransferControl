@@ -68,7 +68,7 @@ namespace TransferControl.Management
                 //each.InitialComplete = false;
                 each.JobList.Clear();
 
-                each.Phase = "";
+               
                 each.PutOut = false;
                 //each.TransferQueue.Clear();
 
@@ -336,20 +336,6 @@ namespace TransferControl.Management
         //    return result;
         //}
 
-        public static Node GetNextRobot(string Destination)
-        {
-            Node result = null;
-
-            var findPoint = from point in PointManagement.GetPointList()
-                            where point.Position.ToUpper().Equals(Destination.ToUpper())
-                            select point;
-            if (findPoint.Count() != 0)
-            {
-                result = Get(findPoint.First().NodeName);
-            }
-
-            return result;
-        }
 
         //public static Node GetOCRByAligner(Node Aligner)
         //{

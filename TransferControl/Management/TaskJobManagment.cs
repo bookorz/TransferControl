@@ -26,7 +26,7 @@ namespace TransferControl.Management
         public class CurrentProceedTask
         {
             public string Id { get; set; }
-            
+
             public TaskJob ProceedTask { get; set; }
             public Dictionary<string, string> Params { get; set; }
             public List<TaskJob.Excuted> CheckList = new List<TaskJob.Excuted>();
@@ -90,12 +90,12 @@ namespace TransferControl.Management
             TaskJobManagment.CurrentProceedTask Task;
             lock (CurrentProceedTasks)
             {
-                if (this.IsTask(Txn.FormName, out Task))//如果是帶TaskID才檢查
+                if (this.IsTask(Txn.TaskId, out Task))//如果是帶TaskID才檢查
                 {
                     string ErrorMessage = "";
                     string Report = "";
                     string Location = "";
-                    if (!this.CheckTask(Txn.FormName, Node.Name, "CMD", Txn.Method, ReturnType, out ErrorMessage, out Report, out Location))
+                    if (!this.CheckTask(Txn.TaskId, Node.Name, "CMD", Txn.Method, ReturnType, out ErrorMessage, out Report, out Location))
                     {//還沒做完
                         if (Report.Equals("ACK"))
                         {
@@ -103,7 +103,7 @@ namespace TransferControl.Management
                         }
                         if (!ErrorMessage.Equals(""))
                         {//做完但沒通過檢查
-                            this.Remove(Txn.FormName);
+                            this.Remove(Txn.TaskId);
                             if (!Task.MainTaskId.Equals(""))
                             {
                                 //this.Remove(Task.MainTaskId);
@@ -119,7 +119,7 @@ namespace TransferControl.Management
                     else
                     {//做完且通過檢查，開始進行下一個Task
 
-                        if (!this.Excute(Txn.FormName, out ErrorMessage, out Task))
+                        if (!this.Excute(Txn.TaskId, out ErrorMessage, out Task))
                         {//如果沒有可以執行的Task，回報完成
                             if (Task == null)
                             {
@@ -548,7 +548,7 @@ namespace TransferControl.Management
                                                 TarNode.OCR_Read_TTL = rcp.is_use_ocr_ttl;
                                                 if (TarNode.OCR_Read_TTL)
                                                 {
-                                                    
+
 
                                                     NewConfig = "";
                                                     OnList = "";
@@ -606,7 +606,7 @@ namespace TransferControl.Management
                                                     ExcutedTask.Params.Add("@V4", OnList);
                                                     ExcutedTask.Params.Remove("@V5");
                                                     ExcutedTask.Params.Add("@V5", OffList);
-                                                } 
+                                                }
                                                 result = true;
                                                 break;
                                             case "Get_M12_OCR_Config":
@@ -1426,7 +1426,13 @@ namespace TransferControl.Management
             logger.Debug("result:" + result + " Report:" + Report + " Message:" + Message);
             return result;
         }
-
+        public void Clear()
+        {
+            lock (CurrentProceedTasks)
+            {
+                CurrentProceedTasks.Clear();
+            }
+        }
         public CurrentProceedTask Remove(string Id)
         {
             CurrentProceedTask tmp;
@@ -1626,7 +1632,7 @@ namespace TransferControl.Management
                                             //throw new Exception("SkipCondition失敗，找不到Node:" + NodeName + "，Task Name:" + ExcutedTask.ProceedTask.TaskName + " TaskIndex:" + ExcutedTask.ProceedTask.TaskIndex);
                                         }
                                     }
-                                    
+
                                 }
                                 if (!isSkip)
                                 {
@@ -1684,7 +1690,7 @@ namespace TransferControl.Management
                                 if (ExcuteObjStr.Trim().Equals(""))
                                 {
                                     Transaction t = new Transaction();
-                                    t.FormName = Id;
+                                    t.TaskId = Id;
                                     Next(new Node(), t, "");
                                     return true;
                                 }
@@ -1814,7 +1820,7 @@ namespace TransferControl.Management
                                             Txn.Arm2 = Arm2;
                                             Txn.Slot2 = Slot2;
                                             Txn.Value = Value;
-                                            Txn.FormName = Id;
+                                            Txn.TaskId = Id;
                                             //Txn.RecipeID = "300MM";
 
 
@@ -1844,7 +1850,7 @@ namespace TransferControl.Management
                                     if (NodeDisabled)
                                     {
                                         Transaction t = new Transaction();
-                                        t.FormName = Id;
+                                        t.TaskId = Id;
                                         Next(new Node(), t, "");
                                         return true;
                                     }
@@ -1869,7 +1875,7 @@ namespace TransferControl.Management
                                         //else
                                         //{
 
-                                            result = Node.SendCommand(ex.Txn, out ErrorMessage);
+                                        result = Node.SendCommand(ex.Txn, out ErrorMessage);
                                         //}
                                     }
                                     else

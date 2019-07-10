@@ -126,9 +126,9 @@ namespace TransferControl.Management
                 string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
                 if (!targetPort.CarrierType.Equals(""))
                 {
-                    Position += "_"+targetPort.CarrierType;
+                    Position += "_"+targetPort.CarrierType.Replace("FOSB","FOUP");
                 }
-                RobotPoint point = PointManagement.GetPoint(ULDRobot, Position, "300MM");
+                RobotPoint point = PointManagement.GetPoint(ULDRobot, Position);
                 if (point != null)
                 {
                     this.Offset = point.Offset;

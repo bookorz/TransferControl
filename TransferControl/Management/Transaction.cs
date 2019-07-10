@@ -34,7 +34,7 @@ namespace TransferControl.Management
         public string ScriptName { get; set; }
         public string ScriptIndex { get; set; }
         public bool LastOneScript { get; set; }
-        public string FormName { get; set; }
+        public string TaskId { get; set; }
         public bool ByPassTimeout { get; set; }
         public int AckTimeOut { get; set; }
         public int MotionTimeOut { get; set; }
@@ -228,7 +228,7 @@ namespace TransferControl.Management
             CommandEncodeStr = "";
             ScriptName = "";
             Type = "";
-            FormName = "";
+            TaskId = "";
             RecipeID = "";
             TargetJobs = new List<Job>();
             ByPassTimeout = false;

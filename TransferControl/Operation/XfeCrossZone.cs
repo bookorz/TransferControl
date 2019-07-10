@@ -626,12 +626,12 @@ namespace TransferControl.Operation
                                             else
                                             {
                                                 logger.Debug(NodeName + " Loadport沒有片可處理");
-
+                                               
                                                 nodeLD.Fetchable = false;
                                                 //檢查是不是搬完了
 
                                                 var Available = from each in JobManagement.GetJobList()
-                                                                where each.InProcess && !each.Destination.Equals(each.Position)
+                                                                where each.InProcess
                                                                 select each;
                                                 if (Available.Count() != 0)
                                                 {
@@ -650,7 +650,6 @@ namespace TransferControl.Operation
                                                 }
                                                 else
                                                 {
-
                                                     watch.Stop();
                                                     ProcessTime = watch.ElapsedMilliseconds;
                                                     logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
@@ -902,11 +901,19 @@ namespace TransferControl.Operation
                                     case "TRANSFER_ALIGNER_ALIGN":
                                         ULDRobot = NodeManagement.Get(Target.JobList["1"].Destination).Associated_Node;
                                         //放進UnloadPort補償角度
-                                        RobotPoint point = PointManagement.GetPoint(ULDRobot, Target.Name, "300MM");
+                                        RobotPoint point = PointManagement.GetPoint(ULDRobot, Target.Name);
                                         Target.JobList["1"].Offset += point.Offset;
                                         req.V3 = (Target.JobList["1"].Offset + Convert.ToInt32(rcp.notch_angle)).ToString();
-                                        req.Value = rcp.aligner1_angle;
-                                        req.V2 = rcp.aligner2_angle;
+                                        if (Target.Name.ToUpper().Equals("ALIGNER01"))
+                                        {
+                                            req.Value = rcp.aligner1_angle;
+                                        }
+                                        else if (Target.Name.ToUpper().Equals("ALIGNER02"))
+                                        {
+                                            req.Value = rcp.aligner2_angle;
+                                        }
+                                            
+                                        req.V2 = Target.Associated_Node;
                                         break;
                                 }
                                 break;
@@ -988,11 +995,11 @@ namespace TransferControl.Operation
                                         continue;
 
                                     case "TRANSFER_UNLOADPORT_CLOSE_FINISHED":
-                                        logger.Debug("XfeCrossZone Stop");
-                                        Running = false;
-                                        //_Report.On_UnLoadPort_Complete(NodeName.ToString());
-                                        _Report.On_Transfer_Complete(this);
-                                        logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
+                                        //logger.Debug("XfeCrossZone Stop");
+                                        //Running = false;
+                                        ////_Report.On_UnLoadPort_Complete(NodeName.ToString());
+                                        //_Report.On_Transfer_Complete(this);
+                                        //logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
                                         continue;
 
                                 }

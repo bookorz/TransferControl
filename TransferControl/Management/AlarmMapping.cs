@@ -204,7 +204,7 @@ namespace TransferControl.Management
                 else
                 {
                     alarm.CodeID = error_message;
-                    alarm.IsStop = false;
+                    alarm.IsStop = true;
                     alarm.Code_Type = error_message;
                     alarm.Code_Name = error_message;
                     alarm.Code_Cause = "未知";

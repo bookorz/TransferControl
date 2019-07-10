@@ -240,8 +240,8 @@ namespace TransferControl.Engine
                                     {
                                         if (Node.Name.Equals("LOADPORT01"))
                                         {
-                                            //Mapping = "1111111111111000000000000";
-                                            Mapping = "1000000000000000000000000";
+                                            Mapping = "1111111111111000000000000";
+                                            //Mapping = "1000000000000000000000000";
 
                                             //Mapping = SystemConfig.Get().MappingData;
                                         }
@@ -1004,49 +1004,13 @@ namespace TransferControl.Engine
                         case Transaction.Command.RobotType.GetAfterWait:
                             Node.CurrentPoint = Txn.Point;
 
-                            if (Node.Phase.Equals("2"))
-                            {
-
-
-                                Node NextRobot = NodeManagement.GetNextRobot(Txn.TargetJobs[0].Destination);
-
-                                if (NextRobot != null)
-                                {
-                                    if (Txn.TargetJobs[0].ProcessFlag)
-                                    {
-                                        //扣掉待搬送數量
-                                        NextRobot.WaitForCarryCount--;
-                                        //logger.Debug(NextRobot.Name + " WaitForCarryCount:" + NextRobot.Status.WaitForCarryCount);
-
-                                    }
-                                }
-                                else
-                                {
-                                    logger.Error(Txn.TargetJobs[0].Job_Id + "找不到目的地搬送Robot");
-                                }
-
-                                Node.PutOut = false;
-                                Node.GetMutex = true;
-
-                                //4port use only
-                                Node.PutAvailable = true;
-                            }
+                           
 
                             break;
                         case Transaction.Command.RobotType.Put:
                         case Transaction.Command.RobotType.PutBack:
                             Node.CurrentPoint = Txn.Point;
-                            if (Node.Phase.Equals("2"))
-                            {
-
-                                Node.GetAvailable = true;
-                                Node.GetMutex = true;
-
-                                Node.PutAvailable = true;
-                                Node.PutOut = false;
-
-
-                            }
+                            
 
                             break;
                         case Transaction.Command.RobotType.WaitBeforeGet:
@@ -1116,7 +1080,7 @@ namespace TransferControl.Engine
         /// <param name="Txn"></param>
         public void On_Command_TimeOut(Node Node, Transaction Txn)
         {
-            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
+            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.TaskId);
             if (Task == null)
             {
                 Task = new TaskJobManagment.CurrentProceedTask();
@@ -1134,8 +1098,8 @@ namespace TransferControl.Engine
                     MTask.Finished = true;
                     Task.Id = Task.MainTaskId;
                 }
-               
-                _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", "TimeOut");
+
+                _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", "TimeOut");
                 _UIReport.On_Command_TimeOut(Node, Txn);
             }
         }
@@ -1271,7 +1235,7 @@ namespace TransferControl.Engine
             Node.InitialComplete = false;
             Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
-            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
+            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.TaskId);
             Task.HasError = true;
             Task.Finished = true;
             if (Msg.Value.Equals(""))
@@ -1286,7 +1250,7 @@ namespace TransferControl.Engine
                 Task.Id = Task.MainTaskId;
             }
            
-            _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
+            _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
 

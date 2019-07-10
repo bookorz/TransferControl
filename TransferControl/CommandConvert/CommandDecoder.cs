@@ -313,9 +313,22 @@ namespace TransferControl.CommandConvert
                     each.Command = "";
                     each.OrgMsg = Msg;
                     each.CommandType = "CMD";
-                    switch (Msg)
+                    switch (Msg.Trim())
                     {
-
+                        case "User:":
+                            each.Type = CommandReturnMessage.ReturnType.UserName;
+                            
+                            break;
+                        case "Password:":
+                            each.Type = CommandReturnMessage.ReturnType.Password;
+                            break;
+                        case "1":
+                            each.Type = CommandReturnMessage.ReturnType.Excuted;
+                            break;
+                        case "-2":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "-2";
+                            break;
                         default:
                             each.Type = CommandReturnMessage.ReturnType.Finished;
                             each.Value = Msg;

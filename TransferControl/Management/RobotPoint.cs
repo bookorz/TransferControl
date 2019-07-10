@@ -8,7 +8,6 @@ namespace TransferControl.Management
 {
     public class RobotPoint
     {
-        public string RecipeID { get; set; }
         public string NodeName { get; set; }
         public string Position { get; set; }
         public string PositionType { get; set; }

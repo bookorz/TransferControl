@@ -46,7 +46,7 @@ namespace TransferControl.Management
         /// <summary>
         /// Robot專用，搬送階段
         /// </summary>
-        public string Phase { get; set; }
+        
 
         /// <summary>
         /// Control Job ID
@@ -350,11 +350,7 @@ namespace TransferControl.Management
         {
             JobList = new ConcurrentDictionary<string, Job>();
             ReserveList = new ConcurrentDictionary<string, Job>();
-            Phase = "1";
-            if (Type == "Aliger")
-            {
-                Phase = "2";
-            }
+           
             RobotGetState = 0;
             RobotPutState = 0;
             Speed = "";
@@ -689,7 +685,7 @@ namespace TransferControl.Management
                     //}
                     //else
                     //{
-                    point = PointManagement.GetPoint(Name, txn.Position, txn.RecipeID);
+                    point = PointManagement.GetPoint(Name, txn.Position);
                     //}
                     if (point == null)
                     {
@@ -722,7 +718,7 @@ namespace TransferControl.Management
                         //}
                         //else
                         //{
-                        point = PointManagement.GetPoint(Name, txn.Position2, txn.RecipeID);
+                        point = PointManagement.GetPoint(Name, txn.Position2);
                         //}
                         if (point == null)
                         {
@@ -1276,12 +1272,7 @@ namespace TransferControl.Management
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.OCRType.SetConfigEnable:
-                                string tmp = "";
-                                for(int i = 1;i<= txn.Value.Length;i++)
-                                {
-                                    tmp += i.ToString() + "," + txn.Value[i - 1].ToString();
-                                }
-                                txn.CommandEncodeStr = "Ev SetConfigEnable(A4," + txn.Value + ")";
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.SetConfigEnable(txn.Value);
                                 txn.CommandType = "CMD";
                                 break;
                         }

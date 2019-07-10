@@ -28,7 +28,20 @@ namespace TransferControl.CommandConvert
                 throw new Exception(ex.ToString());
             }
         }
-
+        private string EndCode()
+        {
+            string result = "";
+            switch (Supplier)
+            {
+                case "HST":
+                    result = "";
+                    break;
+                case "COGNEX":
+                    result = "\r\n";
+                    break;
+            }
+            return result;
+        }
         public enum OnlineStatus
         {
             Offline,
@@ -37,96 +50,63 @@ namespace TransferControl.CommandConvert
 
         public string Read()
         {
-            return CommandAssembly("CMD", "Read", "-1");
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "COGNEX":
+                case "HST":
+                    commandStr = string.Format("{0}{1}{2}{3}{4}", "SM", ((char)34).ToString(), "READ", ((char)34).ToString(), "0");
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
         }
 
         public string SetOnline(OnlineStatus online)
         {
-            return CommandAssembly("CMD", "OnlineStatus", ((int)online).ToString());
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "COGNEX":
+                case "HST":
+                    commandStr = string.Format("SO{0}", ((int)online).ToString());
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
         }
 
         public string GetOnline()
         {
-            return CommandAssembly("CMD", "GetOnline");
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "COGNEX":
+                case "HST":
+                    commandStr = "GO";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
         }
-
-        private string CommandAssembly(string CommandType, string Command, params string[] Parameter)
+        public string SetConfigEnable(string val)
         {
-            string strCommand = string.Empty;
-            string strCommandFormat = string.Empty;
-            string strCommandFormatParameter = string.Empty;
-
-
-
-            try
+            string commandStr = "";
+            switch (Supplier)
             {
-
-               
-
-                //var query = (from a in dtRobotCommand.AsEnumerable()
-                //             where a.Field<string>("Equipment_Type") == "ORC"
-                //                && a.Field<string>("Equipment_Supplier") == Supplier
-                //                && a.Field<string>("Command_Type") == CommandType
-                //                && a.Field<string>("Action_Function") == Command
-                //             select a).ToList();
-
-                //if (query.Count == 0)
-                //{
-                //    throw new RowNotInTableException();
-                //}
-
-                //dtTemp = query.CopyToDataTable();
-                //dtTemp.DefaultView.Sort = "Parameter_Order ASC";
-                //dvTemp = dtTemp.DefaultView;
-
-                switch (Supplier)
-                {
-                    case "COGNEX":
-
-                        if (Command.Equals("Read"))
-                        {
-                            strCommandFormat = string.Format("READ({0})", Parameter) + Environment.NewLine;
-                        }
-                        else
-                        {
-                            throw new NotSupportedException();
-                        }
-
-                        break;
-
-                    case "HST":
-
-                        if (Command.Equals("Read"))
-                        {
-                            strCommandFormat = string.Format("{0}{1}{2}{3}{4}", "SM", ((char)34).ToString(), "READ", ((char)34).ToString(), "0");
-                        }
-                        else if (Command.Equals("OnlineStatus"))
-                        {
-                            strCommandFormat = string.Format("SO{0}", Parameter);
-                        }
-                        else if (Command.Equals("GetOnline"))
-                        {
-                            strCommandFormat = "GO";
-                        }
-                        else
-                        {
-                            throw new NotSupportedException();
-                        }
-
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-
-                strCommand = strCommandFormat + strCommandFormatParameter;
+                case "COGNEX":
+                case "HST":
+                    commandStr = "Ev SetConfigEnable(A4," + val + ")";
+                    break;
+                default:
+                    throw new NotSupportedException();
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.ToString());
-            }
-
-            return strCommand;
+            return commandStr + EndCode();
         }
+
 
     }
 }
