@@ -1251,15 +1251,15 @@ namespace TransferControl.Management
                         {
                             case Transaction.Command.OCRType.GetOnline:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.GetOnline();
-                                txn.CommandType = "";
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.OCRType.Online:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.SetOnline(EncoderOCR.OnlineStatus.Online);
-                                txn.CommandType = "";
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.OCRType.Offline:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.SetOnline(EncoderOCR.OnlineStatus.Offline);
-                                txn.CommandType = "";
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.OCRType.Read:
                             case Transaction.Command.OCRType.ReadM12:

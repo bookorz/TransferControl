@@ -122,6 +122,7 @@ namespace TransferControl.Management
                 this.AssignTime = DateTime.Now;
                 this.NeedProcess = true;
                 this.AbortProcess = false;
+                this.AlignerFlag = false;
                 //設定UnloadPort的補償角度
                 string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
                 if (!targetPort.CarrierType.Equals(""))

@@ -312,7 +312,7 @@ namespace TransferControl.CommandConvert
                     each.NodeAdr = "1";
                     each.Command = "";
                     each.OrgMsg = Msg;
-                    each.CommandType = "CMD";
+                    //each.CommandType = "CMD";
                     switch (Msg.Trim())
                     {
                         case "User:":
