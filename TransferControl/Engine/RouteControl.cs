@@ -1017,11 +1017,9 @@ namespace TransferControl.Engine
                         case Transaction.Command.RobotType.WaitBeforePut:
                         case Transaction.Command.RobotType.PutWithoutBack:
                             Node.CurrentPoint = Txn.Point;
-                            Node.PutOutArm = Txn.Arm;
-                            Node.PutOut = true;
                             //4Port use only
 
-                            Node.GetAvailable = true;
+
                             break;
                         case Transaction.Command.RobotType.GetWait:
                         case Transaction.Command.RobotType.PutWait:
@@ -1042,11 +1040,7 @@ namespace TransferControl.Engine
                             break;
                         case Transaction.Command.AlignerType.Retract:
                         case Transaction.Command.AlignerType.Home:
-                            Node.Available = true;
-
-
-                            Node.GetAvailable = false;
-                            Node.GetMutex = false;
+                           
 
                             // Node.PutAvailable = true;
                             break;
