@@ -58,109 +58,7 @@ namespace TransferControl.Management
 
         }
 
-        public static void InitialNodes()
-        {
-            foreach (Node each in NodeList.Values.ToList())
-            {
-                each.CurrentLoadPort = "";
-                each.CurrentPosition = "";
 
-                //each.InitialComplete = false;
-                each.JobList.Clear();
-
-               
-                each.PutOut = false;
-                //each.TransferQueue.Clear();
-
-            }
-        }
-
-        public static bool IsRobotInitial()
-        {
-            bool result = false;
-            var findNotInit = from node in NodeList.Values.ToList()
-                              where !node.InitialComplete && node.Type.Equals("ROBOT") && !node.ByPass
-                              select node;
-            if (findNotInit.Count() == 0)
-            {
-                result = true;
-            }
-            else
-            {
-                result = false;
-            }
-            return result;
-        }
-
-        public static bool IsNeedInitial()
-        {
-            bool result = false;
-            var findNotInit = from node in NodeList.Values.ToList()
-                              where !node.InitialComplete && !node.Type.Equals("OCR") && !node.Type.Equals("SYSTEM") && !node.ByPass
-                              select node;
-            if (findNotInit.Count() == 0)
-            {
-                result = false;
-            }
-            else
-            {
-                result = true;
-            }
-            return result;
-        }
-
-        public static string GetCurrentState()
-        {
-            string result = "";
-            var findAlarm = from node in NodeList.Values.ToList()
-                            where node.State.Equals("Alarm") && !node.ByPass
-                            select node;
-            if (findAlarm.Count() != 0)
-            {
-                result = "Alarm";
-            }
-            else
-            {
-                var findPause = from node in NodeList.Values.ToList()
-                                where node.State.Equals("Pause") && !node.ByPass
-                                select node;
-                if (findPause.Count() != 0)
-                {
-                    result = "Pause";
-                }
-                else
-                {
-                    var findRun = from node in NodeList.Values.ToList()
-                                  where node.State.Equals("Run") && !node.ByPass
-                                  select node;
-                    if (findRun.Count() != 0)
-                    {
-                        result = "Run";
-                    }
-                    else
-                    {
-                        var findIdle = from node in NodeList.Values.ToList()
-                                       where node.State.Equals("Idle") && !node.ByPass
-                                       select node;
-                        if (findIdle.Count() != 0)
-                        {
-                            result = "Idle";
-                        }
-                        else
-                        {
-                            var findDown = from node in NodeList.Values.ToList()
-                                           where node.State.Equals("Down") && !node.ByPass
-                                           select node;
-                            if (findDown.Count() != 0)
-                            {
-                                result = "Down";
-                            }
-                        }
-                    }
-                }
-            }
-            return result;
-        }
 
         public static List<Node> GetLoadPortList()
         {
@@ -276,24 +174,7 @@ namespace TransferControl.Management
                 logger.Error("Node not exist, Name:" + Name);
             }
             return result;
-        }
-
-        public static Node GetRobotByPosition(string Position, string filtName)
-        {
-            Node result = null;
-
-            foreach (Node each in NodeList.Values.ToList())
-            {
-
-                if (each.CurrentPosition.Equals(Position) && !each.Name.Equals(filtName) && each.Type.Equals("ROBOT"))
-                {
-                    result = each;
-                }
-            }
-
-            return result;
-        }
-
+        }  
         public static Node GetByController(string DeviceName, string NodeAdr)
         {
             Node result = null;

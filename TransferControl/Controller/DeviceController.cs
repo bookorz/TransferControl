@@ -320,7 +320,7 @@ namespace TransferControl.Controller
                 //}
                 //else
                 //{
-                logger.Info(DeviceName + " Recieve:" + Msg.Replace("\r", ""));
+                logger.Info(DeviceName + " Recieve:" + Msg);
                 //}
 
 

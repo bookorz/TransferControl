@@ -382,133 +382,135 @@ namespace TransferControl.Comm
         }
 
         ///
-        string S = "";
+        string S = "";  
+
         /// 異步收到消息處理器
         /// 
         /// 
         private void socketDataArrivalHandler(byte[] OrgData)
         {
 
-
-            byte[] clientData = new byte[RDataLen];
-            string data = "";
-            switch (Config.GetVendor().ToUpper())
+            lock (this)//解決暫存變數S的同步問題
             {
-                case "TDK":
+                byte[] clientData = new byte[RDataLen];
+                string data = "";
+                switch (Config.GetVendor().ToUpper())
+                {
+                    case "TDK":
 
 
-                    S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
-                    if (S.LastIndexOf(Convert.ToChar(3)) != -1)
-                    {
-                        //logger.Debug("s:" + S);
-                        data = S.Substring(0, S.LastIndexOf(Convert.ToChar(3)) + 1);
-                        //logger.Debug("data:" + data);
+                        S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
+                        if (S.LastIndexOf(Convert.ToChar(3)) != -1)
+                        {
+                            //logger.Debug("s:" + S);
+                            data = S.Substring(0, S.LastIndexOf(Convert.ToChar(3)) + 1);
+                            //logger.Debug("data:" + data);
 
-                        S = S.Substring(S.LastIndexOf(Convert.ToChar(3)) + 1);
-                        //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            S = S.Substring(S.LastIndexOf(Convert.ToChar(3)) + 1);
+                            //logger.Debug("s:" + S);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            break;
+                        }
+
+
                         break;
-                    }
+                    case "SANWA":
+
+                        S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
+
+                        if (S.LastIndexOf("\r") != -1)
+                        {
+                            //logger.Debug("s:" + S);
+                            data = S.Substring(0, S.LastIndexOf("\r"));
+                            //logger.Debug("data:" + data);
+
+                            S = S.Substring(S.LastIndexOf("\r") + 1);
+                            //logger.Debug("s:" + S);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            break;
+                        }
 
 
-                    break;
-                case "SANWA":
-
-                    S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
-
-                    if (S.LastIndexOf("\r") != -1)
-                    {
-                        //logger.Debug("s:" + S);
-                        data = S.Substring(0, S.LastIndexOf("\r"));
-                        //logger.Debug("data:" + data);
-
-                        S = S.Substring(S.LastIndexOf("\r") + 1);
-                        //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         break;
-                    }
+                    case "HST":
 
+                        S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
+                        if (S.IndexOf("1\r\n") != -1)
+                        {
+                            data = S.Substring(S.IndexOf("1\r\n"), 3);
+                            //logger.Debug("data:" + data);
+                            S = S.Substring(S.IndexOf("1\r\n") + 3);
 
-                    break;
-                case "HST":
+                            //logger.Debug("s:" + S);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            //break;
 
-                    S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
-                    if (S.IndexOf("1\r\n") != -1)
-                    {
-                        data = S.Substring(S.IndexOf("1\r\n"), 3);
-                        //logger.Debug("data:" + data);
-                        S = S.Substring(S.IndexOf("1\r\n") + 3);
+                        }
 
-                        //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
-                        //break;
+                        if (S.IndexOf("-2\r\n") != -1)
+                        {
+                            data = S.Substring(S.IndexOf("-2\r\n"), 4);
+                            //logger.Debug("data:" + data);
+                            S = S.Substring(S.IndexOf("-2\r\n") + 4);
 
-                    }
+                            //logger.Debug("s:" + S);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            //break;
 
-                    if (S.IndexOf("-2\r\n") != -1)
-                    {
-                        data = S.Substring(S.IndexOf("-2\r\n"), 4);
-                        //logger.Debug("data:" + data);
-                        S = S.Substring(S.IndexOf("-2\r\n") + 4);
+                        }
+                        if (S.IndexOf("]\r\n") != -1)
+                        {
+                            data = S.Substring(0, S.IndexOf("]\r\n") + 3).Substring(S.IndexOf("["));
+                            //logger.Debug("data:" + data);
 
-                        //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
-                        //break;
+                            S = S.Substring(S.IndexOf("]\r\n") + 3);
+                            //logger.Debug("s:" + S);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            //break;
 
-                    }
-                    if (S.IndexOf("]\r\n") != -1)
-                    {
-                        data = S.Substring(0, S.IndexOf("]\r\n") + 3).Substring(S.IndexOf("["));
-                        //logger.Debug("data:" + data);
+                        }
+                        else if (S.IndexOf("</Result>\r\n") != -1)
+                        {
+                            //logger.Debug("s:" + S);
+                            data = S.Substring(0, S.IndexOf("</Result>\r\n") + 11);
+                            //logger.Debug("data:" + data);
 
-                        S = S.Substring(S.IndexOf("]\r\n") + 3);
-                        //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
-                        //break;
+                            S = S.Substring(S.IndexOf("</Result>\r\n") + 11);
+                            //logger.Debug("s:" + S);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            break;
+                        }
+                        if (S.IndexOf("Welcome to e-Reader8000") != -1 || S.IndexOf("User:") != -1)
+                        {
+                            S = "";
+                            //logger.Debug("s:" + S);
 
-                    }
-                    else if (S.IndexOf("</Result>\r\n") != -1)
-                    {
-                        //logger.Debug("s:" + S);
-                        data = S.Substring(0, S.IndexOf("</Result>\r\n") + 11);
-                        //logger.Debug("data:" + data);
+                            //break;
 
-                        S = S.Substring(S.IndexOf("</Result>\r\n") + 11);
-                        //logger.Debug("s:" + S);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                        }
+                        if (S.IndexOf("0\r\n") != -1)
+                        {
+                            data = S.Substring(0, S.IndexOf("0\r\n"));
+                            //logger.Debug("data:" + data);
+                            S = S.Substring(S.IndexOf("0\r\n") + 3);
+
+                            //logger.Debug("s:" + S);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                            //break;
+
+                        }
+
                         break;
-                    }
-                    if (S.IndexOf("Welcome to e-Reader8000") != -1 || S.IndexOf("User:") != -1)
-                    {
-                        S = "";
-                        //logger.Debug("s:" + S);
+                    default:
+                        data = Encoding.Default.GetString(OrgData, 0, OrgData.Length);
 
-                        //break;
-
-                    }
-                    if (S.IndexOf("0\r\n") != -1)
-                    {
-                        data = S.Substring(0, S.IndexOf("0\r\n"));
-                        //logger.Debug("data:" + data);
-                        S = S.Substring(S.IndexOf("0\r\n") + 3);
-
-                        //logger.Debug("s:" + S);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
-                        //break;
 
-                    }
+                        break;
+                }
 
-                    break;
-                default:
-                    data = Encoding.Default.GetString(OrgData, 0, OrgData.Length);
 
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
-
-                    break;
             }
-
-
-
 
         }
 

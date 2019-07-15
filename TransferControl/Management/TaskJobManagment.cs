@@ -578,7 +578,7 @@ namespace TransferControl.Management
                                                             if (TarNode.ConfigList[i].Equals('1'))
                                                             {//有開啟的話加入關閉列表
                                                                 OffList += i.ToString() + ",0,";
-
+ 
                                                             }
                                                             NewConfig += "0";
                                                         }

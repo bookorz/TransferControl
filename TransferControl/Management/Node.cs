@@ -40,15 +40,6 @@ namespace TransferControl.Management
         /// </summary>
         public string Brand { get; set; }
         /// <summary>
-        /// LoadPort專用，目前取片中
-        /// </summary>
-        public bool Used { get; set; }
-        /// <summary>
-        /// Robot專用，搬送階段
-        /// </summary>
-        
-
-        /// <summary>
         /// Control Job ID
         /// </summary>
         public string CjID { get; set; }
@@ -68,26 +59,6 @@ namespace TransferControl.Management
         /// 啟用或停用此Node
         /// </summary>
         public bool Enable { get; set; }
-        /// <summary>
-        /// Robot專用，未來需要此Robot，還沒有搬送的數量
-        /// </summary>
-        public int WaitForCarryCount { get; set; }
-        /// <summary>
-        /// LoadPort用於標記準備完成狀態，Aligner用於標記可否放片
-        /// </summary>
-        public bool Available { get; set; }
-        /// <summary>
-        /// 處理階段用於放片鎖定
-        /// </summary>
-        public bool PutAvailable { get; set; }
-        /// <summary>
-        /// 處理階段用於標記Robot可否去Aligner取片
-        /// </summary>
-        public bool GetAvailable { get; set; }
-        /// <summary>
-        /// 鎖定Robot不能執行其他命令
-        /// </summary>
-        public bool GetMutex { get; set; }
         public bool ForcePutToUnload { get; set; }
         /// <summary>
         /// LoadPort用於標記True為目前不能取放片，其他裝置用於標記True為正在執行命令中
@@ -105,20 +76,6 @@ namespace TransferControl.Management
         /// LoadPort專用，標記LD/UD/LU
         /// </summary>
         public string Mode { get; set; }
-        /// <summary>
-        /// 標記是否被預約執行命令中
-        /// </summary>
-        public bool Reserve { get; set; }
-        /// <summary>
-        /// 手臂伸出中
-        /// </summary>
-        public bool PutOut { get; set; }
-
-        /// <summary>
-        /// 紀錄伸出的是哪支手臂
-        /// </summary>
-        public string PutOutArm { get; set; }
-
         /// <summary>
         /// 是否需要Initial
         /// </summary>
@@ -139,14 +96,6 @@ namespace TransferControl.Management
         /// </summary>
         public bool ByPass { get; set; }
         /// <summary>
-        /// LoadPort專用，標記已經按過OP按鈕
-        /// </summary>
-        public bool FoupReady { get; set; }
-        /// <summary>
-        /// LoadPort專用，紀錄Demo模式Wafer所指定的目的地Foup
-        /// </summary>
-        public string DestPort { get; set; }
-        /// <summary>
         /// LoadPort專用，Foup Load的時間
         /// </summary>
         public DateTime LoadTime { get; set; }
@@ -158,9 +107,6 @@ namespace TransferControl.Management
         /// 在席列表
         /// </summary>
         public ConcurrentDictionary<string, Job> JobList { get; set; }
-
-        //Demo用Condition
-        public bool PortUnloadAndLoadFinished { get; set; }
 
         public string CarrierType { get; set; }
 
@@ -178,22 +124,10 @@ namespace TransferControl.Management
 
         public bool RArmActive { get; set; }
 
-        public bool LArmActive { get; set; }
-
-        public int CarryCount { get; set; }
-
-        public bool HasPresent { get; set; }
-
-        public bool CheckStatus { get; set; }
-
+        public bool LArmActive { get; set; }     
         public bool IsWaferHold { get; set; }
 
         public string ErrorMsg { get; set; }
-
-        public string DesignatesAngle { get; set; }
-
-        public int NotchAngle { get; set; }
-
         public string MappingResult { get; set; }
 
         public bool R_Presence { get; set; }
@@ -207,8 +141,6 @@ namespace TransferControl.Management
         public string Y_Axis_Position { get; set; }
 
         public string Door_Position { get; set; }
-
-        public string ArmCheck { get; set; }
 
         public bool Foup_Placement { get; set; }
 
@@ -367,13 +299,12 @@ namespace TransferControl.Management
             R_Flip_Degree = "0";
             L_Flip_Degree = "0";
             CurrentPosition = "";
-            PutOutArm = "";
+
             FoupID = "";
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
             State = "UNORG";
-            CarryCount = 0;
-            ReadyForPut = true;
+     ReadyForPut = true;
             ReadyForGet = true;
             E87_TransferState = 0;
             E87_ReservationState = 0;
@@ -392,40 +323,20 @@ namespace TransferControl.Management
             R_Position = "";
             L_Position = "";
             Busy = false;
-            PutOut = false;
-            PutAvailable = true;
-            GetAvailable = true;
-            GetMutex = true;
             //InterLock = false;
-            Reserve = false;
             OCRSuccess = false;
-            Available = true;
-            HasPresent = false;
-            CheckStatus = false;
             WaitForFinish = false;
             InitialComplete = false;
             OrgSearchComplete = false;
             IsWaferHold = false;
-            DesignatesAngle = "0";
             IsLoad = false;
             IsExcuting = false;
             IsPause = false;
             CurrentSlotPosition = "??";
             ErrorMsg = "";
             //Enable = true;
-
-            Used = false;
-
-            if (Type.Equals("LOADPORT"))
-            {
-                Available = false;
-               // Mode = "UD";
-            }
             Fetchable = false;
-            FoupReady = false;
-            DestPort = "";
             LoadTime = new DateTime();
-            PortUnloadAndLoadFinished = false;
 
             MappingResult = "";
 
@@ -440,8 +351,6 @@ namespace TransferControl.Management
             Y_Axis_Position = "";
 
             Door_Position = "";
-
-            ArmCheck = "";
 
             Foup_Placement = false;
 
@@ -1198,10 +1107,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Home(AdrNo, txn.Seq);
                                 break;
                             case Transaction.Command.AlignerType.Align:
-                                if (txn.Value.Equals(""))
-                                {
-                                    txn.Value = this.DesignatesAngle;
-                                }
+                                
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Align(AdrNo, txn.Seq, txn.Value);
                                 break;
                             case Transaction.Command.AlignerType.AlignOption:
