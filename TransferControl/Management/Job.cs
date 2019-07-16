@@ -58,6 +58,7 @@ namespace TransferControl.Management
         public DateTime AssignTime { get; private set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+        public string WaferSize { get; set; }
         IJobReport _Report = null;
 
         public Job(IJobReport Report)
@@ -89,6 +90,7 @@ namespace TransferControl.Management
             ToPort = "";
             ToPortSlot = "";
             IsReversed = false;
+            WaferSize = "";
         }
 
         public void PositionChangeReport()

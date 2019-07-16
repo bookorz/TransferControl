@@ -113,6 +113,7 @@ namespace TransferControl.Comm
             catch (Exception err)
             {
                 SockErrorStr = err.ToString();
+                ConnReport.On_Connection_Error(err.Message);
                 return false;
             }
             if (TimeoutObject.WaitOne(10000, false))//直到timeout，或者TimeoutObject.set()
@@ -383,15 +384,15 @@ namespace TransferControl.Comm
 
         ///
         string S = "";  
-
+        
         /// 異步收到消息處理器
         /// 
         /// 
         private void socketDataArrivalHandler(byte[] OrgData)
         {
 
-            lock (this)//解決暫存變數S的同步問題
-            {
+            //lock (this)//解決暫存變數S的同步問題
+            //{
                 byte[] clientData = new byte[RDataLen];
                 string data = "";
                 switch (Config.GetVendor().ToUpper())
@@ -510,7 +511,7 @@ namespace TransferControl.Comm
                 }
 
 
-            }
+            //}
 
         }
 

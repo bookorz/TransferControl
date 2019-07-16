@@ -279,7 +279,15 @@ namespace TransferControl.Controller
                 result = false;
             }
 
+            if (!result)
+            {
+                logger.Error("Command Fail:" + Txn.CommandEncodeStr);
+                Txn.SetTimeOutMonitor(false);
+                Transaction tmp;
+                TransactionList.TryRemove(key,out tmp);
+                _ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
 
+            }
 
             //}
             return result;
@@ -510,7 +518,7 @@ namespace TransferControl.Controller
                                                 if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
                                                 {
                                                     conn.Send(ReturnMsg.FinCommand);
-                                                    logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                                    logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                                 }
                                                 break;
                                             case CommandReturnMessage.ReturnType.Information:
@@ -529,7 +537,7 @@ namespace TransferControl.Controller
                                                 SpinWait.SpinUntil(() => false, 50);
                                                 //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                                 conn.Send(ReturnMsg.FinCommand);
-                                                logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                                logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                                 break;
                                         }
                                     }
@@ -541,7 +549,7 @@ namespace TransferControl.Controller
                                             {
                                                 //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                                 conn.Send(ReturnMsg.FinCommand);
-                                                logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                                logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                             }
                                             else
                                             {
@@ -556,7 +564,7 @@ namespace TransferControl.Controller
                                                     if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
                                                     {
                                                         conn.Send(ReturnMsg.FinCommand);
-                                                        logger.Debug(DeviceName + "Send:" + ReturnMsg.FinCommand);
+                                                        logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                                     }
 
                                                     TransactionList.TryRemove(TransactionList.First().Key, out Txn);
