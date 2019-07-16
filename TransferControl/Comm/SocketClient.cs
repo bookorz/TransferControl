@@ -310,6 +310,7 @@ namespace TransferControl.Comm
                 catch (Exception e)
                 {
                     //Console.WriteLine(e.ToString());
+                    ConnReport.On_Connection_Error(e.Message);
                     SockErrorStr = e.ToString();
                     IsconnectSuccess = false;
                 }
@@ -549,37 +550,41 @@ namespace TransferControl.Comm
                 else//已創建套接字，但未connected
                 {
                     #region 異步連接代碼
+                    theSocket.Close();
 
-                    TimeoutObject.Reset(); //覆位timeout事件
-                    try
-                    {
-                        IPAddress ipAddress = IPAddress.Parse(remoteHost);
-                        IPEndPoint remoteEP = new IPEndPoint(ipAddress, remotePort);
-                        theSocket.BeginConnect(remoteEP, connectedCallback, theSocket);
+                    return socket_create_connect();
+                    //TimeoutObject.Reset(); //覆位timeout事件
+                    //try
+                    //{
+                    //    
 
-                        SetHeartBeat();//設置心跳參數
-                    }
-                    catch (Exception err)
-                    {
-                        SockErrorStr = err.ToString();
-                        return false;
-                    }
-                    if (TimeoutObject.WaitOne(1000, false))//直到timeout，或者TimeoutObject.set()
-                    {
-                        if (IsconnectSuccess)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        SockErrorStr = "Time Out";
-                        return false;
-                    }
+                    //    IPAddress ipAddress = IPAddress.Parse(remoteHost);
+                    //    IPEndPoint remoteEP = new IPEndPoint(ipAddress, remotePort);
+                    //    theSocket.BeginConnect(remoteEP, connectedCallback, theSocket);
+
+                    //    SetHeartBeat();//設置心跳參數
+                    //}
+                    //catch (Exception err)
+                    //{
+                    //    SockErrorStr = err.ToString();
+                    //    return false;
+                    //}
+                    //if (TimeoutObject.WaitOne(1000, false))//直到timeout，或者TimeoutObject.set()
+                    //{
+                    //    if (IsconnectSuccess)
+                    //    {
+                    //        return true;
+                    //    }
+                    //    else
+                    //    {
+                    //        return false;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    SockErrorStr = "Time Out";
+                    //    return false;
+                    //}
 
                     #endregion
                 }
@@ -623,6 +628,11 @@ namespace TransferControl.Comm
             }
             catch (Exception ee)
             {
+                lock (lockObj_IsConnectSuccess)
+                {
+                    IsconnectSuccess = false;
+                }
+                checkSocketState();
                 SockErrorStr = ee.ToString();
                 result = false;
             }
