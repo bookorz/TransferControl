@@ -816,6 +816,10 @@ namespace TransferControl.Operation
                                             if (CheckWIPForUnload(Target))
                                             {
                                                 //還有片要處理
+                                                
+
+                                                    
+                                                
                                                 Target.LockOn = "";
                                                 continue;
                                             }
@@ -866,6 +870,8 @@ namespace TransferControl.Operation
                                             }
                                             else
                                             {//沒東西放了
+                                                
+                                                
                                                 Target.LockOn = "";
                                                 continue;
                                             }
@@ -917,93 +923,6 @@ namespace TransferControl.Operation
                                         break;
                                 }
                                 break;
-                            case "OCR":
-
-                                break;
-                            case "LOADPORT":
-                                switch (req.TaskName)
-                                {
-                                    case "TRANSFER_LOADPORT_CLOSE":
-
-                                        var Available = from each in Target.JobList.Values
-                                                        where each.NeedProcess && !each.AbortProcess
-                                                        select each;
-                                        if (Available.Count() == 0)
-                                        {
-                                            new Thread(() =>
-                                            {
-                                                Thread.CurrentThread.IsBackground = true;
-                                                _Report.On_LoadPort_Complete(Target);
-                                            }).Start();
-                                        }
-                                        continue;
-                                        break;
-                                    case "TRANSFER_UNLOADPORT_CLOSE":
-
-
-                                        //var Available = from each in Target.JobList.Values
-                                        //                where !each.MapFlag && !each.ErrPosition
-                                        //                select each;
-                                        //if (Available.Count() != 0)
-                                        //{
-                                        //還沒滿就取消動作
-                                        var LeftWafer = from each in JobManagement.GetJobList()
-                                                        where each.Destination.ToUpper().Equals(Target.Name.ToUpper()) && !each.Position.ToUpper().Equals(Target.Name.ToUpper())
-                                                        select each;
-                                        if (LeftWafer.Count() == 0)
-                                        {
-                                            new Thread(() =>
-                                                {
-                                                    Thread.CurrentThread.IsBackground = true;
-                                                   
-                                                    _Report.On_UnLoadPort_Complete(Target);
-                                                }).Start();
-                                        }
-
-                                        //var Available = from each in JobManagement.GetJobList()
-                                        //                where (each.NeedProcess && each.FromPort.ToUpper().Equals(LD.ToUpper())) || (each.InProcess && !each.Destination.Equals(each.Position))
-                                        //                select each;
-                                        //if (Available.Count() == 0)
-                                        //{//處理完成
-                                        //    logger.Debug("XfeCrossZone Stop");
-                                        //    Running = false;
-
-                                        //    watch.Stop();
-                                        //    ProcessTime = watch.ElapsedMilliseconds;
-                                        //    logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                        //    //foreach (string uld in ULD_List)
-                                        //    //{
-                                        //    //    new Thread(() =>
-                                        //    //    {
-                                        //    //        Thread.CurrentThread.IsBackground = true;
-                                        //    //        Node EachULD = NodeManagement.Get(uld);
-                                        //    //        _Report.On_UnLoadPort_Complete(EachULD);
-                                        //    //    }).Start();
-
-                                        //    //}
-                                        //    _Report.On_Transfer_Complete(this);
-                                        //}
-                                        continue;
-                                        //}
-                                        //watch.Stop();
-                                        //ProcessTime = watch.ElapsedMilliseconds;
-
-
-                                        break;
-                                    case "TRANSFER_LOADPORT_CLOSE_FINISHED":
-                                        // _Report.On_LoadPort_Complete(NodeName.ToString());
-                                        continue;
-
-                                    case "TRANSFER_UNLOADPORT_CLOSE_FINISHED":
-                                        //logger.Debug("XfeCrossZone Stop");
-                                        //Running = false;
-                                        ////_Report.On_UnLoadPort_Complete(NodeName.ToString());
-                                        //_Report.On_Transfer_Complete(this);
-                                        //logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
-                                        continue;
-
-                                }
-                                break;
                         }
                         Dictionary<string, string> param = new Dictionary<string, string>();
 
@@ -1034,7 +953,41 @@ namespace TransferControl.Operation
                         if (Running)
                         {
                             logger.Debug(NodeName + " Task完成");
+                            string TargetStr = Task.Params["@Target"] ;
+                            string PositionStr = Task.Params["@Position"];
+                            switch (Task.ProceedTask.TaskName)
+                            {
 
+                                case "TRANSFER_PUT_UNLOADPORT_2ARM":
+                                case "TRANSFER_PUT_UNLOADPORT":
+                                    var LeftWafer = from each in JobManagement.GetJobList()
+                                                    where each.Destination.ToUpper().Equals(PositionStr.ToUpper()) && !each.Position.ToUpper().Equals(PositionStr.ToUpper())
+                                                    select each;
+                                    if (LeftWafer.Count() == 0)
+                                    {
+                                        new Thread(() =>
+                                        {
+                                            Thread.CurrentThread.IsBackground = true;
+
+                                            _Report.On_UnLoadPort_Complete(NodeManagement.Get(PositionStr));
+                                        }).Start();
+                                    }
+                                    break;
+                                case "TRANSFER_GET_LOADPORT":
+                                case "TRANSFER_GET_LOADPORT_2ARM":
+                                    var Available = from each in NodeManagement.Get(PositionStr).JobList.Values
+                                                    where each.NeedProcess && !each.AbortProcess
+                                                    select each;
+                                    if (Available.Count() == 0)
+                                    {
+                                        new Thread(() =>
+                                        {
+                                            Thread.CurrentThread.IsBackground = true;
+                                            _Report.On_LoadPort_Complete(NodeManagement.Get(PositionStr));
+                                        }).Start();
+                                    }
+                                    break;
+                            }
                         }
                         else
                         {
