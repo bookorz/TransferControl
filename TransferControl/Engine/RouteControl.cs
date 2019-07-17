@@ -368,7 +368,7 @@ namespace TransferControl.Engine
                             {
 
                                 case Transaction.Command.RobotType.GetSpeed:
-                                    if (Msg.Value.Equals("0") && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
+                                    if (Convert.ToInt16(Msg.Value)==0 && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
                                     {
                                         Msg.Value = "100";
                                     }

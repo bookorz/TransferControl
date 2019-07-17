@@ -169,12 +169,7 @@ namespace TransferControl.Controller
             conn.WaitForData(WaitForData);
             bool result = false;
             // lock (TransactionList)
-            if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
-            {
-                logger.Debug("Txn timmer stoped.");
-                Txn.SetTimeOutMonitor(false);
-
-            }
+            
 
             if (!Txn.NodeType.Equals("OCR"))
             {
@@ -257,9 +252,16 @@ namespace TransferControl.Controller
                 }
                 //if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
                 //{
-                    Txn.SetTimeOut(Txn.AckTimeOut);
+                    
                 //}
-
+                if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
+                {
+                    Txn.SetTimeOut(15000);
+                }
+                else
+                {
+                    Txn.SetTimeOut(Txn.AckTimeOut);
+                }
 
                 if (this.Vendor.Equals("SMARTTAG"))
                 {
@@ -739,28 +741,32 @@ namespace TransferControl.Controller
 
             }
             Txn.SetTimeOutMonitor(false);
-            if (TransactionList.TryRemove(key, out Txn))
+            if (TransactionList.ContainsKey(key))
             {
-                Node Node = NodeManagement.GetByController(DeviceName, Txn.AdrNo);
-                if (Node.State.Equals("Pause"))
+                if (TransactionList.TryRemove(key, out Txn))
                 {
-                    logger.Debug("Txn timeout,but state is pause. ignore this.");
-                    TransactionList.TryAdd(key, Txn);
-                    return;
-                }
-                if (Node != null)
-                {
-                    _ReportTarget.On_Command_TimeOut(Node, Txn);
+                    Node Node = NodeManagement.GetByController(DeviceName, Txn.AdrNo);
+                    if (Node.State.Equals("Pause"))
+                    {
+                        logger.Debug("Txn timeout,but state is pause. ignore this.");
+                        TransactionList.TryAdd(key, Txn);
+                        return;
+                    }
+                    //if (Node != null)
+                    //{
+                    //    _ReportTarget.On_Command_TimeOut(Node, Txn);
+                    //}
+                    //else
+                    //{
+                    //    logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
+                    //}
                 }
                 else
                 {
-                    logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
+                    logger.Debug(DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
                 }
             }
-            else
-            {
-                logger.Debug(DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
-            }
+            _ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
         }
 
         public string GetNextSeq()

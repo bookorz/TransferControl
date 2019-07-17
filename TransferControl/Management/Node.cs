@@ -124,7 +124,7 @@ namespace TransferControl.Management
 
         public bool RArmActive { get; set; }
 
-        public bool LArmActive { get; set; }     
+        public bool LArmActive { get; set; }
         public bool IsWaferHold { get; set; }
 
         public string ErrorMsg { get; set; }
@@ -282,7 +282,7 @@ namespace TransferControl.Management
         {
             JobList = new ConcurrentDictionary<string, Job>();
             ReserveList = new ConcurrentDictionary<string, Job>();
-           
+
             RobotGetState = 0;
             RobotPutState = 0;
             Speed = "";
@@ -304,18 +304,18 @@ namespace TransferControl.Management
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();
             State = "UNORG";
-     ReadyForPut = true;
+            ReadyForPut = true;
             ReadyForGet = true;
             E87_TransferState = 0;
             E87_ReservationState = 0;
             E87_AssociationState = 0;
             Home_Position = false;
             ForcePutToUnload = false;
-             //if (Type.Equals("LOADPORT"))
-             //{
-             //    State = "Ready To Load";
-             //}
-             LockOn = "";
+            //if (Type.Equals("LOADPORT"))
+            //{
+            //    State = "Ready To Load";
+            //}
+            LockOn = "";
             HasAlarm = false;
             LastFinMethod = "";
             CurrentPoint = "";
@@ -403,8 +403,8 @@ namespace TransferControl.Management
             {
                 try
                 {
-                    
-                    RouteControl.Instance.TaskJob.Excute(this.Name+"_PoolState", out Message, out CurrTask, TaskName, param);
+
+                    RouteControl.Instance.TaskJob.Excute(this.Name + "_PoolState", out Message, out CurrTask, TaskName, param);
                     SpinWait.SpinUntil(() => CurrTask.Finished, 99999999);
                     SpinWait.SpinUntil(() => false, PoolInterval);
                 }
@@ -447,8 +447,8 @@ namespace TransferControl.Management
             bool result = false;
 
             var wafers = from wafer in this.JobList.Values
-                          where wafer.MapFlag && Convert.ToInt16(wafer.Slot) < Convert.ToInt16(Slot)
-                          select wafer;
+                         where wafer.MapFlag && Convert.ToInt16(wafer.Slot) < Convert.ToInt16(Slot)
+                         select wafer;
             if (wafers.Count() != 0)
             {
                 result = true;
@@ -663,7 +663,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.Start(AdrNo, ref txn);
                                 break;
                             case Transaction.Command.FFUType.SetSpeed:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.SetSpeed(AdrNo, txn.Value,ref txn);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.SetSpeed(AdrNo, txn.Value, ref txn);
                                 break;
                             case Transaction.Command.FFUType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.GetStatus(AdrNo);
@@ -1107,7 +1107,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Home(AdrNo, txn.Seq);
                                 break;
                             case Transaction.Command.AlignerType.Align:
-                                
+
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Align(AdrNo, txn.Seq, txn.Value);
                                 break;
                             case Transaction.Command.AlignerType.AlignOption:
@@ -1264,10 +1264,10 @@ namespace TransferControl.Management
                     IsWaitData = true;
                 }
 
-                txn.AckTimeOut = this.AckTimeOut;
+                txn.AckTimeOut = this.AckTimeOut + 2000;
                 logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
                 int rate = 101 - Convert.ToInt32(this.Speed);
-                txn.MotionTimeOut = this.MotionTimeOut * rate;
+                txn.MotionTimeOut = this.MotionTimeOut * rate + 25000;
                 logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
                 if (Ctrl.DoWork(txn, IsWaitData))
                 {

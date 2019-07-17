@@ -250,11 +250,13 @@ namespace TransferControl.Management
         {
             if (Enabled)
             {
+                timeOutTimer.Enabled = true;
                 timeOutTimer.Start();
             }
             else
             {
                 timeOutTimer.Stop();
+                timeOutTimer.Enabled = false;
             }
         }
 
