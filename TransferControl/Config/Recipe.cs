@@ -71,7 +71,7 @@ namespace TransferControl.Config
         public string ocr_check_Rule { get; set; }
         public string get_slot_order { get; set; }
         public string put_slot_order { get; set; }
-
+        public string wafer_size { get; set; }
         ////ocr_config
         //public string ocr1_config { get; set; }
         //public string ocr2_config { get; set; }
