@@ -131,7 +131,7 @@ namespace TransferControl.Config
             {
                 ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
                 Content = SysCfg.ReadFile("recipe/" + fileName + ".json");
-                Content.is_use_burnin = false;
+                Content.is_use_burnin = true;
                 tmp.Add(fileName, Content);
             }
             return Content;
