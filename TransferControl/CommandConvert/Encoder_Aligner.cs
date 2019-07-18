@@ -134,7 +134,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
 
-                    commandStr = "${0}{1}SET:ALIGN:{2}";
+                    commandStr = "${0}{1}SET:ALIGN:{2},0,0";
                     commandStr = string.Format(commandStr, Address, Sequence, vl);
                     break;
                 default:

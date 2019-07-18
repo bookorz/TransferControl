@@ -18,7 +18,7 @@ namespace TransferControl.Management
         {
             PointList = new Dictionary<string, Dictionary<string, RobotPoint>>();
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            string Sql = @"SELECT t.node_name AS NodeName,t.position AS POSITION,t.position_type AS PositionType,t.point as Point, t.`offset` as Offset 
+            string Sql = @"SELECT t.node_name AS NodeName,t.position AS POSITION,t.position_type AS PositionType,t.point as Point, t.mapping_point as MappingPoint, t.`offset` as Offset 
                             FROM config_point t 
                             WHERE t.equipment_model_id = @equipment_model_id";
             keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
@@ -50,7 +50,16 @@ namespace TransferControl.Management
         {
             RobotPoint result = null;
             Dictionary<string, RobotPoint> tmp;
-            
+            Node targetPosition = NodeManagement.Get(Position);
+            if (!targetPosition.CarrierType.Equals(""))
+            {
+                Position += "_" + targetPosition.CarrierType;
+            }
+            if (!targetPosition.WaferSize.Equals(""))
+            {
+                Position += "_" + targetPosition.WaferSize;
+            }
+
             if (PointList.TryGetValue(NodeName, out tmp))
             {
                 tmp.TryGetValue(Position, out result);
