@@ -10,7 +10,6 @@ namespace TransferControl.Management
         public string Seq { get; set; }
         public string NodeName { get; set; }
         public string NodeType { get; set; }
-        public string RecipeID { get; set; }
         public string Position { get; set; }
         public string Point { get; set; }
         public string Position2 { get; set; }
@@ -229,7 +228,6 @@ namespace TransferControl.Management
             ScriptName = "";
             Type = "";
             TaskId = "";
-            RecipeID = "";
             TargetJobs = new List<Job>();
             ByPassTimeout = false;
             timeOutTimer.Enabled = false;

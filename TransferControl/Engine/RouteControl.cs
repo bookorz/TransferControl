@@ -193,6 +193,9 @@ namespace TransferControl.Engine
                                             case "Y Axis Position":
                                                 Node.Y_Axis_Position = each.Value;
                                                 break;
+                                            case "Z Axis Position":
+                                                Node.Z_Axis_Position = each.Value;
+                                                break;
                                             case "FOUP Clamp Status":
                                                 if (each.Value.Equals("Open"))
                                                 {
@@ -245,12 +248,13 @@ namespace TransferControl.Engine
 
                                             //Mapping = SystemConfig.Get().MappingData;
                                         }
-                                        //if (Node.Name.Equals("LOADPORT03"))
-                                        //{
-                                        //    //Mapping = "1111111110000000000000000";
-                                        //    Mapping = "0000000000000000000000000";
-                                        //    //Mapping = SystemConfig.Get().MappingData;
-                                        //}
+                                        if (Node.Name.Equals("LOADPORT02"))
+                                        {
+                                            //Mapping = "1111111110000000000000000";
+                                            Mapping = "0000000000000000000000000";
+                                            //Mapping = SystemConfig.Get().MappingData;
+                                        }
+                                        Msg.Value = Mapping;
                                     }
 
                                     //if (Node.Name.Equals("LOADPORT04"))
@@ -522,77 +526,193 @@ namespace TransferControl.Engine
                                     break;
                                 case Transaction.Command.RobotType.GetMapping:
                                     //產生Mapping資料
-                                    string Mapping = Msg.Value;
+                                    string Mapping = Msg.Value.Replace(",","").Substring(1);
                                     //string Mapping = SystemConfig.Get().MappingData;
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
-                                    Node.MappingResult = Mapping;
-                                    Node Port = NodeManagement.Get(Node.CurrentPosition);
-                                    if (Port != null)
+                                    Node port = NodeManagement.Get(Node.CurrentPosition);
+                                    if (SystemConfig.Get().FakeData)
                                     {
-                                        int currentIdx = 1;
-                                        for (int i = 0; i < Mapping.Length; i++)
+                                        if (port.Name.Equals("LOADPORT01"))
                                         {
-                                            Job wafer = RouteControl.CreateJob();
-                                            wafer.Slot = (i + 1).ToString();
-                                            wafer.FromPort = Port.Name;
-                                            wafer.FromPortSlot = wafer.Slot;
-                                            wafer.Position = Port.Name;
-                                            wafer.AlignerFlag = false;
-                                            string Slot = (i + 1).ToString("00");
-                                            switch (Mapping[i])
-                                            {
-                                                case '0':
-                                                    wafer.Job_Id = "No wafer";
-                                                    wafer.Host_Job_Id = wafer.Job_Id;
-                                                    //MappingData.Add(wafer);
-                                                    break;
-                                                case '1':
-                                                    while (true)
-                                                    {
-                                                        wafer.Job_Id = "Wafer" + currentIdx.ToString("00");
-                                                        wafer.Host_Job_Id = wafer.Job_Id;
-                                                        wafer.MapFlag = true;
-                                                        if (JobManagement.Add(wafer.Job_Id, wafer))
-                                                        {
+                                            Mapping = "1000000000000000000000000";
+                                            //Mapping = "1000000000000000000000000";
 
-                                                            //MappingData.Add(wafer);
-                                                            break;
-                                                        }
-                                                        currentIdx++;
-                                                    }
-
-                                                    break;
-                                                case '2':
-                                                case 'E':
-                                                    wafer.Job_Id = "Crossed";
-                                                    wafer.Host_Job_Id = wafer.Job_Id;
-                                                    wafer.MapFlag = true;
-                                                    //MappingData.Add(wafer);
-                                                    break;
-                                                case '?':
-                                                    wafer.Job_Id = "Undefined";
-                                                    wafer.Host_Job_Id = wafer.Job_Id;
-                                                    wafer.MapFlag = true;
-                                                    //MappingData.Add(wafer);
-                                                    break;
-                                                case 'W':
-                                                    wafer.Job_Id = "Double";
-                                                    wafer.Host_Job_Id = wafer.Job_Id;
-                                                    wafer.MapFlag = true;
-                                                    //MappingData.Add(wafer);
-                                                    break;
-                                            }
-                                            if (!Port.AddJob(wafer.Slot, wafer))
-                                            {
-                                                Job org = Port.GetJob(wafer.Slot);
-                                                JobManagement.Remove(org.Job_Id);
-                                                Port.RemoveJob(wafer.Slot);
-                                                Port.AddJob(wafer.Slot, wafer);
-                                            }
-
+                                            //Mapping = SystemConfig.Get().MappingData;
                                         }
-                                        Port.IsMapping = true;
+                                        if (port.Name.Equals("LOADPORT02"))
+                                        {
+                                            //Mapping = "1111111110000000000000000";
+                                            Mapping = "0000000000000000000000000";
+                                            //Mapping = SystemConfig.Get().MappingData;
+                                        }
+                                        Msg.Value = Mapping;
                                     }
+                                    port.MappingResult = Mapping;
+
+                                    port.IsMapping = true;
+
+
+                                    int currentIdx = 1;
+                                    for (int i = 0; i < Mapping.Length; i++)
+                                    {
+                                        if (port.CarrierType != null)
+                                        {
+                                            if (port.CarrierType.Equals("OPEN"))
+                                            {
+
+                                                if ((i + 1) > 13)
+                                                {
+                                                    continue;
+                                                }
+
+                                            }
+                                        }
+                                        Job wafer = RouteControl.CreateJob();
+                                        wafer.Slot = (i + 1).ToString();
+                                        wafer.FromPort = port.Name;
+                                        wafer.FromPortSlot = wafer.Slot;
+                                        wafer.Position = port.Name;
+                                        wafer.AlignerFlag = false;
+
+                                        string Slot = (i + 1).ToString("00");
+
+
+                                        switch (Mapping[i])
+                                        {
+                                            case '0':
+                                                wafer.Job_Id = "No wafer";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = false;
+                                                wafer.ErrPosition = false;
+                                                //MappingData.Add(wafer);
+                                                break;
+                                            case '1':
+                                                while (true)
+                                                {
+                                                    wafer.Job_Id = "Wafer" + currentIdx.ToString("000");
+                                                    wafer.Host_Job_Id = wafer.Job_Id;
+                                                    wafer.MapFlag = true;
+                                                    wafer.ErrPosition = false;
+                                                    if (JobManagement.Add(wafer.Job_Id, wafer))
+                                                    {
+
+                                                        //MappingData.Add(wafer);
+                                                        break;
+                                                    }
+                                                    currentIdx++;
+                                                }
+
+                                                break;
+                                            case '2':
+                                            case 'E':
+                                                wafer.Job_Id = "Crossed";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
+                                                //MappingData.Add(wafer);
+                                                port.IsMapping = false;
+                                                break;
+                                            default:
+                                            case '?':
+                                                wafer.Job_Id = "Undefined";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
+                                                //MappingData.Add(wafer);
+                                                port.IsMapping = false;
+                                                break;
+                                            case 'W':
+                                                wafer.Job_Id = "Double";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
+                                                //MappingData.Add(wafer);
+                                                port.IsMapping = false;
+                                                break;
+                                        }
+                                        if (!port.AddJob(wafer.Slot, wafer))
+                                        {
+                                            Job org = port.GetJob(wafer.Slot);
+                                            JobManagement.Remove(org.Job_Id);
+                                            port.RemoveJob(wafer.Slot);
+                                            port.AddJob(wafer.Slot, wafer);
+                                        }
+
+                                    }
+                                    if (!port.IsMapping)
+                                    {
+                                        CommandReturnMessage rem = new CommandReturnMessage();
+                                        rem.Value = "/MAPERR";
+                                        _UIReport.On_Command_Error(Node, Txn, rem);
+                                    }
+                                    //Node.MappingResult = Mapping;
+                                    //Node Port = NodeManagement.Get(Node.CurrentPosition);
+                                    //if (Port != null)
+                                    //{
+                                    //    int currentIdx = 1;
+                                    //    for (int i = 0; i < Mapping.Length; i++)
+                                    //    {
+                                    //        Job wafer = RouteControl.CreateJob();
+                                    //        wafer.Slot = (i + 1).ToString();
+                                    //        wafer.FromPort = Port.Name;
+                                    //        wafer.FromPortSlot = wafer.Slot;
+                                    //        wafer.Position = Port.Name;
+                                    //        wafer.AlignerFlag = false;
+                                    //        string Slot = (i + 1).ToString("00");
+                                    //        switch (Mapping[i])
+                                    //        {
+                                    //            case '0':
+                                    //                wafer.Job_Id = "No wafer";
+                                    //                wafer.Host_Job_Id = wafer.Job_Id;
+                                    //                //MappingData.Add(wafer);
+                                    //                break;
+                                    //            case '1':
+                                    //                while (true)
+                                    //                {
+                                    //                    wafer.Job_Id = "Wafer" + currentIdx.ToString("00");
+                                    //                    wafer.Host_Job_Id = wafer.Job_Id;
+                                    //                    wafer.MapFlag = true;
+                                    //                    if (JobManagement.Add(wafer.Job_Id, wafer))
+                                    //                    {
+
+                                    //                        //MappingData.Add(wafer);
+                                    //                        break;
+                                    //                    }
+                                    //                    currentIdx++;
+                                    //                }
+
+                                    //                break;
+                                    //            case '2':
+                                    //            case 'E':
+                                    //                wafer.Job_Id = "Crossed";
+                                    //                wafer.Host_Job_Id = wafer.Job_Id;
+                                    //                wafer.MapFlag = true;
+                                    //                //MappingData.Add(wafer);
+                                    //                break;
+                                    //            case '?':
+                                    //                wafer.Job_Id = "Undefined";
+                                    //                wafer.Host_Job_Id = wafer.Job_Id;
+                                    //                wafer.MapFlag = true;
+                                    //                //MappingData.Add(wafer);
+                                    //                break;
+                                    //            case 'W':
+                                    //                wafer.Job_Id = "Double";
+                                    //                wafer.Host_Job_Id = wafer.Job_Id;
+                                    //                wafer.MapFlag = true;
+                                    //                //MappingData.Add(wafer);
+                                    //                break;
+                                    //        }
+                                    //        if (!Port.AddJob(wafer.Slot, wafer))
+                                    //        {
+                                    //            Job org = Port.GetJob(wafer.Slot);
+                                    //            JobManagement.Remove(org.Job_Id);
+                                    //            Port.RemoveJob(wafer.Slot);
+                                    //            Port.AddJob(wafer.Slot, wafer);
+                                    //        }
+
+                                    //    }
+                                    //    Port.IsMapping = true;
+                                    //}
                                     break;
                                    
                             }

@@ -139,6 +139,7 @@ namespace TransferControl.Management
         public string L_Hold_Status { get; set; }
 
         public string Y_Axis_Position { get; set; }
+        public string Z_Axis_Position { get; set; }
 
         public string Door_Position { get; set; }
 
@@ -486,7 +487,7 @@ namespace TransferControl.Management
         /// <returns></returns>
         public bool SendCommand(Transaction txn, out string Message, bool Force = false)
         {
-            txn.RecipeID = this.WaferSize;
+           
             Message = "";
             //if (this.Type.ToUpper().Equals("LOADPORT"))
             //{
@@ -576,17 +577,7 @@ namespace TransferControl.Management
 
                 if (!txn.Position.Equals(""))
                 {
-                    if (txn.RecipeID.Equals(""))
-                    {
-                        if (txn.TargetJobs.Count != 0)
-                        {
-                            txn.RecipeID = txn.TargetJobs[0].RecipeID;
-                        }
-                        else if (!NodeManagement.Get(txn.Position).WaferSize.Equals(""))
-                        {
-                            txn.RecipeID = NodeManagement.Get(txn.Position).WaferSize;
-                        }
-                    }
+                    
                     RobotPoint point;
                     //if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
                     //{
@@ -602,8 +593,14 @@ namespace TransferControl.Management
                         this.IsExcuting = false;
                         throw new Exception("point " + txn.Position + " not found!");
                     }
-
-                    txn.Point = point.Point;
+                    if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
+                    {
+                        txn.Point = point.MappingPoint;
+                    }
+                    else
+                    {
+                        txn.Point = point.Point;
+                    }
                     //檢查Loadport門是否為可以取放片狀態
                     //if (point.PositionType.Equals("LOADPORT"))
                     //{
