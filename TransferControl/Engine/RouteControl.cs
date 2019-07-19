@@ -534,7 +534,7 @@ namespace TransferControl.Engine
                                     {
                                         if (port.Name.Equals("LOADPORT01"))
                                         {
-                                            Mapping = "1000000000000000000000000";
+                                            Mapping = "1110000000000000000000000";
                                             //Mapping = "1000000000000000000000000";
 
                                             //Mapping = SystemConfig.Get().MappingData;
