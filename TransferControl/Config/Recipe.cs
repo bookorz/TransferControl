@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TransferControl.Comm;
 
 namespace TransferControl.Config
 {
@@ -163,6 +164,101 @@ namespace TransferControl.Config
                 logger.Error(e.Message + " " + e.StackTrace);
                 return false;
             }
+        }
+
+        public static void updateDBConfig(string recipeName)
+        {
+            try
+            {
+                Recipe recipe = Recipe.Get(recipeName);
+                DBUtil dBUtil = new DBUtil();
+                Dictionary<string, object> keyValues = new Dictionary<string, object>();
+                string strSql = " UPDATE config_node SET carrier_type = CASE node_id WHEN 'LOADPORT01' THEN @ctype1 " +
+                                "                                                    WHEN 'LOADPORT02' THEN @ctype2 " +
+                                "                                                    WHEN 'LOADPORT03' THEN @ctype3 " +
+                                "                                                    WHEN 'LOADPORT04' THEN @ctype4 " +
+                                "                                                    ELSE carrier_type END, " +
+                                "                          mode = CASE node_id WHEN 'LOADPORT01' THEN @mode1 " +
+                                "                                              WHEN 'LOADPORT02' THEN @mode2 " +
+                                "                                              WHEN 'LOADPORT03' THEN @mode3 " +
+                                "                                              WHEN 'LOADPORT04' THEN @mode4 " +
+                                "                                              ELSE mode END," +
+                                "                          enable_flg = CASE node_id WHEN 'LOADPORT01' THEN @enable1 " +
+                                "                                                    WHEN 'LOADPORT02' THEN @enable2 " +
+                                "                                                    WHEN 'LOADPORT03' THEN @enable3 " +
+                                "                                                    WHEN 'LOADPORT04' THEN @enable4 " +
+                                "                                                    ELSE enable_flg END," +
+                                "                          bypass = CASE node_id     WHEN 'ALIGNER01' THEN @bypassA1 " +
+                                "                                                    ELSE bypass END," +
+                                "                          double_arm = CASE node_id WHEN 'ROBOT01' THEN @double_arm_r1 " +
+                                "                                                    ELSE double_arm END, " +
+                                "                          r_arm = CASE node_id WHEN 'ROBOT01' THEN @r_arm_r1 " +
+                                "                                                    ELSE r_arm END, " +
+                                "                          l_arm = CASE node_id WHEN 'ROBOT01' THEN @l_arm_r1 " +
+                                "                                                    ELSE l_arm END, " +
+                                "                          wafer_size = @wafer_size, " +
+                                "                          modify_user = @modify_user, modify_timestamp = NOW() " +
+                                " WHERE equipment_model_id = @equipment_model_id " +
+                                "   AND node_type IN ('LOADPORT','ROBOT','Aligner') ;";
+
+                keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+                keyValues.Add("@modify_user", Global.currentUser);
+                keyValues.Add("@ctype1", recipe.port1_carrier_type);
+                keyValues.Add("@ctype2", recipe.port2_carrier_type);
+                keyValues.Add("@ctype3", recipe.port3_carrier_type);
+                keyValues.Add("@ctype4", recipe.port4_carrier_type);
+                keyValues.Add("@mode1", getPortType(recipe.port1_type));
+                keyValues.Add("@mode2", getPortType(recipe.port2_type));
+                keyValues.Add("@mode3", getPortType(recipe.port3_type));
+                keyValues.Add("@mode4", getPortType(recipe.port4_type));
+                keyValues.Add("@enable1", getEnable(recipe.port1_type));
+                keyValues.Add("@enable2", getEnable(recipe.port2_type));
+                keyValues.Add("@enable3", getEnable(recipe.port3_type));
+                keyValues.Add("@enable4", getEnable(recipe.port4_type));
+                keyValues.Add("@bypassA1", recipe.is_use_aligner1 ? 0 : 1);//要用ALIGNER 時 bypass = 0, ELSE bypass = 1
+                keyValues.Add("@double_arm_r1", recipe.is_use_double_arm ? 1 : 0);
+                keyValues.Add("@r_arm_r1", recipe.is_use_r_arm ? 1 : 0);
+                keyValues.Add("@l_arm_r1", recipe.is_use_l_arm ? 1 : 0);
+                keyValues.Add("@wafer_size", recipe.wafer_size);
+                dBUtil.ExecuteNonQuery(strSql, keyValues);
+                
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.StackTrace);
+            }
+        }
+        private static string getPortType(string port_type)
+        {
+            string result = "";
+            switch (port_type)
+            {
+                case "L":
+                    result = "LD";
+                    break;
+                case "U":
+                    result = "ULD";
+                    break;
+                case "N":
+                    result = "";
+                    break;
+            }
+            return result;
+        }
+        private static int getEnable(string port_type)
+        {
+            int result = 0;
+            switch (port_type)
+            {
+                case "L":
+                case "U":
+                    result = 1;
+                    break;
+                case "N":
+                    result = 0;
+                    break;
+            }
+            return result;
         }
     }
 }
