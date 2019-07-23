@@ -19,7 +19,7 @@ namespace TransferControl.Engine
         public bool IsInitial = false;
         //DateTime StartTime = new DateTime();
         IUserInterfaceReport _UIReport;
-        
+
         //int LapsedWfCount = 0;
         //int LapsedLotCount = 0;
         public string EqpState = "";
@@ -225,7 +225,7 @@ namespace TransferControl.Engine
                                                 break;
                                         }
                                     }
-                                   
+
 
                                     break;
                                 case Transaction.Command.LoadPortType.GetMapping:
@@ -267,7 +267,7 @@ namespace TransferControl.Engine
 
                                     Node.IsMapping = true;
 
-                                    
+
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
                                     {
@@ -289,7 +289,7 @@ namespace TransferControl.Engine
                                         wafer.FromPortSlot = wafer.Slot;
                                         wafer.Position = Node.Name;
                                         wafer.AlignerFlag = false;
-                                        
+
                                         string Slot = (i + 1).ToString("00");
 
 
@@ -370,9 +370,17 @@ namespace TransferControl.Engine
                         case "ROBOT":
                             switch (Txn.Method)
                             {
+                                case Transaction.Command.RobotType.Get:
+                                case Transaction.Command.RobotType.DoubleGet:
+                                case Transaction.Command.RobotType.GetWithoutBack:
+                                case Transaction.Command.RobotType.Put:
+                                case Transaction.Command.RobotType.DoublePut:
+                                case Transaction.Command.RobotType.PutWithoutBack:
+                                    Node.ArmExtend = true;
+                                    break;
 
                                 case Transaction.Command.RobotType.GetSpeed:
-                                    if (Convert.ToInt16(Msg.Value)==0 && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
+                                    if (Convert.ToInt16(Msg.Value) == 0 && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
                                     {
                                         Msg.Value = "100";
                                     }
@@ -526,7 +534,7 @@ namespace TransferControl.Engine
                                     break;
                                 case Transaction.Command.RobotType.GetMapping:
                                     //產生Mapping資料
-                                    string Mapping = Msg.Value.Replace(",","").Substring(1);
+                                    string Mapping = Msg.Value.Replace(",", "").Substring(1);
                                     //string Mapping = SystemConfig.Get().MappingData;
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
                                     Node port = NodeManagement.Get(Node.CurrentPosition);
@@ -541,8 +549,8 @@ namespace TransferControl.Engine
                                         }
                                         if (port.Name.Equals("LOADPORT02"))
                                         {
-                                            //Mapping = "1111111110000000000000000";
-                                            Mapping = "0000000000000000000000000";
+                                            Mapping = "1111111110000000000000000";
+                                            //Mapping = "0000000000000000000000000";
                                             //Mapping = SystemConfig.Get().MappingData;
                                         }
                                         Msg.Value = Mapping;
@@ -714,7 +722,7 @@ namespace TransferControl.Engine
                                     //    Port.IsMapping = true;
                                     //}
                                     break;
-                                   
+
                             }
 
                             break;
@@ -742,10 +750,18 @@ namespace TransferControl.Engine
                                             case "R_Present":
                                                 if (each.Value.Equals("1"))
                                                 {
+                                                    if (!Node.R_Presence)
+                                                    {
+                                                        logger.Debug(Node.Name + " Presence change 0 to 1");
+                                                    }
                                                     Node.R_Presence = true;
                                                 }
                                                 else
                                                 {
+                                                    if (Node.R_Presence)
+                                                    {
+                                                        logger.Debug(Node.Name + " Presence change 1 to 0");
+                                                    }
                                                     Node.R_Presence = false;
                                                 }
                                                 break;
@@ -796,7 +812,7 @@ namespace TransferControl.Engine
 
                     _UIReport.On_Command_Excuted(Node, Txn, Msg);
 
-                    TaskJob.Next(Node,Txn, "Excuted");
+                    TaskJob.Next(Node, Txn, "Excuted");
                 }
             }
             catch (Exception e)
@@ -839,6 +855,11 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.Home:
                                 case Transaction.Command.RobotType.OrginSearch:
                                     Node.State = "READY";
+                                    Node.ArmExtend = false;
+                                    break;
+                                case Transaction.Command.RobotType.PutBack:
+                                case Transaction.Command.RobotType.GetAfterWait:
+                                    Node.ArmExtend = false;
                                     break;
                             }
 
@@ -927,7 +948,7 @@ namespace TransferControl.Engine
                                                 switch (Txn.Method)
                                                 {
                                                     case Transaction.Command.OCRType.Read:
-                                                        j.OCRPass = each.Value.Equals("1")?true:false;
+                                                        j.OCRPass = each.Value.Equals("1") ? true : false;
                                                         break;
                                                     case Transaction.Command.OCRType.ReadM12:
                                                         j.OCR_M12_Pass = each.Value.Equals("1") ? true : false;
@@ -939,97 +960,97 @@ namespace TransferControl.Engine
                                                 break;
                                         }
                                     }
-                                                //if (Txn.TargetJobs.Count != 0)
-                                                //{
-                                                //    string[] OCRResult;
+                                    //if (Txn.TargetJobs.Count != 0)
+                                    //{
+                                    //    string[] OCRResult;
 
-                                                //    OCRResult = Msg.Value.Replace("[", "").Replace("]", "").Split(',');
+                                    //    OCRResult = Msg.Value.Replace("[", "").Replace("]", "").Split(',');
 
-                                                //    //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
+                                    //    //Txn.TargetJobs[0].Host_Job_Id = OCRResult[0];
 
-                                                //    NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
+                                    //    NodeManagement.Get(Node.Associated_Node).JobList.First().Value.Host_Job_Id = OCRResult[0];
 
-                                                //    switch (Txn.Method)
-                                                //    {
-                                                //        case Transaction.Command.OCRType.Read:
-                                                //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRResult = OCRResult[0];
-                                                //            break;
-                                                //        case Transaction.Command.OCRType.ReadM12:
-                                                //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Result = OCRResult[0];
-                                                //            break;
-                                                //        case Transaction.Command.OCRType.ReadT7:
-                                                //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Result = OCRResult[0];
-                                                //            break;
-                                                //    }
-                                                //    switch (Node.Brand)
-                                                //    {
-                                                //        case "HST":
-                                                //            if (OCRResult.Length >= 3)
-                                                //            {
+                                    //    switch (Txn.Method)
+                                    //    {
+                                    //        case Transaction.Command.OCRType.Read:
+                                    //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRResult = OCRResult[0];
+                                    //            break;
+                                    //        case Transaction.Command.OCRType.ReadM12:
+                                    //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Result = OCRResult[0];
+                                    //            break;
+                                    //        case Transaction.Command.OCRType.ReadT7:
+                                    //            NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Result = OCRResult[0];
+                                    //            break;
+                                    //    }
+                                    //    switch (Node.Brand)
+                                    //    {
+                                    //        case "HST":
+                                    //            if (OCRResult.Length >= 3)
+                                    //            {
 
 
-                                                //                switch (Txn.Method)
-                                                //                {
-                                                //                    case Transaction.Command.OCRType.Read:
-                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = OCRResult[2];
-                                                //                        break;
-                                                //                    case Transaction.Command.OCRType.ReadM12:
-                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = OCRResult[2];
-                                                //                        break;
-                                                //                    case Transaction.Command.OCRType.ReadT7:
-                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = OCRResult[2];
-                                                //                        break;
-                                                //                }
-                                                //            }
-                                                //            else
-                                                //            {
+                                    //                switch (Txn.Method)
+                                    //                {
+                                    //                    case Transaction.Command.OCRType.Read:
+                                    //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = OCRResult[2];
+                                    //                        break;
+                                    //                    case Transaction.Command.OCRType.ReadM12:
+                                    //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = OCRResult[2];
+                                    //                        break;
+                                    //                    case Transaction.Command.OCRType.ReadT7:
+                                    //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = OCRResult[2];
+                                    //                        break;
+                                    //                }
+                                    //            }
+                                    //            else
+                                    //            {
 
-                                                //                switch (Txn.Method)
-                                                //                {
-                                                //                    case Transaction.Command.OCRType.Read:
-                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = "0";
-                                                //                        break;
-                                                //                    case Transaction.Command.OCRType.ReadM12:
-                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = "0";
-                                                //                        break;
-                                                //                    case Transaction.Command.OCRType.ReadT7:
-                                                //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = "0";
-                                                //                        break;
-                                                //                }
-                                                //            }
-                                                //            if (OCRResult[0].IndexOf("*") == -1)
-                                                //            {
-                                                //                Node.OCRSuccess = true;
-                                                //            }
-                                                //            else
-                                                //            {
-                                                //                Node.OCRSuccess = false;
-                                                //            }
-                                                //            break;
-                                                //        case "COGNEX":
-                                                //            if (OCRResult.Length >= 3)
-                                                //            {
-                                                //                Txn.TargetJobs[0].OCRScore = OCRResult[1];
-                                                //                if (!OCRResult[2].Equals("0.000"))
-                                                //                {
-                                                //                    Node.OCRSuccess = true;
-                                                //                }
-                                                //                else
-                                                //                {
-                                                //                    Node.OCRSuccess = false;
-                                                //                }
-                                                //            }
-                                                //            else
-                                                //            {
-                                                //                Txn.TargetJobs[0].OCRScore = "0";
-                                                //            }
+                                    //                switch (Txn.Method)
+                                    //                {
+                                    //                    case Transaction.Command.OCRType.Read:
+                                    //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCRScore = "0";
+                                    //                        break;
+                                    //                    case Transaction.Command.OCRType.ReadM12:
+                                    //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_M12_Score = "0";
+                                    //                        break;
+                                    //                    case Transaction.Command.OCRType.ReadT7:
+                                    //                        NodeManagement.Get(Node.Associated_Node).JobList.First().Value.OCR_T7_Score = "0";
+                                    //                        break;
+                                    //                }
+                                    //            }
+                                    //            if (OCRResult[0].IndexOf("*") == -1)
+                                    //            {
+                                    //                Node.OCRSuccess = true;
+                                    //            }
+                                    //            else
+                                    //            {
+                                    //                Node.OCRSuccess = false;
+                                    //            }
+                                    //            break;
+                                    //        case "COGNEX":
+                                    //            if (OCRResult.Length >= 3)
+                                    //            {
+                                    //                Txn.TargetJobs[0].OCRScore = OCRResult[1];
+                                    //                if (!OCRResult[2].Equals("0.000"))
+                                    //                {
+                                    //                    Node.OCRSuccess = true;
+                                    //                }
+                                    //                else
+                                    //                {
+                                    //                    Node.OCRSuccess = false;
+                                    //                }
+                                    //            }
+                                    //            else
+                                    //            {
+                                    //                Txn.TargetJobs[0].OCRScore = "0";
+                                    //            }
 
-                                                //            break;
-                                                //    }
+                                    //            break;
+                                    //    }
 
-                                                //    _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
-                                                //}
-                                                break;
+                                    //    _UIReport.On_Job_Location_Changed(Txn.TargetJobs[0]);
+                                    //}
+                                    break;
                                 case Transaction.Command.OCRType.ReadConfig:
 
 
@@ -1090,7 +1111,7 @@ namespace TransferControl.Engine
 
 
                     TaskJob.Next(Node, Txn, "Finished");
-                    
+
                 }
             }
             catch (Exception e)
@@ -1124,13 +1145,13 @@ namespace TransferControl.Engine
                         case Transaction.Command.RobotType.GetAfterWait:
                             Node.CurrentPoint = Txn.Point;
 
-                           
+
 
                             break;
                         case Transaction.Command.RobotType.Put:
                         case Transaction.Command.RobotType.PutBack:
                             Node.CurrentPoint = Txn.Point;
-                            
+
 
                             break;
                         case Transaction.Command.RobotType.WaitBeforeGet:
@@ -1160,7 +1181,7 @@ namespace TransferControl.Engine
                             break;
                         case Transaction.Command.AlignerType.Retract:
                         case Transaction.Command.AlignerType.Home:
-                           
+
 
                             // Node.PutAvailable = true;
                             break;
@@ -1248,7 +1269,7 @@ namespace TransferControl.Engine
                                 Node.Foup_Placement = false;
                                 //IO_State_Change(Node.Name, "Foup_Presence", true);
                                 //IO_State_Change(Node.Name, "Foup_Placement", false);
-                                
+
                                 break;
                             case "PODON":
                                 CarrierManagement.Add().SetLocation(Node.Name);
@@ -1363,7 +1384,7 @@ namespace TransferControl.Engine
                 MTask.Finished = true;
                 Task.Id = Task.MainTaskId;
             }
-           
+
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
@@ -1372,7 +1393,7 @@ namespace TransferControl.Engine
 
         public void On_Data_Chnaged(string Parameter, string Value, string Type)
         {
-            
+
             _UIReport.On_Data_Chnaged(Parameter, Value, Type);
         }
 
@@ -1396,7 +1417,7 @@ namespace TransferControl.Engine
             _UIReport.On_Alarm_Happen(DIOName, ErrorCode);
         }
 
-        
+
 
         public void On_Job_Position_Changed(Job Job)
         {
@@ -1409,7 +1430,7 @@ namespace TransferControl.Engine
             return new Job(RouteControl.Instance);
         }
 
-        
+
 
         public void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task, string Location, string ReportType, string Message)
         {

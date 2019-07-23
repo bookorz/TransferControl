@@ -169,6 +169,7 @@ namespace TransferControl.Management
         public bool IsLoad { get; set; }
 
         public bool IsExcuting { get; set; }
+        public bool IsMoving { get; set; }
 
         public bool IsPause { get; set; }
 
@@ -237,6 +238,8 @@ namespace TransferControl.Management
         public Carrier Carrier { get; set; }
         public int RobotGetState { get; set; }
         public int RobotPutState { get; set; }
+        public bool ArmExtend { get; set; }
+    
         public class ActionRequest
         {
             public string TaskName { get; set; }
@@ -283,7 +286,7 @@ namespace TransferControl.Management
         {
             JobList = new ConcurrentDictionary<string, Job>();
             ReserveList = new ConcurrentDictionary<string, Job>();
-
+            ArmExtend = false;
             RobotGetState = 0;
             RobotPutState = 0;
             Speed = "";
@@ -300,7 +303,7 @@ namespace TransferControl.Management
             R_Flip_Degree = "0";
             L_Flip_Degree = "0";
             CurrentPosition = "";
-
+            IsMoving = false;
             FoupID = "";
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, string>();

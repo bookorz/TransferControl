@@ -110,7 +110,7 @@ namespace TransferControl.Management
                                 //Task.Id = Task.MainTaskId;
                                 Task = this.Remove(Task.MainTaskId);
                             }
-
+                            Task.Finished = true;
                             _TaskReport.On_Task_Abort(Task, Node.Name, Report, ErrorMessage);
 
                         }
@@ -146,7 +146,7 @@ namespace TransferControl.Management
                                     this.Remove(Task.MainTaskId);
                                     Task.Id = Task.MainTaskId;
                                 }
-
+                                Task.Finished = true;
                                 _TaskReport.On_Task_Abort(Task, Node.Name, Report, ErrorMessage);
                             }
                         }
@@ -541,6 +541,30 @@ namespace TransferControl.Management
                                         string NewConfig = "";
                                         switch (FunctionName)
                                         {
+                                            case "CHECK_ALIGNER_PRESENCE":
+                                                result = true;
+                                                TarNode = NodeManagement.Get(TargetName);
+                                                var ActiveRobot = from r in NodeManagement.GetList()
+                                                                  where r.Type.ToUpper().Equals("ROBOT") && r.CurrentPosition.ToUpper().Equals(TarNode.Name.ToUpper()) && r.ArmExtend
+                                                                  select r;
+                                                if (ActiveRobot.Count() == 0)
+                                                {
+                                                    if (TarNode.R_Presence && TarNode.JobList.Count == 0)
+                                                    {
+                                                        logger.Debug("在席偵測異常");
+                                                        Report = ErrorType;
+                                                        Message = ErrorCode;
+                                                        result = false;
+                                                    }
+                                                    else if (!TarNode.R_Presence && TarNode.JobList.Count != 0)
+                                                    {
+                                                        logger.Debug("在席偵測異常");
+                                                        Report = ErrorType;
+                                                        Message = ErrorCode;
+                                                        result = false;
+                                                    }
+                                                }
+                                                break;
                                             case "Get_OCR_Config":
                                                 Recipe rcp = Recipe.Get(SystemConfig.Get().CurrentRecipe);
                                                 TarNode = NodeManagement.Get(TargetName);

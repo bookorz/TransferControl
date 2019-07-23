@@ -536,79 +536,81 @@ namespace TransferControl.CommandConvert
             return result;
         }
 
-        private List<CommandReturnMessage> TDKCodeAnalysis(string Msg)
+        private List<CommandReturnMessage> TDKCodeAnalysis(string orgMsg)
         {
             List<CommandReturnMessage> result;
 
             try
             {
                 result = new List<CommandReturnMessage>();
-
-                if (Msg.Trim().Equals(""))
+                string[] msgAry = orgMsg.Split(Convert.ToChar(3));
+                foreach (string Msg in msgAry)
                 {
-                    return result;
-                }
-
-                CommandReturnMessage each = new CommandReturnMessage();
-                byte[] t = new byte[Encoding.ASCII.GetByteCount(Msg.ToString())]; ;
-                int c = Encoding.ASCII.GetBytes(Msg.ToString(), 0, Encoding.ASCII.GetByteCount(Msg.ToString()), t, 0);
-
-                each.OrgMsg = Msg;
-                each.NodeAdr = Encoding.Default.GetString(t, 3, 2);
-                string contentStr = Encoding.Default.GetString(t, 5, t.Length - 5 - 3).Replace(";", "").Trim();
-                contentStr.Replace("/INTER/", "/");
-                string[] content = contentStr.Split(':', '/');
-
-                for (int i = 0; i < content.Length; i++)
-                {
-                    switch (i)
+                    if (Msg.Trim().Equals(""))
                     {
-                        case 0:
-                            switch (content[i])
-                            {
-                                case "ACK":
-                                    each.Type = CommandReturnMessage.ReturnType.Excuted;
-                                    break;
-                                case "NAK":
-                                    each.Type = CommandReturnMessage.ReturnType.Error;
-                                    break;
-                                case "INF":
-                                case "RIF":
-                                    each.Type = CommandReturnMessage.ReturnType.Information;
-                                    break;
-                                case "EVT":
-                                    each.Type = CommandReturnMessage.ReturnType.Event;
-                                    break;
-                                case "ABS":
-                                case "RAS":
-                                    each.Type = CommandReturnMessage.ReturnType.Error;
-                                    break;
-                                    //case "RIF":
-                                    //    each.Type = ReturnMessage.ReturnType.ReInformation;
-                                    //    break;
-                            }
-                            each.CommandType = content[i];
-                            break;
-                        case 1:
-
-                            each.Command = content[i];
-                            if (each.Type == CommandReturnMessage.ReturnType.Information || each.Type == CommandReturnMessage.ReturnType.ReInformation || each.Type == CommandReturnMessage.ReturnType.Error)
-                            {
-                                each.FinCommand = TDKFinCommand(each.Command);
-                            }
-                            if (each.Command.Equals("PAUSE") || each.Command.Equals("STOP_"))
-                            {
-                                each.IsInterrupt = true;
-                            }
-                            break;
-                        case 2:
-                            each.Value = content[i];
-                            break;
+                        return result;
                     }
+
+                    CommandReturnMessage each = new CommandReturnMessage();
+                    byte[] t = new byte[Encoding.ASCII.GetByteCount(Msg.ToString())]; ;
+                    int c = Encoding.ASCII.GetBytes(Msg.ToString(), 0, Encoding.ASCII.GetByteCount(Msg.ToString()), t, 0);
+
+                    each.OrgMsg = Msg;
+                    each.NodeAdr = Encoding.Default.GetString(t, 3, 2);
+                    string contentStr = Encoding.Default.GetString(t, 5, t.Length - 5 - 3).Replace(";", "").Trim();
+                    contentStr.Replace("/INTER/", "/");
+                    string[] content = contentStr.Split(':', '/');
+
+                    for (int i = 0; i < content.Length; i++)
+                    {
+                        switch (i)
+                        {
+                            case 0:
+                                switch (content[i])
+                                {
+                                    case "ACK":
+                                        each.Type = CommandReturnMessage.ReturnType.Excuted;
+                                        break;
+                                    case "NAK":
+                                        each.Type = CommandReturnMessage.ReturnType.Error;
+                                        break;
+                                    case "INF":
+                                    case "RIF":
+                                        each.Type = CommandReturnMessage.ReturnType.Information;
+                                        break;
+                                    case "EVT":
+                                        each.Type = CommandReturnMessage.ReturnType.Event;
+                                        break;
+                                    case "ABS":
+                                    case "RAS":
+                                        each.Type = CommandReturnMessage.ReturnType.Error;
+                                        break;
+                                        //case "RIF":
+                                        //    each.Type = ReturnMessage.ReturnType.ReInformation;
+                                        //    break;
+                                }
+                                each.CommandType = content[i];
+                                break;
+                            case 1:
+
+                                each.Command = content[i];
+                                if (each.Type == CommandReturnMessage.ReturnType.Information || each.Type == CommandReturnMessage.ReturnType.ReInformation || each.Type == CommandReturnMessage.ReturnType.Error)
+                                {
+                                    each.FinCommand = TDKFinCommand(each.Command);
+                                }
+                                if (each.Command.Equals("PAUSE") || each.Command.Equals("STOP_"))
+                                {
+                                    each.IsInterrupt = true;
+                                }
+                                break;
+                            case 2:
+                                each.Value = content[i];
+                                break;
+                        }
+                    }
+
+                    result.Add(each);
                 }
-
-                result.Add(each);
-
             }
             catch (Exception ex)
             {

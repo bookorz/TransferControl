@@ -502,6 +502,7 @@ namespace TransferControl.Controller
                                                         Txn.SetTimeOut(Txn.MotionTimeOut);
                                                         Txn.SetTimeOutMonitor(true);
                                                         TransactionList.TryAdd(key, Txn);
+                                                        Node.IsMoving = true;
                                                     }
                                                 }
                                                 //_ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
@@ -510,6 +511,7 @@ namespace TransferControl.Controller
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
                                                 Node.IsExcuting = false;
+                                                Node.IsMoving = false;
                                                 //_ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                                 break;
                                             case CommandReturnMessage.ReturnType.Error:

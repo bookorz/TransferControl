@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TransferControl.Comm;
+using TransferControl.Management;
 
 namespace TransferControl.Config
 {
@@ -132,8 +133,11 @@ namespace TransferControl.Config
             {
                 ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
                 Content = SysCfg.ReadFile("recipe/" + fileName + ".json");
-                Content.is_use_burnin = true;
-                tmp.Add(fileName, Content);
+                if (Content != null)
+                {
+                    Content.is_use_burnin = false;
+                    tmp.Add(fileName, Content);
+                }
             }
             return Content;
         }
@@ -221,7 +225,61 @@ namespace TransferControl.Config
                 keyValues.Add("@l_arm_r1", recipe.is_use_l_arm ? 1 : 0);
                 keyValues.Add("@wafer_size", recipe.wafer_size);
                 dBUtil.ExecuteNonQuery(strSql, keyValues);
-                
+                try
+                {
+                    foreach (Node node in NodeManagement.GetList())
+                    {
+                        switch (node.Name.ToUpper())
+                        {
+                            case "LOADPORT01":
+                                node.WaferSize = recipe.wafer_size;
+                                node.CarrierType = recipe.port1_carrier_type;
+                                node.Mode = getPortType(recipe.port1_type);
+                                node.Enable = getEnable(recipe.port1_type) == 1 ? true : false;
+                                node.OrgSearchComplete = false;
+                                break;
+                            case "LOADPORT02":
+                                node.WaferSize = recipe.wafer_size;
+                                node.CarrierType = recipe.port2_carrier_type;
+                                node.Mode = getPortType(recipe.port2_type);
+                                node.Enable = getEnable(recipe.port2_type) == 1 ? true : false;
+                                node.OrgSearchComplete = false;
+                                break;
+                            case "LOADPORT03":
+                                node.WaferSize = recipe.wafer_size;
+                                node.CarrierType = recipe.port3_carrier_type;
+                                node.Mode = getPortType(recipe.port3_type);
+                                node.Enable = getEnable(recipe.port3_type) == 1 ? true : false;
+                                node.OrgSearchComplete = false;
+                                break;
+                            case "LOADPORT04":
+                                node.WaferSize = recipe.wafer_size;
+                                node.CarrierType = recipe.port4_carrier_type;
+                                node.Mode = getPortType(recipe.port4_type);
+                                node.Enable = getEnable(recipe.port4_type) == 1 ? true : false;
+                                node.OrgSearchComplete = false;
+                                break;
+                            case "ROBOT01":
+                                node.WaferSize = recipe.wafer_size;
+                                node.RArmActive = recipe.is_use_r_arm;
+                                node.LArmActive = recipe.is_use_l_arm;
+                                node.DoubleArmActive = recipe.is_use_double_arm;
+                                break;
+                            case "ALIGNER01":
+                                node.WaferSize = recipe.wafer_size;
+                                node.ByPass = !recipe.is_use_aligner1;
+                                break;
+                            case "ALIGNER02":
+                                node.WaferSize = recipe.wafer_size;
+                                node.ByPass = !recipe.is_use_aligner2;
+                                break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error("Update load port 資訊失敗! " + ex.StackTrace);
+                }
             }
             catch (Exception ex)
             {
