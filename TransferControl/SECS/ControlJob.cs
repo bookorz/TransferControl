@@ -23,9 +23,9 @@ namespace TransferControl.SECS
         public uint ProcessOrderMgmt = 1;//只支援1, 1 = ARRIVAL, 2 = OPTIMIZE, 3 = LIST
         public List<PRJobStatus> PRJobStatusList;
         public Boolean StartMethod = true;//只支援 TRUE, TRUE – Auto, FALSE – UserStart
-        public States State = States.QUEUED;//default
+        public CJStates State = CJStates.QUEUED;//default
     }
-    public enum States
+    public enum CJStates
     {
         QUEUED,
         SELECTED,
