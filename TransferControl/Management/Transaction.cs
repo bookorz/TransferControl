@@ -246,16 +246,16 @@ namespace TransferControl.Management
 
         public void SetTimeOutMonitor(bool Enabled)
         {
-            if (Enabled)
-            {
-                timeOutTimer.Enabled = true;
-                timeOutTimer.Start();
-            }
-            else
-            {
-                timeOutTimer.Stop();
-                timeOutTimer.Enabled = false;
-            }
+            //if (Enabled)
+            //{
+            //    timeOutTimer.Enabled = true;
+            //    timeOutTimer.Start();
+            //}
+            //else
+            //{
+            //    timeOutTimer.Stop();
+            //    timeOutTimer.Enabled = false;
+            //}
         }
 
         public void SetTimeOutReport(ITransactionReport _TimeOutReport)

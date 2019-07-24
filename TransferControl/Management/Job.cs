@@ -11,6 +11,7 @@ namespace TransferControl.Management
     {
         ILog logger = LogManager.GetLogger(typeof(Job));
         public string Slot { get; set; }
+        public string MappingValue { get; set; }
         public string Job_Id { get; set; }
         public string Host_Job_Id { get; set; }
         public string Host_Lot_Id { get; set; }
@@ -91,6 +92,7 @@ namespace TransferControl.Management
             ToPortSlot = "";
             IsReversed = false;
             WaferSize = "";
+            MappingValue = "";
         }
 
         public void PositionChangeReport()

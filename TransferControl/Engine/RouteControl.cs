@@ -138,6 +138,27 @@ namespace TransferControl.Engine
                                 case Transaction.Command.LoadPortType.DoorUp:
                                 case Transaction.Command.LoadPortType.InitialPos:
                                 case Transaction.Command.LoadPortType.ForceInitialPos:
+                                    //紀錄快照
+                                    if (Node.IsMapping)
+                                    {
+                                        Node.MappingDataSnapshot = "";
+                                        for (int i = 1; i <= 25; i++)
+                                        {
+                                            Job slot = null;
+                                            if (Node.JobList.TryGetValue(i.ToString(), out slot))
+                                            {
+                                                if (slot.MappingValue.Equals(""))
+                                                {
+                                                    Node.MappingDataSnapshot += "0";
+                                                }
+                                                else
+                                                {
+                                                    Node.MappingDataSnapshot += slot.MappingValue;
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     //LoadPort卸載時打開安全鎖
                                     // Node.InterLock = true;
                                     //標記尚未Mapping
@@ -238,6 +259,19 @@ namespace TransferControl.Engine
                                     //    Mapping = "0000000110000000000000000";
                                     //}
                                     // WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
+                                    if (SystemConfig.Get().MappingDataCheck)
+                                    {
+                                        if (!Node.MappingDataSnapshot.Equals(""))
+                                        {
+                                            if (!Node.MappingDataSnapshot.Equals(Mapping))
+                                            {
+                                                CommandReturnMessage rem = new CommandReturnMessage();
+                                                rem.Value = "MAPCHKERR";
+                                                _UIReport.On_Command_Error(Node, Txn, rem);
+                                                Mapping = Node.MappingDataSnapshot;
+                                            }
+                                        }
+                                    }
 
                                     if (SystemConfig.Get().FakeData)
                                     {
@@ -289,7 +323,7 @@ namespace TransferControl.Engine
                                         wafer.FromPortSlot = wafer.Slot;
                                         wafer.Position = Node.Name;
                                         wafer.AlignerFlag = false;
-
+                                        wafer.MappingValue = Mapping[i].ToString();
                                         string Slot = (i + 1).ToString("00");
 
 
@@ -358,7 +392,7 @@ namespace TransferControl.Engine
                                     if (!Node.IsMapping)
                                     {
                                         CommandReturnMessage rem = new CommandReturnMessage();
-                                        rem.Value = "/MAPERR";
+                                        rem.Value = "MAPERR";
                                         _UIReport.On_Command_Error(Node, Txn, rem);
                                     }
                                     break;
@@ -535,9 +569,20 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.GetMapping:
                                     //產生Mapping資料
                                     string Mapping = Msg.Value.Replace(",", "").Substring(1);
+                                    
                                     //string Mapping = SystemConfig.Get().MappingData;
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
                                     Node port = NodeManagement.Get(Node.CurrentPosition);
+                                    if (SystemConfig.Get().MappingDataCheck)
+                                    {
+                                        if (!port.MappingDataSnapshot.Equals(Mapping)&&!port.MappingDataSnapshot.Equals(""))
+                                        {
+                                            CommandReturnMessage rem = new CommandReturnMessage();
+                                            rem.Value = "MAPCHKERR";
+                                            _UIReport.On_Command_Error(Node, Txn, rem);
+                                            Mapping = port.MappingDataSnapshot;
+                                        }
+                                    }
                                     if (SystemConfig.Get().FakeData)
                                     {
                                         if (port.Name.Equals("LOADPORT01"))
@@ -581,7 +626,7 @@ namespace TransferControl.Engine
                                         wafer.FromPortSlot = wafer.Slot;
                                         wafer.Position = port.Name;
                                         wafer.AlignerFlag = false;
-
+                                        wafer.MappingValue = Mapping[i].ToString();
                                         string Slot = (i + 1).ToString("00");
 
 
@@ -650,7 +695,7 @@ namespace TransferControl.Engine
                                     if (!port.IsMapping)
                                     {
                                         CommandReturnMessage rem = new CommandReturnMessage();
-                                        rem.Value = "/MAPERR";
+                                        rem.Value = "MAPERR";
                                         _UIReport.On_Command_Error(Node, Txn, rem);
                                     }
                                     //Node.MappingResult = Mapping;

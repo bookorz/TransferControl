@@ -26,6 +26,7 @@ namespace TransferControl.Config
         public string CurrentRecipe { get; set; }
         public string EquipmentID { get; set; }
         public string FoupTxfLogPath { get; set; }
+        public bool MappingDataCheck { get; set; }
 
         public static SystemConfig Get()
         {

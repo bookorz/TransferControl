@@ -239,6 +239,7 @@ namespace TransferControl.Management
         public int RobotGetState { get; set; }
         public int RobotPutState { get; set; }
         public bool ArmExtend { get; set; }
+        public string MappingDataSnapshot { get; set; }
     
         public class ActionRequest
         {
@@ -298,6 +299,7 @@ namespace TransferControl.Management
             MappingResult = "";
             CurrentLoadPort = "";
             CurrentStatus = "";
+            MappingDataSnapshot = "";
             PrID = "";
             CjID = "";
             R_Flip_Degree = "0";
