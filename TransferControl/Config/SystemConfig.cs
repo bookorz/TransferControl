@@ -26,6 +26,8 @@ namespace TransferControl.Config
         public string CurrentRecipe { get; set; }
         public string EquipmentID { get; set; }
         public string FoupTxfLogPath { get; set; }
+        public string NoticeInitFin { get; set; }
+        public string NoticeProcFin { get; set; }
 
         public static SystemConfig Get()
         {
