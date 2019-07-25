@@ -29,7 +29,13 @@ namespace TransferControl.Digital_IO
             InitTd.IsBackground = true;
             InitTd.Start();
         }
-
+        public List<ParamConfig> GetDIOSetting()
+        {
+            List<ParamConfig> result = new List<ParamConfig>();
+            result.AddRange(Params.Values.ToList());
+            result.AddRange(Controls.Values.ToList());
+            return result;
+        }
         public void Connect()
         {
             foreach (IDIOController each in Ctrls.Values)

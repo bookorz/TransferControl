@@ -2,7 +2,7 @@
 
 namespace TransferControl.Digital_IO.Config
 {
-    class ParamConfig
+    public class ParamConfig
     {
         public string DeviceName { get; set; }
         public string Type { get; set; }
