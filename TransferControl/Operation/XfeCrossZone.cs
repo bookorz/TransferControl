@@ -25,6 +25,7 @@ namespace TransferControl.Operation
         public double ProcessTime = 0;
         public double ProcessCount = 0;
         public bool SingleAligner = false;
+        bool IsTmpConfig = false;
         private string RunID = "";
         System.Diagnostics.Stopwatch watch;
         Recipe rcp = null;
@@ -70,14 +71,45 @@ namespace TransferControl.Operation
             RunID = "";
             rcp = Recipe.Get(SystemConfig.Get().CurrentRecipe);
         }
+        private void RefreshConfig()
+        {
+            string TaskName = "SET_ALL_SPEED";
+            string Message = "";
+            TaskJobManagment.CurrentProceedTask tmpTask;
+            Dictionary<string, string> tmpParam = new Dictionary<string, string>();
+            tmpParam.Add("@Alinger1Speed", Recipe.Get(SystemConfig.Get().CurrentRecipe).aligner1_speed);
+            tmpParam.Add("@Robot1Speed", Recipe.Get(SystemConfig.Get().CurrentRecipe).robot1_speed);
+            RouteControl.Instance.TaskJob.Excute(Guid.NewGuid().ToString(), out Message, out tmpTask, TaskName, tmpParam);
+            foreach (Node Al in NodeManagement.GetList())
+            {
 
-        public bool Start(string LDPort)
+                switch (Al.Name.ToUpper())
+                {
+                    case "ALIGNER01":
+                        Al.ByPass = !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_aligner1;
+                        break;
+                    case "ALIGNER02":
+                        Al.ByPass = !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_aligner2;
+                        break;
+                }
+
+            }
+        }
+        public bool Start(string LDPort, bool UseTmpConfig = false)
         {
             if (Running)
             {
+                IsTmpConfig = false;
+                Recipe.Get(SystemConfig.Get().CurrentRecipe).Reload();
+                RefreshConfig();
                 return false;
             }
             Initial();
+            if (UseTmpConfig)
+            {
+                IsTmpConfig = true;
+                RefreshConfig();
+            }
             watch = System.Diagnostics.Stopwatch.StartNew();
             //開始前先重設
             foreach (Node each in NodeManagement.GetList())
@@ -98,6 +130,9 @@ namespace TransferControl.Operation
             if (nodeLD == null)
             {
                 logger.Error("XfeCrossZone Start fail:Node " + LDPort + " not found");
+                IsTmpConfig = false;
+                Recipe.Get(SystemConfig.Get().CurrentRecipe).Reload();
+                RefreshConfig();
                 return false;
             }
             _Report.On_LoadPort_Selected(nodeLD);
@@ -655,7 +690,12 @@ namespace TransferControl.Operation
                                                     logger.Debug("On_Transfer_Complete ProcessTime:" + ProcessTime.ToString());
                                                     logger.Debug("XfeCrossZone Stop");
                                                     Running = false;
-
+                                                    if (IsTmpConfig)
+                                                    {
+                                                        IsTmpConfig = false;
+                                                        Recipe.Get(SystemConfig.Get().CurrentRecipe).Reload();
+                                                        RefreshConfig();
+                                                    }
                                                     _Report.On_Transfer_Complete(this);
                                                 }
                                                 //    //結束工作

@@ -15,8 +15,8 @@ namespace TransferControl.Config
         //id
         public string recipe_id { get; set; }
         public string recipe_name { get; set; }
- 
-        
+
+
         //port_type: Load, Unload, Both
         public string port1_type { get; set; }
         public string port2_type { get; set; }
@@ -126,10 +126,23 @@ namespace TransferControl.Config
 
         static Dictionary<string, Recipe> tmp = new Dictionary<string, Recipe>();
 
+        public void Reload()
+        {
+            Recipe Content;
+            tmp.Remove(this.recipe_id);
+
+            ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
+            Content = SysCfg.ReadFile("recipe/" + this.recipe_id + ".json");
+            if (Content != null)
+            {
+                Content.is_use_burnin = false;
+                tmp.Add(this.recipe_id, Content);
+            }
+        }
         public static Recipe Get(string fileName)
         {
             Recipe Content;
-            if(!tmp.TryGetValue(fileName,out Content))
+            if (!tmp.TryGetValue(fileName, out Content))
             {
                 ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
                 Content = SysCfg.ReadFile("recipe/" + fileName + ".json");

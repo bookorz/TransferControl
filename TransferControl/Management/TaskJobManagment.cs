@@ -111,7 +111,7 @@ namespace TransferControl.Management
                                 Task = this.Remove(Task.MainTaskId);
                             }
                             Task.Finished = true;
-                            _TaskReport.On_Task_Abort(Task, Node.Name, Report, ErrorMessage);
+                            _TaskReport.On_Task_Abort(Task, Location, Report, ErrorMessage);
 
                         }
                         //檢查到不是Task，不做事
@@ -147,7 +147,7 @@ namespace TransferControl.Management
                                     Task.Id = Task.MainTaskId;
                                 }
                                 Task.Finished = true;
-                                _TaskReport.On_Task_Abort(Task, Node.Name, Report, ErrorMessage);
+                                _TaskReport.On_Task_Abort(Task, Location, Report, ErrorMessage);
                             }
                         }
                         else
@@ -1247,6 +1247,10 @@ namespace TransferControl.Management
                                             {
                                                 ErrorCode = tmpAry[0];
                                                 Location = tmpAry[1];
+                                            }
+                                            if (Location.Equals(""))
+                                            {
+                                                Location = NodeName;
                                             }
                                             Node = NodeManagement.Get(NodeName);
                                             if (!Node.Enable)
