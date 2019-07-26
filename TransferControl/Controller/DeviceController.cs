@@ -37,7 +37,7 @@ namespace TransferControl.Controller
         public string PortName { get; set; }
         public int BaudRate { get; set; }
         public bool Enable { get; set; }
-        
+
         public string GetControllerType()
         {
             return this.ControllerType;
@@ -169,7 +169,7 @@ namespace TransferControl.Controller
             conn.WaitForData(WaitForData);
             bool result = false;
             // lock (TransactionList)
-            
+
 
             if (!Txn.NodeType.Equals("OCR"))
             {
@@ -252,7 +252,7 @@ namespace TransferControl.Controller
                 }
                 //if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
                 //{
-                    
+
                 //}
                 if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
                 {
@@ -262,14 +262,26 @@ namespace TransferControl.Controller
                 {
                     Txn.SetTimeOut(Txn.AckTimeOut);
                 }
-
-                if (this.Vendor.Equals("SMARTTAG"))
+                try
                 {
-                    result = sendWith4Byte(Txn.CommandEncodeStr);
+                    if (this.Vendor.Equals("SMARTTAG"))
+                    {
+                        result = sendWith4Byte(Txn.CommandEncodeStr);
+                    }
+                    else
+                    {
+                        result = conn.Send(Txn.CommandEncodeStr);
+                    }
                 }
-                else
+                catch (Exception eex)
                 {
-                    result = conn.Send(Txn.CommandEncodeStr);
+                    logger.Error(eex.StackTrace);
+                    Txn.SetTimeOutMonitor(false);
+                    Transaction tmp;
+                    TransactionList.TryRemove(key, out tmp);
+                    CommandReturnMessage rm = new CommandReturnMessage();
+                    rm.Value = "Send command fail";
+                    _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
                 }
             }
             else
@@ -286,9 +298,11 @@ namespace TransferControl.Controller
                 logger.Error("Command Fail:" + Txn.CommandEncodeStr);
                 Txn.SetTimeOutMonitor(false);
                 Transaction tmp;
-                TransactionList.TryRemove(key,out tmp);
-                _ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
-
+                TransactionList.TryRemove(key, out tmp);
+                //_ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
+                CommandReturnMessage rm = new CommandReturnMessage();
+                rm.Value = "Send command fail";
+                _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
             }
 
             //}

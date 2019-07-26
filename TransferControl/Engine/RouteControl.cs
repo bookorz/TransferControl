@@ -1416,20 +1416,22 @@ namespace TransferControl.Engine
             Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.TaskId);
-            Task.HasError = true;
-            Task.Finished = true;
-            if (Msg.Value.Equals(""))
+            if (Task != null)
             {
-                Msg.Value = Msg.Command;
+                Task.HasError = true;
+                Task.Finished = true;
+                if (Msg.Value.Equals(""))
+                {
+                    Msg.Value = Msg.Command;
+                }
+                if (!Task.MainTaskId.Equals(""))
+                {
+                    TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
+                    MTask.HasError = true;
+                    MTask.Finished = true;
+                    Task.Id = Task.MainTaskId;
+                }
             }
-            if (!Task.MainTaskId.Equals(""))
-            {
-                TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
-                MTask.HasError = true;
-                MTask.Finished = true;
-                Task.Id = Task.MainTaskId;
-            }
-
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
