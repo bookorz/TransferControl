@@ -269,7 +269,7 @@ namespace TransferControl.Management
             if (TimeOutReport != null)
             {
                 if (ByPassTimeout)
-                {
+                 {
                     TimeOutReport.On_Transaction_BypassTimeOut(this);
                 }
                 else

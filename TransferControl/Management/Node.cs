@@ -221,6 +221,8 @@ namespace TransferControl.Management
 
         public int PoolInterval { get; set; }
 
+        public string PoolTask { get; set; }
+
         public bool OCRSuccess { get; set; }
         public string CurrentStatus { get; set; }
         public string R_Vacuum_Solenoid { get; set; }
@@ -383,6 +385,13 @@ namespace TransferControl.Management
             PoolThread = false;
             PoolInterval = 50;
             Speed = "100";
+            if (this.PoolTask != null)
+            {
+                if (!this.PoolTask.Trim().Equals(""))
+                {
+                    this.PoolStart(this.PoolTask);
+                }
+            }
         }
         public void PoolStart(string TaskName)
         {
