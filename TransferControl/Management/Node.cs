@@ -385,13 +385,7 @@ namespace TransferControl.Management
             PoolThread = false;
             PoolInterval = 50;
             Speed = "100";
-            if (this.PoolTask != null)
-            {
-                if (!this.PoolTask.Trim().Equals(""))
-                {
-                    this.PoolStart(this.PoolTask);
-                }
-            }
+            
         }
         public void PoolStart(string TaskName)
         {
