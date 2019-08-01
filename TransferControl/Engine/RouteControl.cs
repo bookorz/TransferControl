@@ -259,7 +259,7 @@ namespace TransferControl.Engine
                                     //    Mapping = "0000000110000000000000000";
                                     //}
                                     // WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
-                                    if (SystemConfig.Get().MappingDataCheck)
+                                    if (SystemConfig.Get().MappingDataCheck && Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_burnin)
                                     {
                                         if (!Node.MappingDataSnapshot.Equals(""))
                                         {
@@ -407,9 +407,11 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.Get:
                                 case Transaction.Command.RobotType.DoubleGet:
                                 case Transaction.Command.RobotType.GetWithoutBack:
+                                case Transaction.Command.RobotType.WaitBeforeGet:
                                 case Transaction.Command.RobotType.Put:
                                 case Transaction.Command.RobotType.DoublePut:
                                 case Transaction.Command.RobotType.PutWithoutBack:
+                                case Transaction.Command.RobotType.WaitBeforePut:
                                     Node.ArmExtend = true;
                                     break;
 
@@ -573,7 +575,7 @@ namespace TransferControl.Engine
                                     //string Mapping = SystemConfig.Get().MappingData;
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
                                     Node port = NodeManagement.Get(Node.CurrentPosition);
-                                    if (SystemConfig.Get().MappingDataCheck)
+                                    if (SystemConfig.Get().MappingDataCheck && Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_burnin)
                                     {
                                         if (!port.MappingDataSnapshot.Equals(Mapping)&&!port.MappingDataSnapshot.Equals(""))
                                         {
@@ -904,6 +906,8 @@ namespace TransferControl.Engine
                                     break;
                                 case Transaction.Command.RobotType.PutBack:
                                 case Transaction.Command.RobotType.GetAfterWait:
+                                case Transaction.Command.RobotType.Get:
+                                case Transaction.Command.RobotType.Put:
                                     Node.ArmExtend = false;
                                     break;
                             }
@@ -1375,6 +1379,13 @@ namespace TransferControl.Engine
                 {
                     case "Connected":
                         each.Connected = true;
+                        if (each.PoolTask != null)
+                        {
+                            if (!each.PoolTask.Trim().Equals(""))
+                            {
+                                each.PoolStart(each.PoolTask);
+                            }
+                        }
                         break;
                     case "Disconnected":
                     case "Connection_Error":
