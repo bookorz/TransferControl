@@ -86,10 +86,10 @@ namespace TransferControl.Operation
                 switch (Al.Name.ToUpper())
                 {
                     case "ALIGNER01":
-                        Al.ByPass = !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_aligner1;
+                        Al.Enable = Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_aligner1;
                         break;
                     case "ALIGNER02":
-                        Al.ByPass = !Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_aligner2;
+                        Al.Enable = Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_aligner2;
                         break;
                 }
 
