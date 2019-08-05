@@ -412,7 +412,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.DoublePut:
                                 case Transaction.Command.RobotType.PutWithoutBack:
                                 case Transaction.Command.RobotType.WaitBeforePut:
-                                    Node.ArmExtend = true;
+                                    Node.ArmExtend = Txn.Position;
                                     break;
 
                                 case Transaction.Command.RobotType.GetSpeed:
@@ -902,13 +902,13 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.Home:
                                 case Transaction.Command.RobotType.OrginSearch:
                                     Node.State = "READY";
-                                    Node.ArmExtend = false;
+                                    Node.ArmExtend = "";
                                     break;
                                 case Transaction.Command.RobotType.PutBack:
                                 case Transaction.Command.RobotType.GetAfterWait:
                                 case Transaction.Command.RobotType.Get:
                                 case Transaction.Command.RobotType.Put:
-                                    Node.ArmExtend = false;
+                                    Node.ArmExtend = "";
                                     break;
                             }
 

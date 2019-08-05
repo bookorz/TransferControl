@@ -240,7 +240,7 @@ namespace TransferControl.Management
         public Carrier Carrier { get; set; }
         public int RobotGetState { get; set; }
         public int RobotPutState { get; set; }
-        public bool ArmExtend { get; set; }
+        public string ArmExtend { get; set; }
         public string MappingDataSnapshot { get; set; }
     
         public class ActionRequest
@@ -289,7 +289,7 @@ namespace TransferControl.Management
         {
             JobList = new ConcurrentDictionary<string, Job>();
             ReserveList = new ConcurrentDictionary<string, Job>();
-            ArmExtend = false;
+            ArmExtend = "";
             RobotGetState = 0;
             RobotPutState = 0;
             Speed = "";

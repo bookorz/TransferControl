@@ -545,7 +545,7 @@ namespace TransferControl.Management
                                                 result = true;
                                                 TarNode = NodeManagement.Get(TargetName);
                                                 var ActiveRobot = from r in NodeManagement.GetList()
-                                                                  where r.Type.ToUpper().Equals("ROBOT") && r.CurrentPosition.ToUpper().Equals(TarNode.Name.ToUpper()) && r.ArmExtend
+                                                                  where r.Type.ToUpper().Equals("ROBOT") && r.ArmExtend.ToUpper().Equals(TarNode.Name.ToUpper())
                                                                   select r;
                                                 if (ActiveRobot.Count() == 0)
                                                 {
@@ -1931,10 +1931,14 @@ namespace TransferControl.Management
                         }
                         else
                         {
-                            logger.Info("已找不到Task，完成工作，Task:" + CurrTask.ProceedTask.TaskName);
+                            logger.Info("已找不到Task，完成工作");
                             //_TaskReport.On_Task_Finished(CurrTask);
                             Remove(Id);
-
+                            if (Task == null)
+                            {
+                                Task = CurrTask;
+                                Task.Finished = true;
+                            }
                             //throw new Exception("已找不到Task，完成工作，TaskId:" + Id);
                             //ErrorMessage = "已找不到Task，完成工作，TaskId:" + Id;
                             return false;
