@@ -412,9 +412,11 @@ namespace TransferControl.Management
             {
                 try
                 {
-
-                    RouteControl.Instance.TaskJob.Excute(this.Name + "_PoolState", out Message, out CurrTask, TaskName, param);
-                    SpinWait.SpinUntil(() => CurrTask.Finished, 99999999);
+                    if (this.InitialComplete)
+                    {
+                        RouteControl.Instance.TaskJob.Excute(this.Name + "_PoolState", out Message, out CurrTask, TaskName, param);
+                        SpinWait.SpinUntil(() => CurrTask.Finished, 99999999);
+                    }
                     SpinWait.SpinUntil(() => false, PoolInterval);
                 }
                 catch (Exception e)

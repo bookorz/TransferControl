@@ -571,13 +571,13 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.GetMapping:
                                     //產生Mapping資料
                                     string Mapping = Msg.Value.Replace(",", "").Substring(1);
-                                    
+
                                     //string Mapping = SystemConfig.Get().MappingData;
                                     //WaferAssignUpdate.UpdateLoadPortMapping(Node.Name, Msg.Value);
                                     Node port = NodeManagement.Get(Node.CurrentPosition);
                                     if (SystemConfig.Get().MappingDataCheck && Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_burnin)
                                     {
-                                        if (!port.MappingDataSnapshot.Equals(Mapping)&&!port.MappingDataSnapshot.Equals(""))
+                                        if (!port.MappingDataSnapshot.Equals(Mapping) && !port.MappingDataSnapshot.Equals(""))
                                         {
                                             CommandReturnMessage rem = new CommandReturnMessage();
                                             rem.Value = "MAPCHKERR";
@@ -1451,7 +1451,20 @@ namespace TransferControl.Engine
 
         public void On_Data_Chnaged(string Parameter, string Value, string Type)
         {
+            switch (Parameter.ToUpper())
+            {
+                case "SAFETYRELAY":
 
+                    if (Value.ToUpper().Equals("FALSE"))
+                    {
+                        foreach(Node n in NodeManagement.GetList())
+                        {
+                            n.InitialComplete = false;
+                            n.OrgSearchComplete = false;
+                        }
+                    }
+                    break;
+            }
             _UIReport.On_Data_Chnaged(Parameter, Value, Type);
         }
 
