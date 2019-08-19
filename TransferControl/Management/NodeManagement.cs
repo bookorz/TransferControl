@@ -83,7 +83,7 @@ namespace TransferControl.Management
             List<Node> result = new List<Node>();
 
             var findA = from A in NodeList.Values.ToList()
-                           where A.Type.Equals("ALIGNER") && A.Enable
+                           where A.Type.Equals("ALIGNER")
                            select A;
 
             if (findA.Count() != 0)
