@@ -481,7 +481,7 @@ namespace TransferControl.Controller
                                                         Txn.SetTimeOutMonitor(false);
                                                         Node.IsExcuting = false;
                                                     }
-                                                    else if (Txn.Method.Equals(Transaction.Command.RobotType.OrginSearch))
+                                                    else if (Txn.Method.Equals(Transaction.Command.RobotType.OrginSearch) || Txn.Method.Equals(Transaction.Command.LoadPortType.InitialPos))
                                                     {
                                                         logger.Debug("Txn timmer stoped.");
                                                         Txn.SetTimeOutMonitor(false);
