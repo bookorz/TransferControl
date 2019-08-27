@@ -508,7 +508,11 @@ namespace TransferControl.CommandConvert
                                         each.Type = CommandReturnMessage.ReturnType.Finished;
                                         if (content.Length > 2)
                                         {
-                                            each.Value = content[2];
+                                            for (int k = 2; k < content.Length; k++)
+                                            {
+                                                each.Value += content[k]+" ";
+                                            }
+                                            each.Value = each.Value.Trim();
                                         }
                                         break;
                                     case "Error":

@@ -403,7 +403,7 @@ namespace TransferControl.Engine
                             break;
                         case "ROBOT":
                             switch (Txn.Method)
-                            {
+                            {                               
                                 case Transaction.Command.RobotType.Get:
                                 case Transaction.Command.RobotType.DoubleGet:
                                 case Transaction.Command.RobotType.GetWithoutBack:

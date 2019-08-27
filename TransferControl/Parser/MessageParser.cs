@@ -31,6 +31,9 @@ namespace TransferControl.Parser
                 case "COGNEX":
                     P = new COGNEXParser();
                     break;
+                case "KAWASAKI":
+                    P = new KawasakiParser();
+                    break;
                 default:
                     throw new Exception(Supplier + " 不存在");
                     

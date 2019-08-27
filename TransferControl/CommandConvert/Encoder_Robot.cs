@@ -236,6 +236,11 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}GET:ERR__:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, Convert.ToInt16(no).ToString("00")) + EndCode();
                     break;
+                case "KAWASAKI":
+                    commandStr = "{0},QERR,{1},{2}";
+                    commandStr = string.Format(commandStr, Sequence, Address, Convert.ToInt16(no+1).ToString());
+                    commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }

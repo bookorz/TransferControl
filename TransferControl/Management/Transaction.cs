@@ -246,6 +246,7 @@ namespace TransferControl.Management
 
         public void SetTimeOutMonitor(bool Enabled)
         {
+            Enabled = false;
             if (Enabled)
             {
                 timeOutTimer.Enabled = true;

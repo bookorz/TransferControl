@@ -125,6 +125,7 @@
     <Compile Include="Parser\COGNEXParser.cs" />
     <Compile Include="Parser\HSTParser.cs" />
     <Compile Include="Parser\IParser.cs" />
+    <Compile Include="Parser\KawasakiParser.cs" />
     <Compile Include="Parser\MessageParser.cs" />
     <Compile Include="Parser\Atel_newParser.cs" />
     <Compile Include="Parser\SanwaParser.cs" />

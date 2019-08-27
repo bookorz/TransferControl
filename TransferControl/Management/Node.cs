@@ -939,48 +939,62 @@ namespace TransferControl.Management
                         {
                             case Transaction.Command.RobotType.GetPosition:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ArmLocation(AdrNo, txn.Seq, txn.Value, "1");
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.ArmReturn:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Retract(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.Exchange:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Exchange(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot, txn.Arm2, txn.Point2, txn.Slot2);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.GetMapping:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.MapList(AdrNo, txn.Seq, "1");
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.Mapping:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Mapping(AdrNo, txn.Seq, txn.Point, "1", "0");
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Status(AdrNo, txn.Seq);
+                                txn.CommandType = "GET";
                                 break;
                             //case Transaction.Command.RobotType.GetCombineStatus:
                             //    txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.CombinedStatus(AdrNo, txn.Seq);
                             //    break;
                             case Transaction.Command.RobotType.GetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Speed(AdrNo, txn.Seq);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.GetRIO:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.StatusIO(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.GetSV:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.SolenoidValve(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.Stop:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.DeviceStop(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.RobotType.Pause:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.DevicePause(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.RobotType.Continue:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.DeviceContinue(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.RobotType.GetMode:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetMode(AdrNo, txn.Seq);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.GetError:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ErrorMessage(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.Get:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWafer(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
@@ -989,6 +1003,7 @@ namespace TransferControl.Management
                                     txn.Method = Transaction.Command.RobotType.DoubleGet;
                                 }
                                 this.RobotGetState = 0;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.Put:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWafer(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
@@ -997,77 +1012,99 @@ namespace TransferControl.Management
                                     txn.Method = Transaction.Command.RobotType.DoublePut;
                                 }
                                 this.RobotPutState = 0;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.DoubleGet:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWafer(AdrNo, txn.Seq, "3", txn.Point, "0", txn.Slot);
                                 this.RobotGetState = 0;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.DoublePut:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWafer(AdrNo, txn.Seq, "3", txn.Point, txn.Slot);
                                 this.RobotPutState = 0;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.WaitBeforeGet:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToStandBy(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
                                 this.RobotGetState = 1;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.WaitBeforePut:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToStandBy(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 this.RobotPutState = 1;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.GetAfterWait:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToContinue(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
                                 this.RobotGetState = 3;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.PutWithoutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToDown(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 this.RobotPutState = 2;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.GetWithoutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToUp(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
                                 this.RobotGetState = 2;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.PutBack:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToContinue(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 this.RobotPutState = 3;
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.GetWait:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToReady(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.PutWait:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToReady(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.Home:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Home(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.HomeSafety:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.HomeSafety(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.HomeA:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.HomeOrgin(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.OrginSearch:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.OrginSearch(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.WaferRelease:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.WaferReleaseHold(AdrNo, txn.Seq, txn.Arm);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.WaferHold:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.WaferHold(AdrNo, txn.Seq, txn.Arm);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.Servo:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ServoOn(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.RobotType.Mode:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Mode(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.RobotType.Reset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ErrorReset(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.RobotType.Speed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSpeed(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.RobotType.SetSV:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSolenoidValve(AdrNo, txn.Seq, txn.Arm, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                         }
                         break;

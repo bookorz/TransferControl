@@ -412,31 +412,28 @@ namespace TransferControl.Controller
                                 }
                                 if (Vendor.ToUpper().Equals("KAWASAKI"))
                                 {
-                                    //if (TransactionList.TryGetValue(key, out Txn))
-                                    //{
-                                    //    Node = NodeManagement.Get(Txn.NodeName);
-                                    //    if (!Txn.CommandType.Equals("GET") && !Txn.CommandType.Equals("SET") && !Txn.CommandType.Equals("CMD"))
-                                    //    {
-                                    //        Txn.CommandType = Encoder.GetCommandType(Txn.CommandType);
-                                    //    }
-                                    //    if (!Txn.CommandType.Equals("CMD"))
-                                    //    {
-                                    //        if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Excuted))
-                                    //        {
-                                    //            continue;
-                                    //        }
-                                    //        else if (ReturnMsg.Type.Equals(ReturnMessage.ReturnType.Finished))
-                                    //        {
-                                    //            ReturnMsg.Type = ReturnMessage.ReturnType.Excuted;
-                                    //        }
-                                    //    }
+                                    if (TransactionList.TryGetValue(key, out Txn))
+                                    {
+                                        Node = NodeManagement.Get(Txn.NodeName);
+                                        
+                                        if (!Txn.CommandType.Equals("CMD"))
+                                        {
+                                            if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Excuted))
+                                            {
+                                                continue;
+                                            }
+                                            else if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Finished))
+                                            {
+                                                ReturnMsg.Type = CommandReturnMessage.ReturnType.Excuted;
+                                            }
+                                        }
 
-                                    //}
-                                    //else
-                                    //{
-                                    //    logger.Debug("Transaction not exist:key=" + key);
-                                    //    return;
-                                    //}
+                                    }
+                                    else
+                                    {
+                                        logger.Debug("Transaction not exist:key=" + key);
+                                        return;
+                                    }
                                 }
                                 else if (Vendor.ToUpper().Equals("TDK"))
                                 {

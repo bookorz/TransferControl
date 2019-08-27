@@ -103,6 +103,7 @@ namespace TransferControl.Management
                     }
                     //如果您收到組建錯誤「名稱 'ZipFile' 不存在於目前的內容中」，
                     //請將 System.IO.Compression.FileSystem 組件的參考新增至您的專案。
+                    logger.Debug("dir[n]:"+ dir[n]+ " zipFileInfo.FullName:"+ zipFileInfo.FullName);
                     ZipFile.CreateFromDirectory(dir[n], zipFileInfo.FullName);
                     DeleteDirectory(srcDirInfo.FullName);//必須要變更權限才能刪除檔案，所以獨立寫個 function
                 }
