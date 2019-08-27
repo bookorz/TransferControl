@@ -416,9 +416,12 @@ namespace TransferControl.Engine
                                     break;
 
                                 case Transaction.Command.RobotType.GetSpeed:
-                                    if (Convert.ToInt16(Msg.Value) == 0 && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
+                                    if ((Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
                                     {
-                                        Msg.Value = "100";
+                                        if (Convert.ToInt16(Msg.Value) == 0)
+                                        {
+                                            Msg.Value = "100";
+                                        }
                                     }
 
                                     Node.Speed = Msg.Value;

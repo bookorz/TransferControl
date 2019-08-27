@@ -83,6 +83,7 @@ namespace TransferControl.Management
                 public const string Unload = "Unload";
                 public const string MappingUnload = "MappingUnload";
                 public const string GetMapping = "GetMapping";
+                public const string GetMappingDummy = "GetMappingDummy";
                 public const string GetLED = "GetLED";
                 //public const string GetStatus = "GetStatus";
                 public const string Reset = "Reset";

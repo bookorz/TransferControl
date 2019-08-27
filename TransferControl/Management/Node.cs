@@ -802,7 +802,12 @@ namespace TransferControl.Management
                             case Transaction.Command.LoadPortType.GetLED:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.LEDIndicatorStatus();
                                 break;
+                            case Transaction.Command.LoadPortType.GetMappingDummy:
+                                txn.CommandEncodeStr = "GetMappingDummy";
+                                txn.CommandType = "GET";
+                                break;
                             case Transaction.Command.LoadPortType.GetMapping:
+                                
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.WaferSorting(EncoderLoadPort.MappingSortingType.Asc);
                                 break;
                             case Transaction.Command.LoadPortType.ReadStatus:
@@ -1310,7 +1315,7 @@ namespace TransferControl.Management
 
                 txn.AckTimeOut = this.AckTimeOut + 2000;
                 logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
-                int rate = 101 - Convert.ToInt32(this.Speed);
+                int rate = 101 - Convert.ToInt32(Convert.ToDouble(this.Speed));
                 txn.MotionTimeOut = this.MotionTimeOut * rate + 25000;
                 logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
                 if (Ctrl.DoWork(txn, IsWaitData))

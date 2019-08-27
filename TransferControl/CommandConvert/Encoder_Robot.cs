@@ -1313,7 +1313,7 @@ namespace TransferControl.CommandConvert
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},SSPD,{1},{2}";
-                    commandStr = string.Format(commandStr, Sequence, Address, vl+".00");
+                    commandStr = string.Format(commandStr, Sequence, Address, vl);
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
                 default:

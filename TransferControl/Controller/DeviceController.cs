@@ -166,6 +166,23 @@ namespace TransferControl.Controller
 
         public bool DoWork(Transaction Txn, bool WaitForData = false)
         {
+            if (Txn.CommandEncodeStr.Equals("GetMappingDummy"))
+            {
+                string mappingData = "";
+                if (Txn.NodeName.Equals("LOADPORT01"))
+                {
+                    mappingData = "1111111111111111111111111";
+                }
+                else if (Txn.NodeName.Equals("LOADPORT02"))
+                {
+                    mappingData = "0000000000000000000000000";
+                }
+                CommandReturnMessage cm = new CommandReturnMessage();
+                cm.CommandType = Transaction.Command.LoadPortType.GetMapping;
+                cm.Value = mappingData;
+                _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName),Txn, cm);
+                return true;
+            }
             conn.WaitForData(WaitForData);
             bool result = false;
             // lock (TransactionList)
