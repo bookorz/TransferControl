@@ -443,6 +443,12 @@ namespace TransferControl.Engine
                                             case "Servo":
                                                 Node.Servo = each.Value;
                                                 break;
+                                            case "R_Hold_Status":
+                                                Node.R_Hold_Status = each.Value;
+                                                break;
+                                            case "L_Hold_Status":
+                                                Node.L_Hold_Status = each.Value;
+                                                break;
                                         }
                                     }
                                     break;

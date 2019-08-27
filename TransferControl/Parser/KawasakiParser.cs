@@ -24,13 +24,17 @@ namespace TransferControl.Parser
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
 
-            for (int i = 0; i < Message.Length; i++)
+            string[] parameters = Message.Split(' ');
+            for (int i = 0; i < parameters.Length; i++)
             {
 
                 switch (i + 1)
                 {
-                    case 10:
-                        result.Add("Servo", Message[i].ToString());
+                    case 4:
+                        result.Add("R_Hold_Status", parameters[i].ToString());
+                        break;
+                    case 7:
+                        result.Add("L_Hold_Status", parameters[i].ToString());
                         break;
                 }
             }
