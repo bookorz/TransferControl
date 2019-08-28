@@ -11,7 +11,7 @@ using TransferControl.Digital_IO;
 
 namespace TransferControl.Engine
 {
-    public class RouteControl : AlarmMapping, ICommandReport, IDIOTriggerReport, IJobReport, ITaskJobReport
+    public class RouteControl : AlarmMapping, ICommandReport, IDIOTriggerReport, IJobReport, ITaskFlowReport
     {
         //git upload test4
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
@@ -27,7 +27,7 @@ namespace TransferControl.Engine
 
         public int SpinWaitTimeOut = 99999000;
         public DIO DIO;
-        public TaskJobManagment TaskJob;
+        //public TaskFlowManagement TaskJob;
         public static RouteControl Instance;
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace TransferControl.Engine
             //初始化Robot點位表
             PointManagement.LoadConfig();
             //初始化工作腳本
-            TaskJob = new TaskJobManagment(this);
+            TaskFlowManagement.SetReport(this);
 
         }
 
@@ -868,7 +868,7 @@ namespace TransferControl.Engine
 
                     _UIReport.On_Command_Excuted(Node, Txn, Msg);
 
-                    TaskJob.Next(Node, Txn, "Excuted");
+                    TaskFlowManagement.Next(Node, Txn, "Excuted");
                 }
             }
             catch (Exception e)
@@ -1168,7 +1168,7 @@ namespace TransferControl.Engine
                     _UIReport.On_Command_Finished(Node, Txn, Msg);
 
 
-                    TaskJob.Next(Node, Txn, "Finished");
+                    TaskFlowManagement.Next(Node, Txn, "Finished");
 
                 }
             }
@@ -1273,10 +1273,10 @@ namespace TransferControl.Engine
         /// <param name="Txn"></param>
         public void On_Command_TimeOut(Node Node, Transaction Txn)
         {
-            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.TaskId);
+            TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.Remove(Txn.TaskId);
             if (Task == null)
             {
-                Task = new TaskJobManagment.CurrentProceedTask();
+                Task = new TaskFlowManagement.CurrentProcessTask();
             }
             Task.HasError = true;
             Task.Finished = true;
@@ -1284,14 +1284,6 @@ namespace TransferControl.Engine
             {
                 logger.Debug("Transaction TimeOut:" + Txn.CommandEncodeStr);
                 Node.HasAlarm = true;
-                if (!Task.MainTaskId.Equals(""))
-                {
-                    TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
-                    MTask.HasError = true;
-                    MTask.Finished = true;
-                    Task.Id = Task.MainTaskId;
-                }
-
                 _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", "TimeOut");
                 _UIReport.On_Command_TimeOut(Node, Txn);
             }
@@ -1435,7 +1427,7 @@ namespace TransferControl.Engine
             Node.InitialComplete = false;
             Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
-            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.TaskId);
+            TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.Remove(Txn.TaskId);
             if (Task != null)
             {
                 Task.HasError = true;
@@ -1443,13 +1435,6 @@ namespace TransferControl.Engine
                 if (Msg.Value.Equals(""))
                 {
                     Msg.Value = Msg.Command;
-                }
-                if (!Task.MainTaskId.Equals(""))
-                {
-                    TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
-                    MTask.HasError = true;
-                    MTask.Finished = true;
-                    Task.Id = Task.MainTaskId;
                 }
             }
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", Msg.Value);
@@ -1512,20 +1497,20 @@ namespace TransferControl.Engine
 
 
 
-        public void On_Task_Abort(TaskJobManagment.CurrentProceedTask Task, string Location, string ReportType, string Message)
+        public void On_Task_Abort(TaskFlowManagement.CurrentProcessTask Task, string Location, string ReportType, string Message)
         {
             //TaskJob.Remove(Id);
             logger.Debug("On_Task_Abort");
             _UIReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
         }
 
-        public void On_Task_Finished(TaskJobManagment.CurrentProceedTask Task)
+        public void On_Task_Finished(TaskFlowManagement.CurrentProcessTask Task)
         {
             logger.Debug("On_Task_Finished");
             _UIReport.On_TaskJob_Finished(Task);
         }
 
-        public void On_Task_Ack(TaskJobManagment.CurrentProceedTask Task)
+        public void On_Task_Ack(TaskFlowManagement.CurrentProcessTask Task)
         {
             _UIReport.On_TaskJob_Ack(Task);
         }

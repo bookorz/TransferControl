@@ -235,7 +235,7 @@ namespace TransferControl.Management
         public bool ManaulControl { get; set; }
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
-        public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
+        public Dictionary<TaskFlowManagement.Command, ActionRequest> RequestQueue = new Dictionary<TaskFlowManagement.Command, ActionRequest>();
         private static DBUtil dBUtil = new DBUtil();
         public Carrier Carrier { get; set; }
         public int RobotGetState { get; set; }
@@ -245,7 +245,7 @@ namespace TransferControl.Management
     
         public class ActionRequest
         {
-            public string TaskName { get; set; }
+            public TaskFlowManagement.Command TaskName { get; set; }
             public string Position { get; set; }
             public string Slot { get; set; }
             public string Slot2 { get; set; }
@@ -405,7 +405,7 @@ namespace TransferControl.Management
             Dictionary<string, string> param = new Dictionary<string, string>();
             string Message = "";
             string TaskName = "";
-            TaskJobManagment.CurrentProceedTask CurrTask;
+            
             TaskName = TaskJob.ToString();
             param.Add("@Target", this.Name);
             while (this.isPool)
@@ -414,7 +414,7 @@ namespace TransferControl.Management
                 {
                     if (this.InitialComplete)
                     {
-                        RouteControl.Instance.TaskJob.Excute(this.Name + "_PoolState", out Message, out CurrTask, TaskName, param);
+                        TaskFlowManagement.CurrentProcessTask CurrTask= TaskFlowManagement.Excute(this.Name + "_PoolState", (TaskFlowManagement.Command)Enum.Parse(typeof(TaskFlowManagement.Command), TaskJob.ToString()), param);
                         SpinWait.SpinUntil(() => CurrTask.Finished, 99999999);
                     }
                     SpinWait.SpinUntil(() => false, PoolInterval);

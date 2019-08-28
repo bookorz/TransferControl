@@ -240,6 +240,20 @@ namespace TransferControl.Management
 
         }
 
+        public Transaction SetAttr(string Id,string Method,string Value,  string Position = "", string Arm = "", string Slot = "", string Position2 = "", string Arm2 = "", string Slot2 = "")
+        {
+            this.Method = Method;
+            this.Position = Position;
+            this.Arm = Arm;
+            this.Slot = Slot;
+            this.Position2 = Position2;
+            this.Arm2 = Arm2;
+            this.Slot2 = Slot2;
+            this.Value = Value;
+            this.TaskId = Id;
+            return this;
+        }
+
         public void SetTimeOut(int Timeout)
         {
             timeOutTimer.Interval = Timeout;

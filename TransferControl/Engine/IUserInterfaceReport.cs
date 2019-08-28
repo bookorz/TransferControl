@@ -19,9 +19,9 @@ namespace TransferControl.Engine
         void On_Connection_Error(string DIOName, string ErrorMsg);
         void On_Connection_Status_Report(string DIOName, string Status);
         void On_Alarm_Happen(string DIOName, string ErrorCode);
-        void On_TaskJob_Ack(TaskJobManagment.CurrentProceedTask Task);
-        void On_TaskJob_Aborted(TaskJobManagment.CurrentProceedTask Task, string NodeName, string ReportType, string Message);
-        void On_TaskJob_Finished(TaskJobManagment.CurrentProceedTask Task);
+        void On_TaskJob_Ack(TaskFlowManagement.CurrentProcessTask Task);
+        void On_TaskJob_Aborted(TaskFlowManagement.CurrentProcessTask Task, string NodeName, string ReportType, string Message);
+        void On_TaskJob_Finished(TaskFlowManagement.CurrentProcessTask Task);
         void On_Message_Log(string Type,string Message);
         void On_Status_Changed(string Type, string Message);
     }

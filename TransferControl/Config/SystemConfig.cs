@@ -29,6 +29,8 @@ namespace TransferControl.Config
         public string NoticeInitFin { get; set; }
         public string NoticeProcFin { get; set; }
         public bool MappingDataCheck { get; set; }
+        public bool DummyMappingData { get; set; }
+        public string TaskFlow { get; set; }
 
         public static SystemConfig Get()
         {
