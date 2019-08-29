@@ -474,6 +474,10 @@ namespace TransferControl.Management
                                             J.Position = TNode.Name;
                                             J.Slot = ToSlot;
                                             J.PositionChangeReport();
+                                            if (TNode.Type.ToUpper().Equals("LOADLOCK"))
+                                            {
+                                                JobManagement.Remove(J.Job_Id);
+                                            }
                                         }
                                         else
                                         {
