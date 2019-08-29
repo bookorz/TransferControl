@@ -103,7 +103,7 @@ namespace TransferControl.Management
                 public const string DoorUp = "DoorUp";
                 public const string DoorDown = "DoorDown";
                 public const string ReadVersion = "ReadVersion";
-                public const string ReadStatus = "ReadState";
+                public const string ReadStatus = "ReadStatus";
                 public const string MapperWaitPosition = "MapperWaitPosition";
                 public const string MapperStartPosition = "MapperStartPosition";
                 public const string MapperArmRetracted = "MapperArmRetracted";

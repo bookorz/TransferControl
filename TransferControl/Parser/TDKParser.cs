@@ -15,12 +15,35 @@ namespace TransferControl.Parser
             {
                 case Transaction.Command.LoadPortType.ReadStatus:
                     return ParseStatus(Message);
+                case Transaction.Command.LoadPortType.GetLED:
+                    return ParseLED(Message);
                 default:
                     throw new Exception(Command +" Not support");
             }
             
         }
+        private Dictionary<string, string> ParseLED(string Message)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
 
+            for (int i = 0; i < 7; i++)
+            {
+                string Idx = (i + 1).ToString("00");
+                switch (Idx)
+                {
+                    case "03":
+                        result.Add("LOAD", Message[i].ToString());
+                        break;
+                    case "04":
+                        result.Add("UNLOAD", Message[i].ToString());
+                        break;
+                    case "05":
+                        result.Add("OPACCESS", Message[i].ToString());
+                        break;
+                }
+            }
+            return result;
+        }
         private Dictionary<string, string> ParseStatus(string Message)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();

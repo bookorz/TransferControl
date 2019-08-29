@@ -26,15 +26,17 @@ namespace TransferControl.Management
         }
         public class ExcutedCmd
         {
-            public ExcutedCmd(string NodeName, string ExcuteName,string ExcuteType)
+            public ExcutedCmd(string NodeName, string ExcuteType, Transaction Txn)
             {
                 this.NodeName = NodeName;
-                this.ExcuteName = ExcuteName;
+                this.ExcuteName = Txn.Method;
                 this.ExcuteType = ExcuteType;
+                this.Txn = Txn;
             }
             public string NodeName { get; set; }
             public string ExcuteName { get; set; }
             public string ExcuteType { get; set; }
+            public Transaction Txn { get; set; }
             public bool Finished = false;
         }
         public static void SetReport(ITaskFlowReport TaskReport)
@@ -125,6 +127,19 @@ namespace TransferControl.Management
         public enum Command
         {
             FFU_SET_SPEED,
+            ROBOT_RESET,
+            ROBOT_INIT,
+            ROBOT_ORGSH,
+            ALIGNER_ALIGN,
+            ALIGNER_HOME,
+            ALIGNER_INIT,
+            ALIGNER_ORGSH,
+            ALIGNER_RESET,
+            ALIGNER_SERVO,
+            ALIGNER_SPEED,
+            ALIGNER_MODE,
+            ALIGNER_WAFER_HOLD,
+            ALIGNER_WAFER_RELEASE,
             LOADPORT_INIT,
             LOADPORT_OPEN,
             LOADPORT_OPEN_NOMAP,
@@ -135,6 +150,24 @@ namespace TransferControl.Management
             LOADPORT_RESET,
             LOADPORT_UNLOADCOMPLETE,
             LOADPORT_READYTOLOAD,
+            LOADPORT_CLAMP,
+            LOADPORT_UNCLAMP,
+            LOADPORT_DOCK,
+            LOADPORT_UNDOCK,
+            LOADPORT_DOOR_CLOSE,
+            LOADPORT_DOOR_DOWN,
+            LOADPORT_DOOR_OPEN,
+            LOADPORT_DOOR_UP,
+            LOADPORT_FORCE_ORGSH,
+            LOADPORT_GET_MAPDT,
+            LOADPORT_LATCH,
+            LOADPORT_UNLATCH,
+            LOADPORT_VAC_ON,
+            LOADPORT_VAC_OFF,
+            LOADPORT_RE_MAPPING,
+            LOADPORT_READ_LED,
+            LOADPORT_READ_STATUS,
+            LOADPORT_READ_VERSION,
             ALL_INIT,
             SET_ALL_SPEED,
             STOP,

@@ -146,6 +146,7 @@ namespace TransferControl.Management
         public bool Foup_Placement { get; set; }
 
         public bool Foup_Presence { get; set; }
+        public bool Latch_Open { get; set; }
 
         public bool Access_SW { get; set; }
 
@@ -367,6 +368,7 @@ namespace TransferControl.Management
             Access_SW = false;
 
             Foup_Lock = false;
+            Latch_Open = false;
 
             Load_LED = "";
 

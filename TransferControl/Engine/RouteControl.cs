@@ -174,9 +174,26 @@ namespace TransferControl.Engine
                                     Node.FoupID = "";
 
                                     break;
-
-                                case Transaction.Command.LoadPortType.ReadStatus:
+                                case Transaction.Command.LoadPortType.GetLED:
                                     MessageParser parser = new MessageParser(Node.Brand);
+                                    foreach (KeyValuePair<string, string> each in parser.ParseMessage(Txn.Method, Msg.Value))
+                                    {
+                                        switch (each.Key)
+                                        {
+                                            case "LOAD":
+
+                                                break;
+                                            case "UNLOAD":
+
+                                                break;
+                                            case "OPACCESS":
+                                                Node.OPACCESS = each.Value == "2"?true:false;
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case Transaction.Command.LoadPortType.ReadStatus:
+                                    parser = new MessageParser(Node.Brand);
                                     Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in Node.Status)
                                     {
@@ -225,6 +242,16 @@ namespace TransferControl.Engine
                                                 else if (each.Value.Equals("Close"))
                                                 {
                                                     Node.Foup_Lock = true;
+                                                }
+                                                break;
+                                            case "Latch Key Status":
+                                                if (each.Value.Equals("Open"))
+                                                {
+                                                    Node.Latch_Open = true;
+                                                }
+                                                else if (each.Value.Equals("Close"))
+                                                {
+                                                    Node.Latch_Open = false;
                                                 }
                                                 break;
                                             case "Cassette Presence":
@@ -1424,8 +1451,8 @@ namespace TransferControl.Engine
         /// <param name="Msg"></param>
         public void On_Command_Error(Node Node, Transaction Txn, CommandReturnMessage Msg)
         {
-            Node.InitialComplete = false;
-            Node.OrgSearchComplete = false;
+            //Node.InitialComplete = false;
+            //Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.Remove(Txn.TaskId);
             if (Task != null)
