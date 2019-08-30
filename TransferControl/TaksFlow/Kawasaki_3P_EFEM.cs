@@ -17,6 +17,7 @@ namespace TransferControl.TaksFlow
         ILog logger = LogManager.GetLogger(typeof(Kawasaki_3P_EFEM));
         public bool Excute(TaskFlowManagement.CurrentProcessTask TaskJob, ITaskFlowReport TaskReport)
         {
+            logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" + TaskJob.CurrentIndex.ToString());
             string Message = "";
             Node Target = null;
             Node Position = null;
@@ -41,21 +42,99 @@ namespace TransferControl.TaksFlow
                 {
                     switch (TaskJob.TaskName)
                     {
+                        case TaskFlowManagement.Command.ALL_INIT:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    foreach (Node nd in NodeManagement.GetList())
+                                    {
+                                        if (nd.Enable)
+                                        {
+                                            switch (nd.Type.ToUpper())
+                                            {
+                                                case "ROBOT":
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                                    break;
+                                                case "ALIGNER":
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetRIO, "8")));
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case 1:
+                                    foreach (Node nd in NodeManagement.GetList())
+                                    {
+                                        if (nd.Enable && !SystemConfig.Get().SaftyCheckByPass)
+                                        {
+                                            switch (nd.Type.ToUpper())
+                                            {
+                                                case "ROBOT":
+                                                    if (nd.R_Hold_Status.Equals("HLD") && nd.RArmActive)
+                                                    {
+                                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300007");//Arm1 上已經有 wafer
+                                                        return false;
+                                                    }
+                                                    else if (nd.L_Hold_Status.Equals("HLD") && nd.LArmActive)
+                                                    {
+                                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300009");//Arm2 上已經有 wafer
+                                                        return false;
+                                                    }
+                                                    break;
+                                                case "ALIGNER":
+                                                    if (nd.R_Presence)
+                                                    {
+                                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300004");//Aligner 上已經有 wafer
+                                                        return false;
+                                                    }
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case 2:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    foreach (Node port in NodeManagement.GetLoadPortList())
+                                    {
+                                        if (port.Enable)
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Reset, "")));
+                                        }
+                                    }
+                                    foreach (Node al in NodeManagement.GetAlignerList())
+                                    {
+                                        if (al.Enable)
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.Reset, "")));
+                                        }
+                                    }
+                                    break;
+                                case 3:
+
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
                         case TaskFlowManagement.Command.ROBOT_INIT:
                             switch (TaskJob.CurrentIndex)
                             {
-                                case 0:  
+                                case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetStatus, "1")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
                                     break;
                                 case 1:
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetSpeed, "")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetSpeed, "")));
                                     break;
                                 case 2:
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetMode, "")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetMode, "")));
                                     break;
                                 case 3:
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetError, "00")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetError, "00")));
+                                    break;
+                                case 4:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Servo, "1")));
                                     break;
                                 default:
                                     Target.Busy = false;
@@ -68,7 +147,7 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
-                                    if (!Target.InitialComplete)
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
@@ -86,6 +165,326 @@ namespace TransferControl.TaksFlow
                                     break;
                                 default:
                                     Target.OrgSearchComplete = true;
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_HOME:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        return false;
+                                    }
+                                    else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
+                                    else if (Target.Busy)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        TaskReport.On_Task_Ack(TaskJob);
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Home, "")));
+                                    }
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_SPEED:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Speed, TaskJob.Params["@Value"])));
+                                    break;
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetSpeed, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_GETWAIT:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        return false;
+                                    }
+                                    else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
+                                    else if (Target.Busy)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        if (!SystemConfig.Get().SaftyCheckByPass)
+                                        {
+                                            switch (Position.Type.ToUpper())
+                                            {
+                                                case "LOADPORT":
+                                                    if (!Position.IsMapping)
+                                                    {
+                                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");
+                                                        return false;
+                                                    }
+                                                    break;
+                                                case "LOADLOCK":
+
+                                                    break;
+                                                default:
+                                                    logger.Error("Position.Type is not define.");
+                                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                                                    return false;
+                                            }
+                                        }
+                                        TaskReport.On_Task_Ack(TaskJob);
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetWait, "", TaskJob.Params["@Position"], TaskJob.Params["@Arm"], TaskJob.Params["@Slot"])));
+                                    }
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_PUTWAIT:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        return false;
+                                    }
+                                    else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
+                                    else if (Target.Busy)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        if (!SystemConfig.Get().SaftyCheckByPass)
+                                        {
+                                            switch (Position.Type.ToUpper())
+                                            {
+                                                case "LOADPORT":
+                                                    if (!Position.IsMapping)
+                                                    {
+                                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");
+                                                        return false;
+                                                    }
+                                                    break;
+                                                case "LOADLOCK":
+
+                                                    break;
+                                                default:
+                                                    logger.Error("Position.Type is not define.");
+                                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                                                    return false;
+                                            }
+                                        }
+                                        TaskReport.On_Task_Ack(TaskJob);
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.PutWait, "", TaskJob.Params["@Position"], TaskJob.Params["@Arm"], TaskJob.Params["@Slot"])));
+                                    }
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_GET:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        return false;
+                                    }
+                                    else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
+                                    else if (Target.Busy)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                        if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetRIO, "8")));
+                                        }
+                                    }
+                                    break;
+                                case 1:
+                                    if (!GetSafetyCheck(TaskJob, TaskReport))
+                                    {
+                                        return false;
+                                    }
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Get, "", TaskJob.Params["@Position"], TaskJob.Params["@Arm"], TaskJob.Params["@Slot"])));
+                                    break;
+                                case 2:
+                                    MoveWip(TaskJob.Params["@Position"], TaskJob.Params["@Slot"], TaskJob.Params["@Target"], TaskJob.Params["@Arm"]);
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_PUT:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        return false;
+                                    }
+                                    else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
+                                    else if (Target.Busy)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                        if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetRIO, "8")));
+                                        }
+                                    }
+                                    break;
+                                case 1:
+                                    if (!PutSafetyCheck(TaskJob, TaskReport))
+                                    {
+                                        return false;
+                                    }
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Put, "", TaskJob.Params["@Position"], TaskJob.Params["@Arm"], TaskJob.Params["@Slot"])));
+                                    break;
+                                case 2:
+                                    MoveWip(TaskJob.Params["@Target"], TaskJob.Params["@Arm"], TaskJob.Params["@Position"], TaskJob.Params["@Slot"]);
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_RETRACT:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        return false;
+                                    }
+                                    else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
+                                    else if (Target.Busy)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        TaskReport.On_Task_Ack(TaskJob);
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.ArmReturn, "")));
+                                    }
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_SERVO:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Servo, TaskJob.Params["@Value"])));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_WAFER_HOLD:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaferHold, "", "", TaskJob.Params["@Arm"])));
+                                    break;
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_WAFER_RELEASE:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaferRelease, "", "", TaskJob.Params["@Arm"])));
+                                    break;
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.ROBOT_MODE:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Mode, TaskJob.Params["@Value"])));
+                                    break;
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetMode, "")));
+                                    break;
+                                default:
                                     TaskReport.On_Task_Finished(TaskJob);
                                     return false;
                             }
@@ -183,7 +582,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.WaferHold, "","", TaskJob.Params["@Arm"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.WaferHold, "", "", TaskJob.Params["@Arm"])));
                                     break;
                                 case 1:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetSV, "1")));
@@ -253,7 +652,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 case 1:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetMode, "")));
-                                    break;                               
+                                    break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
                                     return false;
@@ -372,7 +771,7 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
-                                    if (!Target.InitialComplete)
+                                    if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300017");
                                         return false;
@@ -1472,9 +1871,7 @@ namespace TransferControl.TaksFlow
             catch (Exception e)
             {
                 logger.Error("Excute fail Task Name:" + TaskJob.TaskName.ToString() + " exception: " + e.StackTrace);
-                TaskFlowManagement.Remove(TaskJob.Id);
                 TaskReport.On_Task_Abort(TaskJob, "SYSTEM", "ABS", e.StackTrace);
-
                 return false;
             }
             return true;
@@ -1493,6 +1890,218 @@ namespace TransferControl.TaksFlow
             }
             return result;
         }
+        private bool GetSafetyCheck(TaskFlowManagement.CurrentProcessTask TaskJob, ITaskFlowReport TaskReport)
+        {
+            if (!SystemConfig.Get().SaftyCheckByPass)
+            {
+                Node Target = NodeManagement.Get(TaskJob.Params["@Target"]);
+                Node Position = NodeManagement.Get(TaskJob.Params["@Position"]);
+                string Arm = TaskJob.Params["@Arm"];
+                string Slot = TaskJob.Params["@Slot"];
+                if ((Arm.Equals("1") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("HLD"))
+                {
+                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300007");//Arm1 上已經有 wafer
+                    return false;
+                }
+                if ((Arm.Equals("2") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("HLD"))
+                {
+                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300009");//Arm2 上已經有 wafer
+                    return false;
+                }
+                switch (Position.Type.ToUpper())
+                {
+                    case "LOADPORT":
+                        if (!Position.IsMapping)
+                        {
+                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");
+                            return false;
+                        }
+                        switch (Arm)
+                        {
+                            case "1"://R Arm  
+                            case "2"://L Arm
+                                if (!Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
+                                {
+                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    return false;
+                                }
+                                break;
+                            case "3"://Double Arm
+                                if (!Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
+                                {
+                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    return false;
+                                }
+                                if (!Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].MapFlag || Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].ErrPosition)
+                                {
+                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    return false;
+                                }
+                                break;
+                        }
+                        break;
+                    case "ALIGNER":
+                        if (!Position.R_Presence)
+                        {
+                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300003");//Aligner上沒有 wafer
+                            return false;
+                        }
+                        break;
+                    case "LOADLOCK":
 
+                        break;
+                    default:
+                        logger.Error("Position.Type is not define.");
+                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                        return false;
+                }
+            }
+            return true;
+        }
+        private bool PutSafetyCheck(TaskFlowManagement.CurrentProcessTask TaskJob, ITaskFlowReport TaskReport)
+        {
+            if (!SystemConfig.Get().SaftyCheckByPass)
+            {
+                Node Target = NodeManagement.Get(TaskJob.Params["@Target"]);
+                Node Position = NodeManagement.Get(TaskJob.Params["@Position"]);
+                string Arm = TaskJob.Params["@Arm"];
+                string Slot = TaskJob.Params["@Slot"];
+                if ((Arm.Equals("1") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("REL"))
+                {
+                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300006");//Arm1 上無 wafer
+                    return false;
+                }
+                if ((Arm.Equals("2") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("REL"))
+                {
+                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300008");//Arm2 上無 wafer
+                    return false;
+                }
+                switch (Position.Type.ToUpper())
+                {
+                    case "LOADPORT":
+                        if (!Position.IsMapping)
+                        {
+                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");//Load Port 尚未執行過 mapping
+                            return false;
+                        }
+                        switch (Arm)
+                        {
+                            case "1"://R Arm  
+                            case "2"://L Arm
+                                if (Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
+                                {
+                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    return false;
+                                }
+                                break;
+                            case "3"://Double Arm
+                                if (Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
+                                {
+                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    return false;
+                                }
+                                if (Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].MapFlag || Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].ErrPosition)
+                                {
+                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    return false;
+                                }
+                                break;
+                        }
+                        break;
+                    case "ALIGNER":
+                        if (Position.R_Presence)
+                        {
+                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300004");//Aligner 上已經有 wafer
+                            return false;
+                        }
+                        break;
+                    case "LOADLOCK":
+
+                        break;
+                    default:
+                        logger.Error("Position.Type is not define.");
+                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                        return false;
+                }
+            }
+            return true;
+        }
+        private void MoveWip(string FromPosition, string FromSlot, string ToPosition, string ToSlot)
+        {
+            try
+            {
+                Node FNode = NodeManagement.Get(FromPosition);
+                if (!FNode.Enable)
+                {
+                    return;
+                }
+                Node TNode = NodeManagement.Get(ToPosition);
+                if (!TNode.Enable)
+                {
+                    return;
+                }
+                Job J;
+                Job tmp;
+                if (!FNode.JobList.TryRemove(FromSlot, out J))
+                {
+                    J = RouteControl.CreateJob();//當沒有帳時強制建帳
+                    J.Job_Id = JobManagement.GetNewID();
+                    J.Host_Job_Id = J.Job_Id;
+                    J.Position = FNode.Name;
+                    J.Slot = FromSlot;
+                    J.MapFlag = true;
+                    JobManagement.Add(J.Job_Id, J);
+                }
+                if (FNode.Type.ToUpper().Equals("LOADPORT"))
+                {
+                    //LOADPORT空的Slot要塞空資料                                       
+                    tmp = RouteControl.CreateJob();
+                    tmp.Job_Id = "No wafer";
+                    tmp.Host_Job_Id = "No wafer";
+                    tmp.Slot = FromSlot;
+                    tmp.Position = FNode.Name;
+                    FNode.JobList.TryAdd(tmp.Slot, tmp);
+                    //從LOADPORT取出，處理開始
+                    J.InProcess = true;
+                    J.StartTime = DateTime.Now;
+                    J.FromPort = FNode.Name;
+                    J.FromPortSlot = FromSlot;
+                    J.FromFoupID = FNode.FoupID;
+                }
+                if (TNode.Type.ToUpper().Equals("LOADPORT"))
+                {
+                    //放回UNLOADPORT，處理結束
+                    J.InProcess = false;
+                    J.NeedProcess = false;
+                    J.EndTime = DateTime.Now;
+                    J.ToFoupID = TNode.FoupID;
+                    J.ToPort = TNode.Name;
+                    J.ToPortSlot = ToSlot;
+                }
+                if (TNode.Type.ToUpper().Equals("ALIGNER"))
+                {
+                    J.AlignerFlag = true;
+                }
+                J.LastNode = J.Position;
+                J.LastSlot = J.Slot;
+
+                TNode.JobList.TryRemove(ToSlot, out tmp);
+                if (TNode.JobList.TryAdd(ToSlot, J))
+                {
+                    //更新WAFER位置
+                    J.Position = TNode.Name;
+                    J.Slot = ToSlot;
+                    J.PositionChangeReport();
+                }
+                else
+                {
+                    logger.Error("Move wip error(Add): From=" + FromPosition + " Slot=" + FromSlot + " To=" + ToPosition + " Slot=" + ToSlot);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error("Move wip fail:" + e.Message + " exception: " + e.StackTrace);
+            }
+        }
     }
 }
