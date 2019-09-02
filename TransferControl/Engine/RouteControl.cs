@@ -277,6 +277,7 @@ namespace TransferControl.Engine
 
                                     break;
                                 case Transaction.Command.LoadPortType.GetMapping:
+                                case Transaction.Command.LoadPortType.GetMappingDummy:
                                     //產生Mapping資料
                                     Node.LoadTime = DateTime.Now;
                                     string Mapping = Msg.Value;
@@ -605,6 +606,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                                 case Transaction.Command.RobotType.GetMapping:
+                               
                                     //產生Mapping資料
                                     string Mapping = Msg.Value.Replace(",", "").Substring(1);
 

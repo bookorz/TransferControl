@@ -178,8 +178,9 @@ namespace TransferControl.Controller
                     mappingData = "0000000000000000000000000";
                 }
                 CommandReturnMessage cm = new CommandReturnMessage();
-                cm.CommandType = Transaction.Command.LoadPortType.GetMapping;
+                //cm.CommandType = Transaction.Command.LoadPortType.GetMapping;
                 cm.Value = mappingData;
+                //Txn.Method= Transaction.Command.LoadPortType.GetMapping;
                 _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName),Txn, cm);
                 return true;
             }
