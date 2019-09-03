@@ -1302,7 +1302,7 @@ namespace TransferControl.Engine
         /// <param name="Txn"></param>
         public void On_Command_TimeOut(Node Node, Transaction Txn)
         {
-            TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.Remove(Txn.TaskId);
+            TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.TaskRemove(Txn.TaskId);
             if (Task == null)
             {
                 Task = new TaskFlowManagement.CurrentProcessTask();
@@ -1456,7 +1456,7 @@ namespace TransferControl.Engine
             //Node.InitialComplete = false;
             //Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
-            TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.Remove(Txn.TaskId);
+            TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.TaskRemove(Txn.TaskId);
             if (Task != null)
             {
                 Task.HasError = true;

@@ -58,7 +58,7 @@ namespace TransferControl.Management
                 CurrentProcessTasks.Clear();
             }
         }
-        public static CurrentProcessTask Remove(string Id)
+        public static CurrentProcessTask TaskRemove(string Id)
         {
             CurrentProcessTask tmp;
             lock (CurrentProcessTasks)
@@ -66,6 +66,10 @@ namespace TransferControl.Management
                 logger.Debug("Delete Task ID:" + Id);
                 CurrentProcessTasks.TryGetValue(Id, out tmp);
                 CurrentProcessTasks.Remove(Id);
+            }
+            if (tmp != null)
+            {
+                tmp.Finished = true;
             }
             return tmp;
         }
@@ -92,7 +96,7 @@ namespace TransferControl.Management
                         CurrentTask.CheckList.Clear();
                         if (!TaskFlow.Excute(CurrentTask, _TaskReport))
                         {
-                            CurrentProcessTasks.Remove(CurrentTask.Id);//執行發生異常時，移除此Task
+                            TaskRemove(CurrentTask.Id);//執行發生異常時，移除此Task
                         }
                     }
                 }
@@ -115,7 +119,10 @@ namespace TransferControl.Management
                     result.Params = param;
                     result.TaskName = TaskName;
                     logger.Debug("TaskName:" + TaskName.ToString());
-                    TaskFlow.Excute(result, _TaskReport);
+                    if(!TaskFlow.Excute(result, _TaskReport))
+                    {
+                        TaskRemove(result.Id);//執行發生異常時，移除此Task
+                    }
                 }
                 else
                 {

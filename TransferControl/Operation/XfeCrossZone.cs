@@ -662,7 +662,7 @@ namespace TransferControl.Operation
                                                 //檢查是不是搬完了
 
                                                 var Available = from each in JobManagement.GetJobList()
-                                                                where each.InProcess
+                                                                where NodeManagement.Get(each.Position).Type.Equals("ALIGNER")
                                                                 select each;
                                                 if (Available.Count() != 0)
                                                 {
@@ -784,7 +784,7 @@ namespace TransferControl.Operation
                                         logger.Debug("Waiting for " + req.Position + " ready...");
                                         while (!pos.ReadyForGet && Running)
                                         {
-                                            SpinWait.SpinUntil(() => pos.ReadyForGet || !Running, 99999999);
+                                            SpinWait.SpinUntil(() => pos.ReadyForGet || !Running, 5000);
                                         }
                                         if (!Running)
                                         {
@@ -978,13 +978,14 @@ namespace TransferControl.Operation
                         param.Add("@Position", req.Position);
                         param.Add("@LDRobot", LDRobot);
                         param.Add("@ULDRobot", ULDRobot);
+                        param.Add("@Loadport", LD);
                         TaskFlowManagement.CurrentProcessTask Task= TaskFlowManagement.Excute(id, req.TaskName, param);
 
                         //這邊要卡住直到Task完成
                         logger.Debug(NodeName + " 等待Task完成");
                         while (!Task.Finished && Running)
                         {
-                            SpinWait.SpinUntil(() => Task.Finished || !Running, 99999999);
+                            SpinWait.SpinUntil(() => Task.Finished || !Running, 5000);
                         }
                         if (Running)
                         {

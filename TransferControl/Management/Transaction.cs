@@ -240,7 +240,7 @@ namespace TransferControl.Management
 
         }
 
-        public Transaction SetAttr(string Id,string Method,string Value,  string Position = "", string Arm = "", string Slot = "", string Position2 = "", string Arm2 = "", string Slot2 = "")
+        public Transaction SetAttr(string Id,string Method,string Value,  string Position = "", string Slot = "", string Arm = "", string Position2 = "", string Slot2 = "", string Arm2 = "")
         {
             this.Method = Method;
             this.Position = Position;
