@@ -133,6 +133,7 @@
     <Compile Include="SECS\ControlJob.cs" />
     <Compile Include="SECS\ProcessJob.cs" />
     <Compile Include="TaksFlow\ITaskFlow.cs" />
+    <Compile Include="TaksFlow\Sanwa_Sorter.cs" />
     <Compile Include="TaksFlow\Kawasaki_3P_EFEM.cs" />
   </ItemGroup>
   <ItemGroup>

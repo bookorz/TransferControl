@@ -42,10 +42,13 @@ namespace TransferControl.Management
         public static void SetReport(ITaskFlowReport TaskReport)
         {
             _TaskReport = TaskReport;
-            switch (SystemConfig.Get().TaskFlow)
+            switch (SystemConfig.Get().TaskFlow.ToUpper())
             {
                 case "KAWASAKI_3P_EFEM":
                     TaskFlow = new Kawasaki_3P_EFEM();
+                    break;
+                case "SANWA_SORTER":
+                    TaskFlow = new Sanwa_Sorter();
                     break;
                 default:
                     throw new NotSupportedException();
