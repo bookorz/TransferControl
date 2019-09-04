@@ -135,7 +135,7 @@ namespace TransferControl.Config
             Content = SysCfg.ReadFile("recipe/" + this.recipe_id + ".json");
             if (Content != null)
             {
-                Content.is_use_burnin = false;
+                //Content.is_use_burnin = false;
                 tmp.Add(this.recipe_id, Content);
             }
         }
@@ -148,7 +148,7 @@ namespace TransferControl.Config
                 Content = SysCfg.ReadFile("recipe/" + fileName + ".json");
                 if (Content != null)
                 {
-                    Content.is_use_burnin = false;
+                    //Content.is_use_burnin = false;
                     tmp.Add(fileName, Content);
                 }
             }
@@ -161,7 +161,7 @@ namespace TransferControl.Config
                 ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
                 SysCfg.WriteFile("recipe/" + fileName + ".json", recipe);
                 tmp.Remove(fileName);
-                tmp.Add(fileName, recipe);
+                tmp.Add(fileName, (Recipe)recipe.MemberwiseClone());
             }
         }
         public static Boolean Delete(string fileName)

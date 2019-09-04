@@ -939,8 +939,10 @@ namespace TransferControl.Engine
                             {
                                 case Transaction.Command.RobotType.Home:
                                 case Transaction.Command.RobotType.OrginSearch:
+                                case Transaction.Command.RobotType.ArmReturn:
                                     Node.State = "READY";
                                     Node.ArmExtend = "";
+                                    Node.CurrentPosition = "";
                                     break;
                                 case Transaction.Command.RobotType.PutBack:
                                 case Transaction.Command.RobotType.GetAfterWait:

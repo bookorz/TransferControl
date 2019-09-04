@@ -171,11 +171,16 @@ namespace TransferControl.Controller
                 string mappingData = "";
                 if (Txn.NodeName.Equals("LOADPORT01"))
                 {
-                    mappingData = "1111111111111111111111111";
+                    //mappingData = "1111111111111111111111111";
+                    mappingData = SystemConfig.Get().FakeDataP1;
                 }
                 else if (Txn.NodeName.Equals("LOADPORT02"))
                 {
-                    mappingData = "0000000000000000000000000";
+                    mappingData = SystemConfig.Get().FakeDataP2;
+                }
+                else if (Txn.NodeName.Equals("LOADPORT03"))
+                {
+                    mappingData = SystemConfig.Get().FakeDataP3;
                 }
                 CommandReturnMessage cm = new CommandReturnMessage();
                 //cm.CommandType = Transaction.Command.LoadPortType.GetMapping;

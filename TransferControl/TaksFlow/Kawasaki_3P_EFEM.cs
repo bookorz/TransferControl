@@ -1081,6 +1081,11 @@ namespace TransferControl.TaksFlow
                                             TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
                                             return false;
                                         }
+                                        else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper())|| !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                        {
+                                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                            return false;
+                                        }
                                         else
                                         {
                                             TaskReport.On_Task_Ack(TaskJob);
@@ -1334,6 +1339,11 @@ namespace TransferControl.TaksFlow
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
+                                    else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
                                     else
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.ReadStatus, "")));
@@ -1408,6 +1418,11 @@ namespace TransferControl.TaksFlow
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        return false;
+                                    }
+                                    else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -1666,6 +1681,11 @@ namespace TransferControl.TaksFlow
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
+                                    else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        return false;
+                                    }
                                     else
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.ReadStatus, "")));
@@ -1703,6 +1723,11 @@ namespace TransferControl.TaksFlow
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        return false;
+                                    }
+                                    else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -1878,6 +1903,11 @@ namespace TransferControl.TaksFlow
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        return false;
+                                    }
+                                    else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                    {
+                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -2095,11 +2125,17 @@ namespace TransferControl.TaksFlow
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_GET_LOADPORT;
                                     newAct.Position = TaskJob.Params["@Loadport"];
-                                    NodeManagement.Get(TaskJob.Params["@ULDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!NodeManagement.Get(TaskJob.Params["@ULDRobot"]).RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        NodeManagement.Get(TaskJob.Params["@ULDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = (TaskFlowManagement.Command)Enum.Parse(typeof(TaskFlowManagement.Command), "TRANSFER_GET_" + Target.Name);
                                     newAct.Position = Target.Name;
-                                    NodeManagement.Get(TaskJob.Params["@ULDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!NodeManagement.Get(TaskJob.Params["@ULDRobot"]).RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        NodeManagement.Get(TaskJob.Params["@ULDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     Target.ReadyForGet = true;
                                     break;
                                 default:
@@ -2165,7 +2201,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaitBeforeGet, "", AlignerName, "1", TaskJob.Params["@Arm"])));
+                                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaitBeforeGet, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     break;
                                 case 1:
                                     newAct = new Node.ActionRequest();
@@ -2173,7 +2209,10 @@ namespace TransferControl.TaksFlow
                                     newAct.Position = AlignerName;
                                     newAct.Slot = "1";
                                     newAct.Arm = TaskJob.Params["@Arm"];
-                                    Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -2187,7 +2226,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetWithoutBack, "", AlignerName, "1", TaskJob.Params["@Arm"])));
+                                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetWithoutBack, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     break;
                                 case 1:
                                     newAct = new Node.ActionRequest();
@@ -2195,7 +2234,10 @@ namespace TransferControl.TaksFlow
                                     newAct.Position = AlignerName;
                                     newAct.Slot = "1";
                                     newAct.Arm = TaskJob.Params["@Arm"];
-                                    Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -2210,15 +2252,23 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     MoveWip(AlignerName, "1", Target.Name, TaskJob.Params["@Arm"]);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetAfterWait, "", AlignerName, "1", TaskJob.Params["@Arm"])));
+                                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetAfterWait, "", AlignerName, "1", TaskJob.Params["@Arm"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Get, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     break;
                                 case 1:
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_PUT_UNLOADPORT;
-                                    Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_ALIGNER_HOME;
-                                    NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!NodeManagement.Get(AlignerName).RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                       NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
+                                    
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -2280,7 +2330,10 @@ namespace TransferControl.TaksFlow
                                         Target.LockOn = "";
                                         newAct = new Node.ActionRequest();
                                         newAct.TaskName = TaskFlowManagement.Command.TRANSFER_PUT_UNLOADPORT;
-                                        Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                        if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                        {
+                                            Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                        }
                                     }
                                     break;
                                 case 1:
@@ -2291,7 +2344,10 @@ namespace TransferControl.TaksFlow
                                         newAct.Position = AlignerName;
                                         newAct.Slot = "1";
                                         newAct.Arm = TaskJob.Params["@Arm"];
-                                        NodeManagement.Get(TaskJob.Params["@LDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                        if (!NodeManagement.Get(TaskJob.Params["@LDRobot"]).RequestQueue.ContainsKey(newAct.TaskName))
+                                        {
+                                            NodeManagement.Get(TaskJob.Params["@LDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                        }
                                     }
                                     break;
                                 default:
@@ -2312,13 +2368,19 @@ namespace TransferControl.TaksFlow
                                     MoveWip(Target.Name, TaskJob.Params["@Arm"], AlignerName, "1");
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_ALIGNER_WHLD;
-                                    NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!NodeManagement.Get(AlignerName).RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = (TaskFlowManagement.Command)Enum.Parse(typeof(TaskFlowManagement.Command), "TRANSFER_PUT_" + AlignerName + "_1");
                                     newAct.Position = AlignerName;
                                     newAct.Slot = "1";
                                     newAct.Arm = TaskJob.Params["@Arm"];
-                                    Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -2340,7 +2402,10 @@ namespace TransferControl.TaksFlow
                                     newAct.Position = AlignerName;
                                     newAct.Slot = "1";
                                     newAct.Arm = TaskJob.Params["@Arm"];
-                                    NodeManagement.Get(TaskJob.Params["@LDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!NodeManagement.Get(TaskJob.Params["@LDRobot"]).RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        NodeManagement.Get(TaskJob.Params["@LDRobot"]).RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -2362,11 +2427,17 @@ namespace TransferControl.TaksFlow
                                         newAct = new Node.ActionRequest();
                                         newAct.TaskName = TaskFlowManagement.Command.TRANSFER_GET_LOADPORT;
                                         newAct.Position = TaskJob.Params["@Loadport"];
-                                        Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                        if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                        {
+                                            Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                        }
                                     }
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_ALIGNER_ALIGN;
-                                    NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
+                                    if (!NodeManagement.Get(AlignerName).RequestQueue.ContainsKey(newAct.TaskName))
+                                    {
+                                        NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
+                                    }
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_PUT_UNLOADPORT;
                                     if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
@@ -2391,7 +2462,7 @@ namespace TransferControl.TaksFlow
                                     }
                                     else
                                     {
-                                       
+
                                         MoveWip("LOADLOCK01", "1", Target.Name, TaskJob.Params["@Arm"].Equals("1") ? "2" : "1");
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Get, "", "LOADLOCK01", "1", TaskJob.Params["@Arm"].Equals("1") ? "2" : "1")));
 
@@ -2449,7 +2520,11 @@ namespace TransferControl.TaksFlow
                                         newAct.Position = TaskJob.Params["@Position"];
                                         newAct.Slot = TaskJob.Params["@Slot"];
                                         newAct.Arm = "1";
-                                        Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                        if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                        {
+                                            Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                        }
+
                                     }
                                     break;
                                 case 4:

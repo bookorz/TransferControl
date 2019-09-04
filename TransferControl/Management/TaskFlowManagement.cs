@@ -76,9 +76,11 @@ namespace TransferControl.Management
         public static void Next(Node Node, Transaction Txn, string ReturnType)
         {
             CurrentProcessTask CurrentTask = null;
-            lock (CurrentProcessTasks)
+            int count = 0;
+            if (CurrentProcessTasks.TryGetValue(Txn.TaskId, out CurrentTask))
             {
-                if (CurrentProcessTasks.TryGetValue(Txn.TaskId, out CurrentTask))
+
+                lock (CurrentProcessTasks)
                 {
                     var findExcuted = from each in CurrentTask.CheckList
                                       where each.ExcuteName.Equals(Txn.Method) && each.ExcuteType.Equals(ReturnType.ToUpper()) && each.NodeName.Equals(Txn.NodeName) && !each.Finished
@@ -87,24 +89,27 @@ namespace TransferControl.Management
                     {
                         findExcuted.First().Finished = true;
                     }
+
                     findExcuted = from each in CurrentTask.CheckList
                                   where !each.Finished
                                   select each;
-                    if (findExcuted.Count() == 0)//當全部完成後，繼續下一步
+                    count = findExcuted.Count();
+                }
+                if (count == 0)//當全部完成後，繼續下一步
+                {
+                    CurrentTask.CurrentIndex++;
+                    CurrentTask.CheckList.Clear();
+                    if (!TaskFlow.Excute(CurrentTask, _TaskReport))
                     {
-                        CurrentTask.CurrentIndex++;
-                        CurrentTask.CheckList.Clear();
-                        if (!TaskFlow.Excute(CurrentTask, _TaskReport))
-                        {
-                            TaskRemove(CurrentTask.Id);//執行發生異常時，移除此Task
-                        }
+                        TaskRemove(CurrentTask.Id);//執行發生異常時，移除此Task
                     }
                 }
-                else
-                {
-                    logger.Error("ID not exsit:" + Txn.TaskId);
-                }
             }
+            else
+            {
+                logger.Error("ID not exsit:" + Txn.TaskId);
+            }
+
         }
         public static CurrentProcessTask Excute(string Id, Command TaskName, Dictionary<string, string> param = null)
         {
@@ -119,7 +124,7 @@ namespace TransferControl.Management
                     result.Params = param;
                     result.TaskName = TaskName;
                     logger.Debug("TaskName:" + TaskName.ToString());
-                    if(!TaskFlow.Excute(result, _TaskReport))
+                    if (!TaskFlow.Excute(result, _TaskReport))
                     {
                         TaskRemove(result.Id);//執行發生異常時，移除此Task
                     }
@@ -161,7 +166,6 @@ namespace TransferControl.Management
             LOADPORT_INIT,
             LOADPORT_OPEN,
             LOADPORT_OPEN_NOMAP,
-            LOADPORT_REOPEN,
             LOADPORT_CLOSE,
             LOADPORT_CLOSE_NOMAP,
             LOADPORT_ORGSH,

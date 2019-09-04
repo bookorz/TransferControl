@@ -31,6 +31,9 @@ namespace TransferControl.Config
         public bool MappingDataCheck { get; set; }
         public bool DummyMappingData { get; set; }
         public string TaskFlow { get; set; }
+        public string FakeDataP1 { get; set; }
+        public string FakeDataP2 { get; set; }
+        public string FakeDataP3 { get; set; }
 
         public static SystemConfig Get()
         {
