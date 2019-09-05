@@ -95,6 +95,24 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    foreach (Node rb in NodeManagement.GetEnableRobotList())
+                                    {
+                                        if (rb.Enable)
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetPresence, "","","","1")));
+                                        }
+                                    }
+                                    break;
+                                case 1:
+                                    foreach (Node rb in NodeManagement.GetEnableRobotList())
+                                    {
+                                        if (rb.Enable)
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetPresence, "", "", "", "2")));
+                                        }
+                                    }
+                                    break;
+                                case 2:
                                     foreach (Node nd in NodeManagement.GetList())
                                     {
                                         if (nd.Enable)
@@ -115,7 +133,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 1:
+                                case 3:
                                     foreach (Node nd in NodeManagement.GetList())
                                     {
                                         if (nd.Enable && !SystemConfig.Get().SaftyCheckByPass)
@@ -145,7 +163,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 2:
+                                case 4:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
@@ -169,7 +187,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 3:
+                                case 5:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -192,7 +210,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 4:
+                                case 6:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -204,18 +222,18 @@ namespace TransferControl.TaksFlow
                                     {
                                         if (al.Enable)
                                         {
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(al.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.Mode, "1")));
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(al.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.Mode, "0")));
                                         }
                                     }
                                     foreach (Node rb in NodeManagement.GetEnableRobotList())
                                     {
                                         if (rb.Enable)
                                         {
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Mode, "1")));
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Mode, "0")));
                                         }
                                     }
                                     break;
-                                case 5:
+                                case 7:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -239,7 +257,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 6:
+                                case 8:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -255,7 +273,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 7:
+                                case 9:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -264,7 +282,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 8:
+                                case 10:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -273,7 +291,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 9:
+                                case 11:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -289,7 +307,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 10:
+                                case 12:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable && port.CarrierType.ToUpper().Equals("ADAPT"))
@@ -305,7 +323,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 11:
+                                case 13:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable && port.CarrierType.ToUpper().Equals("ADAPT"))
@@ -314,7 +332,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 12:
+                                case 14:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable)
@@ -331,7 +349,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 13:
+                                case 15:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
                                     {
                                         if (port.Enable && port.Foup_Placement)
@@ -2608,7 +2626,7 @@ namespace TransferControl.TaksFlow
                     TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300007");//Arm1 上已經有 wafer
                     return false;
                 }
-                if ((Arm.Equals("2") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("HLD"))
+                if ((Arm.Equals("2") || Arm.Equals("3")) && Target.L_Hold_Status.Equals("HLD"))
                 {
                     TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300009");//Arm2 上已經有 wafer
                     return false;
@@ -2676,7 +2694,7 @@ namespace TransferControl.TaksFlow
                     TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300006");//Arm1 上無 wafer
                     return false;
                 }
-                if ((Arm.Equals("2") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("REL"))
+                if ((Arm.Equals("2") || Arm.Equals("3")) && Target.L_Hold_Status.Equals("REL"))
                 {
                     TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300008");//Arm2 上無 wafer
                     return false;

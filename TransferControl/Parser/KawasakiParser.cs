@@ -31,10 +31,10 @@ namespace TransferControl.Parser
                 switch (i + 1)
                 {
                     case 4:
-                        result.Add("R_Hold_Status", parameters[i].ToString());
+                        result.Add("L_Hold_Status", parameters[i].ToString());
                         break;
                     case 7:
-                        result.Add("L_Hold_Status", parameters[i].ToString());
+                        result.Add("R_Hold_Status", parameters[i].ToString());
                         break;
                 }
             }

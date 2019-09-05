@@ -944,6 +944,10 @@ namespace TransferControl.Management
                     case "ROBOT":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.RobotType.GetPresence:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetPresence(AdrNo, txn.Seq, txn.Arm);
+                                txn.CommandType = "GET";
+                                break;
                             case Transaction.Command.RobotType.GetPosition:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ArmLocation(AdrNo, txn.Seq, txn.Value, "1");
                                 txn.CommandType = "GET";

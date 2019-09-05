@@ -121,6 +121,7 @@ namespace TransferControl.Management
             //Robot
             public class RobotType
             {
+                public const string GetPresence = "GetPresence";
                 public const string GetPosition = "GetPosition";
                 public const string ArmReturn = "ArmReturn";
                 public const string Exchange = "Exchange";
