@@ -161,7 +161,7 @@ namespace TransferControl.Config
                 ConfigTool<Recipe> SysCfg = new ConfigTool<Recipe>();
                 SysCfg.WriteFile("recipe/" + fileName + ".json", recipe);
                 tmp.Remove(fileName);
-                tmp.Add(fileName, recipe);
+                tmp.Add(fileName, (Recipe)recipe.MemberwiseClone());
             }
         }
         public static Boolean Delete(string fileName)
