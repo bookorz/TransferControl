@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace TransferControl.Config
 {
-    class ConfigTool<T>
+    public class ConfigTool<T>
     {
         ILog logger = LogManager.GetLogger(typeof(ConfigTool<T>));
         public List<T> ReadFileByList(string FilePath)
