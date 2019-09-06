@@ -1312,6 +1312,16 @@ namespace TransferControl.Engine
                                 CarrierManagement.Remove(Node.Carrier);
                                 Node.Foup_Presence = false;
                                 Node.Foup_Placement = false;
+                                Node.IsMapping = false;
+                                //刪除所有帳
+                                foreach (Job eachJob in Node.JobList.Values)
+                                {
+                                    JobManagement.Remove(eachJob.Job_Id);
+                                }
+                                Node.JobList.Clear();
+                                Node.ReserveList.Clear();
+                                JobManagement.ClearAssignJobByPort(Node.Name);
+                                Node.FoupID = "";
                                 //IO_State_Change(Node.Name, "Foup_Presence", true);
                                 //IO_State_Change(Node.Name, "Foup_Placement", false);
 
