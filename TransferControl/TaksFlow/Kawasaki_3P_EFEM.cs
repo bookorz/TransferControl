@@ -2130,7 +2130,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.Align, Target.Name.ToUpper().Equals("ALIGNER01") ? Recipe.Get(SystemConfig.Get().CurrentRecipe).aligner1_angle : Recipe.Get(SystemConfig.Get().CurrentRecipe).aligner2_angle)));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.Align, TaskJob.Params["@V3"])));
                                     break;
                                 case 1:
                                     //newAct = new Node.ActionRequest();
