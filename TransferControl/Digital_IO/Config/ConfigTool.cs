@@ -6,7 +6,7 @@ using System.Text;
 
 namespace TransferControl.Digital_IO.Config
 {
-    class ConfigTool<T>
+    public class ConfigTool<T>
     {
        
         public List<T> ReadFileByList(string FilePath)

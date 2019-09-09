@@ -9,6 +9,7 @@ namespace TransferControl.Config
     public static class Global
     {
         public static string currentUser = "";
+        public static string userGroup = "";
         private static readonly string CONFIG_DEVICE_SQL =
             " SELECT device_name as device_name_r, conn_address, conn_type, conn_port, com_parity_bit, com_data_bits, com_stop_bit, enable_flg" +
             "   FROM config_controller_setting " +
