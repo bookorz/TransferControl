@@ -2218,6 +2218,10 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    if (!GetSafetyCheck(TaskJob, TaskReport))
+                                    {
+                                        return false;
+                                    }
                                     TaskReport.On_Task_Ack(TaskJob);
                                     //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaitBeforeGet, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     break;
@@ -2298,9 +2302,14 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+
                                     if (!Position.IsMapping && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "ABS", "S0300162");
+                                        return false;
+                                    }
+                                    if (!GetSafetyCheck(TaskJob, TaskReport))
+                                    {
                                         return false;
                                     }
                                     TaskReport.On_Task_Ack(TaskJob);
@@ -2379,6 +2388,10 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    if (!PutSafetyCheck(TaskJob, TaskReport))
+                                    {
+                                        return false;
+                                    }
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaitBeforePut, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     break;
@@ -2473,6 +2486,10 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    if (!PutSafetyCheck(TaskJob, TaskReport))
+                                    {
+                                        return false;
+                                    }
                                     if (NodeManagement.Get("LOADLOCK01").JobList.Count == 0)
                                     {
                                         MoveWip(Target.Name, TaskJob.Params["@Arm"], "LOADLOCK01", "1");
