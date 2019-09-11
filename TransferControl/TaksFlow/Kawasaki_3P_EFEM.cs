@@ -99,7 +99,7 @@ namespace TransferControl.TaksFlow
                                     {
                                         if (rb.Enable)
                                         {
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetPresence, "","","","1")));
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetPresence, "", "", "", "1")));
                                         }
                                     }
                                     break;
@@ -712,7 +712,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaferHold, "", "","", TaskJob.Params["@Arm"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaferHold, "", "", "", TaskJob.Params["@Arm"])));
                                     break;
                                 case 1:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
@@ -727,7 +727,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaferRelease, "", "","", TaskJob.Params["@Arm"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaferRelease, "", "", "", TaskJob.Params["@Arm"])));
                                     break;
                                 case 1:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
@@ -1099,7 +1099,7 @@ namespace TransferControl.TaksFlow
                                             TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
                                             return false;
                                         }
-                                        else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper())|| !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                        else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
                                         {
                                             TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
                                             return false;
@@ -1243,25 +1243,39 @@ namespace TransferControl.TaksFlow
                                     else
                                     {
                                         TaskReport.On_Task_Ack(TaskJob);
-                                        if (Target.CarrierType.ToUpper().Equals("ADAPT"))
-                                        {
-                                            if (NodeManagement.Get(Target.Associated_Node).Busy && !SystemConfig.Get().SaftyCheckByPass)
-                                            {
-                                                TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
-                                                return false;
-                                            }
-                                            else
-                                            {//Robot mapping
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorOpen, "")));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Load, "")));
-                                        }
                                     }
                                     break;
                                 case 2:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetOpAccess, "0")));
+                                    break;
+                                case 3:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetLoad, "0")));
+                                    break;
+                                case 4:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetUnLoad, "0")));
+                                    break;
+                                case 5:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetLED, "0")));
+                                    break;
+                                case 6:
+                                    if (Target.CarrierType.ToUpper().Equals("ADAPT"))
+                                    {
+                                        if (NodeManagement.Get(Target.Associated_Node).Busy && !SystemConfig.Get().SaftyCheckByPass)
+                                        {
+                                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                            return false;
+                                        }
+                                        else
+                                        {//Robot mapping
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorOpen, "")));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Load, "")));
+                                    }
+                                    break;
+                                case 7:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorDown, "")));
@@ -1271,19 +1285,19 @@ namespace TransferControl.TaksFlow
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetMappingDummy, "")));
                                     }
                                     break;
-                                case 3:
+                                case 8:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Mapping, "", Target.Name)));
                                     }
                                     break;
-                                case 4:
+                                case 9:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetMapping, "")));
                                     }
                                     break;
-                                case 5:
+                                case 10:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.ReadStatus, "")));
                                     break;
                                 default:
@@ -1484,6 +1498,9 @@ namespace TransferControl.TaksFlow
                                     break;
                                 case 3:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.ReadStatus, "")));
+                                    break;
+                                case 4:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetOpAccess, "2")));
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -2218,6 +2235,10 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(AlignerName, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetRIO, "8")));
+                                    break;
+                                case 1:
                                     if (!GetSafetyCheck(TaskJob, TaskReport))
                                     {
                                         return false;
@@ -2225,7 +2246,7 @@ namespace TransferControl.TaksFlow
                                     TaskReport.On_Task_Ack(TaskJob);
                                     //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaitBeforeGet, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     break;
-                                case 1:
+                                case 2:
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = (TaskFlowManagement.Command)Enum.Parse(typeof(TaskFlowManagement.Command), "TRANSFER_GET_" + AlignerName + "_1");
                                     newAct.Position = AlignerName;
@@ -2288,9 +2309,9 @@ namespace TransferControl.TaksFlow
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_ALIGNER_HOME;
                                     if (!NodeManagement.Get(AlignerName).RequestQueue.ContainsKey(newAct.TaskName))
                                     {
-                                       NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
+                                        NodeManagement.Get(AlignerName).RequestQueue.Add(newAct.TaskName, newAct);
                                     }
-                                    
+
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -2302,6 +2323,9 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                    break;
+                                case 1:
 
                                     if (!Position.IsMapping && !SystemConfig.Get().SaftyCheckByPass)
                                     {
@@ -2315,7 +2339,7 @@ namespace TransferControl.TaksFlow
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Get, "", TaskJob.Params["@Position"], TaskJob.Params["@Slot"], TaskJob.Params["@Arm"])));
                                     break;
-                                case 1:
+                                case 2:
 
                                     if (TaskJob.TaskName == TaskFlowManagement.Command.TRANSFER_GET_LOADPORT_2ARM)
                                     {
@@ -2349,7 +2373,7 @@ namespace TransferControl.TaksFlow
                                     if (NodeManagement.Get(AlignerName).Enable)
                                     {
                                         Target.ForcePutToUnload = false;
-                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.PutWait, "", AlignerName, "1", TaskJob.Params["@Arm"])));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.PutWait, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     }
                                     else
                                     {//直送Unloader
@@ -2388,6 +2412,10 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(AlignerName, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.GetRIO, "8")));
+                                    break;
+                                case 1:
                                     if (!PutSafetyCheck(TaskJob, TaskReport))
                                     {
                                         return false;
@@ -2395,7 +2423,7 @@ namespace TransferControl.TaksFlow
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.WaitBeforePut, "", AlignerName, "1", TaskJob.Params["@Arm"])));
                                     break;
-                                case 1:
+                                case 2:
                                     MoveWip(Target.Name, TaskJob.Params["@Arm"], AlignerName, "1");
                                     newAct = new Node.ActionRequest();
                                     newAct.TaskName = TaskFlowManagement.Command.TRANSFER_ALIGNER_WHLD;
@@ -2486,6 +2514,9 @@ namespace TransferControl.TaksFlow
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.GetStatus, "")));
+                                    break;
+                                case 1:
                                     if (!PutSafetyCheck(TaskJob, TaskReport))
                                     {
                                         return false;
@@ -2503,7 +2534,7 @@ namespace TransferControl.TaksFlow
 
                                     }
                                     break;
-                                case 1:
+                                case 2:
 
                                     if (Target.JobList.Count == 2)
                                     {
@@ -2514,7 +2545,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 2:
+                                case 3:
                                     if (!Position.IsMapping && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "ABS", "S0300162");
@@ -2538,7 +2569,7 @@ namespace TransferControl.TaksFlow
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Put, "", TaskJob.Params["@Position"], TaskJob.Params["@Slot"], TaskJob.Params["@Arm"].Equals("1") ? "2" : "1")));
                                     }
                                     break;
-                                case 3:
+                                case 4:
                                     var Available = from each in JobManagement.GetJobList()
                                                     where NodeManagement.Get(each.Position).Type.Equals("ALIGNER")
                                                     select each;
@@ -2562,7 +2593,7 @@ namespace TransferControl.TaksFlow
 
                                     }
                                     break;
-                                case 4:
+                                case 5:
                                     Available = from each in JobManagement.GetJobList()
                                                 where NodeManagement.Get(each.Position).Type.Equals("ALIGNER")
                                                 select each;
