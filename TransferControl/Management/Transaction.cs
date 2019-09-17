@@ -206,6 +206,8 @@ namespace TransferControl.Management
             public class FFUType
             {
                 public const string Start = "Start";
+                public const string End = "End";
+                public const string AlarmBypass = "AlarmBypass";
                 public const string SetSpeed = "SetSpeed";
                 public const string GetStatus = "GetStatus";
             }

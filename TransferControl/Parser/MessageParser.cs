@@ -34,6 +34,9 @@ namespace TransferControl.Parser
                 case "KAWASAKI":
                     P = new KawasakiParser();
                     break;
+                case "AIRTECH":
+                    P = new AIRTECHParser();
+                    break;
                 default:
                     throw new Exception(Supplier + " 不存在");
                     

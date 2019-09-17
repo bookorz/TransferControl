@@ -120,6 +120,7 @@
     <Compile Include="Management\Transaction.cs" />
     <Compile Include="Management\TransactionRecord.cs" />
     <Compile Include="Operation\XfeCrossZone.cs" />
+    <Compile Include="Parser\AIRTECHParser.cs" />
     <Compile Include="Parser\ASYSTParser.cs" />
     <Compile Include="Parser\COGNEXParser.cs" />
     <Compile Include="Parser\HSTParser.cs" />

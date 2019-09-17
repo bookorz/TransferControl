@@ -46,7 +46,47 @@ namespace TransferControl.CommandConvert
             }
             return commandStr;
         }
-       
+
+        public string End(string Address, ref Transaction txn)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "ACDT":
+
+                    break;
+                case "AIRTECH":
+                    txn.ModbusSlaveID = 1;
+                    txn.ModbusMethod = Transaction.Command.ModbusMethod.WriteSingleRegister;
+                    txn.ModbusRegisterAddress = 8;
+                    txn.ModbusValue = 64;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr;
+        }
+
+        public string AlarmBypass(string Address, ref Transaction txn)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "ACDT":
+
+                    break;
+                case "AIRTECH":
+                    txn.ModbusSlaveID = 1;
+                    txn.ModbusMethod = Transaction.Command.ModbusMethod.WriteSingleRegister;
+                    txn.ModbusRegisterAddress = 8;
+                    txn.ModbusValue = 8192;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr;
+        }
+
         public string SetSpeed(string Address, string Value,ref Transaction txn)
         {
             string commandStr = "";
@@ -77,7 +117,7 @@ namespace TransferControl.CommandConvert
             return commandStr;
         }
 
-        public string GetStatus(string Address)
+        public string GetStatus(string Address, ref Transaction txn)
         {
             string commandStr = "";
             switch (Supplier)
@@ -94,6 +134,12 @@ namespace TransferControl.CommandConvert
 
                     cmdAry[5] = 3;//end
                     commandStr = BitConverter.ToString(cmdAry);
+                    break;
+                case "AIRTECH":
+                    txn.ModbusSlaveID = 1;
+                    txn.ModbusMethod = Transaction.Command.ModbusMethod.ReadHoldingRegisters;
+                    txn.ModbusRegisterAddress = 0;
+                    txn.ModbusNumOfPoints = 15;
                     break;
                 default:
                     throw new NotSupportedException();

@@ -243,7 +243,6 @@ namespace TransferControl.Management
         public int RobotPutState { get; set; }
         public string ArmExtend { get; set; }
         public string MappingDataSnapshot { get; set; }
-    
         public class ActionRequest
         {
             public TaskFlowManagement.Command TaskName { get; set; }
@@ -261,7 +260,6 @@ namespace TransferControl.Management
             public string V8 { get; set; }
             public string V9 { get; set; }
             public long TimeStamp { get; set; }
-
             public ActionRequest()
             {
                 TimeStamp = DateTime.Now.Ticks;
@@ -295,6 +293,7 @@ namespace TransferControl.Management
             RobotPutState = 0;
             Speed = "";
             ConfigList = "";
+            
             ByPassCheck = false;
             Connected = false;
             OPACCESS = false;
@@ -671,11 +670,17 @@ namespace TransferControl.Management
                             case Transaction.Command.FFUType.Start:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.Start(AdrNo, ref txn);
                                 break;
+                            case Transaction.Command.FFUType.End:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.End(AdrNo, ref txn);
+                                break;
+                            case Transaction.Command.FFUType.AlarmBypass:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.AlarmBypass(AdrNo, ref txn);
+                                break;
                             case Transaction.Command.FFUType.SetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.SetSpeed(AdrNo, txn.Value, ref txn);
                                 break;
                             case Transaction.Command.FFUType.GetStatus:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.GetStatus(AdrNo);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FFU.GetStatus(AdrNo, ref txn);
                                 break;
                         }
                         break;

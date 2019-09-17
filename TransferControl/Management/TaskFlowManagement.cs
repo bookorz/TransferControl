@@ -142,6 +142,9 @@ namespace TransferControl.Management
         public enum Command
         {
             FFU_SET_SPEED,
+            FFU_START,
+            FFU_STOP,
+            FFU_ALARM_BYPASS,
             ROBOT_RESET,
             ROBOT_INIT,
             ROBOT_ORGSH,

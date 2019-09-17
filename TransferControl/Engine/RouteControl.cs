@@ -889,7 +889,20 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.FFUType.GetStatus:
-                                    Node.Speed = Msg.Value;
+                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    Dictionary<string, string> StatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in StatusResult)
+                                    {
+                                        switch (each.Key)
+                                        {
+                                            case "Target_RPM":
+                                                Node.Speed = each.Value;
+                                                break;
+                                            case "Alarm":
+                                                Node.HasAlarm = each.Value.Equals("0") ? false : true;
+                                                break;
+                                        }
+                                    }
                                     break;
                             }
                             break;

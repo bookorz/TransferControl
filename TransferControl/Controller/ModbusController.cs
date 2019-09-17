@@ -54,14 +54,30 @@ namespace TransferControl.Controller
                 switch (Txn.ModbusMethod)
                 {
                     case Transaction.Command.ModbusMethod.ReadHoldingRegisters:
-                        ushort[] regs = conn.ReadHoldingRegisters(Txn.ModbusSlaveID, Txn.ModbusStartAddress, Txn.ModbusNumOfPoints);
-                        msg.Type = CommandReturnMessage.ReturnType.Excuted;
-                        _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            ushort[] regs = conn.ReadHoldingRegisters(Txn.ModbusSlaveID, Txn.ModbusStartAddress, Txn.ModbusNumOfPoints);
+                            msg.Type = CommandReturnMessage.ReturnType.Excuted;
+                            foreach (ushort each in regs)
+                            {
+                                msg.Value += "," + each.ToString();
+                            }
+                            msg.Value = msg.Value.Substring(1);
+                            _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
+                        }).Start();
+                        
                         break;
                     case Transaction.Command.ModbusMethod.WriteSingleRegister:
-                        conn.WriteSingleRegister(Txn.ModbusSlaveID, Txn.ModbusRegisterAddress, Txn.ModbusValue);
-                        msg.Type = CommandReturnMessage.ReturnType.Excuted;
-                        _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            conn.WriteSingleRegister(Txn.ModbusSlaveID, Txn.ModbusRegisterAddress, Txn.ModbusValue);
+                            msg.Type = CommandReturnMessage.ReturnType.Excuted;
+                            _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
+                        }).Start();
+
+                       
                         break;
                 }
             }
