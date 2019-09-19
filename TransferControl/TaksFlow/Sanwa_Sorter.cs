@@ -339,14 +339,14 @@ namespace TransferControl.TaksFlow
                                     {
                                         if (al.Enable)
                                         {
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(al.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.Mode, "1")));
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(al.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.AlignerType.Mode, "0")));
                                         }
                                     }
                                     foreach (Node rb in NodeManagement.GetEnableRobotList())
                                     {
                                         if (rb.Enable)
                                         {
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Mode, "1")));
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(rb.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Mode, "0")));
                                         }
                                     }
                                     break;
@@ -1383,6 +1383,7 @@ namespace TransferControl.TaksFlow
                                             }
                                             else
                                             {//Robot mapping
+                                                NodeManagement.Get(Target.Associated_Node).Busy = true;
                                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorOpen, "")));
                                             }
                                         }
@@ -1488,11 +1489,11 @@ namespace TransferControl.TaksFlow
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
-                                    else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
-                                    {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
-                                        return false;
-                                    }
+                                    //else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                    //{
+                                    //    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                    //    return false;
+                                    //}
                                     else
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.ReadStatus, "")));
@@ -1569,11 +1570,11 @@ namespace TransferControl.TaksFlow
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
-                                    else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
-                                    {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
-                                        return false;
-                                    }
+                                    //else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
+                                    //{
+                                    //    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                    //    return false;
+                                    //}
                                     else
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.ReadStatus, "")));
@@ -2692,10 +2693,17 @@ namespace TransferControl.TaksFlow
                     {
                         foreach (TaskFlowManagement.ExcutedCmd eachCmd in TaskJob.CheckList)
                         {
-                            NodeManagement.Get(eachCmd.NodeName).SendCommand(eachCmd.Txn, out Message);
-                            if (eachCmd.Txn.Method == Transaction.Command.LoadPortType.GetMappingDummy)
+                            if (NodeManagement.Get(eachCmd.NodeName).Enable)
                             {
-                                break;
+                                NodeManagement.Get(eachCmd.NodeName).SendCommand(eachCmd.Txn, out Message);
+                                if (eachCmd.Txn.Method == Transaction.Command.LoadPortType.GetMappingDummy)
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                eachCmd.Finished = true;
                             }
                         }
                     }
