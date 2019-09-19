@@ -2336,6 +2336,16 @@ namespace TransferControl.TaksFlow
                                     {
                                         return false;
                                     }
+                                    if (NodeManagement.GetAlignerList().Count == 0)
+                                    {
+                                        //直送Unloader
+                                        newAct = new Node.ActionRequest();
+                                        newAct.TaskName = TaskFlowManagement.Command.TRANSFER_PUT_UNLOADPORT;
+                                        if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                        {
+                                            Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                        }
+                                    }
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Get, "", TaskJob.Params["@Position"], TaskJob.Params["@Slot"], TaskJob.Params["@Arm"])));
                                     break;

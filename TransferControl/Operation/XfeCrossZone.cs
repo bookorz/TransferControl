@@ -348,7 +348,7 @@ namespace TransferControl.Operation
                 {
                     while (!CheckQueue(Target) && Running)
                     {
-                        SpinWait.SpinUntil(() => CheckQueue(Target) || !Running, 99999999);
+                        SpinWait.SpinUntil(() => CheckQueue(Target) || !Running, 5000);
                     }
                     if (Running)
                     {
@@ -726,6 +726,16 @@ namespace TransferControl.Operation
                                         break;
                                     case TaskFlowManagement.Command.TRANSFER_PUTW_ALIGNER01:
                                     case TaskFlowManagement.Command.TRANSFER_PUTW_ALIGNER02:
+                                        if (NodeManagement.GetAlignerList().Count == 0)
+                                        {
+                                            Node.ActionRequest newAct = new Node.ActionRequest();
+                                            newAct.TaskName = TaskFlowManagement.Command.TRANSFER_PUT_UNLOADPORT;
+                                            if (!Target.RequestQueue.ContainsKey(newAct.TaskName))
+                                            {
+                                                Target.RequestQueue.Add(newAct.TaskName, newAct);
+                                            }
+                                            continue;
+                                        }
                                         if (Recipe.Get(SystemConfig.Get().CurrentRecipe).is_use_exchange)
                                         {
                                             Node alg = NodeManagement.Get(req.Position);
@@ -909,6 +919,15 @@ namespace TransferControl.Operation
 
 
                                                 Target.LockOn = "";
+                                                if (NodeManagement.GetAlignerList().Count == 0)
+                                                {
+                                                    req = new Node.ActionRequest();
+                                                    req.TaskName = TaskFlowManagement.Command.TRANSFER_GET_LOADPORT;
+                                                    if (!Target.RequestQueue.ContainsKey(req.TaskName))
+                                                    {
+                                                        Target.RequestQueue.Add(req.TaskName, req);
+                                                    }
+                                                }
                                                 continue;
                                             }
 
@@ -1010,7 +1029,7 @@ namespace TransferControl.Operation
                                         }).Start();
                                     }
                                     var NotFinished = from each in JobManagement.GetJobList()
-                                                      where NodeManagement.Get(each.Position).Type.Equals("ALIGNER") || NodeManagement.Get(each.Position).Type.Equals("ROBOT")|| NodeManagement.Get(each.Position).Type.Equals("LOADLOCK")
+                                                      where  ((NodeManagement.Get(each.Position).Type.Equals("LOADPORT")&& !each.Position.Equals(each.Destination)&&!each.Destination.Equals("")) ||NodeManagement.Get(each.Position).Type.Equals("ALIGNER") || NodeManagement.Get(each.Position).Type.Equals("ROBOT")|| NodeManagement.Get(each.Position).Type.Equals("LOADLOCK"))
                                                       select each;
                                     if (NotFinished.Count() == 0)
                                     {
