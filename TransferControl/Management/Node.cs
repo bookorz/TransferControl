@@ -768,14 +768,17 @@ namespace TransferControl.Management
                                 if (txn.Value.Equals("1"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.ON);
+                                    this.OPACCESS = true;
                                 }
                                 else if (txn.Value.Equals("0"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.OFF);
+                                    this.OPACCESS = false;
                                 }
                                 else if (txn.Value.Equals("2"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.Flashes);
+                                    this.OPACCESS = true;
                                 }
                                 break;
                             case Transaction.Command.LoadPortType.SetLoad:

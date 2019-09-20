@@ -425,13 +425,13 @@ namespace TransferControl.TaksFlow
                                     }
                                     break;
                                 case 18:
-                                    //foreach (Node port in NodeManagement.GetLoadPortList())
-                                    //{
-                                    //    if (port.Enable && port.CarrierType.ToUpper().Equals("ADAPT"))
-                                    //    {
-                                    //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(port.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Clamp, "")));
-                                    //    }
-                                    //}
+                                    foreach (Node port in NodeManagement.GetLoadPortList())
+                                    {
+                                        if (port.Enable && port.CarrierType.ToUpper().Equals("ADAPT"))
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(port.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Load, "")));
+                                        }
+                                    }
                                     foreach (Node al in NodeManagement.GetAlignerList())
                                     {
                                         if (al.Enable)
@@ -441,13 +441,13 @@ namespace TransferControl.TaksFlow
                                     }
                                     break;
                                 case 19:
-                                    //foreach (Node port in NodeManagement.GetLoadPortList())
-                                    //{
-                                    //    if (port.Enable && port.CarrierType.ToUpper().Equals("ADAPT"))
-                                    //    {
-                                    //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(port.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Dock, "")));
-                                    //    }
-                                    //}
+                                    foreach (Node port in NodeManagement.GetLoadPortList())
+                                    {
+                                        if (port.Enable && port.CarrierType.ToUpper().Equals("ADAPT"))
+                                        {
+                                            //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(port.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Dock, "")));
+                                        }
+                                    }
                                     break;
                                 case 20:
                                     foreach (Node port in NodeManagement.GetLoadPortList())
@@ -1245,13 +1245,13 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
-                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Clamp, "")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Clamp, "")));
                                     }
                                     break;
                                 case 2:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
-                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Dock, "")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Dock, "")));
                                     }
                                     break;
                                 case 3:
@@ -1366,6 +1366,9 @@ namespace TransferControl.TaksFlow
                                     }
                                     break;
                                 case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetOpAccess, "0")));
+                                    break;
+                                case 2:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
                                         TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
@@ -1384,7 +1387,7 @@ namespace TransferControl.TaksFlow
                                             else
                                             {//Robot mapping
                                                 NodeManagement.Get(Target.Associated_Node).Busy = true;
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Load, "")));
+                                                //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorOpen, "")));
                                             }
                                         }
                                         else
@@ -1393,31 +1396,33 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
                                     break;
-                                case 2:
+                                case 3:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
                                         //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorDown, "")));
+                                        
                                     }
                                     else
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetMapping, "")));
                                     }
                                     break;
-                                case 3:
+                                case 4:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Mapping, "", Target.Name)));
                                     }
                                     break;
-                                case 4:
+                                case 5:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetMapping, "")));
                                     }
                                     break;
-                                case 5:
+                                case 6:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.ReadStatus, "")));
                                     break;
+                                
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
                                     return false;
@@ -1453,7 +1458,7 @@ namespace TransferControl.TaksFlow
                                         TaskReport.On_Task_Ack(TaskJob);
                                         if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                         {
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Load, "")));
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorOpen, "")));
                                         }
                                         else
                                         {
@@ -1464,7 +1469,7 @@ namespace TransferControl.TaksFlow
                                 case 2:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
-                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorDown, "")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorDown, "")));
                                     }
                                     break;
                                 case 3:
@@ -1529,7 +1534,7 @@ namespace TransferControl.TaksFlow
                                 case 2:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Unload, "")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorUp, "")));
                                     }
                                     else
                                     {
@@ -1539,7 +1544,7 @@ namespace TransferControl.TaksFlow
                                 case 3:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
-                                       // TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorClose, "")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorClose, "")));
                                     }
                                     break;
                                 case 4:
@@ -1598,7 +1603,7 @@ namespace TransferControl.TaksFlow
                                             else
                                             {
                                                 TaskReport.On_Task_Ack(TaskJob);
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Unload, "")));
+                                                //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorUp, "")));
                                             }
                                         }
                                         else
@@ -1612,6 +1617,16 @@ namespace TransferControl.TaksFlow
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
                                         //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorClose, "")));
+                                        Target.IsMapping = false;
+                                        //刪除所有帳
+                                        foreach (Job eachJob in Target.JobList.Values)
+                                        {
+                                            JobManagement.Remove(eachJob.Job_Id);
+                                        }
+                                        Target.JobList.Clear();
+                                        Target.ReserveList.Clear();
+                                        JobManagement.ClearAssignJobByPort(Target.Name);
+                                        Target.FoupID = "";
                                     }
                                     break;
                                 case 3:
@@ -2199,10 +2214,11 @@ namespace TransferControl.TaksFlow
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetUnLoad, "0")));
                                     break;
                                 case 1:
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetLoad, "1")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetLoad, "0")));
                                     break;
                                 case 2:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetOpAccess, "2")));
+                                  
                                     break;
                                 case 3:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetLED, "0")));
@@ -2224,6 +2240,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 case 2:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.SetUnLoad, "0")));
+                                   
                                     break;
                                 case 3:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetLED, "0")));

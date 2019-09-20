@@ -1355,9 +1355,6 @@ namespace TransferControl.Engine
                                 break;
                             case "SMTON":
                                 //IO_State_Change(Node.Name, "Foup_Presence", false);
-                                break;
-                            case "PODOF":
-
                                 CarrierManagement.Remove(Node.Carrier);
                                 Node.Foup_Presence = false;
                                 Node.Foup_Placement = false;
@@ -1373,6 +1370,10 @@ namespace TransferControl.Engine
                                 Node.ReserveList.Clear();
                                 JobManagement.ClearAssignJobByPort(Node.Name);
                                 Node.FoupID = "";
+                                break;
+                            case "PODOF":
+
+                               
                                 break;
                             case "PODON":
                                 CarrierManagement.Add().SetLocation(Node.Name);
