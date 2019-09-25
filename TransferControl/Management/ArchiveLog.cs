@@ -46,21 +46,29 @@ namespace TransferControl.Management
             {
                 try
                 {
-                    DateTime formatDate = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    //指定的備份時間(例如:當天下午12點1分1秒 時開始執行備份操作)
-                    DateTime startTime = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 12:mm:ss"));
-                    Console.WriteLine(formatDate + " " + startTime);
-                    //定時執行時間判斷 
-                    double ts = (formatDate - startTime).TotalSeconds;
-                    if (ts == 0)//符合JOB 該執行的時段: 12點
+                    //DateTime formatDate = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    ////指定的備份時間(例如:當天下午12點1分1秒 時開始執行備份操作)
+                    //DateTime startTime = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 12:mm:ss"));
+                    ////Console.WriteLine(formatDate + " " + startTime);
+                    ////定時執行時間判斷 
+                    //double ts = (formatDate. - startTime).TotalSeconds;
+                    //if (ts == 0)//符合JOB 該執行的時段: 12點
+                    //{
+                    //    RunZip();//執行壓縮檔案
+                    //}
+                    if (DateTime.Now.Hour == 12)
                     {
                         RunZip();//執行壓縮檔案
                     }
-                    Thread.Sleep(60000 * 60);//60秒 * 60 => 一小時確認一次時間
+
                 }
                 catch (Exception e)
                 {
                     logger.Error(e.StackTrace);
+                }
+                finally
+                {
+                    Thread.Sleep(60000 * 60);//60秒 * 60 => 一小時確認一次時間
                 }
             }
 
