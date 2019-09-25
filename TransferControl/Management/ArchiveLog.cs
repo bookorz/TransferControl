@@ -27,7 +27,7 @@ namespace TransferControl.Management
                 filePath = srcPath;
                 bakPath = destPath;
 
-                
+
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ArchivePlan));
             }
             catch (Exception e)
@@ -43,21 +43,29 @@ namespace TransferControl.Management
             {
                 try
                 {
-                    DateTime formatDate = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    //指定的備份時間(例如:當天下午12點1分1秒 時開始執行備份操作)
-                    DateTime startTime = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 12:mm:ss"));
-                    Console.WriteLine(formatDate + " " + startTime);
-                    //定時執行時間判斷 
-                    double ts = (formatDate - startTime).TotalSeconds;
-                    if (ts == 0)//符合JOB 該執行的時段: 12點
+                    //DateTime formatDate = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    ////指定的備份時間(例如:當天下午12點1分1秒 時開始執行備份操作)
+                    //DateTime startTime = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 12:mm:ss"));
+                    ////Console.WriteLine(formatDate + " " + startTime);
+                    ////定時執行時間判斷 
+                    //double ts = (formatDate. - startTime).TotalSeconds;
+                    //if (ts == 0)//符合JOB 該執行的時段: 12點
+                    //{
+                    //    RunZip();//執行壓縮檔案
+                    //}
+                    if (DateTime.Now.Hour == 12)
                     {
                         RunZip();//執行壓縮檔案
                     }
-                    Thread.Sleep(60000 * 60);//60秒 * 60 => 一小時確認一次時間
+
                 }
                 catch (Exception e)
                 {
                     logger.Error(e.StackTrace);
+                }
+                finally
+                {
+                    Thread.Sleep(60000 * 60);//60秒 * 60 => 一小時確認一次時間
                 }
             }
 
@@ -85,7 +93,7 @@ namespace TransferControl.Management
                     File.Move(file, toFileName);
                 }
                 //壓縮檔案並刪除
-                if(!(Directory.Exists(bakPath)))
+                if (!(Directory.Exists(bakPath)))
                 {
                     Directory.CreateDirectory(bakPath);
                 }
@@ -103,7 +111,7 @@ namespace TransferControl.Management
                     }
                     //如果您收到組建錯誤「名稱 'ZipFile' 不存在於目前的內容中」，
                     //請將 System.IO.Compression.FileSystem 組件的參考新增至您的專案。
-                    logger.Debug("dir[n]:"+ dir[n]+ " zipFileInfo.FullName:"+ zipFileInfo.FullName);
+                    logger.Debug("dir[n]:" + dir[n] + " zipFileInfo.FullName:" + zipFileInfo.FullName);
                     ZipFile.CreateFromDirectory(dir[n], zipFileInfo.FullName);
                     DeleteDirectory(srcDirInfo.FullName);//必須要變更權限才能刪除檔案，所以獨立寫個 function
                 }

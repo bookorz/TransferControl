@@ -166,6 +166,14 @@ namespace TransferControl.Controller
 
         public bool DoWork(Transaction Txn, bool WaitForData = false)
         {
+            if (Vendor.Equals("TDK"))
+            {
+                while (TransactionList.Count != 0)
+                {
+                    SpinWait.SpinUntil(() => TransactionList.Count == 0, 5000);
+                }
+            }
+
             if (Txn.CommandEncodeStr.Equals("GetMappingDummy"))
             {
                 string mappingData = "";
@@ -186,7 +194,7 @@ namespace TransferControl.Controller
                 //cm.CommandType = Transaction.Command.LoadPortType.GetMapping;
                 cm.Value = mappingData;
                 //Txn.Method= Transaction.Command.LoadPortType.GetMapping;
-                _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName),Txn, cm);
+                _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
                 return true;
             }
             conn.WaitForData(WaitForData);
@@ -239,7 +247,8 @@ namespace TransferControl.Controller
             }
             else
             {
-                key = Txn.AdrNo;
+
+                key = Txn.AdrNo + Txn.Type;
             }
 
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
@@ -431,14 +440,14 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    key = ReturnMsg.NodeAdr;
+                                    key = ReturnMsg.NodeAdr + ReturnMsg.Command;
                                 }
                                 if (Vendor.ToUpper().Equals("KAWASAKI"))
                                 {
                                     if (TransactionList.TryGetValue(key, out Txn))
                                     {
                                         Node = NodeManagement.Get(Txn.NodeName);
-                                        
+
                                         if (!Txn.CommandType.Equals("CMD"))
                                         {
                                             if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Excuted))
@@ -501,7 +510,17 @@ namespace TransferControl.Controller
                                     }
                                     if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Event)
                                     {
+
                                         //_ReportTarget.On_Event_Trigger(Node, ReturnMsg);
+                                    }
+                                    else if ((ReturnMsg.Type == CommandReturnMessage.ReturnType.Information && Node.Brand.ToUpper().Equals("TDK") && !TransactionList.ContainsKey(key)))
+                                    {
+                                        if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Information))
+                                        {
+                                            //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
+                                            conn.Send(ReturnMsg.FinCommand);
+                                            logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
+                                        }
                                     }
                                     else if (TransactionList.TryRemove(key, out Txn))
                                     {

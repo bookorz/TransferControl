@@ -498,7 +498,7 @@ namespace TransferControl.Management
         /// <returns></returns>
         public bool SendCommand(Transaction txn, out string Message, bool Force = false)
         {
-           
+            
             Message = "";
             //if (this.Type.ToUpper().Equals("LOADPORT"))
             //{
