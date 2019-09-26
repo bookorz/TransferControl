@@ -514,7 +514,7 @@ namespace TransferControl.Management
             //        }
             //    }
             //}
-            this.IsExcuting = true;
+            
             //var watch = System.Diagnostics.Stopwatch.StartNew();
             // System.Threading.Thread.Sleep(500);
             try
@@ -601,7 +601,7 @@ namespace TransferControl.Management
                     if (point == null)
                     {
                         logger.Error("point " + txn.Position + " not found!");
-                        this.IsExcuting = false;
+                        //this.IsExcuting = false;
                         throw new Exception("point " + txn.Position + " not found!");
                     }
                     if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
@@ -710,36 +710,47 @@ namespace TransferControl.Management
                         {
                             case Transaction.Command.LoadPortType.GetSlotOffset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetSlotOffset();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.GetWaferOffset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetWaferOffset();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.GetSlotPitch:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetSlotPitch();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.GetTweekDistance:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetTweekDistance();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.GetCassetteSize:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetCassetteSizeOption();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.SetSlotOffset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.SetWaferOffset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.SetSlotPitch:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.SetTweekDistance:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.LoadPortType.SetCassetteSize:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetCassetteSizeOption(txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.LoadPortType.Stop:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Stop(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.EQASP:
                                 if (txn.Value.Equals("1"))
@@ -750,6 +761,7 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.EQASP(EncoderLoadPort.ParamState.Disable);
                                 }
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.LoadPortType.Mode:
                                 if (txn.Value.Equals("1"))
@@ -760,9 +772,11 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Online);
                                 }
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.LoadPortType.SetOpAccessBlink:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.Flashes);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.SetOpAccess:
                                 if (txn.Value.Equals("1"))
@@ -780,6 +794,7 @@ namespace TransferControl.Management
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.Flashes);
                                     this.OPACCESS = true;
                                 }
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.SetLoad:
                                 if (txn.Value.Equals("1"))
@@ -794,6 +809,7 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Load, EncoderLoadPort.IndicatorStatus.Flashes);
                                 }
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.SetUnLoad:
                                 if (txn.Value.Equals("1"))
@@ -808,6 +824,7 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.Unload, EncoderLoadPort.IndicatorStatus.Flashes);
                                 }
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.GetLED:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.LEDIndicatorStatus();
@@ -819,99 +836,131 @@ namespace TransferControl.Management
                             case Transaction.Command.LoadPortType.GetMapping:
                                 
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.WaferSorting(EncoderLoadPort.MappingSortingType.Asc);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.ReadStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Status();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.InitialPos:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.InitialPosition(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.ForceInitialPos:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.ForcedInitialPosition(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.Load:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Load(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MappingLoad:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingLoad(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MappingUnload:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapAndUnload(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.Reset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Reset(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.Unload:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Unload(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.Mapping:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingInLoad(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.GetCount:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.WaferQuantity();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.UnClamp:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.FOUPClampRelease(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.Clamp:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.FOUPClampFix(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.Dock:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Dock(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.UnDock:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Undock(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.VacuumOFF:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.VacuumOFF(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.VacuumON:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.VacuumON(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.UnLatchDoor:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.LatchkeyRelease(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.LatchDoor:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.LatchkeyFix(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.DoorClose:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DoorClose(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.DoorOpen:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DoorOpen(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.DoorDown:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DoorDown(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.DoorUp:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DoorUp(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.ReadVersion:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Version();
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.MapperWaitPosition:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapperWaitPosition(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MapperStartPosition:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapperStartPosition(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MapperArmRetracted:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapperArmClose(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MapperArmStretch:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapperArmOpen(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MappingDown:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingDown(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.UntilUnDock:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.UntilUndock(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.DockingPositionNoVac:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DockingPositionNoVac(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MoveToSlot:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Slot(EncoderLoadPort.CommandType.Normal, txn.Value);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.SetAllEvent:
                                 if (txn.Value.Equals("1"))
@@ -922,18 +971,22 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.All, EncoderLoadPort.ParamState.Disable);
                                 }
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.LoadPortType.SetCompleteEvent:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetEvent(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.EventType.Complete, EncoderLoadPort.ParamState.Enable);
+                                txn.CommandType = "SET";
                                 break;
                             //case Transaction.Command.LoadPortType:
                             //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetCassetteSizeOption(EncoderLoadPort.CassrtteSize.Disable_SlotSensor_INX2200);
                             //    break;
                             case Transaction.Command.LoadPortType.TweekDn:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekDown);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.TweekUp:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekUp);
+                                txn.CommandType = "CMD";
                                 break;
                                 //case Transaction.Command.LoadPortType.SetSlotOffset:
                                 //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
@@ -1132,49 +1185,63 @@ namespace TransferControl.Management
                         {
                             case Transaction.Command.AlignerType.GetPosition:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ArmLocation(AdrNo, txn.Seq, txn.Value, "1");
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.AlignerType.SetAlign:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SetSize(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.GetStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Status(AdrNo, txn.Seq);
+                                txn.CommandType = "GET";
                                 break;
                             //case Transaction.Command.AlignerType.GetCombineStatus:
                             //    txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.CombinedStatus(AdrNo, txn.Seq);
                             //    break;
                             case Transaction.Command.AlignerType.GetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Speed(AdrNo, txn.Seq);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.AlignerType.GetRIO:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.StatusIO(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.AlignerType.Stop:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.DeviceStop(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.Pause:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.DevicePause(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.Continue:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.DeviceContinue(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.GetSV:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SolenoidValve(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.AlignerType.GetError:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.ErrorMessage(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.AlignerType.GetMode:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.GetMode(AdrNo, txn.Seq);
+                                txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.AlignerType.Home:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Home(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.Align:
 
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Align(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.AlignOption:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Align(AdrNo, txn.Seq, txn.Value, "1", "0", "0");
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.AlignOffset://使用上次Align結果，不用先回Home
                                 if (txn.Value.Equals(""))
@@ -1186,31 +1253,40 @@ namespace TransferControl.Management
                                     //}
                                 }
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Align(AdrNo, txn.Seq, txn.Value, "0", "0", "0");
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.Retract:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Retract(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.WaferRelease:
                                 //txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.WaferReleaseHold(AdrNo, txn.Seq);
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.WaferReleaseHold(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.WaferHold:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.WaferHold(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.Servo:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.ServoOn(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.Mode:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.Mode(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.OrginSearch:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.OrginSearch(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.AlignerType.Reset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.ErrorReset(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.Speed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.setSpeed(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "SET";
                                 break;
 
                         }
@@ -1440,6 +1516,20 @@ namespace TransferControl.Management
             //}
             return result;
         }
-
+        public void RefreshMap()
+        {
+            this.MappingResult = "";
+            for(int i = 1; i <= 25; i++)
+            {
+                if (this.JobList.ContainsKey(i.ToString()))
+                {
+                    this.MappingResult += this.JobList[i.ToString()].MappingValue;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
     }
 }

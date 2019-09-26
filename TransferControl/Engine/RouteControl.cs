@@ -163,6 +163,7 @@ namespace TransferControl.Engine
                                     // Node.InterLock = true;
                                     //標記尚未Mapping
                                     Node.IsMapping = false;
+                                    Node.MappingResult = "";
                                     //刪除所有帳
                                     foreach (Job eachJob in Node.JobList.Values)
                                     {
@@ -1361,6 +1362,7 @@ namespace TransferControl.Engine
                                 //IO_State_Change(Node.Name, "Foup_Presence", true);
                                 //IO_State_Change(Node.Name, "Foup_Placement", false);
                                 Node.IsMapping = false;
+                                Node.MappingResult = "";
                                 //刪除所有帳
                                 foreach (Job eachJob in Node.JobList.Values)
                                 {

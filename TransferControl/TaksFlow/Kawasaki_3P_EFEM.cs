@@ -2878,6 +2878,8 @@ namespace TransferControl.TaksFlow
                 {
                     logger.Error("Move wip error(Add): From=" + FromPosition + " Slot=" + FromSlot + " To=" + ToPosition + " Slot=" + ToSlot);
                 }
+                FNode.RefreshMap();
+                TNode.RefreshMap();
             }
             catch (Exception e)
             {

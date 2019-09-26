@@ -162,18 +162,63 @@ namespace TransferControl.Controller
 
         }
 
+        ConcurrentQueue<Transaction> queue = new ConcurrentQueue<Transaction>();
 
-
-        public bool DoWork(Transaction Txn, bool WaitForData = false)
+        public bool DoWork(Transaction orgTxn, bool WaitForData = false)
         {
+            Transaction Txn = null;
             if (Vendor.Equals("TDK"))
             {
-                while (TransactionList.Count != 0)
+                if (orgTxn.Method == Transaction.Command.LoadPortType.Reset)
                 {
-                    SpinWait.SpinUntil(() => TransactionList.Count == 0, 5000);
+                    while (queue.TryDequeue(out Txn))
+                    {
+
+                    }
+                    Txn = orgTxn;
+                }
+                else
+                {
+                    //while (isWaiting)
+                    //{
+                    //    SpinWait.SpinUntil(() => !isWaiting, 5000);
+                    //}
+                    lock (queue)
+                    {
+                        queue.Enqueue(orgTxn);
+                        if (NodeManagement.Get(orgTxn.NodeName).IsExcuting)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            NodeManagement.Get(orgTxn.NodeName).IsExcuting = true;
+                            queue.TryDequeue(out Txn);
+                        }
+                    }
+                    //while (true)
+                    //{
+                    //    while (NodeManagement.Get(orgTxn.NodeName).IsExcuting)
+                    //    {
+                    //        SpinWait.SpinUntil(() => !NodeManagement.Get(orgTxn.NodeName).IsExcuting, 5000);
+                    //    }
+                    //    lock (queue)
+                    //    {
+                    //        if (!NodeManagement.Get(orgTxn.NodeName).IsExcuting)
+                    //        {
+                    //            queue.TryDequeue(out Txn);
+                    //            NodeManagement.Get(orgTxn.NodeName).IsExcuting = true;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
                 }
             }
-
+            else
+            {
+                Txn = orgTxn;
+                NodeManagement.Get(Txn.NodeName).IsExcuting = true;
+            }
             if (Txn.CommandEncodeStr.Equals("GetMappingDummy"))
             {
                 string mappingData = "";
@@ -378,7 +423,7 @@ namespace TransferControl.Controller
                 //{
                 logger.Info(DeviceName + " Recieve:" + Msg);
                 //}
-
+                Node Target = null;
 
                 List<CommandReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (CommandReturnMessage ReturnMsg in ReturnMsgList)
@@ -474,7 +519,7 @@ namespace TransferControl.Controller
                                         Node = NodeManagement.Get(Txn.NodeName);
                                         if (Txn.CommandType.Equals("SET") && ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Excuted))
                                         {
-                                            continue;
+                                            //continue;
                                         }
                                     }
                                     else
@@ -495,6 +540,7 @@ namespace TransferControl.Controller
                                 //{
                                 lock (Node)
                                 {
+                                    Target = Node;
                                     if (Node.Brand.ToUpper().Equals("COGNEX"))
                                     {
                                         if (ReturnMsg.Type == CommandReturnMessage.ReturnType.UserName)
@@ -519,6 +565,7 @@ namespace TransferControl.Controller
                                         {
                                             //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                             conn.Send(ReturnMsg.FinCommand);
+                                            //isWaiting = false;
                                             logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                         }
                                     }
@@ -533,6 +580,7 @@ namespace TransferControl.Controller
                                                     logger.Debug("Txn timmer stoped.");
                                                     Txn.SetTimeOutMonitor(false);
                                                     Node.IsExcuting = false;
+
                                                 }
                                                 else
                                                 {
@@ -584,17 +632,19 @@ namespace TransferControl.Controller
                                                 if (Vendor.ToUpper().Equals("TDK") && Txn.CommandType.Equals("SET"))
                                                 {
                                                     ReturnMsg.Type = CommandReturnMessage.ReturnType.Excuted;
-                                                    Node.IsExcuting = false;
+
                                                 }
                                                 else
                                                 {
                                                     ReturnMsg.Type = CommandReturnMessage.ReturnType.Finished;
-                                                    Node.IsExcuting = false;
+                                                    //Node.IsExcuting = false;
                                                 }
                                                 SpinWait.SpinUntil(() => false, 50);
                                                 //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                                 conn.Send(ReturnMsg.FinCommand);
+
                                                 logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
+
                                                 break;
                                         }
                                     }
@@ -606,6 +656,7 @@ namespace TransferControl.Controller
                                             {
                                                 //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                                 conn.Send(ReturnMsg.FinCommand);
+
                                                 logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                             }
                                             else
@@ -670,6 +721,7 @@ namespace TransferControl.Controller
                                     //{
                                     //    Node.InterLock = false;
                                     //}
+                                    Node.IsExcuting = false;
                                     _ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                     if (!Node.Type.Equals("LOADPORT"))
                                     {
@@ -702,11 +754,24 @@ namespace TransferControl.Controller
                         logger.Error(DeviceName + "(On_Connection_Message " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
                     }
                 }
+                if (Vendor.Equals("TDK"))
+                {
+                    if (!Target.IsExcuting)
+                    {
+                        Transaction txn;
+                        this.queue.TryDequeue(out txn);
+                        if (txn != null)
+                        {
+                            this.DoWork(txn);
+                        }
+                    }
+            }
             }
             catch (Exception e)
             {
                 logger.Error(DeviceName + "(On_Connection_Message " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
             }
+            
         }
 
         private void ChangeNodeConnectionStatus(string status)
