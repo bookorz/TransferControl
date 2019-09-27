@@ -78,6 +78,9 @@ namespace TransferControl.Parser
                     case 0:
                         result.Add("R_Position", MsgAry[i]);
                         break;
+                    case 1:
+                        result.Add("L_Position", MsgAry[i]);
+                        break;
                     case 4:
                         result.Add("X_Position", MsgAry[i]);
                         break;

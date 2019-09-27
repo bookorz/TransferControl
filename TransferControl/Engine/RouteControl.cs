@@ -497,6 +497,9 @@ namespace TransferControl.Engine
                                             case "R_Position":
                                                 Node.R_Position = each.Value;
                                                 break;
+                                            case "L_Position":
+                                                Node.L_Position = each.Value;
+                                                break;
                                         }
                                     }
                                     break;

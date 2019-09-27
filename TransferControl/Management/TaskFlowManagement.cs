@@ -197,6 +197,7 @@ namespace TransferControl.Management
             LOADPORT_READ_STATUS,
             LOADPORT_READ_VERSION,
             ALL_INIT,
+            DISABLE_OPACCESS,
             SET_ALL_SPEED,
             STOP,
             TRANSFER_GET_LOADPORT,
