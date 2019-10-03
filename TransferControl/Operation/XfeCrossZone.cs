@@ -1006,6 +1006,10 @@ namespace TransferControl.Operation
                         {
                             SpinWait.SpinUntil(() => Task.Finished || !Running, 5000);
                         }
+                        if (Task.HasError)
+                        {
+                            Running = false;
+                        }
                         if (Running)
                         {
                             logger.Debug(NodeName + " Task完成");
@@ -1029,7 +1033,7 @@ namespace TransferControl.Operation
                                         }).Start();
                                     }
                                     var NotFinished = from each in JobManagement.GetJobList()
-                                                      where  ((NodeManagement.Get(each.Position).Type.Equals("LOADPORT")&& !each.Position.Equals(each.Destination)&&!each.Destination.Equals("")) ||NodeManagement.Get(each.Position).Type.Equals("ALIGNER") || NodeManagement.Get(each.Position).Type.Equals("ROBOT")|| NodeManagement.Get(each.Position).Type.Equals("LOADLOCK"))
+                                                      where ((NodeManagement.Get(each.Position).Type.Equals("LOADPORT") && !each.Position.Equals(each.Destination) && !each.Destination.Equals("")) || NodeManagement.Get(each.Position).Type.Equals("ALIGNER") || NodeManagement.Get(each.Position).Type.Equals("ROBOT") || NodeManagement.Get(each.Position).Type.Equals("LOADLOCK"))
                                                       select each;
                                     if (NotFinished.Count() == 0)
                                     {
@@ -1050,15 +1054,21 @@ namespace TransferControl.Operation
                                 case TaskFlowManagement.Command.TRANSFER_GET_LOADPORT:
                                 case TaskFlowManagement.Command.TRANSFER_GET_LOADPORT_2ARM:
                                     var Available = from each in NodeManagement.Get(PositionStr).JobList.Values
-                                                    where each.NeedProcess && !each.AbortProcess
+                                                    where each.NeedProcess && !each.AbortProcess || (each.Destination.ToUpper().Equals(PositionStr.ToUpper()) && !each.Position.ToUpper().Equals(each.Destination.ToUpper()))
                                                     select each;
                                     if (Available.Count() == 0)
                                     {
-                                        new Thread(() =>
+                                        Available = from a in NodeManagement.Get(TargetStr).JobList.Values
+                                                    where a.Destination.ToUpper().Equals(PositionStr.ToUpper())
+                                                    select a;
+                                        if (Available.Count() == 0)
                                         {
-                                            Thread.CurrentThread.IsBackground = true;
-                                            _Report.On_LoadPort_Complete(NodeManagement.Get(PositionStr));
-                                        }).Start();
+                                            new Thread(() =>
+                                            {
+                                                Thread.CurrentThread.IsBackground = true;
+                                                _Report.On_LoadPort_Complete(NodeManagement.Get(PositionStr));
+                                            }).Start();
+                                        }
                                     }
                                     break;
                             }

@@ -143,19 +143,22 @@ namespace TransferControl.TaksFlow
                                                 case "ROBOT":
                                                     if (nd.R_Hold_Status.Equals("HLD") && nd.RArmActive)
                                                     {
-                                                        TaskReport.On_Task_Abort(TaskJob, nd.Name, "CAN", "S0300007");//Arm1 上已經有 wafer
+                                                        AbortTask( TaskReport,TaskJob, nd.Name, "CAN", "S0300007");//Arm1 上已經有 wafer
+                                                       
                                                         return false;
                                                     }
                                                     else if (nd.L_Hold_Status.Equals("HLD") && nd.LArmActive)
                                                     {
-                                                        TaskReport.On_Task_Abort(TaskJob, nd.Name, "CAN", "S0300009");//Arm2 上已經有 wafer
+                                                        AbortTask( TaskReport,TaskJob, nd.Name, "CAN", "S0300009");//Arm2 上已經有 wafer
+                                                      
                                                         return false;
                                                     }
                                                     break;
                                                 case "ALIGNER":
                                                     if (nd.R_Presence)
                                                     {
-                                                        TaskReport.On_Task_Abort(TaskJob, nd.Name, "CAN", "S0300004");//Aligner 上已經有 wafer
+                                                        AbortTask( TaskReport,TaskJob, nd.Name, "CAN", "S0300004");//Aligner 上已經有 wafer
+                                                    
                                                         return false;
                                                     }
                                                     break;
@@ -412,12 +415,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                         return false;
                                     }
                                     else
@@ -438,17 +441,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                         return false;
                                     }
                                     else
@@ -483,17 +486,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                         return false;
                                     }
                                     else
@@ -505,7 +508,7 @@ namespace TransferControl.TaksFlow
                                                 case "LOADPORT":
                                                     if (!Position.IsMapping)
                                                     {
-                                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");
+                                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300156");
                                                         return false;
                                                     }
                                                     break;
@@ -514,7 +517,7 @@ namespace TransferControl.TaksFlow
                                                     break;
                                                 default:
                                                     logger.Error("Position.Type is not define.");
-                                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300018");
                                                     return false;
                                             }
                                         }
@@ -533,17 +536,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                         return false;
                                     }
                                     else
@@ -555,7 +558,7 @@ namespace TransferControl.TaksFlow
                                                 case "LOADPORT":
                                                     if (!Position.IsMapping)
                                                     {
-                                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");
+                                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300156");
                                                         return false;
                                                     }
                                                     break;
@@ -564,7 +567,7 @@ namespace TransferControl.TaksFlow
                                                     break;
                                                 default:
                                                     logger.Error("Position.Type is not define.");
-                                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300018");
                                                     return false;
                                             }
                                         }
@@ -583,17 +586,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                         return false;
                                     }
                                     else
@@ -627,17 +630,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                         return false;
                                     }
                                     else
@@ -671,17 +674,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300015");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300015");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                         return false;
                                     }
                                     else
@@ -758,7 +761,7 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     //if (Target.Busy)
                                     //{
-                                    //    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300002");
+                                    //    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300002");
                                     //    return false;
                                     //}
                                     //else
@@ -783,7 +786,7 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300002");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300002");
                                         return false;
                                     }
                                     else
@@ -902,17 +905,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300017");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300017");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300043");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300043");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300002");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300002");
                                         return false;
                                     }
                                     else
@@ -933,17 +936,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300017");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300017");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300043");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300043");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300002");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300002");
                                         return false;
                                     }
                                     else
@@ -964,7 +967,7 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300002");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300002");
                                         return false;
                                     }
                                     else
@@ -1011,12 +1014,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300017");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300017");
                                         return false;
                                     }
                                     else if (Target.Busy)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300002");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300002");
                                         return false;
                                     }
                                     else
@@ -1089,19 +1092,19 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else
                                     {
                                         if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                         {
-                                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                            AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                             return false;
                                         }
                                         else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
                                         {
-                                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                            AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                             return false;
                                         }
                                         else
@@ -1138,12 +1141,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1154,12 +1157,12 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else if (Target.Foup_Lock && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300142");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300142");
                                         return false;
                                     }
                                     else
@@ -1182,12 +1185,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1198,7 +1201,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Lock && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300167");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300167");
                                         return false;
                                     }
                                     else
@@ -1221,12 +1224,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1237,7 +1240,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1262,7 +1265,7 @@ namespace TransferControl.TaksFlow
                                     {
                                         if (NodeManagement.Get(Target.Associated_Node).Busy && !SystemConfig.Get().SaftyCheckByPass)
                                         {
-                                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                            AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                             return false;
                                         }
                                         else
@@ -1311,12 +1314,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1327,7 +1330,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1363,17 +1366,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -1384,7 +1387,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1394,7 +1397,7 @@ namespace TransferControl.TaksFlow
                                         {
                                             if (!Target.Door_Position.Equals("Open position") && !Target.Z_Axis_Position.Equals("Down position") && !SystemConfig.Get().SaftyCheckByPass)
                                             {
-                                                TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300174");
+                                                AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300174");
                                                 return false;
                                             }
                                             else
@@ -1444,17 +1447,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -1465,7 +1468,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1474,7 +1477,7 @@ namespace TransferControl.TaksFlow
                                         {
                                             if (!Target.Door_Position.Equals("Open position") && !Target.Z_Axis_Position.Equals("Down position") && !SystemConfig.Get().SaftyCheckByPass)
                                             {
-                                                TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300174");
+                                                AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300174");
                                                 return false;
                                             }
                                             else
@@ -1513,12 +1516,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1529,7 +1532,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Y_Axis_Position.Equals("Undock position") && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300173");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300173");
                                         return false;
                                     }
                                     else
@@ -1552,12 +1555,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1568,7 +1571,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Y_Axis_Position.Equals("Dock position") && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300145");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300145");
                                         return false;
                                     }
                                     else
@@ -1591,12 +1594,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1607,7 +1610,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1630,12 +1633,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1646,7 +1649,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1669,12 +1672,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1685,7 +1688,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1708,17 +1711,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -1729,7 +1732,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1752,17 +1755,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -1773,7 +1776,7 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else
@@ -1796,12 +1799,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1812,12 +1815,12 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else if (!Target.IsMapping && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300156");
                                         return false;
                                     }
                                     else
@@ -1844,12 +1847,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1860,12 +1863,12 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else if (!Target.Latch_Open && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300144");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300144");
                                         return false;
                                     }
                                     else
@@ -1888,12 +1891,12 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else
@@ -1904,12 +1907,12 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else if (Target.Latch_Open && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300143");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300143");
                                         return false;
                                     }
                                     else
@@ -1932,17 +1935,17 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     if (!Target.InitialComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300168");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300168");
                                         return false;
                                     }
                                     else if (!Target.OrgSearchComplete && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300169");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300169");
                                         return false;
                                     }
                                     else if (NodeManagement.Get(Target.Associated_Node).CurrentPosition.ToUpper().Equals(Target.Name.ToUpper()) || !NodeManagement.Get(Target.Associated_Node).OrgSearchComplete)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300041");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300041");
                                         return false;
                                     }
                                     else
@@ -1953,12 +1956,12 @@ namespace TransferControl.TaksFlow
                                 case 1:
                                     if (!Target.Foup_Presence && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300166");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300166");
                                         return false;
                                     }
                                     else if (!Target.Door_Position.Equals("Open position") && !Target.Z_Axis_Position.Equals("Down position") && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300174");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300174");
                                         return false;
                                     }
                                     else
@@ -1967,7 +1970,7 @@ namespace TransferControl.TaksFlow
                                         {
                                             if (NodeManagement.Get(Target.Associated_Node).Busy && !SystemConfig.Get().SaftyCheckByPass)
                                             {
-                                                TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300010");
+                                                AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300010");
                                                 return false;
                                             }
                                             else
@@ -2329,7 +2332,7 @@ namespace TransferControl.TaksFlow
 
                                     if (!Position.IsMapping && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "ABS", "S0300162");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "ABS", "S0300162");
                                         return false;
                                     }
                                     if (!GetSafetyCheck(TaskJob, TaskReport))
@@ -2558,7 +2561,7 @@ namespace TransferControl.TaksFlow
                                 case 3:
                                     if (!Position.IsMapping && !SystemConfig.Get().SaftyCheckByPass)
                                     {
-                                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "ABS", "S0300162");
+                                        AbortTask( TaskReport,TaskJob, Target.Name, "ABS", "S0300162");
                                         return false;
                                     }
                                     TaskReport.On_Task_Ack(TaskJob);
@@ -2648,7 +2651,7 @@ namespace TransferControl.TaksFlow
             catch (Exception e)
             {
                 logger.Error("Excute fail Task Name:" + TaskJob.TaskName.ToString() + " exception: " + e.StackTrace);
-                TaskReport.On_Task_Abort(TaskJob, "SYSTEM", "ABS", e.StackTrace);
+                AbortTask( TaskReport,TaskJob, "SYSTEM", "ABS", e.StackTrace);
                 return false;
             }
             return true;
@@ -2665,7 +2668,7 @@ namespace TransferControl.TaksFlow
                 if (RouteControl.Instance.DIO.GetIO("DIN", "SAFETYRELAY").ToUpper().Equals("TRUE"))
                 {
                     TaskFlowManagement.TaskRemove(TaskJob.Id);
-                    TaskReport.On_Task_Abort(TaskJob, "SYSTEM", "CAN", "S0300170");
+                    AbortTask( TaskReport,TaskJob, "SYSTEM", "CAN", "S0300170");
                     result = false;
                 }
             }
@@ -2681,12 +2684,13 @@ namespace TransferControl.TaksFlow
                 string Slot = TaskJob.Params["@Slot"];
                 if ((Arm.Equals("1") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("HLD"))
                 {
-                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300007");//Arm1 上已經有 wafer
+                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300007");//Arm1 上已經有 wafer
                     return false;
                 }
                 if ((Arm.Equals("2") || Arm.Equals("3")) && Target.L_Hold_Status.Equals("HLD"))
                 {
-                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300009");//Arm2 上已經有 wafer
+                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300009");//Arm2 上已經有 wafer
+                    TaskJob.HasError = true;
                     return false;
                 }
                 switch (Position.Type.ToUpper())
@@ -2694,7 +2698,8 @@ namespace TransferControl.TaksFlow
                     case "LOADPORT":
                         if (!Position.IsMapping)
                         {
-                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");
+                            AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300156");
+                            TaskJob.HasError = true;
                             return false;
                         }
                         switch (Arm)
@@ -2703,19 +2708,22 @@ namespace TransferControl.TaksFlow
                             case "2"://L Arm
                                 if (!Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
                                 {
-                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    TaskJob.HasError = true;
                                     return false;
                                 }
                                 break;
                             case "3"://Double Arm
                                 if (!Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
                                 {
-                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    TaskJob.HasError = true;
                                     return false;
                                 }
                                 if (!Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].MapFlag || Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].ErrPosition)
                                 {
-                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300162");//取片來源地點無Wafer資料
+                                    TaskJob.HasError = true;
                                     return false;
                                 }
                                 break;
@@ -2724,7 +2732,8 @@ namespace TransferControl.TaksFlow
                     case "ALIGNER":
                         if (!Position.R_Presence)
                         {
-                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300003");//Aligner上沒有 wafer
+                            AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300003");//Aligner上沒有 wafer
+                            TaskJob.HasError = true;
                             return false;
                         }
                         break;
@@ -2733,7 +2742,8 @@ namespace TransferControl.TaksFlow
                         break;
                     default:
                         logger.Error("Position.Type is not define.");
-                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300018");
+                        TaskJob.HasError = true;
                         return false;
                 }
             }
@@ -2749,12 +2759,14 @@ namespace TransferControl.TaksFlow
                 string Slot = TaskJob.Params["@Slot"];
                 if ((Arm.Equals("1") || Arm.Equals("3")) && Target.R_Hold_Status.Equals("REL"))
                 {
-                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300006");//Arm1 上無 wafer
+                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300006");//Arm1 上無 wafer
+                    TaskJob.HasError = true;
                     return false;
                 }
                 if ((Arm.Equals("2") || Arm.Equals("3")) && Target.L_Hold_Status.Equals("REL"))
                 {
-                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300008");//Arm2 上無 wafer
+                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300008");//Arm2 上無 wafer
+                    TaskJob.HasError = true;
                     return false;
                 }
                 switch (Position.Type.ToUpper())
@@ -2762,7 +2774,8 @@ namespace TransferControl.TaksFlow
                     case "LOADPORT":
                         if (!Position.IsMapping)
                         {
-                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300156");//Load Port 尚未執行過 mapping
+                            AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300156");//Load Port 尚未執行過 mapping
+                            TaskJob.HasError = true;
                             return false;
                         }
                         switch (Arm)
@@ -2771,19 +2784,22 @@ namespace TransferControl.TaksFlow
                             case "2"://L Arm
                                 if (Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
                                 {
-                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    TaskJob.HasError = true;
                                     return false;
                                 }
                                 break;
                             case "3"://Double Arm
                                 if (Position.JobList[Slot].MapFlag || Position.JobList[Slot].ErrPosition)
                                 {
-                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    TaskJob.HasError = true;
                                     return false;
                                 }
                                 if (Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].MapFlag || Position.JobList[(Convert.ToInt16(Slot) - 1).ToString()].ErrPosition)
                                 {
-                                    TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300171");//放片目的地已有Wafer
+                                    TaskJob.HasError = true;
                                     return false;
                                 }
                                 break;
@@ -2792,7 +2808,8 @@ namespace TransferControl.TaksFlow
                     case "ALIGNER":
                         if (Position.R_Presence)
                         {
-                            TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300004");//Aligner 上已經有 wafer
+                            AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300004");//Aligner 上已經有 wafer
+                            TaskJob.HasError = true;
                             return false;
                         }
                         break;
@@ -2801,7 +2818,8 @@ namespace TransferControl.TaksFlow
                         break;
                     default:
                         logger.Error("Position.Type is not define.");
-                        TaskReport.On_Task_Abort(TaskJob, Target.Name, "CAN", "S0300018");
+                        AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300018");
+                        TaskJob.HasError = true;
                         return false;
                 }
             }
@@ -2885,6 +2903,11 @@ namespace TransferControl.TaksFlow
             {
                 logger.Error("Move wip fail:" + e.Message + " exception: " + e.StackTrace);
             }
+        }
+        private void AbortTask( ITaskFlowReport TaskReport,TaskFlowManagement.CurrentProcessTask TaskJob, string Location, string ReportType, string Message)
+        {
+            TaskJob.HasError = true;
+            TaskReport.On_Task_Abort(TaskJob, Location, ReportType, Message);
         }
     }
 }

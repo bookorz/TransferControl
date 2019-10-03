@@ -1192,7 +1192,7 @@ namespace TransferControl.Engine
                             {
                                 case Transaction.Command.LoadPortType.MappingLoad:
                                 case Transaction.Command.LoadPortType.Load:
-                                    Node.IsLoad = true;
+                                    
                                     break;
                                 case Transaction.Command.LoadPortType.Unload:
                                 case Transaction.Command.LoadPortType.MappingUnload:
