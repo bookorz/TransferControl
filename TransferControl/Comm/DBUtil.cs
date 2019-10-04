@@ -210,6 +210,7 @@ namespace TransferControl.Comm
             try
             {
                 //sql = "SELECT * FROM list_item";
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
                 MySqlConnection conn = open_Conn();
                 MySqlCommand command = new MySqlCommand(sql, conn);
 

@@ -815,11 +815,11 @@ namespace TransferControl.Controller
         public void On_Connection_Error(string Msg)
         {
             this._IsConnected = false;
-            foreach (Transaction txn in TransactionList.Values.ToList())
-            {
-                txn.SetTimeOutMonitor(false);
-            }
-            TransactionList.Clear();
+            //foreach (Transaction txn in TransactionList.Values.ToList())
+            //{
+            //    txn.SetTimeOutMonitor(false);
+            //}
+            //TransactionList.Clear();
             ChangeNodeConnectionStatus("Connection_Error");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connection_Error");
         }
