@@ -16,10 +16,11 @@ namespace TransferControl.Management
     /// </summary>
     public class AlarmMapping
     {
-        private DataTable dtCode;
+        private static DataTable dtCode = null;
+        private static object locker = new object();
         private static readonly ILog logger = LogManager.GetLogger(typeof(AlarmMapping));
 
-        public AlarmMapping()
+        public static void Init()
         {
            
             string strSql = string.Empty;
@@ -61,8 +62,15 @@ namespace TransferControl.Management
         /// <param name="node_id"> 設備系統代碼 </param>
         /// <param name="error_message"> 錯誤訊息 </param>
         /// <returns></returns>
-        public AlarmMessage Get(string node_id, string error_message)
+        public static AlarmMessage Get(string node_id, string error_message)
         {
+            lock (locker)
+            {
+                if (dtCode == null)
+                {
+                    Init();
+                }
+            }
             AlarmMessage alarm;
             DataTable dtTemp;
 
