@@ -30,6 +30,7 @@ namespace TransferControl.Config
         public string NoticeProcFin { get; set; }
         public bool MappingDataCheck { get; set; }
         public bool DummyMappingData { get; set; }
+        public bool PreMapping { get; set; }
         public string TaskFlow { get; set; }
         public string FakeDataP1 { get; set; }
         public string FakeDataP2 { get; set; }

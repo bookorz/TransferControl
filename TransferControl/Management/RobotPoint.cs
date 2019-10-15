@@ -11,6 +11,7 @@ namespace TransferControl.Management
         public string NodeName { get; set; }
         public string Position { get; set; }
         public string MappingPoint { get; set; }
+        public string PreMappingPoint { get; set; }
         public string PositionType { get; set; }
         public string Point { get; set; }
         public int Offset { get; set; }

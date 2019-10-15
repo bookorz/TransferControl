@@ -604,9 +604,14 @@ namespace TransferControl.Management
                         //this.IsExcuting = false;
                         throw new Exception("point " + txn.Position + " not found!");
                     }
+                    
                     if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
                     {
                         txn.Point = point.MappingPoint;
+                    }
+                    else if (txn.Method.Equals(Transaction.Command.RobotType.PreMapping))
+                    {
+                        txn.Point = point.PreMappingPoint;
                     }
                     else
                     {
@@ -1026,6 +1031,7 @@ namespace TransferControl.Management
                                 txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.Mapping:
+                            case Transaction.Command.RobotType.PreMapping:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Mapping(AdrNo, txn.Seq, txn.Point, "1", "0");
                                 txn.CommandType = "CMD";
                                 break;
