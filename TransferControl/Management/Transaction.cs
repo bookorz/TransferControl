@@ -158,6 +158,7 @@ namespace TransferControl.Management
                 public const string GetMode = "GetMode";
                 public const string GetSV = "GetSV";
                 public const string Mapping = "Mapping";
+                public const string PreMapping = "PreMapping";
                 public const string GetMapping = "GetMapping";
                 public const string SetSV = "SetSV";
             }

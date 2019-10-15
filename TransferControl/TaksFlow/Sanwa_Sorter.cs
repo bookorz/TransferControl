@@ -1517,10 +1517,12 @@ namespace TransferControl.TaksFlow
                                                 return false;
                                             }
                                             else
-                                            {//Robot mapping
+                                            {//Robot pre-mapping
                                                 NodeManagement.Get(Target.Associated_Node).Busy = true;
-                                                //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorOpen, "")));
-
+                                                if (SystemConfig.Get().PreMapping)
+                                                {
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.PreMapping, "", Target.Name)));
+                                                }
                                             }
                                         }
                                         else
@@ -1533,7 +1535,31 @@ namespace TransferControl.TaksFlow
                                 case 2:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
-
+                                        if (SystemConfig.Get().PreMapping)
+                                        {
+                                            bool findWafer = false;
+                                            string Mapping = NodeManagement.Get(Target.Associated_Node).MappingResult;
+                                            for (int i = 0; i < Mapping.Length; i++)
+                                            {
+                                                switch (Mapping[i])
+                                                {
+                                                    case '0':
+                                                        break;
+                                                    default:
+                                                        findWafer = true;
+                                                        break;
+                                                }
+                                                if (findWafer)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            if (findWafer)
+                                            {
+                                                AbortTask(TaskReport, TaskJob, Target.Name, "ABS", "S0300020");
+                                                return false;
+                                            }
+                                        }
                                     }
                                     else
                                     {
@@ -1554,7 +1580,7 @@ namespace TransferControl.TaksFlow
                                 case 4:
                                     if (Target.CarrierType.ToUpper().Equals("ADAPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.Mapping, "", Target.Name)));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.RobotType.Mapping, "", Target.Name)));
                                     }
                                     break;
                                 case 5:
