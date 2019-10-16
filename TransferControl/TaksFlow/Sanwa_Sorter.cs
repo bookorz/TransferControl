@@ -1537,8 +1537,23 @@ namespace TransferControl.TaksFlow
                                     {
                                         if (SystemConfig.Get().PreMapping)
                                         {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Associated_Node, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.GetMapping, "")));
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.MappingLoad, "")));
+                                    }
+                                    break;
+                                case 3:
+                                    if (Target.CarrierType.ToUpper().Equals("ADAPT"))
+                                    {
+                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorDown, "")));
+                                        if (SystemConfig.Get().PreMapping)
+                                        {
                                             bool findWafer = false;
-                                            string Mapping = NodeManagement.Get(Target.Associated_Node).MappingResult;
+                                            string Mapping = Target.MappingResult;
                                             for (int i = 0; i < Mapping.Length; i++)
                                             {
                                                 switch (Mapping[i])
@@ -1560,17 +1575,6 @@ namespace TransferControl.TaksFlow
                                                 return false;
                                             }
                                         }
-                                    }
-                                    else
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.MappingLoad, "")));
-                                    }
-                                    break;
-                                case 3:
-                                    if (Target.CarrierType.ToUpper().Equals("ADAPT"))
-                                    {
-                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.LoadPortType.DoorDown, "")));
-
                                     }
                                     else
                                     {
