@@ -272,6 +272,16 @@ namespace TransferControl.Engine
                                                     Node.Foup_Presence = false;
                                                 }
                                                 break;
+                                            case "Wafer Protrusion Sensor":
+                                                if (each.Value.Equals("Unblocked"))
+                                                {
+                                                    Node.WaferProtrusionSensor = false;
+                                                }
+                                                else if (each.Value.Equals("Blocked"))
+                                                {
+                                                    Node.WaferProtrusionSensor = true;
+                                                }
+                                                break;
                                         }
                                     }
 

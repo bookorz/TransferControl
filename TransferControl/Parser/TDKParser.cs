@@ -193,10 +193,10 @@ namespace TransferControl.Parser
                         switch (Message[i])
                         {
                             case '0':
-                                Sts = "Blocked.";
+                                Sts = "Blocked";
                                 break;
                             case '1':
-                                Sts = "Unblocked.";
+                                Sts = "Unblocked";
                                 break;
                         }
                         result.Add("Wafer Protrusion Sensor", Sts);

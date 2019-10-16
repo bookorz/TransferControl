@@ -1516,6 +1516,11 @@ namespace TransferControl.TaksFlow
                                                 AbortTask( TaskReport,TaskJob, Target.Name, "CAN", "S0300174");
                                                 return false;
                                             }
+                                            else if (Target.WaferProtrusionSensor && !SystemConfig.Get().SaftyCheckByPass)
+                                            {
+                                                AbortTask(TaskReport, TaskJob, Target.Name, "ABS", "S0300020");
+                                                return false;
+                                            }
                                             else
                                             {//Robot pre-mapping
                                                 NodeManagement.Get(Target.Associated_Node).Busy = true;

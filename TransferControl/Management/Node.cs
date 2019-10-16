@@ -243,6 +243,7 @@ namespace TransferControl.Management
         public int RobotPutState { get; set; }
         public string ArmExtend { get; set; }
         public string MappingDataSnapshot { get; set; }
+        public bool WaferProtrusionSensor { get; set; }
         public class ActionRequest
         {
             public TaskFlowManagement.Command TaskName { get; set; }
