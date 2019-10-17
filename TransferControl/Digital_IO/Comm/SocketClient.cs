@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace TransferControl.Digital_IO.Comm
 {
-    class SocketClient : IConnection
+    public class SocketClient : IConnection
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(SocketClient));
 
@@ -22,8 +22,8 @@ namespace TransferControl.Digital_IO.Comm
         delSocketDisconnected socketDisconnected;
 
         public Socket theSocket = null;
-        public string remoteHost = "192.168.1.71";
-        public int remotePort = 6666;
+        public string remoteHost = "127.0.0.1";
+        public int remotePort = 9527;
         public string Vendor = "SANWA";
         private string SockErrorStr = null;
         private ManualResetEvent TimeoutObject = new ManualResetEvent(false);

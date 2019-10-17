@@ -1344,6 +1344,18 @@ namespace TransferControl.Engine
                 Node.HasAlarm = true;
                 _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", "TimeOut");
                 _UIReport.On_Command_TimeOut(Node, Txn);
+                AlarmMessage alm = Get("SYSTEM", "00200002");
+                AlarmInfo info = new AlarmInfo();
+                info.NodeName = Node.Name;
+                info.AlarmCode = alm.Return_Code_ID;
+                info.SystemAlarmCode = alm.CodeID;
+                info.Desc = alm.Code_Cause;
+                info.EngDesc = alm.Code_Cause_English;
+                info.Type = alm.Code_Type;
+                info.IsStop = alm.IsStop;
+                info.TimeStamp = DateTime.Now;
+
+                _UIReport.On_Alarm_Happen(info);
             }
         }
         /// <summary>
@@ -1509,7 +1521,18 @@ namespace TransferControl.Engine
             _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
+            AlarmMessage alm = Get(Node.Name, Msg.Value);
+            AlarmInfo info = new AlarmInfo();
+            info.NodeName = Node.Name;
+            info.AlarmCode = alm.Return_Code_ID;
+            info.SystemAlarmCode = alm.CodeID;
+            info.Desc = alm.Code_Cause;
+            info.EngDesc = alm.Code_Cause_English;
+            info.Type = alm.Code_Type;
+            info.IsStop = alm.IsStop;
+            info.TimeStamp = DateTime.Now;
 
+            _UIReport.On_Alarm_Happen(info);
         }
 
         public void On_Data_Chnaged(string Parameter, string Value, string Type)
@@ -1528,7 +1551,7 @@ namespace TransferControl.Engine
                     }
                     break;
             }
-            _UIReport.On_Data_Chnaged(Parameter, Value, Type);
+            _UIReport.On_DIO_Data_Chnaged(Parameter, Value, Type);
         }
 
         public void On_Connection_Error(string DIOName, string ErrorMsg)
@@ -1541,14 +1564,26 @@ namespace TransferControl.Engine
             _UIReport.On_Connection_Status_Report(DIOName, Status);
         }
 
-        public void On_Alarm_Happen(string DIOName, string ErrorCode)
+        public void On_DIO_Alarm_Happen(string DIOName, string ErrorCode)
         {
             //if (ErrorCode.Equals("00100007"))
             //{
             //    ControllerManagement.ClearTransactionList();
             //    TaskJob.Clear();
             //}
-            _UIReport.On_Alarm_Happen(DIOName, ErrorCode);
+            AlarmMessage alm = Get(DIOName, ErrorCode);
+            AlarmInfo info = new AlarmInfo();
+            info.NodeName = DIOName;
+            info.AlarmCode = alm.Return_Code_ID;
+            info.SystemAlarmCode = alm.CodeID;
+            info.Desc = alm.Code_Cause;
+            info.EngDesc = alm.Code_Cause_English;
+            info.Type = alm.Code_Type;
+            info.IsStop = alm.IsStop;
+            info.TimeStamp = DateTime.Now;
+
+            _UIReport.On_Alarm_Happen(info);
+           
         }
 
 
@@ -1571,6 +1606,18 @@ namespace TransferControl.Engine
             //TaskJob.Remove(Id);
             logger.Debug("On_Task_Abort");
             _UIReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
+            AlarmMessage alm = Get("SYSTEM", Message);
+            AlarmInfo info = new AlarmInfo();
+            info.NodeName = Location;
+            info.AlarmCode = alm.Return_Code_ID;
+            info.SystemAlarmCode = alm.CodeID;
+            info.Desc = alm.Code_Cause;
+            info.EngDesc = alm.Code_Cause_English;
+            info.Type = alm.Code_Type;
+            info.IsStop = alm.IsStop;
+            info.TimeStamp = DateTime.Now;
+
+            _UIReport.On_Alarm_Happen(info);
         }
 
         public void On_Task_Finished(TaskFlowManagement.CurrentProcessTask Task)

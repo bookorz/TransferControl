@@ -11,6 +11,6 @@ namespace TransferControl.Digital_IO
         void On_Data_Chnaged(string Parameter, string Value,string Type);
         void On_Connection_Error(string DIOName, string ErrorMsg);
         void On_Connection_Status_Report(string DIOName, string Status);
-        void On_Alarm_Happen(string DIOName, string ErrorCode);
+        void On_DIO_Alarm_Happen(string DIOName, string ErrorCode);
     }
 }

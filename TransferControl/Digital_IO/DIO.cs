@@ -475,7 +475,7 @@ namespace TransferControl.Digital_IO
                                     new Thread(() =>
                                     {
                                         Thread.CurrentThread.IsBackground = true;
-                                        _Report.On_Alarm_Happen(param.Parameter, param.Error_Code);
+                                        _Report.On_DIO_Alarm_Happen(param.Parameter, param.Error_Code);
                                     }).Start();
 
                                 }
@@ -541,7 +541,7 @@ namespace TransferControl.Digital_IO
                 new Thread(() =>
                 {
                     Thread.CurrentThread.IsBackground = true;
-                    _Report.On_Alarm_Happen("DIO", "S0300176");
+                    _Report.On_DIO_Alarm_Happen("DIO", "S0300176");
                 }).Start();
 
             }
