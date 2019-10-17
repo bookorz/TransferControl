@@ -1,10 +1,12 @@
 ﻿using TransferControl.Management;
 using TransferControl.CommandConvert;
+using System.Collections.Generic;
 
 namespace TransferControl.Engine
 {
     public interface IUserInterfaceReport
     {
+        void NewTask(string Id, TaskFlowManagement.Command TaskName, Dictionary<string, string> param = null);
         void On_Command_Excuted(Node Node, Transaction Txn, CommandReturnMessage Msg);
         void On_Command_Error(Node Node, Transaction Txn, CommandReturnMessage Msg);
         void On_Command_Finished(Node Node, Transaction Txn, CommandReturnMessage Msg);
