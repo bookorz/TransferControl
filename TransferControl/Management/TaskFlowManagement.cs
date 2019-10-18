@@ -50,6 +50,9 @@ namespace TransferControl.Management
                 case "SANWA_SORTER":
                     TaskFlow = new Sanwa_Sorter();
                     break;
+                case "WTS":
+                    TaskFlow = new WTS();
+                    break;
                 default:
                     throw new NotSupportedException();
             }

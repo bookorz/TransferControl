@@ -320,6 +320,7 @@ namespace TransferControl.Digital_IO.Comm
                     //Console.WriteLine(e.ToString());
                     SockErrorStr = e.ToString();
                     IsconnectSuccess = false;
+                    ConnReport.On_Connection_Disconnected(e.Message);
                 }
                 finally
                 {
