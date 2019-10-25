@@ -75,11 +75,16 @@
     <Compile Include="CommandConvert\CommandEncoder.cs" />
     <Compile Include="CommandConvert\EncoderFFU.cs" />
     <Compile Include="CommandConvert\Encoder_Aligner.cs" />
+    <Compile Include="CommandConvert\Encoder_ELPT.cs" />
+    <Compile Include="CommandConvert\Encoder_FoupRobot.cs" />
+    <Compile Include="CommandConvert\Encoder_ILPT.cs" />
     <Compile Include="CommandConvert\Encoder_LoadPort.cs" />
     <Compile Include="CommandConvert\Encoder_OCR.cs" />
     <Compile Include="CommandConvert\Encoder_Robot.cs" />
+    <Compile Include="CommandConvert\Encoder_Shelf.cs" />
     <Compile Include="CommandConvert\Encoder_SmartTag.cs" />
     <Compile Include="CommandConvert\CommandReturnMessage.cs" />
+    <Compile Include="CommandConvert\Encoder_WHR.cs" />
     <Compile Include="Comm\ComPortClient.cs" />
     <Compile Include="Comm\DBUtil.cs" />
     <Compile Include="Comm\FTP.cs" />

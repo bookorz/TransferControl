@@ -44,6 +44,92 @@ namespace TransferControl.Management
 
         public class Command
         {
+            public class ELPT
+            {
+                public const string Clamp = "Clamp";
+                public const string Unclamp = "Unclamp";
+                public const string OpenShutter = "OpenShutter";
+                public const string CloseShutter = "CloseShutter";
+                public const string ReadCID = "ReadCID";
+                public const string MoveIn = "MoveIn";
+                public const string MoveOut = "MoveOut";
+                public const string getOutSensor = "getOutSensor";
+                public const string getInSensor = "getInSensor";
+                public const string getFOUPPresence = "getFOUPPresence";
+                public const string OrgSearch = "OrgSearch";
+            }
+            public class ILPT
+            {
+                public const string Clamp = "Clamp";
+                public const string Unclamp = "Unclamp";
+                public const string Dock = "Dock";
+                public const string Undock = "Undock";
+                public const string OpenLatch = "OpenLatch";
+                public const string CloseLatch = "CloseLatch";
+                public const string VacuumOn = "VacuumOn";
+                public const string VacuumOff = "VacuumOff";
+                public const string OpenDoor = "OpenDoor";
+                public const string CloseDoor = "CloseDoor";
+                public const string UpDoor = "UpDoor";
+                public const string DownDoor = "DownDoor";
+                public const string OpenLower = "OpenLower";
+                public const string RaiseClose = "RaiseClose";
+                public const string Map = "Map";
+                public const string Load = "Load";
+                public const string Unload = "Unload";
+            }
+            public class FoupRobot
+            {
+                public const string PreparePick = "PreparePick";
+                public const string Pick = "Pick";
+                public const string PreparePlace = "PreparePlace";
+                public const string Place = "Place";
+                public const string Extend = "Extend";
+                public const string Retract = "Retract";
+                public const string Grab = "Grab";
+                public const string Release = "Release";
+                public const string Up = "Up";
+                public const string Down = "Down ";
+                public const string Home = "Home";
+                public const string Transfer = "Transfer";
+            }
+            public class WHR
+            {
+                public const string PreparePick = "PreparePick";
+                public const string Pick = "Pick";
+                public const string PreparePlace = "PreparePlace";
+                public const string Place = "Place";
+                public const string ToPick = "ToPick";
+                public const string CompletePick = "CompletePick";
+                public const string ToPlace = "ToPlace";
+                public const string CompletePlace = "CompletePlace";
+                public const string Extend = "Extend";
+                public const string Retract = "Retract ";
+                public const string Up = "Up";
+                public const string Down = "Down ";
+                public const string Home = "Home";
+            }
+            public class CTU
+            {
+                public const string Pick = "Pick";
+                public const string Place = "Place";
+                public const string Hold = "Hold";
+                public const string Release = "Release";
+                public const string PrepareForRobot = "PrepareForRobot";
+                public const string PrepareForPTZ = "PrepareForPTZ";
+                public const string Home = "Home";
+                public const string OrgSearch = "OrgSearch";
+            }
+            public class PTZ
+            {
+                public const string Rotate = "Rotate";
+                public const string Home = "Home";
+                public const string Transfer = "Transfer";
+            }
+            public class Shelf
+            {
+                public const string GetFOUPPresence = "GetFOUPPresence";
+            }
             public class ModbusMethod
             {
                 public const string ReadHoldingRegisters = "ReadHoldingRegisters";
