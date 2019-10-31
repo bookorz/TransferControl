@@ -529,8 +529,14 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-
-                                    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
+                                    if (ReturnMsg.NodeAdr.Equals(""))
+                                    {
+                                        Node = NodeManagement.GetFirstByController(DeviceName);
+                                    }
+                                    else
+                                    {
+                                        Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
+                                    }
                                     if (Node == null)
                                     {
                                         Node = NodeManagement.GetOCRByController(DeviceName);

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace TransferControl.CommandConvert
 {
-    public class Encoder_WHR
+    public class Encoder_CTU
     {
         private string Supplier;
-        public Encoder_WHR(string supplier)
+        public Encoder_CTU(string supplier)
         {
             try
             {
@@ -37,15 +37,15 @@ namespace TransferControl.CommandConvert
             }
             return result;
         }
-        public string PreparePick(string Address, string StationNo,string Mode)
+        public string Pick(string Address, string StationNo, string Mode,string Act)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$2MCR:GETW_:{0},{1},{2}";
-                    commandStr = string.Format(commandStr, Address, StationNo, Mode);
+                    commandStr = "$3MCR:CTGET:{0},{1},{2},{3}";
+                    commandStr = string.Format(commandStr, Address, StationNo, Mode, Act);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -53,15 +53,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Pick(string Address, string StationNo, string Mode)
+        public string Place(string Address, string StationNo, string Mode, string Act)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$2MCR:GET__:{0},{1},{2}";
-                    commandStr = string.Format(commandStr, Address, StationNo, Mode);
+                    commandStr = "$3MCR:CTPUT:{0},{1},{2},{3}";
+                    commandStr = string.Format(commandStr, Address, StationNo, Mode, Act);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -69,15 +69,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string PreparePlace(string Address, string StationNo, string Mode)
+        public string Hold(string Address, string Mode)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$2MCR:PUTW_:{0},{1},{2}";
-                    commandStr = string.Format(commandStr, Address, StationNo, Mode);
+                    commandStr = "$3MCR:CTHLD:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, Mode);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -85,79 +85,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Place(string Address, string StationNo, string Mode)
+        public string Release(string Address, string Mode)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$2MCR:PUT__:{0},{1},{2}";
-                    commandStr = string.Format(commandStr, Address, StationNo, Mode);
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
-            return commandStr + EndCode();
-        }
-        public string Extend(string Address, string StationNo, string Mode,string Zpos)
-        {
-            string commandStr = "";
-            switch (Supplier)
-            {
-                case "SANWA_MC":
-
-                    commandStr = "$2MCR:EXTND:{0},{1},{2},{3}";
-                    commandStr = string.Format(commandStr, Address, StationNo, Mode, Zpos);
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
-            return commandStr + EndCode();
-        }
-        public string Retract(string Address)
-        {
-            string commandStr = "";
-            switch (Supplier)
-            {
-                case "SANWA_MC":
-
-                    commandStr = "$2MCR:RET__:{0}";
-                    commandStr = string.Format(commandStr, Address);
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
-            return commandStr + EndCode();
-        }
-        public string Up(string Address)
-        {
-            string commandStr = "";
-            switch (Supplier)
-            {
-                case "SANWA_MC":
-
-                    commandStr = "$2MCR:UP___:{0}";
-                    commandStr = string.Format(commandStr, Address);
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
-            return commandStr + EndCode();
-        }
-        public string Down(string Address)
-        {
-            string commandStr = "";
-            switch (Supplier)
-            {
-                case "SANWA_MC":
-
-                    commandStr = "$2MCR:DOWN_:{0}";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$3MCR:CTRLS:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, Mode);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -172,7 +108,23 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA_MC":
 
-                    commandStr = "$2MCR:HOME_:{0}";
+                    commandStr = "$3MCR:CTHOM:{0}";
+                    commandStr = string.Format(commandStr, Address);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+        public string OrgSearch(string Address)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$3MCR:CTINI:{0}";
                     commandStr = string.Format(commandStr, Address);
                     break;
                 default:

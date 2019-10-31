@@ -41,8 +41,242 @@ namespace TransferControl.TaksFlow
                 {
                     switch (TaskJob.TaskName)
                     {
-                        case TaskFlowManagement.Command.ALIGNER_ALIGN:
-
+                        case TaskFlowManagement.Command.CLAMP_ELPT:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.Clamp, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.UNCLAMP_ELPT:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.Unclamp, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.MOVE_FOUP:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    if (TaskJob.Params["@FromPosition"].Contains("ELPT"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveIn, "")));
+                                    }
+                                    break;
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Transfer,"", TaskJob.Params["@FromPosition"],"","", TaskJob.Params["@ToPosition"])));
+                                    break;
+                                case 2:
+                                    if (TaskJob.Params["@ToPosition"].Contains("ELPT"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, "")));
+                                    }
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.FOUP_ID:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.ReadCID, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.OPEN_FOUP:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Load, "1")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.CLOSE_FOUP:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.TRANSFER_WTS:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                    }
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "0", "", "", "", "", "", "0")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                    }
+                                    break;
+                                case 1:
+                                    if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.ToPick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                    }
+                                    break;
+                                case 2:
+                                    if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Release, TaskJob.Params["@Mode"])));
+                                    }
+                                    break;
+                                case 3:
+                                    if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.CompletePick, TaskJob.Params["@Mode"])));
+                                    }
+                                    break;
+                                case 4:
+                                    if (TaskJob.Params["@ToPosition"].Contains("ILPT"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
+                                    }
+                                    else if (TaskJob.Params["@ToPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "0", "", "", "", "", "", "0")));
+                                    }
+                                    break;
+                                case 5:
+                                    if (TaskJob.Params["@ToPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.ToPick, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
+                                    }
+                                    break;
+                                case 6:
+                                    if (TaskJob.Params["@ToPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Hold, TaskJob.Params["@Mode"])));
+                                    }
+                                    break;
+                                case 7:
+                                    if (TaskJob.Params["@ToPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.CompletePlace, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
+                                    }
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    //IN: put to ptz  OUT: get from ptz
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Mode"], TaskJob.Params["@Station"], "", "", "", "", "", TaskJob.Params["@Direction"])));
+                                    if (TaskJob.Params["@Direction"].Equals("IN"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "0")));
+                                    }
+                                    else if (TaskJob.Params["@Direction"].Equals("OUT"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "0")));
+                                    }
+                                    break;
+                                case 1:
+                                    //IN: put to ptz  OUT: get from ptz
+                                    if (TaskJob.Params["@Direction"].Equals("IN"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "1")));
+                                    }
+                                    else if (TaskJob.Params["@Direction"].Equals("OUT"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "1")));
+                                    }
+                                    break;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.BLOCK_PTZ:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Path"],"3","","","","","","0")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.RELEASE_PTZ:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                default:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.NOTCH_ALIGN:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ALIGNER", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WTSAligner.Align, TaskJob.Params["@Value"])));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.STOP_STOCKER:
+                        case TaskFlowManagement.Command.RESUME_STOCKER:
+                        case TaskFlowManagement.Command.ABORT_STOCKER:
+                        case TaskFlowManagement.Command.RESET_STOCKER:
+                        
+                        
+                        
+                        case TaskFlowManagement.Command.STOP_WTS:
+                        case TaskFlowManagement.Command.RESUME_WTS:
+                        case TaskFlowManagement.Command.ABORT_WTS:
+                        case TaskFlowManagement.Command.RESET_WTS:
+                        
+                        
+                        
+                        
+                        case TaskFlowManagement.Command.RESET_E84:
+                        case TaskFlowManagement.Command.PORT_ACCESS_MODE:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
                             break;
                         default:
                             throw new NotSupportedException();

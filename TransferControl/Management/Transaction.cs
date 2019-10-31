@@ -20,6 +20,7 @@ namespace TransferControl.Management
         public string Arm { get; set; }
         public string Arm2 { get; set; }
         public string Value { get; set; }
+        public string Val2 { get; set; }
         public string CommandType { get; set; }
         public string CommandEncodeStr { get; set; }
         public byte ModbusSlaveID { get; set; }
@@ -44,6 +45,10 @@ namespace TransferControl.Management
 
         public class Command
         {
+            public class WTSAligner
+            {
+                public const string Align = "Align";
+            }
             public class ELPT
             {
                 public const string Clamp = "Clamp";
@@ -115,8 +120,8 @@ namespace TransferControl.Management
                 public const string Place = "Place";
                 public const string Hold = "Hold";
                 public const string Release = "Release";
-                public const string PrepareForRobot = "PrepareForRobot";
-                public const string PrepareForPTZ = "PrepareForPTZ";
+                //public const string PrepareForRobot = "PrepareForRobot";
+                //public const string PrepareForPTZ = "PrepareForPTZ";
                 public const string Home = "Home";
                 public const string OrgSearch = "OrgSearch";
             }
@@ -314,6 +319,7 @@ namespace TransferControl.Management
             Arm = "";
             Arm2 = "";
             Value = "";
+            Val2 = "";
             CommandType = "";
             CommandEncodeStr = "";
             ScriptName = "";
@@ -330,7 +336,7 @@ namespace TransferControl.Management
 
         }
 
-        public Transaction SetAttr(string Id,string Method,string Value,  string Position = "", string Slot = "", string Arm = "", string Position2 = "", string Slot2 = "", string Arm2 = "")
+        public Transaction SetAttr(string Id,string Method,string Value,  string Position = "", string Slot = "", string Arm = "", string Position2 = "", string Slot2 = "", string Arm2 = "",string Val2="")
         {
             this.Method = Method;
             this.Position = Position;
@@ -341,6 +347,7 @@ namespace TransferControl.Management
             this.Slot2 = Slot2;
             this.Value = Value;
             this.TaskId = Id;
+            this.Val2 = Val2;
             return this;
         }
 

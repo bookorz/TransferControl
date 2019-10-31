@@ -23,6 +23,9 @@ namespace TransferControl.CommandConvert
             {
                 switch (Supplier)
                 {
+                    case "SANWA_MC":
+                        result = SANWA_MCCodeAnalysis(Message);
+                        break;
                     case "SANWA":
                     case "ATEL_NEW":
                         result = SANWACodeAnalysis(Message);
@@ -116,24 +119,24 @@ namespace TransferControl.CommandConvert
                                 each.Value = "HighTemperature";
                                 break;
                         }
-                        
+
                         break;
 
                 }
-                if (msgAry[1]==21|| msgAry[1]==105)
+                if (msgAry[1] == 21 || msgAry[1] == 105)
                 {
                     each.Type = CommandReturnMessage.ReturnType.Excuted;
-                    if(msgAry[1]==105 && msgAry.Length >= 8)
+                    if (msgAry[1] == 105 && msgAry.Length >= 8)
                     {
                         each.Value = (Convert.ToInt32(msgAry[4]) * 10).ToString();
                     }
                     each.NodeAdr = "1";
                 }
 
-                
+
                 each.OrgMsg = Message;
 
-                
+
 
                 result.Add(each);
 
@@ -317,7 +320,7 @@ namespace TransferControl.CommandConvert
                     {
                         case "User:":
                             each.Type = CommandReturnMessage.ReturnType.UserName;
-                            
+
                             break;
                         case "Password:":
                             each.Type = CommandReturnMessage.ReturnType.Password;
@@ -389,7 +392,98 @@ namespace TransferControl.CommandConvert
 
             return result;
         }
+        private List<CommandReturnMessage> SANWA_MCCodeAnalysis(string Message)
+        {
+            List<CommandReturnMessage> result;
+            string[] msgAry;
 
+            try
+            {
+                result = new List<CommandReturnMessage>();
+                msgAry = Message.Split('\r');
+
+                foreach (string Msg in msgAry)
+                {
+                    if (Msg.Trim().Equals(""))
+                    {
+                        continue;
+                    }
+                    CommandReturnMessage each = new CommandReturnMessage();
+                    each.OrgMsg = Msg.Substring(Msg.IndexOf("$"));
+
+                    string[] content = each.OrgMsg.Replace("\r", "").Replace("\n", "").Substring(2).Split(':');
+                    for (int i = 0; i < content.Length; i++)
+                    {
+                        switch (i)
+                        {
+                            case 0:
+                                switch (content[i])
+                                {
+                                    case "ACK":
+                                        each.Type = CommandReturnMessage.ReturnType.Excuted;
+                                        break;
+                                    case "NAK":
+                                        each.Type = CommandReturnMessage.ReturnType.Error;
+                                        break;
+                                    case "FIN":
+                                        each.Type = CommandReturnMessage.ReturnType.Finished;
+                                        break;
+                                    case "MCR":
+                                        each.Command = "MCR";
+                                        break;
+                                    case "EVT":
+                                        each.Type = CommandReturnMessage.ReturnType.Event;
+                                        break;
+                                }
+                                break;
+                            case 1:
+                                if (!each.Command.Equals("MCR"))
+                                {
+                                    each.Command = content[i];
+                                }
+                                break;
+                            case 2:
+                                if (each.Type.Equals(CommandReturnMessage.ReturnType.Event))
+                                {
+                                    each.Value = content[i];
+                                    each.NodeAdr = "";
+                                }
+                                else
+                                {
+                                    if (content[i].IndexOf(",") != -1)
+                                    {
+                                        each.NodeAdr = content[i].Substring(0, content[i].IndexOf(","));
+                                    }
+                                    else
+                                    {
+                                        each.NodeAdr = content[i];
+                                    }
+                                    if (!each.Command.Equals("MCR"))
+                                    {
+                                        if (content[i].IndexOf(",") != -1)
+                                        {
+                                            each.Value = content[i].Substring(content[i].IndexOf(",") + 1);
+                                        }
+                                        else
+                                        {
+                                            each.Value = "";
+                                        }
+                                    }
+                                }
+                                break;
+
+                        }
+                    }
+                    result.Add(each);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
+            return result;
+        }
         private List<CommandReturnMessage> SANWACodeAnalysis(string Message)
         {
             List<CommandReturnMessage> result;
@@ -510,7 +604,7 @@ namespace TransferControl.CommandConvert
                                         {
                                             for (int k = 2; k < content.Length; k++)
                                             {
-                                                each.Value += content[k]+" ";
+                                                each.Value += content[k] + " ";
                                             }
                                             each.Value = each.Value.Trim();
                                         }
@@ -523,7 +617,7 @@ namespace TransferControl.CommandConvert
                                             each.Value = content[2] + ":" + content[4];
                                         break;
                                     default:
-                                        
+
                                         break;
                                 }
                                 break;

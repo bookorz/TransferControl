@@ -184,6 +184,21 @@ namespace TransferControl.Management
 
             return result;
         }
+        public static Node GetFirstByController(string DeviceName)
+        {
+            Node result = null;
+
+            
+            var find = from node in NodeList.Values.ToList()
+                           where node.Controller.Equals(DeviceName)
+                           select node;
+            if (find.Count() != 0)
+            {
+                result = find.First();
+            }
+
+            return result;
+        }
 
         public static Node GetOCRByController(string DeviceName)
         {

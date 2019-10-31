@@ -14,9 +14,19 @@ namespace TransferControl.CommandConvert
         public EncoderLoadPort LoadPort;
         public Encoder_SmartTag SmartTag;
         public EncoderFFU FFU;
+        public Encoder_CTU CTU;
+        public Encoder_ELPT ELPT;
+        public Encoder_ILPT ILPT;
+        public Encoder_PTZ PTZ;
+        public Encoder_FoupRobot FoupRobot;
+        public Encoder_Shelf Shelf;
+        public Encoder_WHR WHR;
+        public Encoder_WTSAligner WTSAligner;
+
+
 
         private string Supplier;
-     
+
 
 
         /// <summary>
@@ -25,8 +35,8 @@ namespace TransferControl.CommandConvert
         /// <param name="supplier"> Equipment supplier </param>
         public CommandEncoder(string supplier)
         {
-     
-          
+
+
             try
             {
                 Supplier = supplier.ToUpper();
@@ -36,6 +46,14 @@ namespace TransferControl.CommandConvert
                 OCR = new EncoderOCR(Supplier);
                 LoadPort = new EncoderLoadPort(Supplier, EncoderLoadPort.CommandMode.TDK_A);
                 FFU = new EncoderFFU(Supplier);
+                CTU = new Encoder_CTU(Supplier);
+                ELPT = new Encoder_ELPT(Supplier);
+                ILPT = new Encoder_ILPT(Supplier);
+                PTZ = new Encoder_PTZ(Supplier);
+                FoupRobot = new Encoder_FoupRobot(Supplier);
+                Shelf = new Encoder_Shelf(Supplier);
+                WHR = new Encoder_WHR(Supplier);
+                WTSAligner = new Encoder_WTSAligner(Supplier);
             }
             catch (Exception ex)
             {
@@ -43,10 +61,10 @@ namespace TransferControl.CommandConvert
             }
             finally
             {
-             
+
             }
         }
 
-       
+
     }
 }

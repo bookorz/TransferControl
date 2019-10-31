@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TransferControl.CommandConvert
 {
-    class Encoder_ELPT
+    public class Encoder_ELPT
     {
         private string Supplier;
         public Encoder_ELPT(string supplier)
@@ -25,6 +25,7 @@ namespace TransferControl.CommandConvert
             string result = "";
             switch (Supplier)
             {
+                case "SANWA_MC":
                 case "SANWA":
                 case "ATEL":
                 case "ATEL_NEW":
@@ -42,7 +43,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELCLP:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -58,7 +59,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELCLP:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -74,7 +75,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELSTR:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -90,7 +91,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELSTR:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -106,7 +107,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELTAG:{0},{0}";
                     commandStr = string.Format(commandStr, Address);
@@ -122,7 +123,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELMOV:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -138,7 +139,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELMOV:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -154,7 +155,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELSTS:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -170,7 +171,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELSTS:{0},{0},2";
                     commandStr = string.Format(commandStr, Address);
@@ -186,7 +187,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELSTS:{0},{0},3";
                     commandStr = string.Format(commandStr, Address);
@@ -202,7 +203,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ELINI:{0},{0},";
                     commandStr = string.Format(commandStr, Address);

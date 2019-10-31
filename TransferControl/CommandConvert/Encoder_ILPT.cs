@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TransferControl.CommandConvert
 {
-    class Encoder_ILPT
+    public class Encoder_ILPT
     {
         private string Supplier;
         public Encoder_ILPT(string supplier)
@@ -25,7 +25,7 @@ namespace TransferControl.CommandConvert
             string result = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
                 case "ATEL":
                 case "ATEL_NEW":
                     result = "\r";
@@ -42,7 +42,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILCLP:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -58,7 +58,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILCLP:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -74,7 +74,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILDCK:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -90,7 +90,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILDCK:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -106,7 +106,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILLTH:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -122,7 +122,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILLTH:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -138,7 +138,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILVCM:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -154,7 +154,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILVCM:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -170,7 +170,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILDOR:{0},{0},1";
                     commandStr = string.Format(commandStr, Address);
@@ -186,7 +186,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILDOR:{0},{0},0";
                     commandStr = string.Format(commandStr, Address);
@@ -202,7 +202,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILUP_:{0},{0}";
                     commandStr = string.Format(commandStr, Address);
@@ -218,7 +218,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILDWN:{0},{0},{1}";
                     commandStr = string.Format(commandStr, Address, MappingEnable);
@@ -234,7 +234,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILOPN:{0},{0},{1}";
                     commandStr = string.Format(commandStr, Address, MappingEnable);
@@ -250,7 +250,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILCLS:{0},{0}";
                     commandStr = string.Format(commandStr, Address);
@@ -266,7 +266,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILMAP:{0},{0},{1}";
                     commandStr = string.Format(commandStr, Address, Direction);
@@ -282,7 +282,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILLOD:{0},{0},{1}";
                     commandStr = string.Format(commandStr, Address, MappingEnable);
@@ -298,7 +298,7 @@ namespace TransferControl.CommandConvert
             string commandStr = "";
             switch (Supplier)
             {
-                case "SANWA":
+                case "SANWA_MC":
 
                     commandStr = "$1MCR:ILULD:{0},{0}";
                     commandStr = string.Format(commandStr, Address);

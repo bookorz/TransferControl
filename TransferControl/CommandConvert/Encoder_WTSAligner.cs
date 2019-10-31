@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace TransferControl.CommandConvert
 {
-    public class Encoder_Shelf
+    public class Encoder_WTSAligner
     {
         private string Supplier;
-        public Encoder_Shelf(string supplier)
+        public Encoder_WTSAligner(string supplier)
         {
             try
             {
@@ -37,15 +37,15 @@ namespace TransferControl.CommandConvert
             }
             return result;
         }
-        public string GetFOUPPresence(string Address, string StationNo)
+        public string Align(string Address, string Degree)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:FOUPS:{0},{1}";
-                    commandStr = string.Format(commandStr, Address, StationNo);
+                    commandStr = "$3MCR:ALIGN:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, Degree);
                     break;
                 default:
                     throw new NotSupportedException();

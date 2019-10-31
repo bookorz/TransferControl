@@ -226,7 +226,29 @@ namespace TransferControl.Management
             TRANSFER_ALIGNER_WHLD,
             TRANSFER_ALIGNER_WRLS,
             TRANSFER_ALIGNER_ALIGN,
-            TRANSFER_ALIGNER_HOME
+            TRANSFER_ALIGNER_HOME,
+            //WTS
+            CLAMP_ELPT,
+            UNCLAMP_ELPT,
+            FOUP_ID,
+            MOVE_FOUP,
+            STOP_STOCKER,
+            RESUME_STOCKER,
+            ABORT_STOCKER,
+            RESET_STOCKER,
+            OPEN_FOUP,
+            CLOSE_FOUP,
+            TRANSFER_WTS,
+            STOP_WTS,
+            RESUME_WTS,
+            ABORT_WTS,
+            RESET_WTS,
+            TRANSFER_PTZ,
+            NOTCH_ALIGN,
+            BLOCK_PTZ,
+            RELEASE_PTZ,
+            PORT_ACCESS_MODE,
+            RESET_E84
         }
     }
 }
