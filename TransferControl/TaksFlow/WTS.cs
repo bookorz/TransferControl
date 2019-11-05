@@ -198,7 +198,7 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     //IN: put to ptz  OUT: get from ptz
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Mode"], TaskJob.Params["@Station"], "", "", "", "", "", TaskJob.Params["@Direction"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Mode"], TaskJob.Params["@Station"], "", "", "", "", "", TaskJob.Params["@Orientation"])));
                                     if (TaskJob.Params["@Direction"].Equals("IN"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "0")));
@@ -226,7 +226,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Path"],"3","","","","","","0")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Path"],"3","","","","","", TaskJob.Params["@Orientation"])));
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
