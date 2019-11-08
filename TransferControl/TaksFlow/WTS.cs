@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TransferControl.Config;
 using TransferControl.Engine;
@@ -76,7 +77,7 @@ namespace TransferControl.TaksFlow
                                     }
                                     break;
                                 case 1:
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Transfer,"", TaskJob.Params["@FromPosition"],"","", TaskJob.Params["@ToPosition"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Transfer, "", TaskJob.Params["@FromPosition"], "", "", TaskJob.Params["@ToPosition"])));
                                     break;
                                 case 2:
                                     if (TaskJob.Params["@ToPosition"].Contains("ELPT"))
@@ -226,7 +227,7 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Path"],"3","","","","","", TaskJob.Params["@Orientation"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Path"], "3", "", "", "", "", "", TaskJob.Params["@Orientation"])));
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -276,22 +277,27 @@ namespace TransferControl.TaksFlow
                         case TaskFlowManagement.Command.RESUME_STOCKER:
                         case TaskFlowManagement.Command.ABORT_STOCKER:
                         case TaskFlowManagement.Command.RESET_STOCKER:
-                        
-                        
-                        
+
+
+
                         case TaskFlowManagement.Command.STOP_WTS:
                         case TaskFlowManagement.Command.RESUME_WTS:
                         case TaskFlowManagement.Command.ABORT_WTS:
                         case TaskFlowManagement.Command.RESET_WTS:
-                        
-                        
-                        
-                        
+
+
+
+
                         case TaskFlowManagement.Command.RESET_E84:
                         case TaskFlowManagement.Command.PORT_ACCESS_MODE:
+                        case TaskFlowManagement.Command.WHR_RETRACT:
                             switch (TaskJob.CurrentIndex)
                             {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    break;
                                 default:
+                                    SpinWait.SpinUntil(() => false, 2000);
                                     TaskReport.On_Task_Finished(TaskJob);
                                     return false;
                             }

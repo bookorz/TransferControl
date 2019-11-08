@@ -250,7 +250,9 @@ namespace TransferControl.Management
             PORT_ACCESS_MODE,
             RESET_E84,
             BLOCK_ALIGNER,
-            RELEASE_ALIGNER
+            RELEASE_ALIGNER,
+            //WTS Manual
+            WHR_RETRACT
         }
     }
 }
