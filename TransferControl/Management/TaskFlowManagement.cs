@@ -248,7 +248,9 @@ namespace TransferControl.Management
             BLOCK_PTZ,
             RELEASE_PTZ,
             PORT_ACCESS_MODE,
-            RESET_E84
+            RESET_E84,
+            BLOCK_ALIGNER,
+            RELEASE_ALIGNER
         }
     }
 }

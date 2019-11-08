@@ -136,7 +136,7 @@ namespace TransferControl.TaksFlow
                                     }
                                     else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "0", "", "", "", "", "", "0")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "CTU", "", "", "", "", "", "0")));
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
                                     }
                                     break;
@@ -166,7 +166,7 @@ namespace TransferControl.TaksFlow
                                     else if (TaskJob.Params["@ToPosition"].Contains("CTU"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "0", "", "", "", "", "", "0")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "CTU", "", "", "", "", "", "0")));
                                     }
                                     break;
                                 case 5:
@@ -198,25 +198,25 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     //IN: put to ptz  OUT: get from ptz
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Mode"], TaskJob.Params["@Station"], "", "", "", "", "", TaskJob.Params["@Orientation"])));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Mode"], TaskJob.Params["@Position"], "", "", "", "", "", TaskJob.Params["@Orientation"])));
                                     if (TaskJob.Params["@Direction"].Equals("IN"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "0")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "0")));
                                     }
                                     else if (TaskJob.Params["@Direction"].Equals("OUT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "0")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "0")));
                                     }
                                     break;
                                 case 1:
                                     //IN: put to ptz  OUT: get from ptz
                                     if (TaskJob.Params["@Direction"].Equals("IN"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "1")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "1")));
                                     }
                                     else if (TaskJob.Params["@Direction"].Equals("OUT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "1", "", "", "", "", "", "1")));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "1")));
                                     }
                                     break;
                             }
@@ -234,6 +234,24 @@ namespace TransferControl.TaksFlow
                             }
                             break;
                         case TaskFlowManagement.Command.RELEASE_PTZ:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                default:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.BLOCK_ALIGNER:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                default:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.RELEASE_ALIGNER:
                             switch (TaskJob.CurrentIndex)
                             {
                                 default:

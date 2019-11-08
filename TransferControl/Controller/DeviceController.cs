@@ -323,6 +323,7 @@ namespace TransferControl.Controller
                 //{
                 logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
                 //}
+                _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
                 if (Txn.CommandType.Equals(""))
                 {
                     Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
@@ -422,6 +423,7 @@ namespace TransferControl.Controller
                 //else
                 //{
                 logger.Info(DeviceName + " Recieve:" + Msg);
+                _ReportTarget.On_Message_Log("CMD", DeviceName + " Recieve:" + Msg.Replace("\r", ""));
                 //}
                 Node Target = null;
 

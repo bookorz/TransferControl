@@ -7,13 +7,14 @@ using TransferControl.Management;
 
 namespace TransferControl.Parser
 {
-    class Sanwa_MCParser
+    class Sanwa_MCParser : IParser
     {
         public Dictionary<string, string> Parse(string Command, string Message)
         {
             switch (Command)
             {
                 case Transaction.Command.ILPT.Load:
+                case Transaction.Command.PTZ.Transfer:
                     return ParseMap(Message);
                 default:
                     throw new Exception(Command + " Not support");

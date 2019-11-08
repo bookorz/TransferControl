@@ -952,9 +952,102 @@ namespace TransferControl.Engine
                     logger.Debug("On_Command_Finished:" + Txn.Method + ":" + Txn.Method);
                     switch (Node.Type)
                     {
+                        case "PTZ":
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.PTZ.Transfer:
+                                    parseResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    string Mapping = parseResult["Mapping"];
+                                    Node.MappingResult = Mapping;
+
+                                    Node.IsMapping = true;
+
+
+                                    int currentIdx = 1;
+                                    for (int i = 0; i < Mapping.Length; i++)
+                                    {
+                                        Job wafer = RouteControl.CreateJob();
+                                        wafer.Slot = (i + 1).ToString();
+                                        wafer.FromPort = Node.Name;
+                                        wafer.FromPortSlot = wafer.Slot;
+                                        wafer.Position = Node.Name;
+                                        wafer.AlignerFlag = false;
+                                        wafer.MappingValue = Mapping[i].ToString();
+                                        string Slot = (i + 1).ToString("00");
+
+
+                                        switch (Mapping[i])
+                                        {
+                                            case '0':
+                                                wafer.Job_Id = "No wafer";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = false;
+                                                wafer.ErrPosition = false;
+                                                //MappingData.Add(wafer);
+                                                break;
+                                            case '1':
+                                                while (true)
+                                                {
+                                                    wafer.Job_Id = "Wafer" + currentIdx.ToString("000");
+                                                    wafer.Host_Job_Id = wafer.Job_Id;
+                                                    wafer.MapFlag = true;
+                                                    wafer.ErrPosition = false;
+                                                    if (JobManagement.Add(wafer.Job_Id, wafer))
+                                                    {
+
+                                                        //MappingData.Add(wafer);
+                                                        break;
+                                                    }
+                                                    currentIdx++;
+                                                }
+
+                                                break;
+                                            case '2':
+                                            case 'E':
+                                                wafer.Job_Id = "Crossed";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
+                                                //MappingData.Add(wafer);
+                                                Node.IsMapping = false;
+                                                break;
+                                            default:
+                                            case '?':
+                                                wafer.Job_Id = "Undefined";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
+                                                //MappingData.Add(wafer);
+                                                Node.IsMapping = false;
+                                                break;
+                                            case 'W':
+                                                wafer.Job_Id = "Double";
+                                                wafer.Host_Job_Id = wafer.Job_Id;
+                                                wafer.MapFlag = true;
+                                                wafer.ErrPosition = true;
+                                                //MappingData.Add(wafer);
+                                                Node.IsMapping = false;
+                                                break;
+                                        }
+                                        if (!Node.AddJob(wafer.Slot, wafer))
+                                        {
+                                            Job org = Node.GetJob(wafer.Slot);
+                                            JobManagement.Remove(org.Job_Id);
+                                            Node.RemoveJob(wafer.Slot);
+                                            Node.AddJob(wafer.Slot, wafer);
+                                        }
+
+                                    }
+                                    if (!Node.IsMapping)
+                                    {
+                                        CommandReturnMessage rem = new CommandReturnMessage();
+                                        rem.Value = "MAPERR";
+                                        _UIReport.On_Command_Error(Node, Txn, rem);
+                                    }
+                                    break;
+                            }
+                            break;
                         case "ILPT":
-
-
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.ILPT.Load:
@@ -1735,6 +1828,9 @@ namespace TransferControl.Engine
             _UIReport.On_TaskJob_Ack(Task);
         }
 
-
+        public void On_Message_Log(string Type, string Message)
+        {
+            _UIReport.On_Message_Log(Type,Message);
+        }
     }
 }
