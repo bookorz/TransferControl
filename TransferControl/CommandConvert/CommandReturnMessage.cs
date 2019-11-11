@@ -19,6 +19,7 @@ namespace TransferControl.CommandConvert
             public const string Abnormal = "Abnormal";
             public const string UserName = "UserName";
             public const string Password = "PassWord";
+            public const string Sending = "Sending";
         }
         public string OrgMsg = "";
         public string Type;

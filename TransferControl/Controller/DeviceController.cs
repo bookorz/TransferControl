@@ -292,8 +292,21 @@ namespace TransferControl.Controller
             }
             else
             {
-
-                key = Txn.AdrNo + Txn.Type;
+                if (Vendor.ToUpper().Equals("SANWA_MC"))
+                {
+                    if (Txn.Method.Equals("Reset"))
+                    {
+                        key = "0";
+                    }
+                    else
+                    {
+                        key = Txn.AdrNo;
+                    }
+                }
+                else
+                {
+                    key = Txn.AdrNo + Txn.Type;
+                }
             }
 
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
@@ -485,6 +498,10 @@ namespace TransferControl.Controller
                                         }
                                     }
                                 }
+                                else if (Vendor.ToUpper().Equals("SANWA_MC"))
+                                {
+                                    key = ReturnMsg.NodeAdr;
+                                }
                                 else
                                 {
                                     key = ReturnMsg.NodeAdr + ReturnMsg.Command;
@@ -531,7 +548,7 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    if (ReturnMsg.NodeAdr.Equals(""))
+                                    if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET"))
                                     {
                                         Node = NodeManagement.GetFirstByController(DeviceName);
                                     }
@@ -799,6 +816,7 @@ namespace TransferControl.Controller
             this.Status = "Connected";
             ChangeNodeConnectionStatus("Connected");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
+            _ReportTarget.On_Message_Log("CMD",DeviceName + " " + "Connected");
 
         }
 
@@ -808,7 +826,7 @@ namespace TransferControl.Controller
             this.Status = "Connecting";
             ChangeNodeConnectionStatus("Connecting");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connecting");
-
+            _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Connecting");
         }
 
         public void On_Connection_Disconnected(string Msg)
@@ -817,7 +835,7 @@ namespace TransferControl.Controller
             this.Status = "Disconnected";
             ChangeNodeConnectionStatus("Disconnected");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Disconnected");
-
+            _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Disconnected");
         }
 
         public void On_Connection_Error(string Msg)
@@ -830,12 +848,13 @@ namespace TransferControl.Controller
             //TransactionList.Clear();
             ChangeNodeConnectionStatus("Connection_Error");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connection_Error");
+            _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Connection_Error");
         }
 
         public void On_Transaction_TimeOut(Transaction Txn)
         {
             logger.Debug(DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
-
+            _ReportTarget.On_Message_Log("CMD",DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
             string key = "";
             if (Vendor.ToUpper().Equals("KAWASAKI"))
             {
@@ -923,7 +942,7 @@ namespace TransferControl.Controller
         public void On_Transaction_BypassTimeOut(Transaction Txn)
         {
             logger.Debug(DeviceName + "(On_Transaction_BypassTimeOut Txn is timeout:" + Txn.CommandEncodeStr);
-
+            _ReportTarget.On_Message_Log("CMD", DeviceName + "(On_Transaction_BypassTimeOut Txn is timeout:" + Txn.CommandEncodeStr);
             string key = "";
             if (Vendor.ToUpper().Equals("KAWASAKI"))
             {

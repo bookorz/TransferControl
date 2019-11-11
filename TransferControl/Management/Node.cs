@@ -691,7 +691,7 @@ namespace TransferControl.Management
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.PTZ.Transfer:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().PTZ.Transfer(txn.AdrNo, txn.Point, txn.Value, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().PTZ.Transfer(txn.AdrNo, txn.Slot, txn.Value, txn.Val2);
                                 txn.CommandType = "CMD";
                                 break;
                         }
@@ -723,7 +723,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.OrgSearch(txn.AdrNo);
                                 txn.CommandType = "CMD";
                                 break;
-
+                            case Transaction.Command.CTU.Reset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Reset(txn.AdrNo);
+                                txn.CommandType = "CMD";
+                                break;
                         }
                         break;
                     case "WHR":
@@ -762,7 +765,7 @@ namespace TransferControl.Management
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.WHR.Extend:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Extend(txn.AdrNo, txn.Point, txn.Value, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Extend(txn.AdrNo, txn.Slot, txn.Value, txn.Val2);
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.WHR.Retract:
@@ -777,8 +780,12 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Down(txn.AdrNo);
                                 txn.CommandType = "CMD";
                                 break;
-                            case Transaction.Command.WHR.Home:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Home(txn.AdrNo);
+                            case Transaction.Command.WHR.SHome:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.SHome(txn.AdrNo);
+                                txn.CommandType = "CMD";
+                                break;
+                            case Transaction.Command.WHR.Reset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Reset(txn.AdrNo);
                                 txn.CommandType = "CMD";
                                 break;
                         }

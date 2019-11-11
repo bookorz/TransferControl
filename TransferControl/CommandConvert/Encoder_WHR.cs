@@ -165,14 +165,30 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Home(string Address)
+        public string SHome(string Address)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$2MCR:HOME_:{0}";
+                    commandStr = "$2MCR:SHOME:{0}";
+                    commandStr = string.Format(commandStr, Address);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+        public string Reset(string Address)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$2SET:RESET";
                     commandStr = string.Format(commandStr, Address);
                     break;
                 default:

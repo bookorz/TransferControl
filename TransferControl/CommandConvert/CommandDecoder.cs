@@ -410,7 +410,7 @@ namespace TransferControl.CommandConvert
                     }
                     CommandReturnMessage each = new CommandReturnMessage();
                     each.OrgMsg = Msg.Substring(Msg.IndexOf("$"));
-
+                    each.CommandType = "CMD";
                     string[] content = each.OrgMsg.Replace("\r", "").Replace("\n", "").Substring(2).Split(':');
                     for (int i = 0; i < content.Length; i++)
                     {
@@ -430,6 +430,8 @@ namespace TransferControl.CommandConvert
                                         break;
                                     case "MCR":
                                         each.Command = "MCR";
+                                        
+                                        each.Type = CommandReturnMessage.ReturnType.Sending;
                                         break;
                                     case "EVT":
                                         each.Type = CommandReturnMessage.ReturnType.Event;
@@ -437,7 +439,11 @@ namespace TransferControl.CommandConvert
                                 }
                                 break;
                             case 1:
-                                if (!each.Command.Equals("MCR"))
+                                if (each.Command == null)
+                                {
+                                    each.Command = content[i];
+                                }
+                                else if (!each.Command.Equals("MCR__"))
                                 {
                                     each.Command = content[i];
                                 }
@@ -450,29 +456,49 @@ namespace TransferControl.CommandConvert
                                 }
                                 else
                                 {
-                                    if (content[i].IndexOf(",") != -1)
-                                    {
-                                        each.NodeAdr = content[i].Substring(0, content[i].IndexOf(","));
-                                    }
-                                    else
-                                    {
-                                        each.NodeAdr = content[i];
-                                    }
-                                    if (!each.Command.Equals("MCR"))
+                                    if (!each.Type.Equals(CommandReturnMessage.ReturnType.Sending))
                                     {
                                         if (content[i].IndexOf(",") != -1)
                                         {
-                                            each.Value = content[i].Substring(content[i].IndexOf(",") + 1);
+                                            each.NodeAdr = content[i].Substring(0, content[i].IndexOf(","));
+                                            each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8);
+                                            if (!each.Value.Equals("00000000"))
+                                            {
+                                                each.Type = CommandReturnMessage.ReturnType.Error;
+                                            }
+                                            else
+                                            {
+                                                if (content[i].IndexOf(",", 2) != -1)
+                                                {
+                                                    each.Value = content[i].Substring(content[i].IndexOf(",", 2) + 1);
+                                                }
+                                            }
                                         }
                                         else
                                         {
-                                            each.Value = "";
+                                            each.NodeAdr = content[i];
                                         }
                                     }
+                                    //if (each.Command.Equals("MCR__"))
+                                    //{
+                                    //    if (content[i].IndexOf(",") != -1)
+                                    //    {
+                                    //        each.Value = content[i].Substring(content[i].IndexOf(",") + 1);
+                                    //    }
+                                    //    else
+                                    //    {
+                                    //        each.Value = "";
+                                    //    }
+                                    //}
                                 }
                                 break;
 
                         }
+                    }
+                    if (each.Command.Equals("RESET"))
+                    {
+                        each.NodeAdr = "0";
+                        each.CommandType = "SET";
                     }
                     result.Add(each);
                 }

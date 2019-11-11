@@ -214,5 +214,21 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
+        public string Reset(string Address)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$1MCR:RESET:0";
+                    commandStr = string.Format(commandStr, Address);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
     }
 }

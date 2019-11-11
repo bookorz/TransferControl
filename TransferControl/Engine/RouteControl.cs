@@ -1627,9 +1627,21 @@ namespace TransferControl.Engine
                     Node.HasAlarm = true;
                     Node.InitialComplete = false;
                     Node.OrgSearchComplete = false;
-                    _UIReport.On_Command_Error(Node, new Transaction(), Msg);
+                    //_UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "ALARM");
 
+                    AlarmMessage alm = Get(Node.Name, Msg.Value);
+                    AlarmInfo info = new AlarmInfo();
+                    info.NodeName = Node.Name;
+                    info.AlarmCode = alm.Return_Code_ID;
+                    info.SystemAlarmCode = alm.CodeID;
+                    info.Desc = alm.Code_Cause;
+                    info.EngDesc = alm.Code_Cause_English;
+                    info.Type = alm.Code_Type;
+                    info.IsStop = alm.IsStop;
+                    info.TimeStamp = DateTime.Now;
+
+                    _UIReport.On_Alarm_Happen(info);
                 }
                 else
                 {

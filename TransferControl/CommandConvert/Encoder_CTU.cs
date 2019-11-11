@@ -133,5 +133,21 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
+        public string Reset(string Address)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$3SET:RESET";
+                    commandStr = string.Format(commandStr, Address);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
     }
 }

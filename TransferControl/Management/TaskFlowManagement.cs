@@ -252,7 +252,27 @@ namespace TransferControl.Management
             BLOCK_ALIGNER,
             RELEASE_ALIGNER,
             //WTS Manual
-            WHR_RETRACT
+            WHR_RESET,
+            WHR_EXTEND,
+            WHR_RETRACT,
+            WHR_UP,
+            WHR_DOWN,
+            WHR_SHOME,
+            WHR_PREPAREPICK,
+            WHR_PICK,
+            WHR_PREPAREPLACE,
+            WHR_PLACE,
+            CTU_HOME,
+            CTU_RESET,
+            CTU_INIT,
+            CTU_PREPAREPICK,
+            CTU_PREPAREPLACE,
+            CTU_HOLD,
+            CTU_RELEASE,
+            CTU_PLACE,
+            CTU_PICK,
+            PTZ_TRANSFER,
+            PTZ_HOME
         }
     }
 }

@@ -48,6 +48,7 @@ namespace TransferControl.Management
             public class WTSAligner
             {
                 public const string Align = "Align";
+                public const string Reset = "Reset";
             }
             public class ELPT
             {
@@ -62,6 +63,7 @@ namespace TransferControl.Management
                 public const string getInSensor = "getInSensor";
                 public const string getFOUPPresence = "getFOUPPresence";
                 public const string OrgSearch = "OrgSearch";
+                public const string Reset = "Reset";
             }
             public class ILPT
             {
@@ -82,6 +84,7 @@ namespace TransferControl.Management
                 public const string Map = "Map";
                 public const string Load = "Load";
                 public const string Unload = "Unload";
+                public const string Reset = "Reset";
             }
             public class FoupRobot
             {
@@ -97,6 +100,7 @@ namespace TransferControl.Management
                 public const string Down = "Down ";
                 public const string Home = "Home";
                 public const string Transfer = "Transfer";
+                public const string Reset = "Reset";
             }
             public class WHR
             {
@@ -112,7 +116,8 @@ namespace TransferControl.Management
                 public const string Retract = "Retract ";
                 public const string Up = "Up";
                 public const string Down = "Down ";
-                public const string Home = "Home";
+                public const string SHome = "SHome";
+                public const string Reset = "Reset";
             }
             public class CTU
             {
@@ -124,12 +129,14 @@ namespace TransferControl.Management
                 //public const string PrepareForPTZ = "PrepareForPTZ";
                 public const string Home = "Home";
                 public const string OrgSearch = "OrgSearch";
+                public const string Reset = "Reset";
             }
             public class PTZ
             {
                 public const string Rotate = "Rotate";
                 public const string Home = "Home";
                 public const string Transfer = "Transfer";
+                public const string Reset = "Reset";
             }
             public class Shelf
             {
