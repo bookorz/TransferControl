@@ -133,60 +133,99 @@ namespace TransferControl.TaksFlow
                                     TaskReport.On_Task_Ack(TaskJob);
                                     if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                        //WHR get ILPT
+                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                        //CTU getwait
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "WHR", "", "", "", "", "", "0")));
+
                                     }
                                     else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "CTU", "", "", "", "", "", "0")));
+                                        //CTU Putwait
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "WHR", "", "", "", "", "", "0")));
+                                        //WHR Getwait
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+
                                     }
                                     break;
                                 case 1:
-                                    if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.ToPick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                        //WHR putwait for CTU
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+
+                                    }
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        //WHR Extend Get
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Extend, TaskJob.Params["@Mode"], "", "3", "", "", "", "", "0")));
                                     }
                                     break;
                                 case 2:
-                                    if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Release, TaskJob.Params["@Mode"])));
+                                        //WHR extend Put
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Extend, TaskJob.Params["@Mode"], "", "3", "", "", "", "","1")));
+
+                                    }
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        //WHR Up
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Up, "")));
+
                                     }
                                     break;
                                 case 3:
-                                    if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.CompletePick, TaskJob.Params["@Mode"])));
+                                        //CTU hold
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Hold, TaskJob.Params["@Mode"])));
+
+                                    }
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        //CTU Release
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Release, TaskJob.Params["@Mode"])));
                                     }
                                     break;
                                 case 4:
-                                    if (TaskJob.Params["@ToPosition"].Contains("ILPT"))
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
+                                        //WHR Down
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Down, "")));
+
                                     }
-                                    else if (TaskJob.Params["@ToPosition"].Contains("CTU"))
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "CTU", "", "", "", "", "", "0")));
+                                        //WHR Retract
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Retract, "")));
                                     }
                                     break;
                                 case 5:
-                                    if (TaskJob.Params["@ToPosition"].Contains("CTU"))
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.ToPick, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
+                                        //WHR Retract
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Retract, "")));
+
+                                    }
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        //CTU HOME
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Home, "")));
+                                        //WHR Put ILPT
+                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
                                     }
                                     break;
                                 case 6:
-                                    if (TaskJob.Params["@ToPosition"].Contains("CTU"))
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Hold, TaskJob.Params["@Mode"])));
+                                        //CTU HOME
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Home, "")));
+                                        //WHR Home
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.SHome, "")));
+
                                     }
-                                    break;
-                                case 7:
-                                    if (TaskJob.Params["@ToPosition"].Contains("CTU"))
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.CompletePlace, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
-                                    }
+                                    
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
