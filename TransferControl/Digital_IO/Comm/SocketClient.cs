@@ -179,11 +179,14 @@ namespace TransferControl.Digital_IO.Comm
         /// 
         public bool Send(object sendMessage)
         {
-            if (checkSocketState())
+            lock (this)
             {
-                return SendData(sendMessage);
+                if (checkSocketState())
+                {
+                    return SendData(sendMessage);
+                }
+                return false;
             }
-            return false;
         }
 
         ///
@@ -435,6 +438,33 @@ namespace TransferControl.Digital_IO.Comm
                         S = S.Substring(S.LastIndexOf("\r") + 1);
                         //logger.Debug("s:" + S);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                        break;
+                    }
+
+
+                    break;
+                case "BOOK":
+
+                    S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
+
+                    if (S.LastIndexOf(Convert.ToChar(3)) != -1)
+                    {
+                        //logger.Debug("s:" + S);
+                        data = S.Substring(0, S.LastIndexOf(Convert.ToChar(3)));
+                        //logger.Debug("data:" + data);
+
+                        S = S.Substring(S.LastIndexOf(Convert.ToChar(3)) + 1);
+                        //logger.Debug("s:" + S);
+                        string[] tmp = data.Split(Convert.ToChar(3));
+                        foreach (string each in tmp)
+                        {
+                            if (each.Trim().Equals(""))
+                            {
+                                continue;
+                            }
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), each);
+                        }
+                        //ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                         break;
                     }
 

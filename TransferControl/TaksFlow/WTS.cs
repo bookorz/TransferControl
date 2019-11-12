@@ -144,7 +144,7 @@ namespace TransferControl.TaksFlow
                                         //CTU Putwait
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "WHR", "", "", "", "", "", "0")));
                                         //WHR Getwait
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePick, TaskJob.Params["@Mode"], "CTU")));
 
                                     }
                                     break;
@@ -152,7 +152,7 @@ namespace TransferControl.TaksFlow
                                     if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
                                         //WHR putwait for CTU
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], "CTU")));
 
                                     }
                                     else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
@@ -237,28 +237,30 @@ namespace TransferControl.TaksFlow
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
-                                    //IN: put to ptz  OUT: get from ptz
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Mode"], TaskJob.Params["@Position"], "", "", "", "", "", TaskJob.Params["@Orientation"])));
-                                    if (TaskJob.Params["@Direction"].Equals("IN"))
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "0")));
-                                    }
-                                    else if (TaskJob.Params["@Direction"].Equals("OUT"))
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "0")));
-                                    }
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, TaskJob.Params["@Mode"], "", TaskJob.Params["@Station"], "", "", "", "", TaskJob.Params["@Direction"])));
+
                                     break;
                                 case 1:
+                                   
                                     //IN: put to ptz  OUT: get from ptz
-                                    if (TaskJob.Params["@Direction"].Equals("IN"))
+                                    if (TaskJob.Params["@Way"].Equals("IN"))
                                     {
+                                        //CTU Put to PTZ
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Place, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "1")));
                                     }
-                                    else if (TaskJob.Params["@Direction"].Equals("OUT"))
+                                    else if (TaskJob.Params["@Way"].Equals("OUT"))
                                     {
+                                        //CTU Get from PTZ
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "PTZ", "", "", "", "", "", "1")));
                                     }
                                     break;
+                                case 2:
+                                    //PTZ Home
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Home, "")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
                             }
                             break;
                         case TaskFlowManagement.Command.BLOCK_PTZ:
