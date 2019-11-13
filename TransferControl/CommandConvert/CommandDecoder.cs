@@ -461,18 +461,24 @@ namespace TransferControl.CommandConvert
                                         if (content[i].IndexOf(",") != -1)
                                         {
                                             each.NodeAdr = content[i].Substring(0, content[i].IndexOf(","));
-                                            each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8);
-                                            if (!each.Value.Equals("00000000"))
+
+                                            if (each.Type.Equals(CommandReturnMessage.ReturnType.Finished))
                                             {
-                                                each.Type = CommandReturnMessage.ReturnType.Error;
-                                            }
-                                            else
-                                            {
-                                                if (content[i].IndexOf(",", 2) != -1)
+                                                each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8);
+
+                                                if (!each.Value.Equals("00000000"))
                                                 {
-                                                    each.Value = content[i].Substring(content[i].IndexOf(",", 2) + 1);
+                                                    each.Type = CommandReturnMessage.ReturnType.Error;
+                                                }
+                                                else
+                                                {
+                                                    if (content[i].IndexOf(",", 2) != -1)
+                                                    {
+                                                        each.Value = content[i].Substring(content[i].IndexOf(",", 2) + 1);
+                                                    }
                                                 }
                                             }
+
                                         }
                                         else
                                         {

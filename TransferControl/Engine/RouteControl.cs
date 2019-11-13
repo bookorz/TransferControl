@@ -956,13 +956,18 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.PTZ.Transfer:
+                                case Transaction.Command.PTZ.Home:
                                     parseResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     string Mapping = parseResult["Mapping"];
                                     Node.MappingResult = Mapping;
 
                                     Node.IsMapping = true;
-
-
+                                    foreach (Job each in Node.JobList.Values)
+                                    {
+                                        JobManagement.Remove(each.Host_Job_Id);
+                                    }
+                                    Node.JobList.Clear();
+                                
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
                                     {
@@ -1842,7 +1847,7 @@ namespace TransferControl.Engine
 
         public void On_Message_Log(string Type, string Message)
         {
-            _UIReport.On_Message_Log(Type,Message);
+            _UIReport.On_Message_Log(Type, Message);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace TransferControl.Parser
             {
                 case Transaction.Command.ILPT.Load:
                 case Transaction.Command.PTZ.Transfer:
+                case Transaction.Command.PTZ.Home:
                     return ParseMap(Message);
                 default:
                     throw new Exception(Command + " Not support");
@@ -24,7 +25,7 @@ namespace TransferControl.Parser
         private Dictionary<string, string> ParseMap(string Message)
         {
             Dictionary<string, string> result = new Dictionary<string, string>(); 
-            result.Add("Mapping", Message.Substring(Message.IndexOf(",")+1));
+            result.Add("Mapping", Message.Replace(",",""));
             return result;
         }
     }
