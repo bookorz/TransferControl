@@ -272,7 +272,8 @@ namespace TransferControl.Management
             CTU_PLACE,
             CTU_PICK,
             PTZ_TRANSFER,
-            PTZ_HOME
+            PTZ_HOME,
+            WTSALIGNER_ALIGN
         }
     }
 }
