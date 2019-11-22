@@ -262,6 +262,7 @@ namespace TransferControl.Management
             WHR_PICK,
             WHR_PREPAREPLACE,
             WHR_PLACE,
+            WHR_SET_SPEED,
             CTU_HOME,
             CTU_RESET,
             CTU_INIT,
@@ -271,9 +272,33 @@ namespace TransferControl.Management
             CTU_RELEASE,
             CTU_PLACE,
             CTU_PICK,
+            CTU_SET_SPEED,
             PTZ_TRANSFER,
             PTZ_HOME,
-            WTSALIGNER_ALIGN
+            PTZ_SET_SPEED,
+            WTSALIGNER_ALIGN,
+            WTSALIGNER_SET_SPEED,
+            //Stocker Manual
+            ELPT_READ_RFID,
+            ELPT_CLAMP,
+            ELPT_UNCLAMP,
+            ELPT_OPEN_SHUTTER,
+            ELPT_CLOSE_SHUTTER,
+            ELPT_MOVE_IN,
+            ELPT_MOVE_OUT,
+            ELPT_INIT,
+            ELPT_RESET,
+            ILPT_LOAD,
+            ILPT_UNLOAD,
+            ILPT_INIT,
+            ILPT_RESET,
+            FOUPROBOT_PREPARE_PICK,
+            FOUPROBOT_PREPARE_PLACE,
+            FOUPROBOT_PICK,
+            FOUPROBOT_PLACE,
+            FOUPROBOT_INIT,
+            FOUPROBOT_RESET,
+            FOUPROBOT_SET_SPEED
         }
     }
 }

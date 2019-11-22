@@ -49,11 +49,12 @@ namespace TransferControl.Management
             {
                 public const string Align = "Align";
                 public const string Reset = "Reset";
+                public const string SetSpeed = "SetSpeed";
             }
             public class ELPT
             {
                 public const string Clamp = "Clamp";
-                public const string Unclamp = "Unclamp";
+                public const string UnClamp = "UnClamp";
                 public const string OpenShutter = "OpenShutter";
                 public const string CloseShutter = "CloseShutter";
                 public const string ReadCID = "ReadCID";
@@ -84,6 +85,7 @@ namespace TransferControl.Management
                 public const string Map = "Map";
                 public const string Load = "Load";
                 public const string Unload = "Unload";
+                public const string OrgSearch = "OrgSearch";
                 public const string Reset = "Reset";
             }
             public class FoupRobot
@@ -98,9 +100,10 @@ namespace TransferControl.Management
                 public const string Release = "Release";
                 public const string Up = "Up";
                 public const string Down = "Down ";
-                public const string Home = "Home";
+                public const string SHome = "SHome";
                 public const string Transfer = "Transfer";
                 public const string Reset = "Reset";
+                public const string SetSpeed = "SetSpeed";
             }
             public class WHR
             {
@@ -118,6 +121,7 @@ namespace TransferControl.Management
                 public const string Down = "Down ";
                 public const string SHome = "SHome";
                 public const string Reset = "Reset";
+                public const string SetSpeed = "SetSpeed";
             }
             public class CTU
             {
@@ -130,6 +134,7 @@ namespace TransferControl.Management
                 public const string Home = "Home";
                 public const string OrgSearch = "OrgSearch";
                 public const string Reset = "Reset";
+                public const string SetSpeed = "SetSpeed";
             }
             public class PTZ
             {
@@ -137,6 +142,7 @@ namespace TransferControl.Management
                 public const string Home = "Home";
                 public const string Transfer = "Transfer";
                 public const string Reset = "Reset";
+                public const string SetSpeed = "SetSpeed";
             }
             public class Shelf
             {
@@ -355,6 +361,46 @@ namespace TransferControl.Management
             this.Value = Value;
             this.TaskId = Id;
             this.Val2 = Val2;
+            return this;
+        }
+
+        public Transaction SetAttr(string Id, string Method, Dictionary<string,string> param)
+        {
+            foreach (KeyValuePair<string, string> item in param)
+            {
+                switch (item.Key)
+                {
+                    case "@Value":
+                        this.Value = item.Value;
+                        break;
+                    case "@Position":
+                        this.Position = item.Value;
+                        break;
+                    case "@Arm":
+                        this.Arm = item.Value;
+                        break;
+                    case "@Slot":
+                        this.Slot = item.Value;
+                        break;
+                    case "@Position2":
+                        this.Position2 = item.Value;
+                        break;
+                    case "@Arm2":
+                        this.Arm2 = item.Value;
+                        break;
+                    case "@Slot2":
+                        this.Slot2 = item.Value;
+                        break;
+                    case "@Val2":
+                        this.Val2 = item.Value;
+                        break;
+                   
+                }
+            }
+            this.Method = Method;
+            
+            this.TaskId = Id;
+            
             return this;
         }
 

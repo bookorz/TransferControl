@@ -149,5 +149,28 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
+        public string SetSpeed(string Address, string Value)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    if (Value.Equals("0"))
+                    {
+                        Value = "1";
+                    }
+                    else if (Value.Equals("100"))
+                    {
+                        Value = "0";
+                    }
+                    commandStr = "$3SET:SP___:{0},{1}";
+                    commandStr = string.Format(commandStr, Value, Address);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
     }
 }

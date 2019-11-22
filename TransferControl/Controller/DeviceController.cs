@@ -294,7 +294,7 @@ namespace TransferControl.Controller
             {
                 if (Vendor.ToUpper().Equals("SANWA_MC"))
                 {
-                    if (Txn.Method.Equals("Reset"))
+                    if (Txn.Method.Equals(Transaction.Command.FoupRobot.Reset) || Txn.Method.Equals(Transaction.Command.FoupRobot.SetSpeed))
                     {
                         key = "0";
                     }
@@ -548,7 +548,7 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET"))
+                                    if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET") || ReturnMsg.Command.Equals("SP___"))
                                     {
                                         Node = NodeManagement.GetFirstByController(DeviceName);
                                     }

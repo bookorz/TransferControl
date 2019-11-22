@@ -37,15 +37,15 @@ namespace TransferControl.CommandConvert
             }
             return result;
         }
-        public string Clamp(string Address)
+        public string Clamp(string Address,string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILCLP:{0},{0},1";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILCLP:{0},{1},1";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -53,15 +53,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Unclamp(string Address)
+        public string Unclamp(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILCLP:{0},{0},0";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILCLP:{0},{1},0";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -69,15 +69,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Dock(string Address)
+        public string Dock(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILDCK:{0},{0},1";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILDCK:{0},{1},1";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -85,15 +85,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Undock(string Address)
+        public string Undock(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILDCK:{0},{0},0";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILDCK:{0},{1},0";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -101,15 +101,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string OpenLatch(string Address)
+        public string OpenLatch(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILLTH:{0},{0},1";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILLTH:{0},{1},1";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -117,15 +117,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string CloseLatch(string Address)
+        public string CloseLatch(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILLTH:{0},{0},0";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILLTH:{0},{1},0";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -133,15 +133,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string VacuumOn(string Address)
+        public string VacuumOn(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILVCM:{0},{0},1";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILVCM:{0},{1},1";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -149,15 +149,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string VacuumOff(string Address)
+        public string VacuumOff(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILVCM:{0},{0},0";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILVCM:{0},{1},0";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -165,15 +165,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string OpenDoor(string Address)
+        public string OpenDoor(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILDOR:{0},{0},1";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILDOR:{0},{1},1";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -181,15 +181,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string CloseDoor(string Address)
+        public string CloseDoor(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILDOR:{0},{0},0";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILDOR:{0},{1},0";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -197,15 +197,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string UpDoor(string Address)
+        public string UpDoor(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILUP_:{0},{0}";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILUP_:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -213,15 +213,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string DownDoor(string Address,string MappingEnable)
+        public string DownDoor(string Address,string MappingEnable, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILDWN:{0},{0},{1}";
-                    commandStr = string.Format(commandStr, Address, MappingEnable);
+                    commandStr = "$1MCR:ILDWN:{0},{2},{1}";
+                    commandStr = string.Format(commandStr, Address, MappingEnable, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -229,15 +229,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string OpenLower(string Address, string MappingEnable)
+        public string OpenLower(string Address, string MappingEnable, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILOPN:{0},{0},{1}";
-                    commandStr = string.Format(commandStr, Address, MappingEnable);
+                    commandStr = "$1MCR:ILOPN:{0},{2},{1}";
+                    commandStr = string.Format(commandStr, Address, MappingEnable, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -245,15 +245,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string RaiseClose(string Address)
+        public string RaiseClose(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILCLS:{0},{0}";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILCLS:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -261,15 +261,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Map(string Address,string Direction)
+        public string Map(string Address,string Direction, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILMAP:{0},{0},{1}";
-                    commandStr = string.Format(commandStr, Address, Direction);
+                    commandStr = "$1MCR:ILMAP:{0},{2},{1}";
+                    commandStr = string.Format(commandStr, Address, Direction, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -277,15 +277,15 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Load(string Address, string MappingEnable)
+        public string Load(string Address, string MappingEnable, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILLOD:{0},{0},{1}";
-                    commandStr = string.Format(commandStr, Address, MappingEnable);
+                    commandStr = "$1MCR:ILLOD:{0},{2},{1}";
+                    commandStr = string.Format(commandStr, Address, MappingEnable, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -293,15 +293,31 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Unload(string Address)
+        public string Unload(string Address, string LPT_No)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:ILULD:{0},{0}";
-                    commandStr = string.Format(commandStr, Address);
+                    commandStr = "$1MCR:ILULD:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+        public string OrgSearch(string Address, string LPT_No)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$1MCR:ILINI:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, LPT_No);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -316,7 +332,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:RESET:0";
+                    commandStr = "$1SET:RESET";
                     commandStr = string.Format(commandStr, Address);
                     break;
                 default:

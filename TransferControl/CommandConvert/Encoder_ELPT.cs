@@ -221,7 +221,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:RESET:0";
+                    commandStr = "$1SET:RESET";
                     commandStr = string.Format(commandStr, Address);
                     break;
                 default:

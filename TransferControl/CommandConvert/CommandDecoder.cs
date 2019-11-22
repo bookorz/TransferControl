@@ -429,7 +429,8 @@ namespace TransferControl.CommandConvert
                                         each.Type = CommandReturnMessage.ReturnType.Finished;
                                         break;
                                     case "MCR":
-                                        each.Command = "MCR";
+                                    case "SET":
+                                        each.Command = content[i];
                                         
                                         each.Type = CommandReturnMessage.ReturnType.Sending;
                                         break;
@@ -501,7 +502,7 @@ namespace TransferControl.CommandConvert
 
                         }
                     }
-                    if (each.Command.Equals("RESET"))
+                    if (each.Command.Equals("RESET")|| each.Command.Equals("SP___"))
                     {
                         each.NodeAdr = "0";
                         each.CommandType = "SET";

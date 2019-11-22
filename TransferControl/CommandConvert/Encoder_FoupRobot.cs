@@ -197,14 +197,14 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
-        public string Home(string Address)
+        public string SHome(string Address)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:HOME_:{0}";
+                    commandStr = "$1MCR:SHOME_:{0}";
                     commandStr = string.Format(commandStr, Address);
                     break;
                 default:
@@ -236,8 +236,31 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:RESET:0";
+                    commandStr = "$1SET:RESET";
                     commandStr = string.Format(commandStr, Address);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+        public string SetSpeed(string Address,string Value)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    if (Value.Equals("0"))
+                    {
+                        Value = "1";
+                    }
+                    else if (Value.Equals("100"))
+                    {
+                        Value = "0";
+                    }
+                    commandStr = "$1SET:SP___:{0},{1}";
+                    commandStr = string.Format(commandStr,Value, Address);
                     break;
                 default:
                     throw new NotSupportedException();
