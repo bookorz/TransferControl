@@ -244,7 +244,6 @@ namespace TransferControl.Management
             ABORT_WTS,
             RESET_WTS,
             TRANSFER_PTZ,
-            NOTCH_ALIGN,
             BLOCK_PTZ,
             RELEASE_PTZ,
             PORT_ACCESS_MODE,

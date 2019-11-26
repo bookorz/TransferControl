@@ -435,15 +435,15 @@ namespace TransferControl.Controller
                 //}
                 //else
                 //{
-                logger.Info(DeviceName + " Recieve:" + Msg);
-                _ReportTarget.On_Message_Log("CMD", DeviceName + " Recieve:" + Msg.Replace("\r", ""));
+                
                 //}
                 Node Target = null;
 
                 List<CommandReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (CommandReturnMessage ReturnMsg in ReturnMsgList)
                 {
-
+                    logger.Info(DeviceName + " Recieve:" + ReturnMsg.OrgMsg);
+                    _ReportTarget.On_Message_Log("CMD", DeviceName + " Recieve:" + ReturnMsg.OrgMsg);
                     try
                     {
                         Transaction Txn = null;

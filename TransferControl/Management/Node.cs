@@ -670,7 +670,7 @@ namespace TransferControl.Management
 
                 switch (this.Type)
                 {
-                    case "WTSALIGNER":
+                    case "WTS_ALIGNER":
                         switch (txn.Method)
                         {
                             case Transaction.Command.WTSAligner.Align:
@@ -869,6 +869,10 @@ namespace TransferControl.Management
                             case Transaction.Command.FoupRobot.SetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.SetSpeed(txn.AdrNo, txn.Value);
                                 txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.FoupRobot.Reset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Reset(txn.AdrNo);
+                                txn.CommandType = "CMD";
                                 break;
                         }
                         break;
