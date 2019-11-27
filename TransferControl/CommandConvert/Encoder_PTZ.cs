@@ -69,6 +69,22 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
+        public string SetPath(string Address, string Mode)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$3MCR:PTMOD:{0},{1}";
+                    commandStr = string.Format(commandStr, Address, Mode);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
         public string Transfer(string Address, string Position, string Mode, string Direction)
         {
             string commandStr = "";

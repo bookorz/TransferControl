@@ -143,6 +143,7 @@ namespace TransferControl.Management
                 public const string Transfer = "Transfer";
                 public const string Reset = "Reset";
                 public const string SetSpeed = "SetSpeed";
+                public const string SetPath = "SetPath";
             }
             public class Shelf
             {

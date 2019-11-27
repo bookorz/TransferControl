@@ -204,7 +204,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA_MC":
 
-                    commandStr = "$1MCR:SHOME_:{0}";
+                    commandStr = "$1MCR:SHOME:{0}";
                     commandStr = string.Format(commandStr, Address);
                     break;
                 default:

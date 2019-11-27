@@ -702,6 +702,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().PTZ.SetSpeed(txn.AdrNo, txn.Value);
                                 txn.CommandType = "SET";
                                 break;
+                            case Transaction.Command.PTZ.SetPath:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().PTZ.SetPath(txn.AdrNo, txn.Value);
+                                txn.CommandType = "CMD";
+                                break;
                         }
                         break;
                     case "CTU":
