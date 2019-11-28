@@ -502,7 +502,7 @@ namespace TransferControl.CommandConvert
 
                         }
                     }
-                    if (each.Command.Equals("RESET")|| each.Command.Equals("SP___"))
+                    if (each.Command.Equals("RESET")|| each.Command.Equals("SP___") || each.Command.Equals("PAUSE") || each.Command.Equals("CONT_") || each.Command.Equals("STOP_"))
                     {
                         each.NodeAdr = "0";
                         each.CommandType = "SET";

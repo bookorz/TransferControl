@@ -245,12 +245,12 @@ namespace TransferControl.Controller
             conn.WaitForData(WaitForData);
             bool result = false;
             // lock (TransactionList)
+            List<CommandReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
 
 
             if (!Txn.NodeType.Equals("OCR"))
             {
-                List<CommandReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
-
+               
                 if (msgList.Count != 0)
                 {
                     Txn.Type = msgList[0].Command;
@@ -294,14 +294,16 @@ namespace TransferControl.Controller
             {
                 if (Vendor.ToUpper().Equals("SANWA_MC"))
                 {
-                    if (Txn.Method.Equals(Transaction.Command.FoupRobot.Reset) || Txn.Method.Equals(Transaction.Command.FoupRobot.SetSpeed))
-                    {
-                        key = "0";
-                    }
-                    else
+
+                    if (orgTxn.CommandEncodeStr.Contains("MCR:"))
                     {
                         key = Txn.AdrNo;
                     }
+                    else
+                    {
+                        key = "0" + msgList[0].Command;
+                    }
+
                 }
                 else
                 {
@@ -435,7 +437,7 @@ namespace TransferControl.Controller
                 //}
                 //else
                 //{
-                
+
                 //}
                 Node Target = null;
 
@@ -500,7 +502,14 @@ namespace TransferControl.Controller
                                 }
                                 else if (Vendor.ToUpper().Equals("SANWA_MC"))
                                 {
-                                    key = ReturnMsg.NodeAdr;
+                                    if (ReturnMsg.Command.Equals("MCR__"))
+                                    {
+                                        key = ReturnMsg.NodeAdr;
+                                    }
+                                    else
+                                    {
+                                        key = "0" + ReturnMsg.Command;
+                                    }
                                 }
                                 else
                                 {
@@ -548,7 +557,7 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET") || ReturnMsg.Command.Equals("SP___"))
+                                    if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET") || ReturnMsg.Command.Equals("SP___") || ReturnMsg.Command.Equals("PAUSE") || ReturnMsg.Command.Equals("CONT_") || ReturnMsg.Command.Equals("STOP_"))
                                     {
                                         Node = NodeManagement.GetFirstByController(DeviceName);
                                     }
@@ -790,13 +799,13 @@ namespace TransferControl.Controller
                             this.DoWork(txn);
                         }
                     }
-            }
+                }
             }
             catch (Exception e)
             {
                 logger.Error(DeviceName + "(On_Connection_Message " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
             }
-            
+
         }
 
         private void ChangeNodeConnectionStatus(string status)
@@ -816,7 +825,7 @@ namespace TransferControl.Controller
             this.Status = "Connected";
             ChangeNodeConnectionStatus("Connected");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
-            _ReportTarget.On_Message_Log("CMD",DeviceName + " " + "Connected");
+            _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Connected");
 
         }
 
@@ -854,7 +863,7 @@ namespace TransferControl.Controller
         public void On_Transaction_TimeOut(Transaction Txn)
         {
             logger.Debug(DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
-            _ReportTarget.On_Message_Log("CMD",DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
+            _ReportTarget.On_Message_Log("CMD", DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
             string key = "";
             if (Vendor.ToUpper().Equals("KAWASAKI"))
             {

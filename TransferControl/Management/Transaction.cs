@@ -50,6 +50,9 @@ namespace TransferControl.Management
                 public const string Align = "Align";
                 public const string Reset = "Reset";
                 public const string SetSpeed = "SetSpeed";
+                public const string Pause = "Pause";
+                public const string Continue = "Continue";
+                public const string Stop = "Stop";
             }
             public class ELPT
             {
@@ -104,6 +107,9 @@ namespace TransferControl.Management
                 public const string Transfer = "Transfer";
                 public const string Reset = "Reset";
                 public const string SetSpeed = "SetSpeed";
+                public const string Pause = "Pause";
+                public const string Continue = "Continue";
+                public const string Stop = "Stop";
             }
             public class WHR
             {
@@ -122,6 +128,9 @@ namespace TransferControl.Management
                 public const string SHome = "SHome";
                 public const string Reset = "Reset";
                 public const string SetSpeed = "SetSpeed";
+                public const string Pause = "Pause";
+                public const string Continue = "Continue";
+                public const string Stop = "Stop";
             }
             public class CTU
             {
@@ -135,6 +144,7 @@ namespace TransferControl.Management
                 public const string OrgSearch = "OrgSearch";
                 public const string Reset = "Reset";
                 public const string SetSpeed = "SetSpeed";
+
             }
             public class PTZ
             {
@@ -144,6 +154,7 @@ namespace TransferControl.Management
                 public const string Reset = "Reset";
                 public const string SetSpeed = "SetSpeed";
                 public const string SetPath = "SetPath";
+             
             }
             public class Shelf
             {
@@ -367,35 +378,38 @@ namespace TransferControl.Management
 
         public Transaction SetAttr(string Id, string Method, Dictionary<string,string> param)
         {
-            foreach (KeyValuePair<string, string> item in param)
+            if (param != null)
             {
-                switch (item.Key)
+                foreach (KeyValuePair<string, string> item in param)
                 {
-                    case "@Value":
-                        this.Value = item.Value;
-                        break;
-                    case "@Position":
-                        this.Position = item.Value;
-                        break;
-                    case "@Arm":
-                        this.Arm = item.Value;
-                        break;
-                    case "@Slot":
-                        this.Slot = item.Value;
-                        break;
-                    case "@Position2":
-                        this.Position2 = item.Value;
-                        break;
-                    case "@Arm2":
-                        this.Arm2 = item.Value;
-                        break;
-                    case "@Slot2":
-                        this.Slot2 = item.Value;
-                        break;
-                    case "@Val2":
-                        this.Val2 = item.Value;
-                        break;
-                   
+                    switch (item.Key)
+                    {
+                        case "@Value":
+                            this.Value = item.Value;
+                            break;
+                        case "@Position":
+                            this.Position = item.Value;
+                            break;
+                        case "@Arm":
+                            this.Arm = item.Value;
+                            break;
+                        case "@Slot":
+                            this.Slot = item.Value;
+                            break;
+                        case "@Position2":
+                            this.Position2 = item.Value;
+                            break;
+                        case "@Arm2":
+                            this.Arm2 = item.Value;
+                            break;
+                        case "@Slot2":
+                            this.Slot2 = item.Value;
+                            break;
+                        case "@Val2":
+                            this.Val2 = item.Value;
+                            break;
+
+                    }
                 }
             }
             this.Method = Method;

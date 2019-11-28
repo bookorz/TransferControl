@@ -29,6 +29,7 @@ namespace TransferControl.Engine
         public DIO DIO;
         //public TaskFlowManagement TaskJob;
         public static RouteControl Instance;
+        public static Dictionary<string, string> IO_State = new Dictionary<string, string>();
 
         /// <summary>
         /// 建構子，傳入一個事件回報對象
@@ -952,6 +953,14 @@ namespace TransferControl.Engine
                     logger.Debug("On_Command_Finished:" + Txn.Method + ":" + Txn.Method);
                     switch (Node.Type)
                     {
+                        case "SHELF":
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.Shelf.GetFOUPPresence:
+                                    Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    break;
+                            }
+                            break;
                         case "PTZ":
                             switch (Txn.Method)
                             {
@@ -967,7 +976,7 @@ namespace TransferControl.Engine
                                         JobManagement.Remove(each.Host_Job_Id);
                                     }
                                     Node.JobList.Clear();
-                                
+
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
                                     {
@@ -1565,6 +1574,27 @@ namespace TransferControl.Engine
             try
             {
                 logger.Debug("On_Event_Trigger");
+                if (Msg.Command.Equals("INPUT"))
+                {
+
+                    string IO_Name = Msg.Value.Split(',')[0];
+                    string IO_Value = Msg.Value.Split(',')[1];
+                    Dictionary<string, string> param = new Dictionary<string, string>();
+
+                    lock (IO_State)
+                    {
+
+                        if (IO_State.ContainsKey(IO_Name))
+                        {
+                            IO_State.Remove(IO_Name);
+                            IO_State.Add(IO_Name, IO_Value);
+                        }
+                        else
+                        {
+                            IO_State.Add(IO_Name, IO_Value);
+                        }
+                    }
+                }
                 switch (Node.Type.ToUpper())
                 {
                     case "LOADPORT":

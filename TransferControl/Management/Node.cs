@@ -808,13 +808,25 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.SetSpeed(txn.AdrNo, txn.Value);
                                 txn.CommandType = "SET";
                                 break;
+                            case Transaction.Command.WHR.Pause:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Pause();
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.WHR.Continue:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Continue();
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.WHR.Stop:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Stop();
+                                txn.CommandType = "SET";
+                                break;
                         }
                         break;
                     case "SHELF":
                         switch (txn.Method)
                         {
                             case Transaction.Command.Shelf.GetFOUPPresence:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().Shelf.GetFOUPPresence(txn.AdrNo, txn.Point);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Shelf.GetFOUPPresence(txn.AdrNo, "0");
                                 txn.CommandType = "CMD";
                                 break;
                         }
@@ -878,81 +890,93 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Reset(txn.AdrNo);
                                 txn.CommandType = "CMD";
                                 break;
+                            case Transaction.Command.FoupRobot.Pause:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Pause();
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.FoupRobot.Continue:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Continue();
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.FoupRobot.Stop:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Stop();
+                                txn.CommandType = "SET";
+                                break;
                         }
                         break;
                     case "ILPT":
                         switch (txn.Method)
                         {
                             case Transaction.Command.ILPT.Clamp:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Clamp(txn.AdrNo,txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Clamp(txn.AdrNo,(Convert.ToInt32(txn.AdrNo)-2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Unclamp:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Unclamp(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Unclamp(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Dock:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Dock(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Dock(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Undock:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Undock(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Undock(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.OpenLatch:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OpenLatch(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OpenLatch(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.CloseLatch:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.CloseLatch(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.CloseLatch(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.VacuumOn:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.VacuumOn(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.VacuumOn(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.VacuumOff:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.VacuumOff(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.VacuumOff(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.OpenDoor:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OpenDoor(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OpenDoor(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.CloseDoor:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.CloseDoor(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.CloseDoor(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.UpDoor:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.UpDoor(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.UpDoor(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.DownDoor:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.DownDoor(txn.AdrNo, txn.Value, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.DownDoor(txn.AdrNo, txn.Value, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.OpenLower:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OpenLower(txn.AdrNo, txn.Value, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OpenLower(txn.AdrNo, txn.Value, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.RaiseClose:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.RaiseClose(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.RaiseClose(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Map:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Map(txn.AdrNo, txn.Value, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Map(txn.AdrNo, txn.Value, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Load:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Load(txn.AdrNo, txn.Value, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Load(txn.AdrNo, txn.Value, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Unload:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Unload(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Unload(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.OrgSearch:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OrgSearch(txn.AdrNo, txn.Val2);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.OrgSearch(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Reset:

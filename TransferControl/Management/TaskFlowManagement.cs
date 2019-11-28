@@ -236,6 +236,7 @@ namespace TransferControl.Management
             RESUME_STOCKER,
             ABORT_STOCKER,
             RESET_STOCKER,
+            INIT_STOCKER,
             OPEN_FOUP,
             CLOSE_FOUP,
             TRANSFER_WTS,
