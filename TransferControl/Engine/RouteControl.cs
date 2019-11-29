@@ -1753,6 +1753,7 @@ namespace TransferControl.Engine
             //Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.TaskRemove(Txn.TaskId);
+            
             if (Task != null)
             {
                 Task.HasError = true;
@@ -1762,7 +1763,10 @@ namespace TransferControl.Engine
                     Msg.Value = Msg.Command;
                 }
             }
-            _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", Msg.Value);
+            if (Task != null)
+            {
+                _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", Msg.Value);
+            }
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
             AlarmMessage alm = Get(Node.Name, Msg.Value);

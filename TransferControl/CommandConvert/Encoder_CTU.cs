@@ -172,5 +172,53 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
+        public string Pause()
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$3SET:PAUSE";
+                    commandStr = string.Format(commandStr);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+        public string Continue()
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$3SET:CONT_";
+                    commandStr = string.Format(commandStr);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+        public string Stop()
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$3SET:STOP_:0";
+                    commandStr = string.Format(commandStr);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
     }
 }

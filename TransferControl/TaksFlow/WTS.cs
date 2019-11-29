@@ -14,6 +14,8 @@ namespace TransferControl.TaksFlow
     class WTS : ITaskFlow
     {
         ILog logger = LogManager.GetLogger(typeof(WTS));
+        private TaskFlowManagement.Command WTS_LastCmd = 0;
+        private Dictionary<string, string> WTS_LastCmdParam = null;
         public bool Excute(TaskFlowManagement.CurrentProcessTask TaskJob, ITaskFlowReport TaskReport)
         {
             logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" + TaskJob.CurrentIndex.ToString());
@@ -158,6 +160,8 @@ namespace TransferControl.TaksFlow
                             }
                             break;
                         case TaskFlowManagement.Command.TRANSFER_WTS:
+                            WTS_LastCmd = TaskFlowManagement.Command.TRANSFER_WTS;
+                            WTS_LastCmdParam = TaskJob.Params;
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
@@ -165,7 +169,7 @@ namespace TransferControl.TaksFlow
                                     if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
                                     {
                                         //WHR get ILPT
-                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pick, TaskJob.Params["@Mode"], TaskJob.Params["@FromPosition"])));
                                         //CTU getwait
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, TaskJob.Params["@Mode"], "WHR", "", "", "", "", "", "0")));
 
@@ -184,7 +188,7 @@ namespace TransferControl.TaksFlow
                                     {
                                         //WHR putwait for CTU
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], "CTU")));
-
+                                        
                                     }
                                     else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
                                     {
@@ -244,7 +248,7 @@ namespace TransferControl.TaksFlow
                                         //CTU HOME
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Home, "")));
                                         //WHR Put ILPT
-                                        //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, TaskJob.Params["@Mode"], TaskJob.Params["@ToPosition"])));
                                     }
                                     break;
                                 case 6:
@@ -254,7 +258,11 @@ namespace TransferControl.TaksFlow
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Home, "")));
                                         //WHR Home
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.SHome, "")));
-
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
+                                    }
+                                    else if(TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
                                     }
 
                                     break;
@@ -264,6 +272,8 @@ namespace TransferControl.TaksFlow
                             }
                             break;
                         case TaskFlowManagement.Command.TRANSFER_PTZ:
+                            WTS_LastCmd = TaskFlowManagement.Command.TRANSFER_PTZ;
+                            WTS_LastCmdParam = TaskJob.Params;
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
@@ -394,12 +404,36 @@ namespace TransferControl.TaksFlow
                                     return false;
                             }
                             break;
+                        case TaskFlowManagement.Command.WHR_PICK:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pick, TaskJob.Params["@Mode"], TaskJob.Params["@Position"])));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
                         case TaskFlowManagement.Command.WHR_PREPAREPLACE:
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], TaskJob.Params["@Position"])));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.WHR_PLACE:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, TaskJob.Params["@Mode"], TaskJob.Params["@Position"])));
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -937,8 +971,8 @@ namespace TransferControl.TaksFlow
                                     break;
                                 case 3:
 
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ELPT1", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, "")));
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ELPT2", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, "")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ELPT1", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.OrgSearch, "")));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ELPT2", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.OrgSearch, "")));
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ILPT1", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.OrgSearch, TaskJob.Params)));
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ILPT2", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.OrgSearch, TaskJob.Params)));
                                     break;
@@ -955,13 +989,16 @@ namespace TransferControl.TaksFlow
                                     if (TaskJob.Params.ContainsKey("@Source") && TaskJob.Params.ContainsKey("@Destination"))
                                     {
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (destination.Contains("ELPT"))
+                                        if (NodeManagement.Get(destination) != null)
                                         {
-                                            if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
+                                            if (destination.Contains("ELPT"))
                                             {
-                                                //目的地有FOUP
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(destination, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveIn, "")));
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.PreparePick, "", destination)));
+                                                if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
+                                                {
+                                                    //目的地有FOUP
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(destination, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveIn, "")));
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.PreparePick, "", destination)));
+                                                }
                                             }
                                         }
                                     }
@@ -969,11 +1006,15 @@ namespace TransferControl.TaksFlow
                                 case 7:
                                     if (TaskJob.Params.ContainsKey("@Source") && TaskJob.Params.ContainsKey("@Destination"))
                                     {
+                                        
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
+                                        if (NodeManagement.Get(destination) != null)
                                         {
-                                            //目的地有FOUP
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Pick, "", destination)));
+                                            if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
+                                            {
+                                                //目的地有FOUP
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Pick, "", destination)));
+                                            }
                                         }
                                     }
                                     break;
@@ -982,13 +1023,16 @@ namespace TransferControl.TaksFlow
                                     {
                                         string Source = TaskJob.Params["@Source"].Replace("_", "");
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
+                                        if (NodeManagement.Get(Source) != null && NodeManagement.Get(destination) != null)
                                         {
-                                            if (Source.Contains("ELPT"))
+                                            if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
                                             {
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveIn, "")));
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.PreparePlace, "", Source)));
+                                                if (Source.Contains("ELPT"))
+                                                {
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveIn, "")));
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.PreparePlace, "", Source)));
 
+                                                }
                                             }
                                         }
                                     }
@@ -998,13 +1042,16 @@ namespace TransferControl.TaksFlow
                                     {
                                         string Source = TaskJob.Params["@Source"].Replace("_", "");
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
+                                        if (NodeManagement.Get(Source) != null && NodeManagement.Get(destination) != null)
                                         {
-                                            //目的地有FOUP
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Place, "", Source)));
-                                            if (destination.Contains("ELPT"))
+                                            if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
                                             {
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(destination, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, "")));
+                                                //目的地有FOUP
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Place, "", Source)));
+                                                if (destination.Contains("ELPT"))
+                                                {
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(destination, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, "")));
+                                                }
                                             }
                                         }
                                     }
@@ -1014,12 +1061,15 @@ namespace TransferControl.TaksFlow
                                     {
                                         string Source = TaskJob.Params["@Source"].Replace("_", "");
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
+                                        if (NodeManagement.Get(Source) != null && NodeManagement.Get(destination) != null)
                                         {
-                                            //目的地有FOUP
-                                            if (Source.Contains("ELPT"))
+                                            if (NodeManagement.Get("SHELF").Status[destination].Equals("1"))
                                             {
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, "")));
+                                                //目的地有FOUP
+                                                if (Source.Contains("ELPT"))
+                                                {
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, "")));
+                                                }
                                             }
                                         }
                                     }
@@ -1029,14 +1079,17 @@ namespace TransferControl.TaksFlow
                                     {
                                         string Source = TaskJob.Params["@Source"].Replace("_", "");
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (NodeManagement.Get("SHELF").Status["FOUP_ROBOT"].Equals("1"))
+                                        if (NodeManagement.Get(Source) != null && NodeManagement.Get(destination) != null)
                                         {
-
-                                            if (Source.Contains("ELPT"))
+                                            if (NodeManagement.Get("SHELF").Status["FOUP_ROBOT"].Equals("1"))
                                             {
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveIn, ""))); ;
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.PreparePlace, "", Source)));
 
+                                                if (Source.Contains("ELPT"))
+                                                {
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveIn, ""))); ;
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.PreparePlace, "", Source)));
+
+                                                }
                                             }
                                         }
                                     }
@@ -1046,11 +1099,14 @@ namespace TransferControl.TaksFlow
                                     {
                                         string Source = TaskJob.Params["@Source"].Replace("_", "");
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (NodeManagement.Get("SHELF").Status["FOUP_ROBOT"].Equals("1"))
+                                        if (NodeManagement.Get(Source) != null && NodeManagement.Get(destination) != null)
                                         {
-                                            //目的地有FOUP
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Place, "", Source)));
+                                            if (NodeManagement.Get("SHELF").Status["FOUP_ROBOT"].Equals("1"))
+                                            {
+                                                //目的地有FOUP
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("FOUP_ROBOT", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.FoupRobot.Place, "", Source)));
 
+                                            }
                                         }
                                     }
                                     break;
@@ -1059,12 +1115,15 @@ namespace TransferControl.TaksFlow
                                     {
                                         string Source = TaskJob.Params["@Source"].Replace("_", "");
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
-                                        if (NodeManagement.Get("SHELF").Status["FOUP_ROBOT"].Equals("1"))
+                                        if (NodeManagement.Get(Source) != null && NodeManagement.Get(destination) != null)
                                         {
-
-                                            if (Source.Contains("ELPT"))
+                                            if (NodeManagement.Get("SHELF").Status["FOUP_ROBOT"].Equals("1"))
                                             {
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, ""))); ;
+
+                                                if (Source.Contains("ELPT"))
+                                                {
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Source, "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.MoveOut, ""))); ;
+                                                }
                                             }
                                         }
                                     }
@@ -1234,6 +1293,7 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pause, TaskJob.Params)));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pause, TaskJob.Params)));
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -1246,6 +1306,7 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Continue, TaskJob.Params)));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Continue, TaskJob.Params)));
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -1258,6 +1319,7 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Stop, TaskJob.Params)));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Stop, TaskJob.Params)));
                                     break;
                                 default:
                                     TaskReport.On_Task_Finished(TaskJob);
@@ -1266,7 +1328,99 @@ namespace TransferControl.TaksFlow
                             break;
                         case TaskFlowManagement.Command.RESET_WTS:
 
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Reset, TaskJob.Params)));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Reset, TaskJob.Params)));
+                                    break;                                
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.SHome, TaskJob.Params)));
+                                    break;
+                                case 2:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.OrgSearch, TaskJob.Params)));
+                                    break;
+                                case 3:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Home, TaskJob.Params)));
+                                    break;
+                                case 4:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Home, TaskJob.Params)));
+                                    break;
+                                case 5:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("ILPT"))
+                                            {
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
+                                            }
+                                            if (WTS_LastCmdParam["@ToPosition"].Contains("ILPT"))
+                                            {
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
+                                            }
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
 
+                                            break;
+                                    }
+                                    break;
+                                case 6:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("ILPT"))
+                                            {
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Load, "1")));
+                                            }
+                                            if (WTS_LastCmdParam["@ToPosition"].Contains("ILPT"))
+                                            {
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Load, "1")));
+                                            }
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+
+                                            break;
+                                    }
+                                    break;
+                                case 7:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("ILPT"))
+                                            {
+                                                if (NodeManagement.Get(WTS_LastCmdParam["@FromPosition"]).MappingResult.Equals("0000000000000000000000000"))
+                                                {
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, WTS_LastCmdParam["@Mode"], WTS_LastCmdParam["@FromPosition"])));
+                                                }
+                                            }
+                                            
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+
+                                            break;
+                                    }
+                                    break;
+                                case 8:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("ILPT"))
+                                            {
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, "")));
+                                            }
+
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+
+                                            break;
+                                    }
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
 
 
                         case TaskFlowManagement.Command.RESET_E84:

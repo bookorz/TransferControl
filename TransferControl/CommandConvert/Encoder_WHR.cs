@@ -259,7 +259,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA_MC":
 
-                    commandStr = "$2SET:STOP_";
+                    commandStr = "$2SET:STOP_:0";
                     commandStr = string.Format(commandStr);
                     break;
                 default:

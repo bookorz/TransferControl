@@ -743,6 +743,18 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.SetSpeed(txn.AdrNo, txn.Value);
                                 txn.CommandType = "SET";
                                 break;
+                            case Transaction.Command.CTU.Pause:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Pause();
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.CTU.Continue:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Continue();
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.CTU.Stop:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Stop();
+                                txn.CommandType = "SET";
+                                break;
                         }
                         break;
                     case "WHR":
