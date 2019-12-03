@@ -369,6 +369,7 @@ namespace TransferControl.Controller
                 catch (Exception eex)
                 {
                     logger.Error(eex.StackTrace);
+                    _ReportTarget.On_Message_Log("CMD", DeviceName + " Err:" + eex.StackTrace);
                     Txn.SetTimeOutMonitor(false);
                     Transaction tmp;
                     TransactionList.TryRemove(key, out tmp);
@@ -382,7 +383,7 @@ namespace TransferControl.Controller
                 Transaction workingTxn;
                 TransactionList.TryGetValue(key, out workingTxn);
                 logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
-
+                _ReportTarget.On_Message_Log("CMD", DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
                 result = false;
             }
 

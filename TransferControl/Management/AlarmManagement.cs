@@ -5,142 +5,104 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using TransferControl.Comm;
+using TransferControl.Config;
 
 namespace TransferControl.Management
 {
     public class AlarmManagement
     {
         static ILog logger = LogManager.GetLogger(typeof(AlarmManagement));
-        private static List<AlarmInfo> AlarmList = new List<AlarmInfo>();
+        private static List<AlarmInfo> AlarmHis = new List<AlarmInfo>();
         //private static List<AlarmInfo> AlarmHistory = new List<AlarmInfo>();
-
-        public static void Add(AlarmInfo Alm)
+        private static List<AlarmInfo> AlarmData = new List<AlarmInfo>();
+        public class AlarmInfo
         {
-            AlarmList.Add(Alm);
-            InsertToDB(Alm);
-            logger.Info("Alarm Happen: " + JsonConvert.SerializeObject(Alm, Formatting.Indented));
+            public string NodeName { get; set; }
+            public string AddressNo { get; set; }
+            public string Controller { get; set; }
+            public string ErrorCode { get; set; }
+            public string ErrorDesc { get; set; }
+            public string ALID { get; set; }
+            public string ALTX { get; set; }
+            public DateTime TimeStamp { get; set; }
+
         }
 
-        public static void Clear()
+        public static void InitialAlarm()
         {
-            AlarmList.Clear();
-        }
+            AlarmData = new ConfigTool<List<AlarmInfo>>().ReadFile("config/error_code_en.json");
+            AlarmHis = new ConfigTool<List<AlarmInfo>>().ReadFile("config/AlarmHistory.json");
 
-        public static bool HasCritical()
-        {
-            var find = from Alm in AlarmList.ToList()
-                       where Alm.IsStop == true
-                       select Alm;
-
-            if (find.Count() != 0)
+            if (AlarmHis == null)
             {
-                return true;
-            }
-            else
-            {
-                return false;
+                AlarmHis = new List<AlarmInfo>();
             }
         }
 
-        public static List<AlarmInfo> GetAll()
+        public static AlarmInfo AddToHistory(string Controller,string AddressNo, string ErrorCode)
         {
-            List<AlarmInfo> result = null;
-            result = AlarmList.ToList();
-            return result;
+            AlarmInfo almInfo = null;
+            try
+            {
+
+                lock (AlarmData)
+                {
+                    var find = from alm in AlarmData
+                               where (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals(ErrorCode))|| (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals("99999999"))
+                               select alm;
+                    if (find.Count() != 0)
+                    {
+                        almInfo = find.First();
+                        almInfo.NodeName = NodeManagement.GetByController(Controller,AddressNo) != null ? NodeManagement.GetByController(Controller, AddressNo).Name:"";
+                    }
+                    else
+                    {
+                        almInfo = new AlarmInfo();
+                        almInfo.Controller = Controller;
+                        almInfo.ErrorCode = ErrorCode;
+                        almInfo.ErrorDesc = "Error code not exist";
+                        almInfo.ALID = "";
+                        almInfo.ALTX = "";
+                    }
+                    almInfo.TimeStamp = DateTime.Now;
+                }
+
+
+                lock (AlarmHis)
+                {
+                    AlarmHis.Insert(0,almInfo);
+                    if (AlarmHis.Count > 2000)
+                    {
+                        AlarmHis.RemoveAt(AlarmHis.Count-1);
+                    }
+                }
+                new ConfigTool<List<AlarmInfo>>().WriteFile("config/AlarmHistory.json", AlarmHis);
+
+            }
+            catch (Exception e)
+            {
+                logger.Error("AddToHistory error:" + e.StackTrace);
+            }
+            return almInfo;
         }
 
         public static List<AlarmInfo> GetHistory()
         {
-            return GetHistory(DateTime.Now.AddDays(-1),DateTime.Now);
-        }
-
-        public static List<AlarmInfo> GetHistory(DateTime From, DateTime To)
-        {
             List<AlarmInfo> result = null;
-
-            DBUtil dBUtil = new DBUtil();
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            DataTable dtTemp;
-
             try
             {
-                string SQL = @"SELECT t.node_name AS NodeName,t.system_alarm_code AS SystemAlarmCode,t.alarm_code AS AlarmCode,t.alarm_desc AS 'DESC',t.alarm_eng_desc AS EngDesc,t.alarm_type AS AlarmType, t.time_stamp AS timestamp from log_alarm_his t
-                                where t.time_stamp between
-                                STR_TO_DATE(@From, '%Y-%m-%d %H:%i:%s') and
-                                STR_TO_DATE(@To, '%Y-%m-%d %H:%i:%s')";
-                keyValues.Add("@From", From.ToString("yyyy-MM-dd HH:mm:ss"));
-                keyValues.Add("@To", To.ToString("yyyy-MM-dd HH:mm:ss"));
-                dtTemp = dBUtil.GetDataTable(SQL, keyValues);
-
-                string str_json = JsonConvert.SerializeObject(dtTemp, Formatting.Indented);
-                result = JsonConvert.DeserializeObject<List<AlarmInfo>>(str_json);
-
+                result = AlarmHis;
             }
             catch (Exception e)
             {
-                logger.Error("GetUUID error:" + e.StackTrace);
+                logger.Error("GetHistory error:" + e.StackTrace);
             }
 
             return result;
         }
 
-        public static void Remove(string NodeName)
-        {
-            var find = from Alm in AlarmList.ToList()
-                       where Alm.NodeName.Equals(NodeName)
-                       select Alm;
-
-            if (find.Count() != 0)
-            {
-                foreach (AlarmInfo each in find)
-                {
-                    AlarmList.Remove(each);
-                }
-            }
 
 
-        }
 
-        public static void Remove(AlarmInfo alm)
-        {
-
-            AlarmList.Remove(alm);
-
-        }
-
-        public static void InsertToDB(AlarmInfo alm)
-        {
-
-            DBUtil dBUtil = new DBUtil();
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-
-            try
-            {
-                string SQL = @"insert into log_alarm_his (node_name,system_alarm_code,alarm_code,alarm_desc,alarm_eng_desc,alarm_type,is_stop,need_reset,time_stamp)
-                                values(@node_name,@system_alarm_code,@alarm_code,@alarm_desc,@alarm_eng_desc,@alarm_type,@is_stop,@need_reset,@time_stamp)";
-
-                keyValues.Add("@node_name", alm.NodeName);
-                keyValues.Add("@system_alarm_code", alm.SystemAlarmCode);
-                //keyValues.Add("@alarm_tpye", alm.AlarmType);
-                keyValues.Add("@alarm_code", alm.AlarmCode);
-                keyValues.Add("@alarm_desc", alm.Desc);
-                keyValues.Add("@alarm_eng_desc", alm.EngDesc);
-                keyValues.Add("@alarm_type", alm.Type);
-                keyValues.Add("@is_stop", alm.IsStop);
-                keyValues.Add("@need_reset", alm.NeedReset);
-                keyValues.Add("@time_stamp", alm.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss.ffffff"));
-                
-
-                dBUtil.ExecuteNonQueryAsync(SQL, keyValues);
-                
-
-            }
-            catch (Exception e)
-            {
-                logger.Error("InsertToDB error:" + e.StackTrace);
-            }
-
-
-        }
     }
 }

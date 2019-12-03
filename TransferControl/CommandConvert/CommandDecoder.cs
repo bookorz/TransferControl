@@ -479,6 +479,19 @@ namespace TransferControl.CommandConvert
                                                     }
                                                 }
                                             }
+                                            else if (each.Type.Equals(CommandReturnMessage.ReturnType.Error))
+                                            {
+                                                each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8);
+                                            }
+                                            else if (each.Type.Equals(CommandReturnMessage.ReturnType.Excuted) && each.Command.Equals("E84__"))
+                                            {
+                                                each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8).Substring(4);
+                                                if (!each.Value.Equals("000000BB"))
+                                                {
+                                                    each.Type = CommandReturnMessage.ReturnType.Error;
+                                                }
+                                                
+                                            }
 
                                         }
                                         else

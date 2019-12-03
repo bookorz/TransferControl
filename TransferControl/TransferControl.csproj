@@ -76,6 +76,7 @@
     <Compile Include="CommandConvert\EncoderFFU.cs" />
     <Compile Include="CommandConvert\Encoder_Aligner.cs" />
     <Compile Include="CommandConvert\Encoder_CTU.cs" />
+    <Compile Include="CommandConvert\Encoder_E84.cs" />
     <Compile Include="CommandConvert\Encoder_ELPT.cs" />
     <Compile Include="CommandConvert\Encoder_FoupRobot.cs" />
     <Compile Include="CommandConvert\Encoder_ILPT.cs" />
@@ -118,10 +119,7 @@
     <Compile Include="Digital_IO\IDIOTriggerReport.cs" />
     <Compile Include="Engine\IUserInterfaceReport.cs" />
     <Compile Include="Engine\RouteControl.cs" />
-    <Compile Include="Management\AlarmInfo.cs" />
     <Compile Include="Management\AlarmManagement.cs" />
-    <Compile Include="Management\AlarmMapping.cs" />
-    <Compile Include="Management\AlarmMessage.cs" />
     <Compile Include="Management\ArchiveLog.cs" />
     <Compile Include="Management\Carrier.cs" />
     <Compile Include="Management\CarrierManagement.cs" />

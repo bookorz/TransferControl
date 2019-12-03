@@ -11,7 +11,7 @@ using TransferControl.Digital_IO;
 
 namespace TransferControl.Engine
 {
-    public class RouteControl : AlarmMapping, ICommandReport, IDIOTriggerReport, IJobReport, ITaskFlowReport
+    public class RouteControl : ICommandReport, IDIOTriggerReport, IJobReport, ITaskFlowReport
     {
         //git upload test4
         private static readonly ILog logger = LogManager.GetLogger(typeof(RouteControl));
@@ -60,7 +60,7 @@ namespace TransferControl.Engine
             PointManagement.LoadConfig();
             //初始化工作腳本
             TaskFlowManagement.SetReport(this);
-
+            AlarmManagement.InitialAlarm();
         }
 
 
@@ -97,8 +97,6 @@ namespace TransferControl.Engine
                 {
                     case Transaction.Command.RobotType.Reset:
                         Node.HasAlarm = false;
-                        AlarmManagement.Remove(Node.Name);
-                        AlarmManagement.Remove("SYSTEM");
                         _UIReport.On_Node_State_Changed(Node, Node.State);
                         break;
                     case Transaction.Command.RobotType.Pause:
@@ -1550,17 +1548,7 @@ namespace TransferControl.Engine
                 Node.HasAlarm = true;
                 _UIReport.On_TaskJob_Aborted(Task, Node.Name, "On_Command_Error", "TimeOut");
                 _UIReport.On_Command_TimeOut(Node, Txn);
-                AlarmMessage alm = Get("SYSTEM", "00200002");
-                AlarmInfo info = new AlarmInfo();
-                info.NodeName = Node.Name;
-                info.AlarmCode = alm.Return_Code_ID;
-                info.SystemAlarmCode = alm.CodeID;
-                info.Desc = alm.Code_Cause;
-                info.EngDesc = alm.Code_Cause_English;
-                info.Type = alm.Code_Type;
-                info.IsStop = alm.IsStop;
-                info.TimeStamp = DateTime.Now;
-
+                AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller, Node.AdrNo, "00200002");
                 _UIReport.On_Alarm_Happen(info);
             }
         }
@@ -1665,16 +1653,7 @@ namespace TransferControl.Engine
                     //_UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "ALARM");
 
-                    AlarmMessage alm = Get(Node.Name, Msg.Value);
-                    AlarmInfo info = new AlarmInfo();
-                    info.NodeName = Node.Name;
-                    info.AlarmCode = alm.Return_Code_ID;
-                    info.SystemAlarmCode = alm.CodeID;
-                    info.Desc = alm.Code_Cause;
-                    info.EngDesc = alm.Code_Cause_English;
-                    info.Type = alm.Code_Type;
-                    info.IsStop = alm.IsStop;
-                    info.TimeStamp = DateTime.Now;
+                    AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller,"-1",Msg.Value);
 
                     _UIReport.On_Alarm_Happen(info);
                 }
@@ -1769,16 +1748,8 @@ namespace TransferControl.Engine
             }
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
-            AlarmMessage alm = Get(Node.Name, Msg.Value);
-            AlarmInfo info = new AlarmInfo();
-            info.NodeName = Node.Name;
-            info.AlarmCode = alm.Return_Code_ID;
-            info.SystemAlarmCode = alm.CodeID;
-            info.Desc = alm.Code_Cause;
-            info.EngDesc = alm.Code_Cause_English;
-            info.Type = alm.Code_Type;
-            info.IsStop = alm.IsStop;
-            info.TimeStamp = DateTime.Now;
+
+            AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller,Node.AdrNo, Msg.Value);
 
             _UIReport.On_Alarm_Happen(info);
         }
@@ -1819,17 +1790,8 @@ namespace TransferControl.Engine
             //    ControllerManagement.ClearTransactionList();
             //    TaskJob.Clear();
             //}
-            AlarmMessage alm = Get(DIOName, ErrorCode);
-            AlarmInfo info = new AlarmInfo();
-            info.NodeName = DIOName;
-            info.AlarmCode = alm.Return_Code_ID;
-            info.SystemAlarmCode = alm.CodeID;
-            info.Desc = alm.Code_Cause;
-            info.EngDesc = alm.Code_Cause_English;
-            info.Type = alm.Code_Type;
-            info.IsStop = alm.IsStop;
-            info.TimeStamp = DateTime.Now;
 
+            AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(DIOName,"-1", ErrorCode);
             _UIReport.On_Alarm_Happen(info);
 
         }
@@ -1854,18 +1816,12 @@ namespace TransferControl.Engine
             //TaskJob.Remove(Id);
             logger.Debug("On_Task_Abort");
             _UIReport.On_TaskJob_Aborted(Task, Location, ReportType, Message);
-            AlarmMessage alm = Get("SYSTEM", Message);
-            AlarmInfo info = new AlarmInfo();
-            info.NodeName = Location;
-            info.AlarmCode = alm.Return_Code_ID;
-            info.SystemAlarmCode = alm.CodeID;
-            info.Desc = alm.Code_Cause;
-            info.EngDesc = alm.Code_Cause_English;
-            info.Type = alm.Code_Type;
-            info.IsStop = alm.IsStop;
-            info.TimeStamp = DateTime.Now;
+            if (ReportType.Equals("ABS") || ReportType.Equals("CAN"))
+            {
+                AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory("SYSTEM", "-1", Message);
 
-            _UIReport.On_Alarm_Happen(info);
+                _UIReport.On_Alarm_Happen(info);
+            }
         }
 
         public void On_Task_Finished(TaskFlowManagement.CurrentProcessTask Task)

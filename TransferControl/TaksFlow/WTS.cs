@@ -188,7 +188,7 @@ namespace TransferControl.TaksFlow
                                     {
                                         //WHR putwait for CTU
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, TaskJob.Params["@Mode"], "CTU")));
-                                        
+
                                     }
                                     else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
                                     {
@@ -260,13 +260,15 @@ namespace TransferControl.TaksFlow
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.SHome, "")));
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
                                     }
-                                    else if(TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
                                     {
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
                                     }
 
                                     break;
                                 default:
+                                    WTS_LastCmd = 0;
+                                    WTS_LastCmdParam = null;
                                     TaskReport.On_Task_Finished(TaskJob);
                                     return false;
                             }
@@ -300,6 +302,8 @@ namespace TransferControl.TaksFlow
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Home, "")));
                                     break;
                                 default:
+                                    WTS_LastCmd = 0;
+                                    WTS_LastCmdParam = null;
                                     TaskReport.On_Task_Finished(TaskJob);
                                     return false;
                             }
@@ -1006,7 +1010,7 @@ namespace TransferControl.TaksFlow
                                 case 7:
                                     if (TaskJob.Params.ContainsKey("@Source") && TaskJob.Params.ContainsKey("@Destination"))
                                     {
-                                        
+
                                         string destination = TaskJob.Params["@Destination"].Replace("_", "");
                                         if (NodeManagement.Get(destination) != null)
                                         {
@@ -1334,7 +1338,7 @@ namespace TransferControl.TaksFlow
                                     TaskReport.On_Task_Ack(TaskJob);
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Reset, TaskJob.Params)));
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Reset, TaskJob.Params)));
-                                    break;                                
+                                    break;
                                 case 1:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.SHome, TaskJob.Params)));
                                     break;
@@ -1353,14 +1357,16 @@ namespace TransferControl.TaksFlow
                                         case TaskFlowManagement.Command.TRANSFER_WTS:
                                             if (WTS_LastCmdParam["@FromPosition"].Contains("ILPT"))
                                             {
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.OrgSearch, TaskJob.Params)));
                                             }
                                             if (WTS_LastCmdParam["@ToPosition"].Contains("ILPT"))
                                             {
-                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.OrgSearch, TaskJob.Params)));
                                             }
                                             break;
                                         case TaskFlowManagement.Command.TRANSFER_PTZ:
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Transfer, WTS_LastCmdParam["@Mode"], "", WTS_LastCmdParam["@Station"], "", "", "", "", WTS_LastCmdParam["@Direction"])));
+
 
                                             break;
                                     }
@@ -1379,7 +1385,33 @@ namespace TransferControl.TaksFlow
                                             }
                                             break;
                                         case TaskFlowManagement.Command.TRANSFER_PTZ:
+                                            var odd = from job in NodeManagement.Get("PTZ").JobList.Values.ToList()
+                                                      where job.MapFlag && Convert.ToInt32(job.Slot) % 2 != 0
+                                                      select job;
+                                            var even = from job in NodeManagement.Get("PTZ").JobList.Values.ToList()
+                                                       where job.MapFlag && Convert.ToInt32(job.Slot) % 2 == 0
+                                                       select job;
 
+                                            //IN: put to ptz  OUT: get from ptz
+                                            if (WTS_LastCmdParam["@Way"].Equals("OUT"))
+                                            {
+                                                
+                                            }
+                                            else if (WTS_LastCmdParam["@Way"].Equals("IN"))
+                                            {
+                                                if (WTS_LastCmdParam["@Station"].Equals("0") && odd.Count() != 0)
+                                                {//ODD
+                                                 //CTU Get from PTZ
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, WTS_LastCmdParam["@Mode"], "PTZ", "", "", "", "", "", "1")));
+
+                                                }
+                                                else if (WTS_LastCmdParam["@Station"].Equals("1") && even.Count() != 0)
+                                                {//EVEN
+                                                    //CTU Get from PTZ
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, WTS_LastCmdParam["@Mode"], "PTZ", "", "", "", "", "", "1")));
+
+                                                }
+                                            }
                                             break;
                                     }
                                     break;
@@ -1394,10 +1426,26 @@ namespace TransferControl.TaksFlow
                                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Place, WTS_LastCmdParam["@Mode"], WTS_LastCmdParam["@FromPosition"])));
                                                 }
                                             }
-                                            
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("CTU"))
+                                            {
+                                                if (NodeManagement.Get(WTS_LastCmdParam["@ToPosition"]).MappingResult.Equals("0000000000000000000000000"))
+                                                {
+                                                    //WHR Putwait CTU
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.PreparePlace, WTS_LastCmdParam["@Mode"], WTS_LastCmdParam["@FromPosition"])));
+                                                    //CTU Getwait for WHR
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, WTS_LastCmdParam["@Mode"], "WHR", "", "", "", "", "", "0")));
+                                                }
+                                                else
+                                                {
+                                                    //WHR Get ILPT
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Pick, WTS_LastCmdParam["@Mode"], WTS_LastCmdParam["@ToPosition"])));
+                                                    //CTU Getwait for WHR
+                                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Pick, WTS_LastCmdParam["@Mode"], "WHR", "", "", "", "", "", "0")));
+                                                }
+                                            }
                                             break;
                                         case TaskFlowManagement.Command.TRANSFER_PTZ:
-
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("PTZ", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.PTZ.Home, "")));
                                             break;
                                     }
                                     break;
@@ -1409,7 +1457,81 @@ namespace TransferControl.TaksFlow
                                             {
                                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, "")));
                                             }
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("CTU"))
+                                            {
 
+                                                //WHR extend to CTU 
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Extend, WTS_LastCmdParam["@Mode"], "", "3", "", "", "", "", "1")));
+                                            }
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+
+                                            break;
+                                    }
+                                    break;
+                                case 9:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("CTU"))
+                                            {
+
+                                                //CTU hold
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Hold, WTS_LastCmdParam["@Mode"])));
+                                            }
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+
+                                            break;
+                                    }
+                                    break;
+                                case 10:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("CTU"))
+                                            {
+
+                                                //WHR Down
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Down, "")));
+                                            }
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+
+                                            break;
+                                    }
+                                    break;
+                                case 11:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("CTU"))
+                                            {
+
+                                                //WHR Retract
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.Retract, "")));
+                                            }
+                                            break;
+                                        case TaskFlowManagement.Command.TRANSFER_PTZ:
+
+                                            break;
+                                    }
+                                    break;
+                                case 12:
+                                    switch (WTS_LastCmd)
+                                    {
+                                        case TaskFlowManagement.Command.TRANSFER_WTS:
+
+                                            if (WTS_LastCmdParam["@FromPosition"].Contains("CTU"))
+                                            {
+
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.SHome, TaskJob.Params)));
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Home, TaskJob.Params)));
+                                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(WTS_LastCmdParam["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, "")));
+                                            }
                                             break;
                                         case TaskFlowManagement.Command.TRANSFER_PTZ:
 

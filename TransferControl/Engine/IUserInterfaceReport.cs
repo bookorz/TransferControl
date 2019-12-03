@@ -6,6 +6,7 @@ namespace TransferControl.Engine
 {
     public interface IUserInterfaceReport
     {
+        Node GetNode(string Name);
         void NewTask(string Id, TaskFlowManagement.Command TaskName, Dictionary<string, string> param = null);
         void On_Command_Excuted(Node Node, Transaction Txn, CommandReturnMessage Msg);
         void On_Command_Error(Node Node, Transaction Txn, CommandReturnMessage Msg);
@@ -20,7 +21,7 @@ namespace TransferControl.Engine
         void On_DIO_Data_Chnaged(string Parameter, string Value , string Type);
         void On_Connection_Error(string DIOName, string ErrorMsg);
         void On_Connection_Status_Report(string DIOName, string Status);
-        void On_Alarm_Happen(AlarmInfo Alarm);
+        void On_Alarm_Happen(AlarmManagement.AlarmInfo Alarm);
         void On_TaskJob_Ack(TaskFlowManagement.CurrentProcessTask Task);
         void On_TaskJob_Aborted(TaskFlowManagement.CurrentProcessTask Task, string NodeName, string ReportType, string Message);
         void On_TaskJob_Finished(TaskFlowManagement.CurrentProcessTask Task);
