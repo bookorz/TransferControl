@@ -48,12 +48,15 @@ namespace TransferControl.Management
                 lock (AlarmData)
                 {
                     var find = from alm in AlarmData
-                               where (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals(ErrorCode))|| (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals("99999999"))
+                               where (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals(ErrorCode))
                                select alm;
                     if (find.Count() != 0)
                     {
                         almInfo = find.First();
-                        almInfo.NodeName = NodeManagement.GetByController(Controller,AddressNo) != null ? NodeManagement.GetByController(Controller, AddressNo).Name:"";
+                        if (almInfo.NodeName == null)
+                        {
+                            almInfo.NodeName = "";
+                        }
                     }
                     else
                     {
@@ -63,6 +66,11 @@ namespace TransferControl.Management
                         almInfo.ErrorDesc = "Error code not exist";
                         almInfo.ALID = "";
                         almInfo.ALTX = "";
+                        almInfo.NodeName = "";
+                    }
+                    if (almInfo.NodeName.Equals(""))
+                    {
+                        almInfo.NodeName = NodeManagement.GetByController(Controller, AddressNo) != null ? NodeManagement.GetByController(Controller, AddressNo).Name : "";
                     }
                     almInfo.TimeStamp = DateTime.Now;
                 }

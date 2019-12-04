@@ -220,5 +220,21 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
+        public string Initial_IO()
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$3SET:TGEVT";
+                    commandStr = string.Format(commandStr);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
     }
 }

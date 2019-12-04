@@ -1581,6 +1581,16 @@ namespace TransferControl.Engine
                         {
                             IO_State.Add(IO_Name, IO_Value);
                         }
+                        switch (IO_Name)
+                        {
+                            case "CTU-Present":
+                                 NodeManagement.Get("CTU").R_Presence = IO_Value.Equals("1") ? true : false;
+                                break;
+                            case "PTZ-Present":
+                                NodeManagement.Get("PTZ").R_Presence = IO_Value.Equals("1") ? true : false;
+                                
+                                break;
+                        }
                     }
                 }
                 switch (Node.Type.ToUpper())
@@ -1653,7 +1663,7 @@ namespace TransferControl.Engine
                     //_UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "ALARM");
 
-                    AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller,"-1",Msg.Value);
+                    AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller, "-1", Msg.Value);
 
                     _UIReport.On_Alarm_Happen(info);
                 }
@@ -1732,7 +1742,7 @@ namespace TransferControl.Engine
             //Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             TaskFlowManagement.CurrentProcessTask Task = TaskFlowManagement.TaskRemove(Txn.TaskId);
-            
+
             if (Task != null)
             {
                 Task.HasError = true;
@@ -1749,9 +1759,15 @@ namespace TransferControl.Engine
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
 
-            AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller,Node.AdrNo, Msg.Value);
+            AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller, Node.AdrNo, Msg.Value);
+            if (Node.Type.Equals("ELPT") && Txn.Method.Equals(Transaction.Command.ELPT.ReadCID))
+            {
 
-            _UIReport.On_Alarm_Happen(info);
+            }
+            else
+            {
+                _UIReport.On_Alarm_Happen(info);
+            }
         }
 
         public void On_Data_Chnaged(string Parameter, string Value, string Type)
@@ -1791,7 +1807,7 @@ namespace TransferControl.Engine
             //    TaskJob.Clear();
             //}
 
-            AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(DIOName,"-1", ErrorCode);
+            AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(DIOName, "-1", ErrorCode);
             _UIReport.On_Alarm_Happen(info);
 
         }

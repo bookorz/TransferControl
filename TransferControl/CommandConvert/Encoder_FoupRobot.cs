@@ -300,6 +300,7 @@ namespace TransferControl.CommandConvert
 
             return commandStr + EndCode();
         }
+        
         public string Stop()
         {
             string commandStr = "";
@@ -308,6 +309,22 @@ namespace TransferControl.CommandConvert
                 case "SANWA_MC":
 
                     commandStr = "$1SET:STOP_:0";
+                    commandStr = string.Format(commandStr);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+        public string Initial_IO()
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+
+                    commandStr = "$1SET:TGEVT";
                     commandStr = string.Format(commandStr);
                     break;
                 default:

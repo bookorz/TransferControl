@@ -755,6 +755,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Stop();
                                 txn.CommandType = "SET";
                                 break;
+                            case Transaction.Command.CTU.Initial_IO:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Initial_IO();
+                                txn.CommandType = "SET";
+                                break;
                         }
                         break;
                     case "WHR":
@@ -912,6 +916,10 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.FoupRobot.Stop:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Stop();
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.FoupRobot.Initial_IO:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Initial_IO();
                                 txn.CommandType = "SET";
                                 break;
                         }

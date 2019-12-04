@@ -558,17 +558,22 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET") || ReturnMsg.Command.Equals("SP___") || ReturnMsg.Command.Equals("PAUSE") || ReturnMsg.Command.Equals("CONT_") || ReturnMsg.Command.Equals("STOP_"))
-                                    {
-                                        Node = NodeManagement.GetFirstByController(DeviceName);
-                                    }
-                                    else
-                                    {
-                                        Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
-                                    }
+                                    //if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET") || ReturnMsg.Command.Equals("SP___") || ReturnMsg.Command.Equals("PAUSE") || ReturnMsg.Command.Equals("CONT_") || ReturnMsg.Command.Equals("STOP_") || ReturnMsg.Command.Equals("TGEVT"))
+                                    //{
+                                    //    Node = NodeManagement.GetFirstByController(DeviceName);
+                                    //}
+                                    //else
+                                    //{
+                                    //    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
+                                    //}
+                                    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
                                     if (Node == null)
                                     {
                                         Node = NodeManagement.GetOCRByController(DeviceName);
+                                    }
+                                    if (Node == null)
+                                    {
+                                        Node = NodeManagement.GetFirstByController(DeviceName);
                                     }
                                 }
                                 //lock (TransactionList)
