@@ -261,14 +261,24 @@ namespace TransferControl.TaksFlow
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Home, "")));
                                         //WHR Home
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("WHR", "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.WHR.SHome, "")));
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.RaiseClose, "")));
                                     }
                                     else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Unload, TaskJob.Params)));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.RaiseClose, "")));
                                     }
 
                                     break;
+                                case 7:
+                                    if (TaskJob.Params["@FromPosition"].Contains("ILPT"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@FromPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Load, "1")));
+                                    }
+                                    else if (TaskJob.Params["@FromPosition"].Contains("CTU"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(TaskJob.Params["@ToPosition"], "FINISHED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ILPT.Load, "1")));
+                                    }
+                                        break;
                                 default:
                                     WTS_LastCmd = 0;
                                     WTS_LastCmdParam = null;
