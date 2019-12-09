@@ -17,16 +17,17 @@ namespace TransferControl.Management
         public static void LoadConfig()
         {
             PointList = new Dictionary<string, Dictionary<string, RobotPoint>>();
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            string Sql = @"SELECT t.node_name AS NodeName,t.position AS POSITION,t.position_type AS PositionType,t.point as Point, t.mapping_point as MappingPoint, t.pre_mapping_point as PreMappingPoint, t.`offset` as Offset 
-                            FROM config_point t 
-                            WHERE t.equipment_model_id = @equipment_model_id";
-            keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
-            DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
-            List<RobotPoint> Points = JsonConvert.DeserializeObject<List<RobotPoint>>(str_json);
+            //Dictionary<string, object> keyValues = new Dictionary<string, object>();
+            //string Sql = @"SELECT t.node_name AS NodeName,t.position AS POSITION,t.position_type AS PositionType,t.point as Point, t.mapping_point as MappingPoint, t.pre_mapping_point as PreMappingPoint, t.`offset` as Offset 
+            //                FROM config_point t 
+            //                WHERE t.equipment_model_id = @equipment_model_id";
+            //keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
+            //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
+            //List<RobotPoint> Points = JsonConvert.DeserializeObject<List<RobotPoint>>(str_json);
+            List<RobotPoint> RobotPointList = new ConfigTool<List<RobotPoint>>().ReadFile("config/Point.json");
 
-            foreach (RobotPoint each in Points)
+            foreach (RobotPoint each in RobotPointList)
             {
                 Dictionary<string, RobotPoint> tmp;
                 if (PointList.TryGetValue(each.NodeName,out tmp))

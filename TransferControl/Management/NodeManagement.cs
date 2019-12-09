@@ -22,30 +22,31 @@ namespace TransferControl.Management
         {
             NodeList = new ConcurrentDictionary<string, Node>();
             NodeListByCtrl = new ConcurrentDictionary<string, Node>();
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            string Sql = @"SELECT 
-	                        UPPER(t.node_id) AS name, UPPER(t.controller_id) AS controller,
-	                        t.conn_address AS adrno, UPPER(t.node_type) AS TYPE, 
-	                        UPPER(t.vendor) AS brand,t.bypass,t.enable_flg AS ENABLE,                        
-	                        t.wafer_size as WaferSize,
-                            t.Double_Arm as DoubleArmActive,
-                            t.Notch_Angle as NotchAngle,
-                            t.R_Flip_Degree as R_Flip_Degree,
-                            t.associated_node as Associated_Node,
-                            t.r_arm as RArmActive,
-                            t.l_arm as LArmActive,
-                            t.carrier_type AS CarrierType,
-                            t.mode as Mode,
-                            t.ack_timeout as AckTimeOut,
-                            t.motion_timeout as MotionTimeOut,
-                            t.pooltask as PoolTask
-                        FROM config_node t
-                        WHERE t.equipment_model_id = @equipment_model_id";
-            keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
-            DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
-            //str_json = str_json.Replace("\"[", "[").Replace("]\"", "]").Replace("\\\"", "\"");
-            List<Node> nodeList = JsonConvert.DeserializeObject<List<Node>>(str_json);
+            //dictionary<string, object> keyvalues = new dictionary<string, object>();
+            //string sql = @"select 
+            //             upper(t.node_id) as name, upper(t.controller_id) as controller,
+            //             t.conn_address as adrno, upper(t.node_type) as type, 
+            //             upper(t.vendor) as brand,t.bypass,t.enable_flg as enable,                        
+            //             t.wafer_size as wafersize,
+            //                t.double_arm as doublearmactive,
+            //                t.notch_angle as notchangle,
+            //                t.r_flip_degree as r_flip_degree,
+            //                t.associated_node as associated_node,
+            //                t.r_arm as rarmactive,
+            //                t.l_arm as larmactive,
+            //                t.carrier_type as carriertype,
+            //                t.mode as mode,
+            //                t.ack_timeout as acktimeout,
+            //                t.motion_timeout as motiontimeout,
+            //                t.pooltask as pooltask
+            //            from config_node t
+            //            where t.equipment_model_id = @equipment_model_id";
+            //keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
+            //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
+            ////str_json = str_json.Replace("\"[", "[").Replace("]\"", "]").Replace("\\\"", "\"");
+            //List<Node> nodeList = JsonConvert.DeserializeObject<List<Node>>(str_json);
+            List<Node> nodeList = new ConfigTool<List<Node>>().ReadFile("config/Node.json");
 
             foreach (Node each in nodeList)
             {

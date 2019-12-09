@@ -30,54 +30,56 @@ namespace TransferControl.Management
             //        each.Close();
             //    }
             //}
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
+            //  Dictionary<string, object> keyValues = new Dictionary<string, object>();
             Controllers = new ConcurrentDictionary<string, IController>();
-            string Sql = @"SELECT UPPER(t.device_name) as DeviceName,t.device_type as DeviceType,
-										UPPER(t.vendor) as vendor,
-                            case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
-                            case when t.conn_type = 'Socket' then  CONVERT(t.conn_port,SIGNED) else 0 end as Port ,
-                            case when t.conn_type = 'Comport' then   CONVERT(t.conn_port,SIGNED) else 0 end as BaudRate ,
-                            case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,                            
-                            t.conn_type as ConnectionType,
-                            t.enable_flg as Enable,
-                            t.controller_type as ControllerType
-                            FROM config_controller_setting t
-                            WHERE t.equipment_model_id = @equipment_model_id
-                            AND t.device_type <> 'DIO'";
-            keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
-            DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            foreach(DataRow row in dt.Rows)
+            //  string Sql = @"SELECT UPPER(t.device_name) as DeviceName,t.device_type as DeviceType,
+            //UPPER(t.vendor) as vendor,
+            //                  case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
+            //                  case when t.conn_type = 'Socket' then  CONVERT(t.conn_port,SIGNED) else 0 end as Port ,
+            //                  case when t.conn_type = 'Comport' then   CONVERT(t.conn_port,SIGNED) else 0 end as BaudRate ,
+            //                  case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,                            
+            //                  t.conn_type as ConnectionType,
+            //                  t.enable_flg as Enable,
+            //                  t.controller_type as ControllerType
+            //                  FROM config_controller_setting t
+            //                  WHERE t.equipment_model_id = @equipment_model_id
+            //                  AND t.device_type <> 'DIO'";
+            //  keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //  DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
+
+            List<DeviceController> controllerList = new ConfigTool<List<DeviceController>>().ReadFile("config/Controller.json");
+            foreach (DeviceController each in controllerList)
             {
                 IController ctrl=null;
-                if (row["ControllerType"].ToString().Equals("ASCII"))
+                if (each.ControllerType.Equals("ASCII"))
                 {
                     DeviceController d = new DeviceController();
-                    d.DeviceName = row["DeviceName"].ToString();
-                    d.DeviceType = row["DeviceType"].ToString();
-                    d.Vendor = row["vendor"].ToString();
-                    d.IPAdress = row["IPAdress"].ToString();
-                    d.Port = Convert.ToInt32(row["Port"].ToString());
-                    d.BaudRate = Convert.ToInt32(row["BaudRate"].ToString());
-                    d.PortName = row["PortName"].ToString();
-                    d.ConnectionType = row["ConnectionType"].ToString();
-                    d.Enable =Convert.ToBoolean(Convert.ToInt32(row["Enable"].ToString()));
-                    d.ControllerType = row["ControllerType"].ToString();
+                    d.DeviceName = each.DeviceName;
+                    d.DeviceType = each.DeviceType;
+                    d.Vendor = each.Vendor;
+                    d.IPAdress = each.IPAdress;
+                    d.Port = each.Port;
+                    d.BaudRate = each.BaudRate;
+                    d.PortName = each.PortName;
+                    d.ConnectionType = each.ConnectionType;
+                    d.Enable = each.Enable;
+                    d.ControllerType = each.ControllerType;
                   
                     ctrl = d;
                 }
-                else if (row["ControllerType"].ToString().Equals("MODBUS"))
+                else if (each.ControllerType.Equals("MODBUS"))
                 {
                     ModbusController m = new ModbusController();
-                    m.DeviceName = row["DeviceName"].ToString();
-                    m.DeviceType = row["DeviceType"].ToString();
-                    m.Vendor = row["vendor"].ToString();
-                    m.IPAdress = row["IPAdress"].ToString();
-                    m.Port = Convert.ToInt32(row["Port"].ToString());
-                    m.BaudRate = Convert.ToInt32(row["BaudRate"].ToString());
-                    m.PortName = row["PortName"].ToString();
-                    m.ConnectionType = row["ConnectionType"].ToString();
-                    m.Enable = Convert.ToBoolean(Convert.ToInt32(row["Enable"].ToString()));
-                    m.ControllerType = row["ControllerType"].ToString();
+                    m.DeviceName = each.DeviceName;
+                    m.DeviceType = each.DeviceType;
+                    m.Vendor = each.Vendor;
+                    m.IPAdress = each.IPAdress;
+                    m.Port = each.Port;
+                    m.BaudRate = each.BaudRate;
+                    m.PortName = each.PortName;
+                    m.ConnectionType = each.ConnectionType;
+                    m.Enable = each.Enable;
+                    m.ControllerType = each.ControllerType;
                     ctrl = m;
                 }
 

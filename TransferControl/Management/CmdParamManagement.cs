@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using TransferControl.Comm;
+using TransferControl.Config;
 
 namespace TransferControl.Management
 {
@@ -26,34 +27,40 @@ namespace TransferControl.Management
             try
             {
                 MappingList = new Dictionary<string, ParamMapping>();
-                DBUtil dBUtil = new DBUtil();
+                //DBUtil dBUtil = new DBUtil();
 
-                DataTable dtCommand = new DataTable();
+                //DataTable dtCommand = new DataTable();
 
-                string strSql = "SELECT  func_type,param_name, code_id, code_desc, vendor, mapping_code FROM param_mapping";
+                //string strSql = "SELECT  func_type,param_name, code_id, code_desc, vendor, mapping_code FROM param_mapping";
 
 
 
-                dtCommand = dBUtil.GetDataTable(strSql, null);
+                //dtCommand = dBUtil.GetDataTable(strSql, null);
 
-                if (dtCommand.Rows.Count > 0)
+                //if (dtCommand.Rows.Count > 0)
+                //{
+                //    foreach (DataRow row in dtCommand.Rows)
+                //    {
+                //        ParamMapping each = new ParamMapping();
+                //        each.CodeDesc = row["code_desc"].ToString();
+                //        each.CodeId = row["code_id"].ToString();
+                //        each.FuncType = row["func_type"].ToString();
+                //        each.ParamName = row["param_name"].ToString();
+                //        each.MappingCode = row["mapping_code"].ToString();
+                //        each.Vendor = row["vendor"].ToString();
+                //        string key = each.Vendor + each.FuncType + each.ParamName + each.CodeId;
+                //        MappingList.Add(key, each);
+                //    }
+                //}
+                //else
+                //{
+                //    throw new Exception("TransferControl.Management.CmdParamManagement\r\nException: Parameter List not exists.");
+                //}
+                List<ParamMapping> ParamMappingList = new ConfigTool<List<ParamMapping>>().ReadFile("config/CmdParamMapping.json");
+                foreach (ParamMapping each in ParamMappingList)
                 {
-                    foreach (DataRow row in dtCommand.Rows)
-                    {
-                        ParamMapping each = new ParamMapping();
-                        each.CodeDesc = row["code_desc"].ToString();
-                        each.CodeId = row["code_id"].ToString();
-                        each.FuncType = row["func_type"].ToString();
-                        each.ParamName = row["param_name"].ToString();
-                        each.MappingCode = row["mapping_code"].ToString();
-                        each.Vendor = row["vendor"].ToString();
-                        string key = each.Vendor + each.FuncType + each.ParamName + each.CodeId;
-                        MappingList.Add(key, each);
-                    }
-                }
-                else
-                {
-                    throw new Exception("TransferControl.Management.CmdParamManagement\r\nException: Parameter List not exists.");
+                    string key = each.Vendor + each.FuncType + each.ParamName + each.CodeId;
+                    MappingList.Add(key, each);
                 }
             }
             catch (Exception ex)

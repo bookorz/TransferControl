@@ -108,7 +108,6 @@
     <Compile Include="Digital_IO\Comm\IConnection.cs" />
     <Compile Include="Digital_IO\Comm\IConnectionReport.cs" />
     <Compile Include="Digital_IO\Comm\SocketClient.cs" />
-    <Compile Include="Digital_IO\Config\ConfigTool.cs" />
     <Compile Include="Digital_IO\Config\CtrlConfig.cs" />
     <Compile Include="Digital_IO\Config\ParamConfig.cs" />
     <Compile Include="Digital_IO\Controller\ICPconDigitalController.cs" />
@@ -137,10 +136,8 @@
     <Compile Include="Management\PointManagement.cs" />
     <Compile Include="Management\TaskFlowManagement.cs" />
     <Compile Include="Operation\IXfeStateReport.cs" />
-    <Compile Include="Management\ProcessRecord.cs" />
     <Compile Include="Management\RobotPoint.cs" />
     <Compile Include="Management\Transaction.cs" />
-    <Compile Include="Management\TransactionRecord.cs" />
     <Compile Include="Operation\XfeCrossZone.cs" />
     <Compile Include="Parser\AIRTECHParser.cs" />
     <Compile Include="Parser\ASYSTParser.cs" />
