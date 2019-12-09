@@ -13,7 +13,6 @@ namespace TransferControl.Management
         public static Dictionary<string, Dictionary<string, RobotPoint>> PointList;
         static ILog logger = LogManager.GetLogger(typeof(PointManagement));
 
-        private static DBUtil dBUtil = new DBUtil();
         public static void LoadConfig()
         {
             PointList = new Dictionary<string, Dictionary<string, RobotPoint>>();

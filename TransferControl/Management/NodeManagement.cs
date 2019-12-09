@@ -16,7 +16,7 @@ namespace TransferControl.Management
         private static ConcurrentDictionary<string, Node> NodeListByCtrl;
         static ILog logger = LogManager.GetLogger(typeof(NodeManagement));
 
-        private static DBUtil dBUtil = new DBUtil();
+
 
         public static void LoadConfig()
         {
@@ -163,6 +163,15 @@ namespace TransferControl.Management
 
             return result;
         }
+        public static void Save()
+        {
+            List<Node> result = NodeList.Values.ToList();
+
+            result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });
+
+            new ConfigTool<List<Node>>().WriteFile("config/Node.json", result);
+        }
+        
 
         public static Node Get(string Name)
         {

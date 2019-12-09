@@ -90,7 +90,6 @@
     <Compile Include="CommandConvert\Encoder_WHR.cs" />
     <Compile Include="CommandConvert\Encoder_WTSAligner.cs" />
     <Compile Include="Comm\ComPortClient.cs" />
-    <Compile Include="Comm\DBUtil.cs" />
     <Compile Include="Comm\FTP.cs" />
     <Compile Include="Comm\IConnection.cs" />
     <Compile Include="Comm\IConnectionReport.cs" />

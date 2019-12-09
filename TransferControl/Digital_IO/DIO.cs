@@ -20,7 +20,7 @@ namespace TransferControl.Digital_IO
         ConcurrentDictionary<string, IDIOController> Ctrls;
         ConcurrentDictionary<string, ParamConfig> Params;
         ConcurrentDictionary<string, ParamConfig> Controls;
-        private static DBUtil dBUtil = new DBUtil();
+
 
         public DIO(IDIOTriggerReport ReportTarget)
         {

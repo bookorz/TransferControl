@@ -12,7 +12,7 @@ namespace TransferControl.Digital_IO
         public static void New(string dio_name, string dio_type, string address, string parameter, string new_value, string old_value)
         {
 
-            DBUtil dBUtil = new DBUtil();
+
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
 
             try

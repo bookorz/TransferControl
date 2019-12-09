@@ -17,8 +17,7 @@ namespace TransferControl.Management
     public static class ControllerManagement
     {
         static ILog logger = LogManager.GetLogger(typeof(ControllerManagement));
-        
-        private static DBUtil dBUtil = new DBUtil();
+
         private static ConcurrentDictionary<string, IController> Controllers;
 
         public static void LoadConfig(ICommandReport Report)

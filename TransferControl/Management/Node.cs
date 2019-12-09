@@ -237,7 +237,7 @@ namespace TransferControl.Management
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<TaskFlowManagement.Command, ActionRequest> RequestQueue = new Dictionary<TaskFlowManagement.Command, ActionRequest>();
-        private static DBUtil dBUtil = new DBUtil();
+    
         public Carrier Carrier { get; set; }
         public int RobotGetState { get; set; }
         public int RobotPutState { get; set; }
@@ -481,14 +481,6 @@ namespace TransferControl.Management
                 result = true;
             }
             return result;
-        }
-
-        public void SetEnable(bool enable)
-        {
-            this.isPool = enable;
-            this.Enable = enable;
-            string SQL = @"update config_node set enable_flg = " + Convert.ToByte(enable).ToString() + " where equipment_model_id = '" + SystemConfig.Get().SystemMode + "' and node_id = '" + this.Name + "'";
-            dBUtil.ExecuteNonQuery(SQL, null);
         }
 
         /// <summary>
