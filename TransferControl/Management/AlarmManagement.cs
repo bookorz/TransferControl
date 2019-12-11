@@ -47,32 +47,45 @@ namespace TransferControl.Management
 
                 lock (AlarmData)
                 {
-                    var find = from alm in AlarmData
-                               where (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals(ErrorCode))
-                               select alm;
-                    if (find.Count() != 0)
+                    if (ErrorCode.Equals("ConnectionError"))
                     {
-                        almInfo = find.First();
-                        if (almInfo.NodeName == null)
-                        {
-                            almInfo.NodeName = "";
-                        }
+                        almInfo = new AlarmManagement.AlarmInfo();
+                        almInfo.AddressNo = AddressNo;
+                        almInfo.Controller = Controller;
+                        almInfo.ErrorCode = ErrorCode;
+                        almInfo.ErrorDesc = "Caused by abnormal connection, please check the cable to troubleshoot the problem.";
+
                     }
                     else
                     {
-                        almInfo = new AlarmInfo();
-                        almInfo.Controller = Controller;
-                        almInfo.ErrorCode = ErrorCode;
-                        almInfo.ErrorDesc = "Error code not exist";
-                        almInfo.ALID = "";
-                        almInfo.ALTX = "";
-                        almInfo.NodeName = "";
+                        var find = from alm in AlarmData
+                                   where (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals(ErrorCode))
+                                   select alm;
+                        if (find.Count() != 0)
+                        {
+                            almInfo = find.First();
+                            if (almInfo.NodeName == null)
+                            {
+                                almInfo.NodeName = "";
+                            }
+                        }
+                        else
+                        {
+                            almInfo = new AlarmInfo();
+                            almInfo.Controller = Controller;
+                            almInfo.ErrorCode = ErrorCode;
+                            almInfo.ErrorDesc = "Error code not exist";
+                            almInfo.ALID = "";
+                            almInfo.ALTX = "";
+                            almInfo.NodeName = "";
+                        }
+                        
                     }
-                    if (almInfo.NodeName.Equals(""))
+                    almInfo.TimeStamp = DateTime.Now;
+                    if (almInfo.NodeName == null || almInfo.NodeName.Equals(""))
                     {
                         almInfo.NodeName = NodeManagement.GetByController(Controller, AddressNo) != null ? NodeManagement.GetByController(Controller, AddressNo).Name : "";
                     }
-                    almInfo.TimeStamp = DateTime.Now;
                 }
 
 

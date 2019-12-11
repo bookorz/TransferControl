@@ -374,7 +374,7 @@ namespace TransferControl.Controller
                     Transaction tmp;
                     TransactionList.TryRemove(key, out tmp);
                     CommandReturnMessage rm = new CommandReturnMessage();
-                    rm.Value = "Send command fail";
+                    rm.Value = "ConnectionError";
                     _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
                 }
             }
@@ -395,7 +395,7 @@ namespace TransferControl.Controller
                 TransactionList.TryRemove(key, out tmp);
                 //_ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
                 CommandReturnMessage rm = new CommandReturnMessage();
-                rm.Value = "Send command fail";
+                rm.Value = "ConnectionError";
                 _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
             }
 
@@ -851,6 +851,7 @@ namespace TransferControl.Controller
             ChangeNodeConnectionStatus("Disconnected");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Disconnected");
             _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Disconnected");
+            conn.Reconnect();
         }
 
         public void On_Connection_Error(string Msg)
@@ -864,6 +865,7 @@ namespace TransferControl.Controller
             ChangeNodeConnectionStatus("Connection_Error");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connection_Error");
             _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Connection_Error");
+            conn.Reconnect();
         }
 
         public void On_Transaction_TimeOut(Transaction Txn)

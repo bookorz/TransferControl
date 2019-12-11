@@ -899,6 +899,18 @@ namespace TransferControl.TaksFlow
                                     return false;
                             }
                             break;
+                        case TaskFlowManagement.Command.ELPT_SET_SPEED:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.SetSpeed, TaskJob.Params)));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
                         case TaskFlowManagement.Command.WHR_SET_SPEED:
                             switch (TaskJob.CurrentIndex)
                             {
@@ -1430,6 +1442,32 @@ namespace TransferControl.TaksFlow
                                     break;
                                 default:
                                     SpinWait.SpinUntil(() => false, 2000);
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.LIGHT_CURTAIN_ENABLED:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+                                    
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ELPT1", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.LightCurtainEnabled, TaskJob.Params)));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
+                        case TaskFlowManagement.Command.LIGHT_CURTAIN_RESET:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ELPT1", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.ELPT.LightCurtainReset, TaskJob.Params)));
+                                    break;
+                                default:
                                     TaskReport.On_Task_Finished(TaskJob);
                                     return false;
                             }

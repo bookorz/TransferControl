@@ -1760,6 +1760,7 @@ namespace TransferControl.Engine
             _UIReport.On_Node_State_Changed(Node, "ALARM");
 
             AlarmManagement.AlarmInfo info = AlarmManagement.AddToHistory(Node.Controller, Node.AdrNo, Msg.Value);
+            
             if (Node.Type.Equals("ELPT") && Txn.Method.Equals(Transaction.Command.ELPT.ReadCID))
             {
 

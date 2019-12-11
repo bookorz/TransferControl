@@ -1048,6 +1048,18 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().ELPT.Reset(txn.AdrNo);
                                 txn.CommandType = "CMD";
                                 break;
+                            case Transaction.Command.ELPT.SetSpeed:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ELPT.SetSpeed(txn.AdrNo, txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.ELPT.LightCurtainEnabled:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ELPT.LightCurtainEnabled(txn.AdrNo, txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.ELPT.LightCurtainReset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ELPT.LightCurtainReset(txn.AdrNo);
+                                txn.CommandType = "SET";
+                                break;
                         }
                         break;
                     case "FFU":

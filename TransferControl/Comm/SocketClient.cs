@@ -181,7 +181,7 @@ namespace TransferControl.Comm
         /// 
         public bool Send(object sendMessage)
         {
-            if (checkSocketState())
+            if (IsconnectSuccess)
             {
                 return SendData(sendMessage);
             }

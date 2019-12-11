@@ -68,6 +68,9 @@ namespace TransferControl.Management
                 public const string getFOUPPresence = "getFOUPPresence";
                 public const string OrgSearch = "OrgSearch";
                 public const string Reset = "Reset";
+                public const string SetSpeed = "SetSpeed";
+                public const string LightCurtainEnabled = "LightCurtainEnabled";
+                public const string LightCurtainReset = "LightCurtainReset";
             }
             public class ILPT
             {
