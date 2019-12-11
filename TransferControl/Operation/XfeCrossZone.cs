@@ -148,6 +148,17 @@ namespace TransferControl.Operation
                                  select eachSlot;
             ProcessCount = AvailableSlots.Count();
 
+            foreach(Job eachSlot in AvailableSlots)
+            {
+                var Match = from each in ULD_List
+                            where each.Equals(eachSlot.Destination)
+                            select each;
+                if (Match.Count() == 0)
+                {
+                    ULD_List.Add(eachSlot.Destination);
+                }
+            }
+
             var UnloadPortSlots = from eachSlot in AvailableSlots
                                   group eachSlot by eachSlot.Destination into g
                                   select g.First();
@@ -919,13 +930,7 @@ namespace TransferControl.Operation
                                         }
                                         Target.LockOn = req.Position;
 
-                                        var Match = from each in ULD_List
-                                                    where each.Equals(req.Position)
-                                                    select each;
-                                        if (Match.Count() == 0)
-                                        {
-                                            ULD_List.Add(req.Position);
-                                        }
+                                        
                                         break;
                                 }
                                 break;

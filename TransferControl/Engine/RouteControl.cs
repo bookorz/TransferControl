@@ -300,7 +300,7 @@ namespace TransferControl.Engine
                                     Node.MappingResult = Mapping;
 
                                     Node.IsMapping = true;
-
+                                    Node.IsLoad = true;
 
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
@@ -603,7 +603,7 @@ namespace TransferControl.Engine
                                     port.MappingResult = Mapping;
 
                                     port.IsMapping = true;
-
+                                    port.IsLoad = true;
 
                                     int currentIdx = 1;
                                     for (int i = 0; i < Mapping.Length; i++)
@@ -906,6 +906,7 @@ namespace TransferControl.Engine
                                 case Transaction.Command.RobotType.GetAfterWait:
                                     Node.ArmExtend = false;
                                     break;
+                                
                             }
 
 
