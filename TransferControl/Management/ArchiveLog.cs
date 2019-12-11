@@ -102,6 +102,7 @@ namespace TransferControl.Management
                     if (dir[n].EndsWith("zip"))
                         continue; //ZIP 資料夾不處理
                                   //處理壓縮
+                    logger.Debug("dir[n]:"+dir[n]);
                     FileInfo srcDirInfo = new FileInfo(dir[n]);
                     FileInfo zipFileInfo = new FileInfo(bakPath + "zip\\" + srcDirInfo.Name.Substring(0, 7) + "\\" + srcDirInfo.Name + ".zip");
                     if (zipFileInfo.Directory.Exists == false)
