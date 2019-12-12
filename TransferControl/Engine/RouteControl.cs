@@ -710,7 +710,7 @@ namespace TransferControl.Engine
                             {
                                 case Transaction.Command.SmartTagType.GetLCDData:
 
-                                    Node.Carrier.CarrierID = Msg.Value;
+                                    Node.FoupID = Msg.Value;
                                     break;
                             }
                             break;
