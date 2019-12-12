@@ -104,7 +104,8 @@ namespace TransferControl.Management
                                   //處理壓縮
                     logger.Debug("dir[n]:"+dir[n]);
                     FileInfo srcDirInfo = new FileInfo(dir[n]);
-                    FileInfo zipFileInfo = new FileInfo(bakPath + "zip\\" + srcDirInfo.Name.Substring(0, 7) + "\\" + srcDirInfo.Name + ".zip");
+                    //FileInfo zipFileInfo = new FileInfo(bakPath + "zip\\" + srcDirInfo.Name.Substring(0, 7) + "\\" + srcDirInfo.Name + ".zip");
+                    FileInfo zipFileInfo = new FileInfo(bakPath + "zip\\" + srcDirInfo.Name.Substring(0, 7) + "\\" + srcDirInfo.Name + "-" + DateTime.Now.ToString("MMddmmssfff") + ".zip");
                     if (zipFileInfo.Directory.Exists == false)
                     {
                         zipFileInfo.Directory.Create();
