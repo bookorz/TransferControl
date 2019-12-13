@@ -8,7 +8,7 @@ namespace TransferControl.Parser
 {
     interface IParser
     {
-        Dictionary<string, string> Parse(string Command, string Message);
+        Dictionary<string, string> Parse(string Command, string Message, string NodeName);
         
     }
 }

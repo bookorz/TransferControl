@@ -751,6 +751,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Initial_IO();
                                 txn.CommandType = "SET";
                                 break;
+                            case Transaction.Command.CTU.Get_IO:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Get_IO(txn.Value);
+                                txn.CommandType = "GET";
+                                break;
                         }
                         break;
                     case "WHR":
@@ -827,6 +831,10 @@ namespace TransferControl.Management
                             case Transaction.Command.WHR.Stop:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Stop();
                                 txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.WHR.Get_IO:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Get_IO(txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                         }
                         break;
@@ -913,6 +921,10 @@ namespace TransferControl.Management
                             case Transaction.Command.FoupRobot.Initial_IO:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Initial_IO();
                                 txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.FoupRobot.Get_IO:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Get_IO(txn.Value);
+                                txn.CommandType = "GET";
                                 break;
                         }
                         break;

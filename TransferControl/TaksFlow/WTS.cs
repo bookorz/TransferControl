@@ -1472,6 +1472,22 @@ namespace TransferControl.TaksFlow
                                     return false;
                             }
                             break;
+                        case TaskFlowManagement.Command.GET_IO:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    TaskReport.On_Task_Ack(TaskJob);
+
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Get_IO, "1")));
+                                    break;
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("CTU", "EXCUTED", new Transaction().SetAttr(TaskJob.Id, Transaction.Command.CTU.Get_IO, "0")));
+                                    break;
+                                default:
+                                    TaskReport.On_Task_Finished(TaskJob);
+                                    return false;
+                            }
+                            break;
                         default:
                             throw new NotSupportedException();
                     }
