@@ -14,7 +14,7 @@ namespace TransferControl.Operation
     {
         private ILog logger = LogManager.GetLogger(typeof(XfeCrossZone));
         public static bool Running = false;
-
+        static XfeCrossZone inst = null;
         public string LDRobot = "";
         public string LDRobot_Arm = "";
         public string ULDRobot = "";
@@ -29,11 +29,12 @@ namespace TransferControl.Operation
         private string RunID = "";
         System.Diagnostics.Stopwatch watch;
         Recipe rcp = null;
-        IXfeStateReport _Report;
+        static IXfeStateReport _Report;
 
         public XfeCrossZone(IXfeStateReport Report)
         {
             _Report = Report;
+            inst = this;
             RunID = Guid.NewGuid().ToString();
 
             //ThreadPool.QueueUserWorkItem(new WaitCallback(Engine), "ROBOT01");
@@ -231,6 +232,7 @@ namespace TransferControl.Operation
             Running = false;
             TaskJobManagment.CurrentProceedTask Task;
             RouteControl.Instance.TaskJob.Excute(Guid.NewGuid().ToString(), out Message, out Task, "STOP", null);
+            _Report.On_Transfer_Abort(inst);
             //NodeStatusUpdate.UpdateCurrentState("IDLE");
         }
 
