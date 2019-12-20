@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using log4net;
 using System.Data;
-using Newtonsoft.Json;
+using System.Text;
 using System.Threading;
 using TransferControl.Config;
 using TransferControl.Comm;

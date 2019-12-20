@@ -751,10 +751,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Initial_IO();
                                 txn.CommandType = "SET";
                                 break;
-                            case Transaction.Command.CTU.Get_IO:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Get_IO(txn.Value);
-                                txn.CommandType = "GET";
-                                break;
+                            //case Transaction.Command.CTU.Get_IO:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Get_IO(txn.Value);
+                            //    txn.CommandType = "GET";
+                            //    break;
                         }
                         break;
                     case "WHR":
@@ -832,10 +832,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Stop();
                                 txn.CommandType = "SET";
                                 break;
-                            case Transaction.Command.WHR.Get_IO:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Get_IO(txn.Value);
-                                txn.CommandType = "GET";
-                                break;
+                            //case Transaction.Command.WHR.Get_IO:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Get_IO(txn.Value);
+                            //    txn.CommandType = "GET";
+                            //    break;
                         }
                         break;
                     case "SHELF":
@@ -922,10 +922,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Initial_IO();
                                 txn.CommandType = "SET";
                                 break;
-                            case Transaction.Command.FoupRobot.Get_IO:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Get_IO(txn.Value);
-                                txn.CommandType = "GET";
-                                break;
+                            //case Transaction.Command.FoupRobot.Get_IO:
+                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Get_IO(txn.Value);
+                            //    txn.CommandType = "GET";
+                            //    break;
                         }
                         break;
                     case "ILPT":

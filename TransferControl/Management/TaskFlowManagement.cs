@@ -301,7 +301,8 @@ namespace TransferControl.Management
             FOUPROBOT_PLACE,
             FOUPROBOT_INIT,
             FOUPROBOT_RESET,
-            FOUPROBOT_SET_SPEED
+            FOUPROBOT_SET_SPEED,
+            GET_IO
         }
     }
 }

@@ -114,6 +114,7 @@ namespace TransferControl.Management
                 public const string Continue = "Continue";
                 public const string Stop = "Stop";
                 public const string Initial_IO = "Initial_IO";
+                public const string Get_IO = "Get_IO";
             }
             public class WHR
             {
@@ -135,6 +136,7 @@ namespace TransferControl.Management
                 public const string Pause = "Pause";
                 public const string Continue = "Continue";
                 public const string Stop = "Stop";
+                public const string Get_IO = "Get_IO";
             }
             public class CTU
             {
@@ -152,6 +154,7 @@ namespace TransferControl.Management
                 public const string Continue = "Continue";
                 public const string Stop = "Stop";
                 public const string Initial_IO = "Initial_IO";
+                public const string Get_IO = "Get_IO";
             }
             public class PTZ
             {
