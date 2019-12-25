@@ -38,7 +38,7 @@ namespace TransferControl.Controller
         public bool DoWork(Transaction Txn, bool WaitForData = false)
         {
             bool result = false;
-            SpinWait.SpinUntil(() => conn!=null, 999999999);
+            SpinWait.SpinUntil(() => conn != null, 999999999);
             CommandReturnMessage msg = new CommandReturnMessage();
             lock (conn)
             {
@@ -66,7 +66,7 @@ namespace TransferControl.Controller
                             msg.Value = msg.Value.Substring(1);
                             _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
                         }).Start();
-                        
+
                         break;
                     case Transaction.Command.ModbusMethod.WriteSingleRegister:
                         new Thread(() =>
@@ -77,7 +77,7 @@ namespace TransferControl.Controller
                             _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, msg);
                         }).Start();
 
-                       
+
                         break;
                 }
             }
@@ -92,7 +92,7 @@ namespace TransferControl.Controller
             //string key = "";
 
             //key = Txn.AdrNo + Txn.Method;
-           
+
 
 
             //Txn.SetTimeOutMonitor(false);
@@ -128,13 +128,13 @@ namespace TransferControl.Controller
 
         public void Reconnect()
         {
-            
+
         }
 
         public void SetReport(ICommandReport ReportTarget)
         {
             _ReportTarget = ReportTarget;
-            
+
 
             Encoder = new CommandEncoder(Vendor);
 
@@ -147,25 +147,32 @@ namespace TransferControl.Controller
 
         public void Start(object state)
         {
-            _ReportTarget.On_Controller_State_Changed(DeviceName, "Connecting");
-            switch (this.ConnectionType.ToUpper())
+            try
             {
-                case "SOCKET":
-                   
-                    conn = ModbusIpMaster.CreateIp(new TcpClient(this.IPAdress, this.Port));
-                    _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
-                    break;
-                case "COMPORT":
-                    SerialPort serialPort = new SerialPort(); //Create a new SerialPort object.
-                    serialPort.PortName = this.PortName;
-                    serialPort.BaudRate = this.BaudRate;
-                    serialPort.DataBits = 8;
-                    serialPort.Parity = Parity.None;
-                    serialPort.StopBits = StopBits.One;
-                    serialPort.Open();
-                    conn = ModbusSerialMaster.CreateRtu(serialPort);
-                    _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
-                    break;
+                _ReportTarget.On_Controller_State_Changed(DeviceName, "Connecting");
+                switch (this.ConnectionType.ToUpper())
+                {
+                    case "SOCKET":
+
+                        conn = ModbusIpMaster.CreateIp(new TcpClient(this.IPAdress, this.Port));
+                        _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
+                        break;
+                    case "COMPORT":
+                        SerialPort serialPort = new SerialPort(); //Create a new SerialPort object.
+                        serialPort.PortName = this.PortName;
+                        serialPort.BaudRate = this.BaudRate;
+                        serialPort.DataBits = 8;
+                        serialPort.Parity = Parity.None;
+                        serialPort.StopBits = StopBits.One;
+                        serialPort.Open();
+                        conn = ModbusSerialMaster.CreateRtu(serialPort);
+                        _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.StackTrace);
             }
         }
         public string GetDeviceName()
