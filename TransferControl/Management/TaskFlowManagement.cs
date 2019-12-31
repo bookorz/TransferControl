@@ -249,6 +249,7 @@ namespace TransferControl.Management
             RELEASE_PTZ,
             PORT_ACCESS_MODE,
             RESET_E84,
+            E84_MODE,
             BLOCK_ALIGNER,
             RELEASE_ALIGNER,
             //WTS Manual
@@ -302,7 +303,9 @@ namespace TransferControl.Management
             FOUPROBOT_INIT,
             FOUPROBOT_RESET,
             FOUPROBOT_SET_SPEED,
-            GET_IO
+            GET_IO,
+            SET_IO,
+            CONTROL_MODE
         }
     }
 }
