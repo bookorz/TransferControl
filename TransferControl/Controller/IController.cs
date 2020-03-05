@@ -15,6 +15,7 @@ namespace TransferControl.Controller
         string GetDeviceName();
         bool GetEnable();
         string GetControllerType();
+        string GetConnectionType();
         string GetIPAdress();
         int GetPort();
         string GetVendor();

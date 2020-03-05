@@ -42,6 +42,10 @@ namespace TransferControl.Controller
         {
             return this.ControllerType;
         }
+        public string GetConnectionType()
+        {
+            return this.ConnectionType;
+        }
         public string GetDeviceName()
         {
             return this.Name;
