@@ -53,6 +53,12 @@ namespace TransferControl.Config.DIO
                 return false;
             }
         }
+        public static bool Update(List<DioSetting> Setting)
+        {
+            
+            new ConfigTool<List<DioSetting>>().WriteFile("config/DIO.json", Setting);
+            return true;
+        }
         public static bool Create(DioSetting Setting)
         {
             List<DioSetting> result = new ConfigTool<List<DioSetting>>().ReadFile("config/DIO.json");

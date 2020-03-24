@@ -585,7 +585,7 @@ namespace TransferControl.Controller
                                 lock (Node)
                                 {
                                     Target = Node;
-                                    if (Node.Brand.ToUpper().Equals("COGNEX"))
+                                    if (Node.Vendor.ToUpper().Equals("COGNEX"))
                                     {
                                         if (ReturnMsg.Type == CommandReturnMessage.ReturnType.UserName)
                                         {
@@ -603,7 +603,7 @@ namespace TransferControl.Controller
 
                                         //_ReportTarget.On_Event_Trigger(Node, ReturnMsg);
                                     }
-                                    else if ((ReturnMsg.Type == CommandReturnMessage.ReturnType.Information && Node.Brand.ToUpper().Equals("TDK") && !TransactionList.ContainsKey(key)))
+                                    else if ((ReturnMsg.Type == CommandReturnMessage.ReturnType.Information && Node.Vendor.ToUpper().Equals("TDK") && !TransactionList.ContainsKey(key)))
                                     {
                                         if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Information))
                                         {

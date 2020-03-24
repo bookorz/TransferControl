@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TransferControl</RootNamespace>
     <AssemblyName>TransferControl</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -105,6 +105,7 @@
     <Compile Include="Config\DIO\DioSetting.cs" />
     <Compile Include="Config\Global.cs" />
     <Compile Include="Config\Recipe.cs" />
+    <Compile Include="Config\SignalTower\SignalTowerSetting.cs" />
     <Compile Include="Config\SystemConfig.cs" />
     <Compile Include="Controller\DeviceController.cs" />
     <Compile Include="Controller\ICommandReport.cs" />

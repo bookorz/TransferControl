@@ -172,6 +172,10 @@ namespace TransferControl.Controller
         {
             return this.Name;
         }
+        public string GetConnectionType()
+        {
+            return this.ConnectionType;
+        }
         public bool GetEnable()
         {
             return this.Enable;

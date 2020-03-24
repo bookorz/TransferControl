@@ -13,24 +13,31 @@ namespace TransferControl.Management
     {
         static ILog logger = LogManager.GetLogger(typeof(AlarmManagement));
         private static List<AlarmInfo> AlarmHis = new List<AlarmInfo>();
+        private static List<AlarmInfo> CurrentAlarm = new List<AlarmInfo>();
         //private static List<AlarmInfo> AlarmHistory = new List<AlarmInfo>();
         private static List<AlarmInfo> AlarmData = new List<AlarmInfo>();
         public class AlarmInfo
         {
-            public string NodeName { get; set; }
-            public string AddressNo { get; set; }
-            public string Controller { get; set; }
-            public string ErrorCode { get; set; }
-            public string ErrorDesc { get; set; }
-            public string ALID { get; set; }
-            public string ALTX { get; set; }
-            public DateTime TimeStamp { get; set; }
+            public string nodeType { get; set; }
+            public string vendor { get; set; }
+            public string errorCode { get; set; }
+            public string errDesc { get; set; }
+            public string errDescEn { get; set; }
+            public bool isAlert { get; set; }
+            
 
+        }
+
+        public class Alarm
+        {
+            public string nodeName { get; set; }
+            public AlarmInfo Detail { get; set; }
+            public DateTime TimeStamp { get; set; }
         }
 
         public static void InitialAlarm()
         {
-            AlarmData = new ConfigTool<List<AlarmInfo>>().ReadFile("config/error_code_en.json");
+            AlarmData = new ConfigTool<List<AlarmInfo>>().ReadFile("config/error_code.json");
             AlarmHis = new ConfigTool<List<AlarmInfo>>().ReadFile("config/AlarmHistory.json");
 
             if (AlarmHis == null)
@@ -39,9 +46,9 @@ namespace TransferControl.Management
             }
         }
 
-        public static AlarmInfo AddToHistory(string Controller,string AddressNo, string ErrorCode)
+        public static Alarm AddToHistory(Node node, string ErrorCode)
         {
-            AlarmInfo almInfo = null;
+            Alarm alarm = new Alarm();
             try
             {
 
@@ -49,49 +56,44 @@ namespace TransferControl.Management
                 {
                     if (ErrorCode.Equals("ConnectionError"))
                     {
-                        almInfo = new AlarmManagement.AlarmInfo();
-                        almInfo.AddressNo = AddressNo;
-                        almInfo.Controller = Controller;
-                        almInfo.ErrorCode = ErrorCode;
-                        almInfo.ErrorDesc = "Caused by abnormal connection, please check the cable to troubleshoot the problem.";
+                        alarm.Detail = new AlarmInfo();
+                        alarm.Detail.nodeType = node.Type;
+                        alarm.Detail.vendor = node.Vendor;
+                        alarm.Detail.errDesc = "可能是纜線問題，請確認纜線連接狀況。";
+                        alarm.Detail.errDescEn = "Caused by abnormal connection, please check the cable to troubleshoot the problem.";
 
                     }
                     else
                     {
                         var find = from alm in AlarmData
-                                   where (alm.Controller.ToUpper().Equals(Controller.ToUpper()) && alm.AddressNo.Equals(AddressNo) && alm.ErrorCode.Equals(ErrorCode))
+                                   where (alm.nodeType.Equals(node.Type) && alm.vendor.Equals(node.Vendor) && alm.errorCode.Equals(ErrorCode))
                                    select alm;
                         if (find.Count() != 0)
                         {
-                            almInfo = find.First();
-                            if (almInfo.NodeName == null)
-                            {
-                                almInfo.NodeName = "";
-                            }
+                            alarm.Detail = find.First();
+                           
                         }
                         else
                         {
-                            almInfo = new AlarmInfo();
-                            almInfo.Controller = Controller;
-                            almInfo.ErrorCode = ErrorCode;
-                            almInfo.ErrorDesc = "Error code not exist";
-                            almInfo.ALID = "";
-                            almInfo.ALTX = "";
-                            almInfo.NodeName = "";
+                            AlarmInfo almInfo = new AlarmInfo();
+                            almInfo.nodeType = node.Type;
+                            almInfo.vendor = node.Vendor;
+                            almInfo.errDescEn = "Error code not exist";
+                            almInfo.errDesc = "Error code 不存在";
+                            almInfo.errorCode = ErrorCode;
+                            alarm.Detail = almInfo;
                         }
                         
                     }
-                    almInfo.TimeStamp = DateTime.Now;
-                    if (almInfo.NodeName == null || almInfo.NodeName.Equals(""))
-                    {
-                        almInfo.NodeName = NodeManagement.GetByController(Controller, AddressNo) != null ? NodeManagement.GetByController(Controller, AddressNo).Name : "";
-                    }
+                    alarm.TimeStamp = DateTime.Now;
+                    
                 }
 
 
                 lock (AlarmHis)
                 {
                     AlarmHis.Insert(0,almInfo);
+                    CurrentAlarm.Insert(0, almInfo);
                     if (AlarmHis.Count > 2000)
                     {
                         AlarmHis.RemoveAt(AlarmHis.Count-1);
@@ -121,7 +123,20 @@ namespace TransferControl.Management
 
             return result;
         }
+        public static List<AlarmInfo> GetCurrent()
+        {
+            List<AlarmInfo> result = null;
+            try
+            {
+                result = CurrentAlarm;
+            }
+            catch (Exception e)
+            {
+                logger.Error("GetCurrent error:" + e.StackTrace);
+            }
 
+            return result;
+        }
 
 
 

@@ -38,7 +38,7 @@ namespace TransferControl.Management
         /// <summary>
         /// 廠牌
         /// </summary>
-        public string Brand { get; set; }
+        public string Vendor { get; set; }
         /// <summary>
         /// Control Job ID
         /// </summary>
@@ -543,7 +543,7 @@ namespace TransferControl.Management
                 //}
 
                 IController Ctrl = this.GetController();
-                if (this.Brand.ToUpper().Equals("KAWASAKI"))
+                if (this.Vendor.ToUpper().Equals("KAWASAKI"))
                 {
 
                     txn.Seq = Ctrl.GetNextSeq();

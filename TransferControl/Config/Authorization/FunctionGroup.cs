@@ -19,15 +19,15 @@ namespace TransferControl.Config.Authorization
             return new ConfigTool<List<FunctionGroup>>().ReadFile("config/FunctionGroup.json");
         }
 
-        public static FunctionGroup Get(string groupId)
+        public static FunctionGroup Get(string Id)
         {
             List<FunctionGroup> GroupList = GetList();
             var groupInfo = from grp in GroupList
-                           where grp.id.ToUpper().Equals(groupId.ToUpper())
+                           where grp.id.ToUpper().Equals(Id.ToUpper()) 
                             select grp;
             if (groupInfo.Count() != 0)
             {
-                return GroupList.First();
+                return groupInfo.First();
             }
             else
             {

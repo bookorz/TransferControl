@@ -175,7 +175,7 @@ namespace TransferControl.Engine
 
                                     break;
                                 case Transaction.Command.LoadPortType.GetLED:
-                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    MessageParser parser = new MessageParser(Node.Vendor);
                                     foreach (KeyValuePair<string, string> each in parser.ParseMessage(Txn.Method, Msg.Value))
                                     {
                                         switch (each.Key)
@@ -193,7 +193,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                                 case Transaction.Command.LoadPortType.ReadStatus:
-                                    parser = new MessageParser(Node.Brand);
+                                    parser = new MessageParser(Node.Vendor);
                                     Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in Node.Status)
                                     {
@@ -454,7 +454,7 @@ namespace TransferControl.Engine
                                     break;
 
                                 case Transaction.Command.RobotType.GetSpeed:
-                                    if ((Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
+                                    if ((Node.Vendor.Equals("ATEL_NEW") || Node.Vendor.Equals("SANWA")))
                                     {
                                         if (Convert.ToInt16(Msg.Value) == 0)
                                         {
@@ -475,7 +475,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                                 case Transaction.Command.RobotType.GetStatus:
-                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    MessageParser parser = new MessageParser(Node.Vendor);
                                     Dictionary<string, string> StatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in StatusResult)
                                     {
@@ -494,7 +494,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                                 case Transaction.Command.RobotType.GetPosition:
-                                    parser = new MessageParser(Node.Brand);
+                                    parser = new MessageParser(Node.Vendor);
                                     Dictionary<string, string> PositionResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in PositionResult)
                                     {
@@ -513,7 +513,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                                 case Transaction.Command.RobotType.GetRIO:
-                                    parser = new MessageParser(Node.Brand);
+                                    parser = new MessageParser(Node.Vendor);
                                     Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in RioResult)
                                     {
@@ -603,7 +603,7 @@ namespace TransferControl.Engine
 
                                     break;
                                 case Transaction.Command.RobotType.GetSV:
-                                    parser = new MessageParser(Node.Brand);
+                                    parser = new MessageParser(Node.Vendor);
                                     Dictionary<string, string> SVResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in SVResult)
                                     {
@@ -829,7 +829,7 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.RobotType.GetSpeed:
-                                    if (Msg.Value.Equals("0") && (Node.Brand.Equals("ATEL_NEW") || Node.Brand.Equals("SANWA")))
+                                    if (Msg.Value.Equals("0") && (Node.Vendor.Equals("ATEL_NEW") || Node.Vendor.Equals("SANWA")))
                                     {
                                         Msg.Value = "100";
                                     }
@@ -837,7 +837,7 @@ namespace TransferControl.Engine
                                     Node.Speed = Msg.Value;
                                     break;
                                 case Transaction.Command.RobotType.GetRIO:
-                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    MessageParser parser = new MessageParser(Node.Vendor);
                                     Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in RioResult)
                                     {
@@ -883,7 +883,7 @@ namespace TransferControl.Engine
                                     }
                                     break;
                                 case Transaction.Command.RobotType.GetSV:
-                                    parser = new MessageParser(Node.Brand);
+                                    parser = new MessageParser(Node.Vendor);
                                     Dictionary<string, string> SVResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in SVResult)
                                     {
@@ -902,7 +902,7 @@ namespace TransferControl.Engine
                             switch (Txn.Method)
                             {
                                 case Transaction.Command.FFUType.GetStatus:
-                                    MessageParser parser = new MessageParser(Node.Brand);
+                                    MessageParser parser = new MessageParser(Node.Vendor);
                                     Dictionary<string, string> StatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                     foreach (KeyValuePair<string, string> each in StatusResult)
                                     {
@@ -945,7 +945,7 @@ namespace TransferControl.Engine
                 Job TargetJob = null;
                 if (Txn.TargetJobs.Count != 0)
                 {
-                    MessageParser parser = new MessageParser(Node.Brand);
+                    MessageParser parser = new MessageParser(Node.Vendor);
                     Dictionary<string, string> parseResult = null;
                     TargetJob = Txn.TargetJobs[0];
                     logger.Debug("On_Command_Finished:" + Txn.Method + ":" + Txn.Method);
@@ -1376,7 +1376,7 @@ namespace TransferControl.Engine
 
                                     if (Txn.TargetJobs.Count != 0)
                                     {
-                                        switch (Node.Brand)
+                                        switch (Node.Vendor)
                                         {
                                             case "HST":
                                                 OCRInfo result = new OCRInfo(Msg.Value);
