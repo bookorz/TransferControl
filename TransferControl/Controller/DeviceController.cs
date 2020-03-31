@@ -202,6 +202,10 @@ namespace TransferControl.Controller
                 key = "1" + Txn.Type;
             }
 
+            else if (Vendor.ToUpper().Equals("TDK"))
+            {
+                key = Txn.AdrNo + Txn.Type;
+            }
             else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Type;
@@ -362,7 +366,10 @@ namespace TransferControl.Controller
                                 {
                                     key = "1" + ReturnMsg.Command;
                                 }
-
+                                else if (Vendor.ToUpper().Equals("TDK"))
+                                {
+                                    key = ReturnMsg.NodeAdr + ReturnMsg.Command;
+                                }
                                 else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
                                 {
                                     key = ReturnMsg.NodeAdr + ReturnMsg.Command;
