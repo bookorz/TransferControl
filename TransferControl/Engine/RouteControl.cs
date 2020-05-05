@@ -1224,27 +1224,34 @@ namespace TransferControl.Engine
             Node.InitialComplete = false;
             Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
-            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
-            Task.HasError = true;
-            Task.Finished = true;
+            
             if (Msg.Value.Equals(""))
             {
                 Msg.Value = Msg.Command;
             }
-            if (!Task.MainTaskId.Equals(""))
-            {
-                TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
-                MTask.HasError = true;
-                MTask.Finished = true;
-                Task.Id = Task.MainTaskId;
-            }
-            if (_HostReport != null)
-            {
-                _HostReport.On_TaskJob_Aborted(Task, "", "ABS", Msg.Value);
-            }
-            _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
+
+            TaskJobManagment.CurrentProceedTask Task = TaskJob.Remove(Txn.FormName);
+            if (Task != null)
+            {
+                Task.HasError = true;
+                Task.Finished = true;
+
+                if (!Task.MainTaskId.Equals(""))
+                {
+                    TaskJobManagment.CurrentProceedTask MTask = TaskJob.Remove(Task.MainTaskId);
+                    MTask.HasError = true;
+                    MTask.Finished = true;
+                    Task.Id = Task.MainTaskId;
+                }
+
+                if (_HostReport != null)
+                {
+                    _HostReport.On_TaskJob_Aborted(Task, "", "ABS", Msg.Value);
+                }
+                _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", Msg.Value);
+            }
 
         }
 
