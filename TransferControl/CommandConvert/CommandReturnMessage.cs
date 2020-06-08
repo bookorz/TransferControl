@@ -8,27 +8,27 @@ namespace TransferControl.CommandConvert
 {
     public class CommandReturnMessage
     {
-        public class ReturnType
+        public enum ReturnType
         {
-            public const string Excuted = "Excuted";
-            public const string Finished = "Finished";
-            public const string Error = "Error";
-            public const string Event = "Event";
-            public const string Information = "Information";
-            public const string ReInformation = "ReInformation";
-            public const string Abnormal = "Abnormal";
-            public const string UserName = "UserName";
-            public const string Password = "PassWord";
-            public const string Sending = "Sending";
+            Excuted,
+            Finished,
+            Error,
+            Event,
+            Information,
+            ReInformation,
+            Abnormal,
+            UserName,
+            Password,
+            Sending
         }
         public string OrgMsg = "";
-        public string Type;
+        public ReturnType Type;
         public string Command;
         public bool IsInterrupt = false;
         public string NodeAdr = "";
         public string Seq = "";
         public string Value = "";
-    	public string FinCommand = "";
+        public string FinCommand = "";
         public string CommandType = "";
     }
 }

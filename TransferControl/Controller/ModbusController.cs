@@ -42,12 +42,8 @@ namespace TransferControl.Controller
             CommandReturnMessage msg = new CommandReturnMessage();
             lock (conn)
             {
-                string waferids = "";
-                foreach (Job each in Txn.TargetJobs)
-                {
-                    waferids += each.Job_Id + " ";
-                }
-                logger.Info(DeviceName + " Send:" + Txn.ModbusMethod + " Wafer:" + waferids);
+               
+                logger.Info(DeviceName + " Send:" + Txn.ModbusMethod);
                 //Txn.SetTimeOut(1000);
                 //Txn.SetTimeOutReport(this);
                 //Txn.SetTimeOutMonitor(true);

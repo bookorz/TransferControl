@@ -23,7 +23,7 @@ namespace TransferControl.Comm
         {
             cfg = _Config;
             ConnReport = _ConnReport;
-            Parity p = Parity.None;
+            Parity p = Parity.Odd;
             //switch (_Config.ParityBit)
             //{
             //    case "Even":
@@ -61,10 +61,23 @@ namespace TransferControl.Comm
 
 
             port = new SerialPort(_Config.GetPortName(), _Config.GetBaudRate(), p, 8, s);
+
+        
+            
+            
+    
+
             if (_Config.GetVendor().Equals("SMARTTAG"))
             {
                 port.Handshake = Handshake.None;
                 port.RtsEnable = true;
+                port.ReadTimeout = 5000;
+                port.WriteTimeout = 5000;
+            }else if (_Config.GetVendor().Equals("MITSUBISHI_PLC"))
+            {
+                port.DtrEnable = true;
+                port.RtsEnable = true;
+                //port.ReadTimeout = System.IO.Ports.SerialPort.InfiniteTimeout;
                 port.ReadTimeout = 5000;
                 port.WriteTimeout = 5000;
             }
@@ -118,7 +131,11 @@ namespace TransferControl.Comm
                 }
                 else
                 {
-                    port.Write(Message.ToString());
+                    port.Write((string)Message);
+                    //int ttt = port.ReadByte();
+                    //byte[] buf = new byte[250];
+                    //port.Read(buf, 0, buf.Length);
+                    //string data = ByteArrayToString(buf);
                 }
                 return true;
             }
@@ -173,6 +190,9 @@ namespace TransferControl.Comm
                     case "SMARTTAG":
                         port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG_DataReceived);
                         break;
+                    case "MITSUBISHI_PLC":
+                        port.DataReceived += new SerialDataReceivedEventHandler(MITSUBISHI_PLC_DataReceived); 
+                        break;
                 }
             }
             catch (Exception e)
@@ -200,6 +220,58 @@ namespace TransferControl.Comm
             }
         }
 
+        //private void MITSUBISHI_PLC_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        //{
+        //    if ((sender as SerialPort).BytesToRead > 0)
+        //    {
+        //        try
+        //        {
+        //            string data = "";
+
+        //            data = port.ReadTo(Convert.ToString((char)3));
+
+
+        //            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+        //        }
+        //        catch (Exception e1)
+        //        {
+        //            //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
+        //            ConnReport.On_Connection_Error("(ASYST_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+        //        }
+        //    }
+        //}
+        string tmp = "";
+        private void MITSUBISHI_PLC_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                //SpinWait.SpinUntil(() => !_WaitForData, 1000);
+                if ((sender as SerialPort).BytesToRead > 0)
+                {
+                    byte[] buf = new byte[(sender as SerialPort).BytesToRead];
+                    port.Read(buf, 0, buf.Length);
+                    tmp += Encoding.ASCII.GetString(buf);
+                    if (tmp.IndexOf((char)2) != -1 && tmp.IndexOf((char)3) != -1)
+                    {
+                        string msg = tmp.Substring(tmp.IndexOf((char)2), (tmp.IndexOf((char)3) + 1) - tmp.IndexOf((char)2));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
+                        tmp = tmp.Substring(tmp.IndexOf((char)3)+1);
+                    }
+                    else if(tmp.IndexOf((char)6) != -1 && tmp.Substring(tmp.IndexOf((char)6)).Length>6)
+                    {
+                        string msg = tmp.Substring(tmp.IndexOf((char)6));
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
+                        tmp = "";
+                    }
+                    
+                }
+            }
+            catch (Exception e1)
+            {
+                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
+                ConnReport.On_Connection_Error("(ASYST_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+            }
+        }
         private void SMARTTAG_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try

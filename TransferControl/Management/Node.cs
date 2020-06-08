@@ -99,14 +99,8 @@ namespace TransferControl.Management
         /// LoadPort專用，Foup Load的時間
         /// </summary>
         public DateTime LoadTime { get; set; }
-        /// <summary>
-        /// LoadPort專用，其他Port Assign用
-        /// </summary>
-        public ConcurrentDictionary<string, Job> ReserveList { get; set; }
-        /// <summary>
-        /// 在席列表
-        /// </summary>
-        public ConcurrentDictionary<string, Job> JobList { get; set; }
+
+
 
         public string CarrierType { get; set; }
 
@@ -229,56 +223,22 @@ namespace TransferControl.Management
         public string R_Vacuum_Solenoid { get; set; }
         public string L_Vacuum_Solenoid { get; set; }
         public string ConfigList { get; set; }
-        public bool OCR_Read_TTL { get; set; }
-        public bool OCR_Read_M12 { get; set; }
-        public bool OCR_Read_T7 { get; set; }
+        public string OCR_ID { get; set; }
+        public string OCR_Score { get; set; }
+        public bool OCR_Pass { get; set; }
         public bool Home_Position { get; set; }
         public bool ManaulControl { get; set; }
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
-        public Dictionary<TaskFlowManagement.Command, ActionRequest> RequestQueue = new Dictionary<TaskFlowManagement.Command, ActionRequest>();
-    
+
+
         public Carrier Carrier { get; set; }
         public int RobotGetState { get; set; }
         public int RobotPutState { get; set; }
         public string ArmExtend { get; set; }
         public string MappingDataSnapshot { get; set; }
         public bool WaferProtrusionSensor { get; set; }
-        public class ActionRequest
-        {
-            public TaskFlowManagement.Command TaskName { get; set; }
-            public string Position { get; set; }
-            public string Slot { get; set; }
-            public string Slot2 { get; set; }
-            public string Arm { get; set; }
-            public string Value { get; set; }
-            public string V2 { get; set; }
-            public string V3 { get; set; }
-            public string V4 { get; set; }
-            public string V5 { get; set; }
-            public string V6 { get; set; }
-            public string V7 { get; set; }
-            public string V8 { get; set; }
-            public string V9 { get; set; }
-            public long TimeStamp { get; set; }
-            public ActionRequest()
-            {
-                TimeStamp = DateTime.Now.Ticks;
-                Position = "";
-                Slot = "";
-                Slot2 = "";
-                Arm = "";
-                Value = "";
-                V2 = "";
-                V3 = "";
-                V4 = "";
-                V5 = "";
-                V6 = "";
-                V7 = "";
-                V8 = "";
-                V9 = "";
-            }
-        }
+       
 
         public IController GetController()
         {
@@ -287,8 +247,7 @@ namespace TransferControl.Management
 
         public void InitialObject()
         {
-            JobList = new ConcurrentDictionary<string, Job>();
-            ReserveList = new ConcurrentDictionary<string, Job>();
+            
             ArmExtend = "";
             RobotGetState = 0;
             RobotPutState = 0;
@@ -389,99 +348,7 @@ namespace TransferControl.Management
             Speed = "100";
 
         }
-        public void PoolStart(string TaskName)
-        {
-            this.isPool = false;
-            SpinWait.SpinUntil(() => !PoolThread, 999999999);
-            this.isPool = true;
-            ThreadPool.QueueUserWorkItem(new WaitCallback(PoolState), TaskName);
-
-        }
-        public void PoolStop()
-        {
-            this.isPool = false;
-        }
-        private void PoolState(object TaskJob)
-        {
-            PoolThread = true;
-            Dictionary<string, string> param = new Dictionary<string, string>();
-            //string Message = "";
-            string TaskName = "";
-
-            TaskName = TaskJob.ToString();
-            param.Add("@Target", this.Name);
-            while (this.isPool)
-            {
-                try
-                {
-                    if (this.InitialComplete)
-                    {
-                        TaskFlowManagement.CurrentProcessTask CurrTask = TaskFlowManagement.Excute(this.Name + "_PoolState", (TaskFlowManagement.Command)Enum.Parse(typeof(TaskFlowManagement.Command), TaskJob.ToString()), param);
-                        SpinWait.SpinUntil(() => CurrTask.Finished, 99999999);
-                    }
-                    SpinWait.SpinUntil(() => false, PoolInterval);
-                }
-                catch (Exception e)
-                {
-                    logger.Error(e.StackTrace);
-                }
-
-            }
-            PoolThread = false;
-        }
-        public bool CheckForward(string Slot)
-        {
-            bool result = false;
-
-            var wafers = from wafer in this.JobList.Values
-                         where wafer.MapFlag && !wafer.ErrPosition && !wafer.NeedProcess && Convert.ToInt16(wafer.Slot) < Convert.ToInt16(Slot)
-                         select wafer;
-            if (wafers.Count() != 0)
-            {
-                result = true;
-            }
-            return result;
-        }
-        public bool CheckPrevious(string Slot)
-        {
-            bool result = false;
-
-            var wafers = from wafer in this.JobList.Values
-                         where wafer.MapFlag && !wafer.ErrPosition && !wafer.NeedProcess && (Convert.ToInt16(Slot) - Convert.ToInt16(wafer.Slot)) == 1
-                         select wafer;
-            if (wafers.Count() != 0)
-            {
-                result = true;
-            }
-            return result;
-        }
-        public bool CheckForwardPresence(string Slot)
-        {
-            bool result = false;
-
-            var wafers = from wafer in this.JobList.Values
-                         where wafer.MapFlag && Convert.ToInt16(wafer.Slot) < Convert.ToInt16(Slot)
-                         select wafer;
-            if (wafers.Count() != 0)
-            {
-                result = true;
-            }
-            return result;
-        }
-
-        public bool CheckPreviousPresence(string Slot)
-        {
-            bool result = false;
-
-            var wafers = from wafer in this.JobList.Values
-                         where wafer.MapFlag && (Convert.ToInt16(Slot) - Convert.ToInt16(wafer.Slot)) == 1
-                         select wafer;
-            if (wafers.Count() != 0)
-            {
-                result = true;
-            }
-            return result;
-        }
+        
 
         /// <summary>
         /// 傳送命令
@@ -493,23 +360,7 @@ namespace TransferControl.Management
         {
 
             Message = "";
-            //if (this.Type.ToUpper().Equals("LOADPORT"))
-            //{
-            //    while (true)
-            //    {
-            //        SpinWait.SpinUntil(() => !this.IsExcuting, 99999999);
-            //        lock (this)
-            //        {
-            //            if (!this.IsExcuting)
-            //            {
-            //                break;
-            //            }
-            //        }
-            //    }
-            //}
-
-            //var watch = System.Diagnostics.Stopwatch.StartNew();
-            // System.Threading.Thread.Sleep(500);
+          
             try
             {
                 txn.Slot = int.Parse(txn.Slot).ToString();
@@ -519,17 +370,7 @@ namespace TransferControl.Management
             {
 
             }
-            foreach (Job j in txn.TargetJobs)
-            {
-                try
-                {
-                    j.Slot = int.Parse(j.Slot).ToString();
-                }
-                catch
-                {
-
-                }
-            }
+          
             bool result = false;
             try
             {
@@ -662,6 +503,27 @@ namespace TransferControl.Management
 
                 switch (this.Type)
                 {
+                    case "MITSUBISHI_PLC":
+                        switch (txn.Method)
+                        {
+                            case Transaction.Command.Mitsubishi_PLC.ReadBit:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().PLC.ReadBit(txn.PLC_Station,txn.PLC_Area,txn.PLC_StartAddress,txn.PLC_Len);
+                                txn.CommandType = "GET";
+                                break;
+                            case Transaction.Command.Mitsubishi_PLC.ReadWord:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().PLC.ReadWord(txn.PLC_Station, txn.PLC_Area, txn.PLC_StartAddress, txn.PLC_Len);
+                                txn.CommandType = "GET";
+                                break;
+                            case Transaction.Command.Mitsubishi_PLC.WriteBit:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().PLC.WriteBit(txn.PLC_Station, txn.PLC_Area, txn.PLC_StartAddress, txn.PLC_Bit);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.Mitsubishi_PLC.WriteWord:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().PLC.WriteWord(txn.PLC_Station, txn.PLC_Area, txn.PLC_StartAddress, txn.PLC_Word);
+                                txn.CommandType = "SET";
+                                break;
+                        }
+                        break;
                     case "WTS_ALIGNER":
                         switch (txn.Method)
                         {
@@ -751,10 +613,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Initial_IO();
                                 txn.CommandType = "SET";
                                 break;
-                            //case Transaction.Command.CTU.Get_IO:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Get_IO(txn.Value);
-                            //    txn.CommandType = "GET";
-                            //    break;
+                                //case Transaction.Command.CTU.Get_IO:
+                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().CTU.Get_IO(txn.Value);
+                                //    txn.CommandType = "GET";
+                                //    break;
                         }
                         break;
                     case "WHR":
@@ -832,10 +694,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Stop();
                                 txn.CommandType = "SET";
                                 break;
-                            //case Transaction.Command.WHR.Get_IO:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Get_IO(txn.Value);
-                            //    txn.CommandType = "GET";
-                            //    break;
+                                //case Transaction.Command.WHR.Get_IO:
+                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().WHR.Get_IO(txn.Value);
+                                //    txn.CommandType = "GET";
+                                //    break;
                         }
                         break;
                     case "SHELF":
@@ -922,17 +784,17 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Initial_IO();
                                 txn.CommandType = "SET";
                                 break;
-                            //case Transaction.Command.FoupRobot.Get_IO:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Get_IO(txn.Value);
-                            //    txn.CommandType = "GET";
-                            //    break;
+                                //case Transaction.Command.FoupRobot.Get_IO:
+                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().FoupRobot.Get_IO(txn.Value);
+                                //    txn.CommandType = "GET";
+                                //    break;
                         }
                         break;
                     case "ILPT":
                         switch (txn.Method)
                         {
                             case Transaction.Command.ILPT.Clamp:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Clamp(txn.AdrNo,(Convert.ToInt32(txn.AdrNo)-2).ToString());
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().ILPT.Clamp(txn.AdrNo, (Convert.ToInt32(txn.AdrNo) - 2).ToString());
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.ILPT.Unclamp:
@@ -1735,89 +1597,18 @@ namespace TransferControl.Management
                         break;
                 }
 
-                if (this.Type.Equals("ROBOT"))
-                {
-                    if (txn.TargetJobs.Count == 0)
-                    {
-                        Job tmp;
-                        switch (txn.Arm)
-                        {
-                            case "1":
-                                if (this.JobList.TryGetValue("1", out tmp))
-                                {
-                                    txn.TargetJobs.Add(tmp);
-                                }
-                                break;
-                            case "2":
-                                if (this.JobList.TryGetValue("2", out tmp))
-                                {
-                                    txn.TargetJobs.Add(tmp);
-                                }
-                                break;
-                            case "3":
-                                if (this.JobList.TryGetValue("1", out tmp))
-                                {
-                                    txn.TargetJobs.Add(tmp);
-                                }
-                                if (this.JobList.TryGetValue("2", out tmp))
-                                {
-                                    txn.TargetJobs.Add(tmp);
-                                }
-                                break;
-                        }
-                    }
-                }
-                Job TargetJob;
-                if (txn.TargetJobs != null)
-                {
-                    if (txn.TargetJobs.Count != 0)
-                    {
-                        TargetJob = txn.TargetJobs[0];
-                    }
-                    else
-                    {
-                        TargetJob = RouteControl.CreateJob();
-                    }
-                }
-                else
-                {
-                    TargetJob = RouteControl.CreateJob();
-                }
-                //if (txn.CommandType.Equals("CMD") || txn.CommandType.Equals("MOV"))
-                //{
-                //    this.InitialComplete = false;
-                //    if ((this.InterLock || !(this.UnLockByJob.Equals(TargetJob.Job_Id) || this.UnLockByJob.Equals(""))) && !Force)
-                //    {
-                //        ReturnMessage tmp = new ReturnMessage();
-                //        tmp.Value = "Interlock!";
-                //        logger.Error(this.Name + " Interlock! Txn:" + JsonConvert.SerializeObject(txn));
-                //        this.GetController()._ReportTarget.On_Command_Error(this, txn, tmp);
-                //        this.IsExcuting = false;
-                //        return false;
-                //    }
-                //    if (this.Type.Equals("LOADPORT"))
-                //    {
-                //        this.InterLock = true;
-                //    }
-                //}
-                if (txn.TargetJobs.Count == 0)
-                {
-
-                    Job dummy = RouteControl.CreateJob();
-                    dummy.Job_Id = "dummy";
-                    txn.TargetJobs.Add(dummy);
-
-                }
+                
+           
                 bool IsWaitData = false;
                 if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData))
                 {
                     IsWaitData = true;
                 }
 
-                txn.AckTimeOut = this.AckTimeOut + 2000;
+                txn.AckTimeOut = this.AckTimeOut;
                 logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
-                int rate = 101 - Convert.ToInt32(Convert.ToDouble(this.Speed));
-                txn.MotionTimeOut = this.MotionTimeOut * rate + 25000;
+               
+                txn.MotionTimeOut = this.MotionTimeOut;
                 logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
                 if (Ctrl.DoWork(txn, IsWaitData))
                 {
@@ -1848,99 +1639,6 @@ namespace TransferControl.Management
             return result;
         }
 
-        public Job GetJob(string Slot)
-        {
-            Job result = null;
-
-            //lock (JobList)
-            //{
-            JobList.TryGetValue(Slot, out result);
-            //}
-
-            return result;
-        }
-        public bool AddJob(string Slot, Job Job)
-        {
-            bool result = false;
-            //lock (JobList)
-            //{
-            if (!JobList.ContainsKey(Slot))
-            {
-                JobList.TryAdd(Slot, Job);
-                result = true;
-            }
-            //}
-            return result;
-        }
-
-        public bool RemoveJob(string Slot)
-        {
-            bool result = false;
-            //lock (JobList)
-            //{
-            if (JobList.ContainsKey(Slot))
-            {
-                Job tmp;
-                JobList.TryRemove(Slot, out tmp);
-                result = true;
-            }
-            //}
-            return result;
-        }
-
-        public Job GetReserve(string Slot)
-        {
-            Job result = null;
-
-            //lock (JobList)
-            //{
-            ReserveList.TryGetValue(Slot, out result);
-            //}
-
-            return result;
-        }
-        public bool AddReserve(string Slot, Job Job)
-        {
-            bool result = false;
-            //lock (JobList)
-            //{
-            if (!ReserveList.ContainsKey(Slot))
-            {
-                ReserveList.TryAdd(Slot, Job);
-                result = true;
-            }
-            //}
-            return result;
-        }
-
-        public bool RemoveReserve(string Slot)
-        {
-            bool result = false;
-            //lock (JobList)
-            //{
-            if (ReserveList.ContainsKey(Slot))
-            {
-                Job tmp;
-                ReserveList.TryRemove(Slot, out tmp);
-                result = true;
-            }
-            //}
-            return result;
-        }
-        public void RefreshMap()
-        {
-            this.MappingResult = "";
-            for (int i = 1; i <= 25; i++)
-            {
-                if (this.JobList.ContainsKey(i.ToString()))
-                {
-                    this.MappingResult += this.JobList[i.ToString()].MappingValue;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
+        
     }
 }

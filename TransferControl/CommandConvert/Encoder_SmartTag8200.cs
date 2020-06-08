@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TransferControl.CommandConvert
 {
-    public class Encoder_SmartTag
+    public class Encoder_SmartTag8200
     {
         private string Supplier;
         
@@ -14,7 +14,7 @@ namespace TransferControl.CommandConvert
         /// </summary>
         /// <param name="supplier"> 設備供應商 </param>
         /// <param name="dtCommand"> Parameter List </param>
-        public Encoder_SmartTag(string supplier)
+        public Encoder_SmartTag8200(string supplier)
         {
             try
             {

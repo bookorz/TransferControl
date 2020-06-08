@@ -84,11 +84,13 @@
     <Compile Include="CommandConvert\Encoder_FoupRobot.cs" />
     <Compile Include="CommandConvert\Encoder_ILPT.cs" />
     <Compile Include="CommandConvert\Encoder_LoadPort.cs" />
+    <Compile Include="CommandConvert\Encoder_Mitsubishi_PLC.cs" />
     <Compile Include="CommandConvert\Encoder_OCR.cs" />
     <Compile Include="CommandConvert\Encoder_PTZ.cs" />
     <Compile Include="CommandConvert\Encoder_Robot.cs" />
     <Compile Include="CommandConvert\Encoder_Shelf.cs" />
-    <Compile Include="CommandConvert\Encoder_SmartTag.cs" />
+    <Compile Include="CommandConvert\Encoder_SmartTag8400.cs" />
+    <Compile Include="CommandConvert\Encoder_SmartTag8200.cs" />
     <Compile Include="CommandConvert\CommandReturnMessage.cs" />
     <Compile Include="CommandConvert\Encoder_WHR.cs" />
     <Compile Include="CommandConvert\Encoder_WTSAligner.cs" />
@@ -103,7 +105,6 @@
     <Compile Include="Config\Authorization\UserGroupFunction.cs" />
     <Compile Include="Config\ConfigTool.cs" />
     <Compile Include="Config\DIO\DioSetting.cs" />
-    <Compile Include="Config\Global.cs" />
     <Compile Include="Config\Recipe.cs" />
     <Compile Include="Config\SignalTower\SignalTowerSetting.cs" />
     <Compile Include="Config\SystemConfig.cs" />
@@ -124,7 +125,7 @@
     <Compile Include="Digital_IO\DIO.cs" />
     <Compile Include="Digital_IO\IDIOTriggerReport.cs" />
     <Compile Include="Engine\IUserInterfaceReport.cs" />
-    <Compile Include="Engine\RouteControl.cs" />
+    <Compile Include="Engine\MainControl.cs" />
     <Compile Include="Management\AlarmManagement.cs" />
     <Compile Include="Management\ArchiveLog.cs" />
     <Compile Include="Management\Carrier.cs" />
@@ -163,6 +164,7 @@
     <Compile Include="TaksFlow\ITaskFlow.cs" />
     <Compile Include="TaksFlow\Sanwa_Sorter.cs" />
     <Compile Include="TaksFlow\Kawasaki_3P_EFEM.cs" />
+    <Compile Include="TaksFlow\VerticalChamberOven_200.cs" />
     <Compile Include="TaksFlow\WTS.cs" />
   </ItemGroup>
   <ItemGroup>

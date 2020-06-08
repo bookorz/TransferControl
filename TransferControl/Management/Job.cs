@@ -12,7 +12,7 @@ namespace TransferControl.Management
         ILog logger = LogManager.GetLogger(typeof(Job));
         public string Slot { get; set; }
         public string MappingValue { get; set; }
-        public string Job_Id { get; set; }
+        public string Uid { get; set; }
         public string Host_Job_Id { get; set; }
         public string Host_Lot_Id { get; set; }
         public List<OCRInfo> OcrCodeList { get; set; }
@@ -61,11 +61,20 @@ namespace TransferControl.Management
         public DateTime EndTime { get; set; }
         public string WaferSize { get; set; }
         IJobReport _Report = null;
+        public MapStatus Status { get; set; }
+        public enum MapStatus
+        {
+            Normal,
+            Empty,
+            Crossed,
+            Undefined,
+            Double
+        }
 
         public Job(IJobReport Report)
         {
             _Report = Report;
-            Job_Id = "";
+          
             Host_Lot_Id = "";
             WaitToDo = "";
             Destination = "";
@@ -106,80 +115,6 @@ namespace TransferControl.Management
             {
                 _Report.On_Job_Position_Changed(this);
             }
-        }
-
-        public bool AssignPort(string Position, string Slot)
-        {
-            Node targetPort = NodeManagement.Get(Position);
-            if (targetPort == null)
-            {
-                return false;
-            }
-            Job targetSlot;
-            if (targetPort.JobList.TryGetValue(Slot, out targetSlot))
-            {
-                this.FromPort = this.Position;
-                this.FromPortSlot = this.Slot;
-                this.Destination = Position;
-                this.DisplayDestination = Position.Replace("Load", "");
-                this.DestinationSlot = Slot;
-                this.AssignTime = DateTime.Now;
-                this.NeedProcess = true;
-                this.AbortProcess = false;
-                this.AlignerFlag = false;
-                //設定UnloadPort的補償角度
-                string ULDRobot = NodeManagement.Get(this.Destination).Associated_Node;
-               
-                RobotPoint point = PointManagement.GetPoint(ULDRobot, Position);
-                if (point != null)
-                {
-                    this.Offset = point.Offset;
-                }
-                else
-                {
-                    logger.Error("Job AssignPort: point not exist. Node:" + ULDRobot + " Position:" + Position);
-                }
-                targetSlot.ReservePort = this.Position;
-                targetSlot.ReserveSlot = this.Slot;
-                targetSlot.IsAssigned = true;
-            }
-            else
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public void UnAssignPort()
-        {
-            Node targetPort = NodeManagement.Get(this.Destination);
-            if (targetPort != null)
-            {
-                Job targetSlot;
-                if (targetPort.JobList.TryGetValue(this.DestinationSlot, out targetSlot))
-                {
-                    targetSlot.ReservePort = "";
-                    targetSlot.ReserveSlot = "";
-                    targetSlot.IsAssigned = false;
-                }
-            }
-            this.Destination = "";
-            this.DisplayDestination = "";
-            this.DestinationSlot = "";
-            this.NeedProcess = false;
-            this.IsReversed = false;
-        }
-
-        public class State
-        {
-            public const string WAIT_PUT = "WAIT_PUT";
-            public const string WAIT_WHLD = "WAIT_WHLD";
-            public const string WAIT_ALIGN = "WAIT_ALIGN";
-            public const string WAIT_OCR = "WAIT_OCR";
-            public const string WAIT_WRLS = "WAIT_WRLS";
-            public const string WAIT_GET = "WAIT_GET";
-            public const string WAIT_RET = "WAIT_RET";
-            public const string WAIT_UNLOAD = "WAIT_UNLOAD";
         }
     }
 }

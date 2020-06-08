@@ -59,7 +59,9 @@ namespace TransferControl.CommandConvert
                         break;
                     case "ACDT":
                         result = ACDTCodeAnalysis(Message);
-
+                        break;
+                    case "MITSUBISHI_PLC":
+                        result = MITSUBISHI_PLCAnalysis(Message);
                         break;
                     default:
                         throw new NotImplementedException();
@@ -73,7 +75,30 @@ namespace TransferControl.CommandConvert
 
             return result;
         }
+        private List<CommandReturnMessage> MITSUBISHI_PLCAnalysis(string Message)
+        {
+            List<CommandReturnMessage> result;
+            string strMsg = string.Empty;
+            string[] msgAry;
+            CommandReturnMessage each = new CommandReturnMessage();
 
+            try
+            {
+                result = new List<CommandReturnMessage>();
+                CommandReturnMessage msg = new CommandReturnMessage();
+                msg.Type = CommandReturnMessage.ReturnType.Excuted;
+                msg.Value = Message.Substring(Message.IndexOf("FB0000")+6, Message.IndexOf((char)3)==-1? Message.Length- (Message.IndexOf("FB0000") + 6) : Message.IndexOf((char)3)-( Message.IndexOf("FB0000") + 6));
+                msg.OrgMsg = Message;
+                result.Add(msg);
+            }
+            catch (Exception ex)
+            {
+                
+                throw new Exception(Message+":"+ex.ToString());
+            }
+
+            return result;
+        }
         private List<CommandReturnMessage> ACDTCodeAnalysis(string Message)
         {
             List<CommandReturnMessage> result;

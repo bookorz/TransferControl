@@ -106,6 +106,7 @@ namespace TransferControl.Controller
             this.Name = DeviceName;
             this.Status = "";
             this._IsConnected = false;
+            ThreadPool.QueueUserWorkItem(new WaitCallback(Start));
         }
 
 
@@ -166,63 +167,16 @@ namespace TransferControl.Controller
 
         }
 
-        ConcurrentQueue<Transaction> queue = new ConcurrentQueue<Transaction>();
+       
 
         public bool DoWork(Transaction orgTxn, bool WaitForData = false)
         {
             Transaction Txn = null;
-            if (Vendor.Equals("TDK"))
-            {
-                if (orgTxn.Method == Transaction.Command.LoadPortType.Reset)
-                {
-                    while (queue.TryDequeue(out Txn))
-                    {
-
-                    }
-                    Txn = orgTxn;
-                }
-                else
-                {
-                    //while (isWaiting)
-                    //{
-                    //    SpinWait.SpinUntil(() => !isWaiting, 5000);
-                    //}
-                    lock (queue)
-                    {
-                        queue.Enqueue(orgTxn);
-                        if (NodeManagement.Get(orgTxn.NodeName).IsExcuting)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            NodeManagement.Get(orgTxn.NodeName).IsExcuting = true;
-                            queue.TryDequeue(out Txn);
-                        }
-                    }
-                    //while (true)
-                    //{
-                    //    while (NodeManagement.Get(orgTxn.NodeName).IsExcuting)
-                    //    {
-                    //        SpinWait.SpinUntil(() => !NodeManagement.Get(orgTxn.NodeName).IsExcuting, 5000);
-                    //    }
-                    //    lock (queue)
-                    //    {
-                    //        if (!NodeManagement.Get(orgTxn.NodeName).IsExcuting)
-                    //        {
-                    //            queue.TryDequeue(out Txn);
-                    //            NodeManagement.Get(orgTxn.NodeName).IsExcuting = true;
-                    //            break;
-                    //        }
-                    //    }
-                    //}
-                }
-            }
-            else
-            {
+          
+            
                 Txn = orgTxn;
-                NodeManagement.Get(Txn.NodeName).IsExcuting = true;
-            }
+                
+            
             if (Txn.CommandEncodeStr.Equals("GetMappingDummy"))
             {
                 string mappingData = "";
@@ -326,11 +280,7 @@ namespace TransferControl.Controller
           
 
 
-                string waferids = "";
-                foreach (Job each in Txn.TargetJobs)
-                {
-                    waferids += each.Job_Id + " ";
-                }
+                
                 //if (Vendor.ToUpper().Equals("ACDT"))
                 //{
                 //    byte[] byteAry = Encoding.UTF8.GetBytes(Txn.CommandEncodeStr);
@@ -340,9 +290,7 @@ namespace TransferControl.Controller
                 //}
                 //else
                 //{
-                logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
-                //}
-                _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
+                
                 if (Txn.CommandType.Equals(""))
                 {
                     Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
@@ -361,6 +309,9 @@ namespace TransferControl.Controller
                 }
                 try
                 {
+                    logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
+                    
+                    _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
                     if (this.Vendor.Equals("SMARTTAG"))
                     {
                         result = sendWith4Byte(Txn.CommandEncodeStr);
@@ -518,8 +469,9 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    key = ReturnMsg.NodeAdr + ReturnMsg.Command;
+                                    key = (ReturnMsg.NodeAdr + ReturnMsg.Command).Equals("")? "0": ReturnMsg.NodeAdr + ReturnMsg.Command;
                                 }
+                                
                                 if (Vendor.ToUpper().Equals("KAWASAKI"))
                                 {
                                     if (TransactionList.TryGetValue(key, out Txn))
@@ -570,7 +522,7 @@ namespace TransferControl.Controller
                                     //{
                                     //    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
                                     //}
-                                    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
+                                    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr.Equals("")?"0": ReturnMsg.NodeAdr);
                                     if (Node == null)
                                     {
                                         Node = NodeManagement.GetOCRByController(DeviceName);
@@ -623,7 +575,7 @@ namespace TransferControl.Controller
                                                 {
                                                     logger.Debug("Txn timmer stoped.");
                                                     Txn.SetTimeOutMonitor(false);
-                                                    Node.IsExcuting = false;
+                                                   
 
                                                 }
                                                 else
@@ -632,7 +584,7 @@ namespace TransferControl.Controller
                                                     {
                                                         logger.Debug("Txn timmer stoped.");
                                                         Txn.SetTimeOutMonitor(false);
-                                                        Node.IsExcuting = false;
+                                                       
                                                     }
                                                     else if (Txn.Method.Equals(Transaction.Command.RobotType.OrginSearch))
                                                     {
@@ -647,7 +599,7 @@ namespace TransferControl.Controller
                                                         Txn.SetTimeOut(Txn.MotionTimeOut);
                                                         Txn.SetTimeOutMonitor(true);
                                                         TransactionList.TryAdd(key, Txn);
-                                                        Node.IsMoving = true;
+                                                        
                                                     }
                                                 }
                                                 //_ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
@@ -655,14 +607,13 @@ namespace TransferControl.Controller
                                             case CommandReturnMessage.ReturnType.Finished:
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
-                                                Node.IsExcuting = false;
-                                                Node.IsMoving = false;
+                                              
                                                 //_ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                                 break;
                                             case CommandReturnMessage.ReturnType.Error:
                                                 logger.Debug("Txn timmer stoped.");
                                                 Txn.SetTimeOutMonitor(false);
-                                                Node.IsExcuting = false;
+                                              
                                                 //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
                                                 if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
                                                 {
@@ -705,13 +656,13 @@ namespace TransferControl.Controller
                                             }
                                             else
                                             {
-                                                if (ReturnMsg.Type.ToUpper().Equals("ERROR"))
+                                                if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Error)
                                                 {
                                                     Txn = TransactionList.First().Value;
 
                                                     logger.Debug("Txn timmer stoped.");
                                                     Txn.SetTimeOutMonitor(false);
-                                                    Node.IsExcuting = false;
+                                                 
                                                     //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
                                                     if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
                                                     {
@@ -765,7 +716,7 @@ namespace TransferControl.Controller
                                     //{
                                     //    Node.InterLock = false;
                                     //}
-                                    Node.IsExcuting = false;
+                                   
                                     _ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                     if (!Node.Type.Equals("LOADPORT"))
                                     {
@@ -798,18 +749,7 @@ namespace TransferControl.Controller
                         logger.Error(DeviceName + "(On_Connection_Message " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
                     }
                 }
-                if (Vendor.Equals("TDK"))
-                {
-                    if (!Target.IsExcuting)
-                    {
-                        Transaction txn;
-                        this.queue.TryDequeue(out txn);
-                        if (txn != null)
-                        {
-                            this.DoWork(txn);
-                        }
-                    }
-                }
+                
             }
             catch (Exception e)
             {
@@ -874,8 +814,8 @@ namespace TransferControl.Controller
 
         public void On_Transaction_TimeOut(Transaction Txn)
         {
-            logger.Debug(DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
-            _ReportTarget.On_Message_Log("CMD", DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.CommandEncodeStr);
+            logger.Debug(DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.Method);
+            _ReportTarget.On_Message_Log("CMD", DeviceName + "(On_Transaction_TimeOut Txn is timeout:" + Txn.Method);
             string key = "";
             if (Vendor.ToUpper().Equals("KAWASAKI"))
             {

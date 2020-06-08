@@ -116,13 +116,13 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static void ConnectAll()
-        {
-            foreach (IController each in Controllers.Values.ToList())
-            {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(each.Start));
-            }
-        }
+        //public static void ConnectAll()
+        //{
+        //    foreach (IController each in Controllers.Values.ToList())
+        //    {
+        //        ThreadPool.QueueUserWorkItem(new WaitCallback(each.Start));
+        //    }
+        //}
 
         //public static void ConnectAll()
         //{

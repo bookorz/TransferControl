@@ -12,7 +12,7 @@ namespace TransferControl.CommandConvert
         public EncoderRobot Robot;
         public EncoderOCR OCR;
         public EncoderLoadPort LoadPort;
-        public Encoder_SmartTag SmartTag;
+        public Encoder_SmartTag8200 SmartTag;
         public EncoderFFU FFU;
         public Encoder_CTU CTU;
         public Encoder_ELPT ELPT;
@@ -22,7 +22,7 @@ namespace TransferControl.CommandConvert
         public Encoder_Shelf Shelf;
         public Encoder_WHR WHR;
         public Encoder_WTSAligner WTSAligner;
-
+        public Encoder_Mitsubishi_PLC PLC;
 
 
         private string Supplier;
@@ -54,6 +54,7 @@ namespace TransferControl.CommandConvert
                 Shelf = new Encoder_Shelf(Supplier);
                 WHR = new Encoder_WHR(Supplier);
                 WTSAligner = new Encoder_WTSAligner(Supplier);
+                PLC = new Encoder_Mitsubishi_PLC(Supplier);
             }
             catch (Exception ex)
             {

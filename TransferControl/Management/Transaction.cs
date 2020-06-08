@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
+
 namespace TransferControl.Management
 {
     public class Transaction
     {
         public string uuid { get; set; }
-        public List<Job> TargetJobs { get; set; }
         public string AdrNo { get; set; }
         public string Seq { get; set; }
         public string NodeName { get; set; }
@@ -34,10 +34,17 @@ namespace TransferControl.Management
         public string ScriptName { get; set; }
         public string ScriptIndex { get; set; }
         public bool LastOneScript { get; set; }
-        public string TaskId { get; set; }
+        public TaskFlowManagement.CurrentProcessTask TaskObj { get; set; }
         public bool ByPassTimeout { get; set; }
         public int AckTimeOut { get; set; }
         public int MotionTimeOut { get; set; }
+
+        public int PLC_Station { get; set; }
+        public string PLC_Area { get; set; }
+        public int PLC_StartAddress { get; set; }
+        public int PLC_Len { get; set; }
+        public byte PLC_Bit { get; set; }
+        public ushort[] PLC_Word { get; set; }
 
         //逾時
         private System.Timers.Timer timeOutTimer = new System.Timers.Timer();
@@ -45,6 +52,13 @@ namespace TransferControl.Management
 
         public class Command
         {
+            public class Mitsubishi_PLC
+            {
+                public const string ReadBit = "ReadBit";
+                public const string ReadWord = "ReadWord";
+                public const string WriteBit = "WriteBit";
+                public const string WriteWord = "WriteWord";
+            }
             public class WTSAligner
             {
                 public const string Align = "Align";
@@ -164,7 +178,7 @@ namespace TransferControl.Management
                 public const string Reset = "Reset";
                 public const string SetSpeed = "SetSpeed";
                 public const string SetPath = "SetPath";
-             
+
             }
             public class Shelf
             {
@@ -359,8 +373,8 @@ namespace TransferControl.Management
             CommandEncodeStr = "";
             ScriptName = "";
             Type = "";
-            TaskId = "";
-            TargetJobs = new List<Job>();
+
+            
             ByPassTimeout = false;
             timeOutTimer.Enabled = false;
 
@@ -371,64 +385,6 @@ namespace TransferControl.Management
 
         }
 
-        public Transaction SetAttr(string Id,string Method,string Value,  string Position = "", string Slot = "", string Arm = "", string Position2 = "", string Slot2 = "", string Arm2 = "",string Val2="")
-        {
-            this.Method = Method;
-            this.Position = Position;
-            this.Arm = Arm;
-            this.Slot = Slot;
-            this.Position2 = Position2;
-            this.Arm2 = Arm2;
-            this.Slot2 = Slot2;
-            this.Value = Value;
-            this.TaskId = Id;
-            this.Val2 = Val2;
-            return this;
-        }
-
-        public Transaction SetAttr(string Id, string Method, Dictionary<string,string> param)
-        {
-            if (param != null)
-            {
-                foreach (KeyValuePair<string, string> item in param)
-                {
-                    switch (item.Key)
-                    {
-                        case "@Value":
-                            this.Value = item.Value;
-                            break;
-                        case "@Position":
-                            this.Position = item.Value;
-                            break;
-                        case "@Arm":
-                            this.Arm = item.Value;
-                            break;
-                        case "@Slot":
-                            this.Slot = item.Value;
-                            break;
-                        case "@Position2":
-                            this.Position2 = item.Value;
-                            break;
-                        case "@Arm2":
-                            this.Arm2 = item.Value;
-                            break;
-                        case "@Slot2":
-                            this.Slot2 = item.Value;
-                            break;
-                        case "@Val2":
-                            this.Val2 = item.Value;
-                            break;
-
-                    }
-                }
-            }
-            this.Method = Method;
-            
-            this.TaskId = Id;
-            
-            return this;
-        }
-
         public void SetTimeOut(int Timeout)
         {
             timeOutTimer.Interval = Timeout;
@@ -436,7 +392,7 @@ namespace TransferControl.Management
 
         public void SetTimeOutMonitor(bool Enabled)
         {
-            Enabled = false;
+            //Enabled = false;
             if (Enabled)
             {
                 timeOutTimer.Enabled = true;
@@ -460,7 +416,7 @@ namespace TransferControl.Management
             if (TimeOutReport != null)
             {
                 if (ByPassTimeout)
-                 {
+                {
                     TimeOutReport.On_Transaction_BypassTimeOut(this);
                 }
                 else

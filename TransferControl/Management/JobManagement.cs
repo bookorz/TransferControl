@@ -10,7 +10,7 @@ namespace TransferControl.Management
     public static class JobManagement
     {
         private static ConcurrentDictionary<string, Job> JobList = new ConcurrentDictionary<string, Job>();
-
+        static int seriesNum = 1;
         public static void Initial()
         {
             JobList.Clear();
@@ -32,20 +32,7 @@ namespace TransferControl.Management
             return key;
         }
 
-        public static void ClearAssignJobByPort(string PortName)
-        {
-            var findAssignJob = from job in GetJobList()
-                                where job.Destination.Equals(PortName)
-                                select job;
-
-            if (findAssignJob.Count() != 0)
-            {
-                foreach (Job j in findAssignJob)
-                {
-                    j.UnAssignPort();
-                }
-            }
-        }
+      
 
         public static List<Job> GetJobList()
         {
@@ -74,35 +61,55 @@ namespace TransferControl.Management
 
             return result;
         }
-        public static bool Add(string Job_Id, Job Job)
+        public static List<Job> GetByNode(string NodeName)
         {
-            bool result = false;
+            List<Job> result = null;
+
             lock (JobList)
             {
-                if (!JobList.ContainsKey(Job_Id))
-                {
-                    JobList.TryAdd(Job_Id, Job);
-                    result = true;
-                }
+                result = (from each in JobList.Values
+                          where each.Position.Equals(NodeName)
+                          select each).ToList();
             }
+
             return result;
         }
-        public static bool Remove(string Job_Id)
+        public static Job Add(IJobReport Report)
+        {
+            Job result = new Job(Report);
+            result.Uid = GetNewID();
+
+            lock (JobList)
+            {
+                if (!JobList.ContainsKey(result.Uid))
+                {
+                    JobList.TryAdd(result.Uid, result);
+                    result.Host_Job_Id = seriesNum.ToString();
+                    if (seriesNum >= 1000)
+                    {
+                        seriesNum = 1;
+                    }
+                    else
+                    {
+                        seriesNum++;
+                    }
+                    return result;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            
+        }
+        public static bool Remove(Job Job)
         {
             bool result = false;
             lock (JobList)
             {
                 Job tmp;
-                if(JobList.TryRemove(Job_Id ,out tmp))
-                {
-                    Node pos = NodeManagement.Get(tmp.Position);
-
-                    if (pos != null)
-                    {
-                        Job tmpj;
-                        pos.JobList.TryRemove(tmp.Slot, out tmpj);
-                    }
-                }
+                result = JobList.TryRemove(Job.Uid, out tmp);
+               
 
             }
             return result;
