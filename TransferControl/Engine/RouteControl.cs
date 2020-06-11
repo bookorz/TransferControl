@@ -1151,8 +1151,8 @@ namespace TransferControl.Engine
                 if (Msg.Command.Equals("ERROR"))
                 {
                     Node.HasAlarm = true;
-                    Node.InitialComplete = false;
-                    Node.OrgSearchComplete = false;
+                    //Node.InitialComplete = false;
+                    //Node.OrgSearchComplete = false;
                     _UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "ALARM");
 
@@ -1221,8 +1221,8 @@ namespace TransferControl.Engine
         /// <param name="Msg"></param>
         public void On_Command_Error(Node Node, Transaction Txn, ReturnMessage Msg)
         {
-            Node.InitialComplete = false;
-            Node.OrgSearchComplete = false;
+            //Node.InitialComplete = false;
+            //Node.OrgSearchComplete = false;
             Node.HasAlarm = true;
             
             if (Msg.Value.Equals(""))
