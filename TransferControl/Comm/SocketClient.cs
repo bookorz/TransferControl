@@ -179,13 +179,13 @@ namespace TransferControl.Comm
         /// 
         /// 
         /// 
-        public bool Send(object sendMessage)
+        public void Send(object sendMessage)
         {
             if (IsconnectSuccess)
             {
-                return SendData(sendMessage);
+                 SendData(sendMessage);
             }
-            return false;
+           
         }
 
         ///

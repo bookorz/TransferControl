@@ -26,7 +26,7 @@ namespace TransferControl.Comm
 
             ConnReport = _ConnReport;
         }
-        public bool Send(object Message)
+        public void Send(object Message)
         {
             try
             {
@@ -36,17 +36,14 @@ namespace TransferControl.Comm
                     byte[] msgByte = Encoding.Default.GetBytes(Message.ToString());
                     ns.Write(msgByte, 0, msgByte.Length);
                 }
-                else
-                {
-                    return false;
-                }
+              
             }
             catch (Exception e)
             {
                 logger.Error(e.StackTrace);
-                return false;
+               
             }
-            return true;
+          
         }
 
         public bool SendHexData(object Message)

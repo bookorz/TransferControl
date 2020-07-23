@@ -49,47 +49,50 @@ namespace TransferControl.Management
             List<DeviceController> controllerList = new ConfigTool<List<DeviceController>>().ReadFile("config/Controller.json");
             foreach (DeviceController each in controllerList)
             {
-                IController ctrl=null;
-                if (each.ControllerType.Equals("ASCII"))
+                if (!each.DeviceType.Equals("DIO"))
                 {
-                    DeviceController d = new DeviceController();
-                    d.DeviceName = each.DeviceName;
-                    d.DeviceType = each.DeviceType;
-                    d.Vendor = each.Vendor;
-                    d.IPAdress = each.IPAdress;
-                    d.Port = each.Port;
-                    d.BaudRate = each.BaudRate;
-                    d.PortName = each.PortName;
-                    d.ConnectionType = each.ConnectionType;
-                    d.Enable = each.Enable;
-                    d.ControllerType = each.ControllerType;
-                  
-                    ctrl = d;
-                }
-                else if (each.ControllerType.Equals("MODBUS"))
-                {
-                    ModbusController m = new ModbusController();
-                    m.DeviceName = each.DeviceName;
-                    m.DeviceType = each.DeviceType;
-                    m.Vendor = each.Vendor;
-                    m.IPAdress = each.IPAdress;
-                    m.Port = each.Port;
-                    m.BaudRate = each.BaudRate;
-                    m.PortName = each.PortName;
-                    m.ConnectionType = each.ConnectionType;
-                    m.Enable = each.Enable;
-                    m.ControllerType = each.ControllerType;
-                    ctrl = m;
-                }
+                    IController ctrl = null;
+                    if (each.ControllerType.Equals("ASCII"))
+                    {
+                        DeviceController d = new DeviceController();
+                        d.DeviceName = each.DeviceName;
+                        d.DeviceType = each.DeviceType;
+                        d.Vendor = each.Vendor;
+                        d.IPAdress = each.IPAdress;
+                        d.Port = each.Port;
+                        d.BaudRate = each.BaudRate;
+                        d.PortName = each.PortName;
+                        d.ConnectionType = each.ConnectionType;
+                        d.Enable = each.Enable;
+                        d.ControllerType = each.ControllerType;
+
+                        ctrl = d;
+                    }
+                    else if (each.ControllerType.Equals("MODBUS"))
+                    {
+                        ModbusController m = new ModbusController();
+                        m.DeviceName = each.DeviceName;
+                        m.DeviceType = each.DeviceType;
+                        m.Vendor = each.Vendor;
+                        m.IPAdress = each.IPAdress;
+                        m.Port = each.Port;
+                        m.BaudRate = each.BaudRate;
+                        m.PortName = each.PortName;
+                        m.ConnectionType = each.ConnectionType;
+                        m.Enable = each.Enable;
+                        m.ControllerType = each.ControllerType;
+                        ctrl = m;
+                    }
 
 
-                if (ctrl.GetEnable())
-                {
-                    //each.ConnectionType = "Socket";
-                    //each.IPAdress = "127.0.0.1";
-                    //each.Port = 9527;
-                    ctrl.SetReport(Report);
-                    Controllers.TryAdd(ctrl.GetDeviceName(), ctrl);
+                    if (ctrl.GetEnable())
+                    {
+                        //each.ConnectionType = "Socket";
+                        //each.IPAdress = "127.0.0.1";
+                        //each.Port = 9527;
+                        ctrl.SetReport(Report);
+                        Controllers.TryAdd(ctrl.GetDeviceName(), ctrl);
+                    }
                 }
             }
         }

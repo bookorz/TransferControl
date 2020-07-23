@@ -45,6 +45,7 @@ namespace TransferControl.Management
         public int PLC_Len { get; set; }
         public byte PLC_Bit { get; set; }
         public ushort[] PLC_Word { get; set; }
+        public bool WaitEvent { get; set; }
 
         //逾時
         private System.Timers.Timer timeOutTimer = new System.Timers.Timer();
@@ -199,6 +200,8 @@ namespace TransferControl.Management
             //LoadPort
             public class LoadPortType
             {
+                public const string GetSpeed = "GetSpeed";
+                public const string SetSpeed = "SetSpeed";
                 public const string Stop = "Stop";
                 public const string GetTweekDistance = "GetTweekDistance";
                 public const string GetSlotPitch = "GetSlotPitch";
@@ -218,7 +221,9 @@ namespace TransferControl.Management
                 public const string EQASP = "EQASP";
                 public const string Mode = "Mode";
                 public const string Load = "Load";
+                public const string LoadWithLift = "LoadWithLift"; 
                 public const string Mapping = "Mapping";
+                public const string RetryMapping = "RetryMapping";
                 public const string MappingLoad = "MappingLoad";
                 public const string Unload = "Unload";
                 public const string MappingUnload = "MappingUnload";
@@ -373,7 +378,7 @@ namespace TransferControl.Management
             CommandEncodeStr = "";
             ScriptName = "";
             Type = "";
-
+            WaitEvent = false;
             
             ByPassTimeout = false;
             timeOutTimer.Enabled = false;

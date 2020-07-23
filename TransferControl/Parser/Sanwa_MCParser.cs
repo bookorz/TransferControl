@@ -19,10 +19,57 @@ namespace TransferControl.Parser
                     return ParseMap(Message);
                 case Transaction.Command.Shelf.GetFOUPPresence:
                     return ParsePresent(Message);
+                case Transaction.Command.LoadPortType.ReadStatus:
+                    return ParseStatus(Message);
                 default:
                     throw new Exception(Command + " Not support");
             }
-
+        }
+        private Dictionary<string, string> ParseStatus(string Message)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            string[] tmp = Message.Split(',');
+            for (int i = 0; i < tmp.Length; i++)
+            {
+                int idx = i + 1;
+                switch (idx)
+                {
+                    case 1:
+                        
+                        break;
+                    case 2:
+                        
+                        break;
+                    case 3:
+                       
+                        break;
+                    case 4:
+                        result.Add("PIP", tmp[i]=="1"?"TRUE":"FALSE");
+                        break;
+                    case 5:
+                        result.Add("PRTST", tmp[i] == "1" ? "LK" : "UNLK");
+                        break;
+                    case 6:
+                       
+                        break;
+                    case 7:
+                        
+                        break;
+                    case 8:
+                        ;
+                        break;
+                    case 9:
+                        
+                        break;
+                    case 10:
+                        
+                        break;
+                    default:
+                        result.Add("SHELF" + (idx - 5).ToString(), tmp[i]);
+                        break;
+                }
+            }
+            return result;
         }
         private Dictionary<string, string> ParseMap(string Message)
         {

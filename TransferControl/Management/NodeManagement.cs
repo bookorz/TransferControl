@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using TransferControl.Comm;
 using TransferControl.Config;
 
@@ -54,6 +55,7 @@ namespace TransferControl.Management
                     each.InitialObject();
                     NodeList.TryAdd(each.Name, each);
                     NodeListByCtrl.TryAdd(each.Controller + each.AdrNo, each);
+                
                 //}
             }
 
@@ -125,18 +127,7 @@ namespace TransferControl.Management
             return result;
         }
 
-        public static Node GetLoadPortByPTN(int PTN)
-        {
-            Node result = null;
-            var findPort = from port in NodeList.Values.ToList()
-                           where port.Type.Equals("LOADPORT") && port.Enable && port.PTN.Equals(PTN)
-                           select port;
-            if (findPort.Count() != 0)
-            {
-                result = findPort.First();
-            }
-            return result;
-        }
+   
 
         public static List<Node> GetEnableRobotList()
         {

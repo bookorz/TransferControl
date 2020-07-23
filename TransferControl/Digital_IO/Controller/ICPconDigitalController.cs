@@ -23,7 +23,7 @@ namespace TransferControl.Digital_IO.Controller
             _Cfg = Config;
             _Report = TriggerReport;
 
-            //Connect();
+            Connect();
 
         }
 

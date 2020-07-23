@@ -109,6 +109,7 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
+                case "SANWA_MC":
                 case "ATEL":
                 case "ATEL_NEW":
                     result = "\r";
@@ -156,6 +157,9 @@ namespace TransferControl.CommandConvert
                 case "ASYST":
                     commandStr = "HCS RESET";
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:RESET:0";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -190,13 +194,16 @@ namespace TransferControl.CommandConvert
         /// <param name="commandType"> Command Type </param>
         /// <param name="Slot">Move to slot number</param>
         /// <returns></returns>
-        public string Slot(CommandType commandType, string Slot)
+        public string Slot(CommandType commandType, string Slot,string Adw)
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "ASYST":
                     commandStr = "HCS SLOT";
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:SLOT_:1," + Slot+","+ Adw;
                     break;
                 default:
                     throw new NotSupportedException();
@@ -293,6 +300,7 @@ namespace TransferControl.CommandConvert
         {
             string Command = string.Empty;
             string param = string.Empty;
+            string commandStr = "";
             try
             {
                 switch (Supplier)
@@ -311,7 +319,24 @@ namespace TransferControl.CommandConvert
                                 param = "TWEEKUP";
                                 break;
                         }
+                        commandStr = Command + " " + param;
                         break;
+                    case "SANWA_MC":
+                        switch (type)
+                        {
+
+                            case TweekType.TweekDown:
+
+                                commandStr = "$1MCR:TWEEK:1,0";
+                                break;
+                            case TweekType.TweekUp:
+
+                                commandStr = "$1MCR:TWEEK:1,1";
+                                break;
+                        }
+                        break;
+                    default:
+                        throw new NotSupportedException();
                 }
 
             }
@@ -319,7 +344,7 @@ namespace TransferControl.CommandConvert
             {
                 throw new Exception(ex.ToString());
             }
-            return Command + " " + param + "\r\n";
+            return commandStr + EndCode();
         }
 
         public string SetSlotOffset(string offset)
@@ -345,7 +370,23 @@ namespace TransferControl.CommandConvert
             }
             return Command + " " + parm + "\r\n";
         }
+        public string SetSpeed(string Val)
+        {
+            string commandStr = string.Empty;
 
+
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    commandStr = "$1MCR:SP___:1,"+Val;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+
+            return commandStr + EndCode();
+        }
         public string GetSlotOffset()
         {
             string Command = string.Empty;
@@ -672,6 +713,9 @@ namespace TransferControl.CommandConvert
                             break;
                     }
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:MODE_:1,0";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -693,6 +737,9 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ASYST":
                     commandStr = "FSR FC=0";
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:GTSTS:1,0";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -757,11 +804,14 @@ namespace TransferControl.CommandConvert
                         case MappingSortingType.Desc:
                             commandStr = "GET:MAPDT;";
                             break;
-                    }                   
+                    }
                     commandStr = TDKAssembly(commandStr);
                     break;
                 case "ASYST":
                     commandStr = "FSR FC=2";
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:GTSTS:1,1";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -805,10 +855,13 @@ namespace TransferControl.CommandConvert
                 case "ASYST":
                     commandStr = "HCS CALIB";
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:ORG__:1";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
-            return commandStr + EndCode();            
+            return commandStr + EndCode();
         }
 
         /// <summary>
@@ -824,6 +877,9 @@ namespace TransferControl.CommandConvert
                 case "TDK":
                     commandStr = "MOV:ABORG;";
                     commandStr = TDKAssembly(commandStr);
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:ORG__:1";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -847,6 +903,23 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ASYST":
                     commandStr = "HCS STAGE";
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:STAGE:1,0";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
+
+        public string LoadWithLift(CommandType commandType)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    commandStr = "$1MCR:STAGE:1,1";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -914,7 +987,7 @@ namespace TransferControl.CommandConvert
             return commandStr + EndCode();
         }
 
-     
+
         /// <summary>
         /// Docking Position After Mapping
         /// </summary>
@@ -951,6 +1024,9 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ASYST":
                     commandStr = "HCS HOME";
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:HOME_:1,0";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1072,6 +1148,9 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:CUDMP;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:HOME:1,1";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1134,6 +1213,9 @@ namespace TransferControl.CommandConvert
                 case "ASYST":
                     commandStr = "HCS STAGE";
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:STAGE:1,0";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1174,6 +1256,9 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:REMAP;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:MAP__:1";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1197,6 +1282,9 @@ namespace TransferControl.CommandConvert
                 case "ASYST":
                     commandStr = "HCS UNLK";
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:LATCH:1,0";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1219,6 +1307,9 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ASYST":
                     commandStr = "HCS LOCK";
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:LATCH:1,1";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -1320,6 +1411,7 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:DORCL;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+                
                 default:
                     throw new NotSupportedException();
             }
@@ -1340,6 +1432,7 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:DOROP;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+                
                 default:
                     throw new NotSupportedException();
             }
@@ -1671,7 +1764,7 @@ namespace TransferControl.CommandConvert
                         case ParamState.Disable:
                             commandStr = "PRM:eqasp/OFF;";
                             break;
-                    }                   
+                    }
                     commandStr = TDKAssembly(commandStr);
                     break;
                 default:

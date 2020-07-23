@@ -32,7 +32,7 @@ namespace TransferControl.Management
             return key;
         }
 
-      
+
 
         public static List<Job> GetJobList()
         {
@@ -49,14 +49,29 @@ namespace TransferControl.Management
             return result;
         }
 
-        
-        public static Job Get(string Job_Id)
+
+        public static Job Get(string U_Id)
         {
             Job result = null;
 
             lock (JobList)
             {
-                JobList.TryGetValue(Job_Id, out result);
+                JobList.TryGetValue(U_Id, out result);
+            }
+
+            return result;
+        }
+        public static Job Get(string NodeName, string Slot)
+        {
+            Job result = null;
+
+            lock (JobList)
+            {
+                result = (from each in JobList.Values
+                          where each.Position.Equals(NodeName) && Convert.ToInt16(each.Slot).ToString().Equals(Convert.ToInt16(Slot).ToString())
+                          select each).Count() == 0 ? null : (from each in JobList.Values
+                                                              where each.Position.Equals(NodeName) && Convert.ToInt16(each.Slot).ToString().Equals(Convert.ToInt16(Slot).ToString())
+                                                              select each).First();
             }
 
             return result;
@@ -74,9 +89,9 @@ namespace TransferControl.Management
 
             return result;
         }
-        public static Job Add(IJobReport Report)
+        public static Job Add()
         {
-            Job result = new Job(Report);
+            Job result = new Job();
             result.Uid = GetNewID();
 
             lock (JobList)
@@ -84,7 +99,7 @@ namespace TransferControl.Management
                 if (!JobList.ContainsKey(result.Uid))
                 {
                     JobList.TryAdd(result.Uid, result);
-                    result.Host_Job_Id = seriesNum.ToString();
+                    result.Host_Job_Id = "Wafer Exist";
                     if (seriesNum >= 1000)
                     {
                         seriesNum = 1;
@@ -100,7 +115,7 @@ namespace TransferControl.Management
                     return null;
                 }
             }
-            
+
         }
         public static bool Remove(Job Job)
         {
@@ -109,7 +124,7 @@ namespace TransferControl.Management
             {
                 Job tmp;
                 result = JobList.TryRemove(Job.Uid, out tmp);
-               
+
 
             }
             return result;

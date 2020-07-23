@@ -80,7 +80,7 @@ namespace TransferControl.Digital_IO
                 {
 
                     each.Status = "N/A";
-                    Controls.TryAdd(each.Parameter, each);
+                    Controls.TryAdd(each.Parameter.ToUpper(), each);
                 }
             }
 

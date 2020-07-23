@@ -8,7 +8,7 @@ namespace TransferControl.Comm
 {
     interface IConnection
     {
-        bool Send(object Message);
+        void Send(object Message);
         bool SendHexData(object Message);
         void Start();
         void WaitForData(bool Enable);

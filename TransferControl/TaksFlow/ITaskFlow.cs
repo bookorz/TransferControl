@@ -10,6 +10,6 @@ namespace TransferControl.TaksFlow
 {
     public interface ITaskFlow
     {
-        bool Excute(TaskFlowManagement.CurrentProcessTask TaskJob);
+        void Excute(object TaskJob);
     }
 }

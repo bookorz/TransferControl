@@ -37,12 +37,13 @@ namespace TransferControl.Engine
         /// <param name="ReportTarget"></param>
         public MainControl(IUserInterfaceReport ReportUI)
         {
-            ArchiveLog.doWork(@"D:\log\", @"D:\log_backup\");//自動壓縮LOG檔案
+           // ArchiveLog.doWork(@"D:\log\", @"D:\log_backup\");//自動壓縮LOG檔案
             Instance = this;
             EqpState = "Idle";
 
             _UIReport = ReportUI;
             //初始化所有Controller
+            AlarmManagement.InitialAlarm();
             DIO = new DIO(this);
 
 
@@ -53,14 +54,11 @@ namespace TransferControl.Engine
             NodeManagement.LoadConfig();
 
 
-
-            //初始化命令參數轉換表
-            CmdParamManagement.Initialize();
             //初始化Robot點位表
             PointManagement.LoadConfig();
             //初始化工作腳本
 
-            AlarmManagement.InitialAlarm();
+            
         }
 
 
@@ -91,13 +89,15 @@ namespace TransferControl.Engine
                 {
                     case Transaction.Command.RobotType.Reset:
                         Node.HasAlarm = false;
+                        AlarmManagement.Clear(Node.Name);
                         _UIReport.On_Node_State_Changed(Node, Node.State);
+                        Node.IsExcuting = false;
                         break;
                     case Transaction.Command.RobotType.Pause:
-                        //Node.IsPause = true;
+                        Node.IsPause = true;
                         break;
                     case Transaction.Command.RobotType.Continue:
-                        //Node.IsPause = false;
+                        Node.IsPause = false;
                         break;
                 }
 
@@ -111,21 +111,20 @@ namespace TransferControl.Engine
                 }//分裝置別
                 switch (Node.Type)
                 {
-                    case "MITSUBISHI_PLC":
-                        switch (Txn.Method)
-                        {
-                            case Transaction.Command.Mitsubishi_PLC.ReadBit:
-                                string area = Txn.CommandEncodeStr.Substring(Txn.CommandEncodeStr.IndexOf("FB0000")+7,8);
-                                Node.IO.Remove(area);
-                                Node.IO.Add(area, Msg.Value);
-                                break;
-                            case Transaction.Command.Mitsubishi_PLC.ReadWord:
-                                area = Txn.CommandEncodeStr.Substring(Txn.CommandEncodeStr.IndexOf("FB0000") + 7, 8);
-                                Node.IO.Remove(area);
-                                Node.IO.Add(area, Msg.Value);
-                                break;
-                        }
-                        break;
+                    //case "MITSUBISHI_PLC":
+                    //    switch (Txn.Method)
+                    //    {
+                    //        case Transaction.Command.Mitsubishi_PLC.ReadBit:
+                    //            string area = Txn.CommandEncodeStr.Substring(Txn.CommandEncodeStr.IndexOf("FB0000")+7,8);
+                    //            Node.SetIO(area, Msg.Value);
+                               
+                    //            break;
+                    //        case Transaction.Command.Mitsubishi_PLC.ReadWord:
+                    //            area = Txn.CommandEncodeStr.Substring(Txn.CommandEncodeStr.IndexOf("FB0000") + 7, 8);
+                    //            Node.SetIO(area, Msg.Value);
+                    //            break;
+                    //    }
+                    //    break;
                     case "SMARTTAG":
                         switch (Txn.Method)
                         {
@@ -317,10 +316,9 @@ namespace TransferControl.Engine
 
                                         }
                                     }
-                                    Job wafer = JobManagement.Add(this);
+                                    Job wafer = JobManagement.Add();
                                     wafer.Slot = (i + 1).ToString();
-                                    wafer.FromPort = Node.Name;
-                                    wafer.FromPortSlot = wafer.Slot;
+                                    
                                     wafer.Position = Node.Name;
                                     wafer.AlignerFlag = false;
                                     wafer.MappingValue = Mapping[i].ToString();
@@ -330,11 +328,11 @@ namespace TransferControl.Engine
                                     switch (Mapping[i])
                                     {
                                         case '0':
-                                            wafer.Status = Job.MapStatus.Empty;
+                                            //wafer.Status = Job.MapStatus.Empty;
 
-                                            wafer.MapFlag = false;
-                                            wafer.ErrPosition = false;
-
+                                            //wafer.MapFlag = false;
+                                            //wafer.ErrPosition = false;
+                                            JobManagement.Remove(wafer);
                                             break;
                                         case '1':
                                             wafer.Status = Job.MapStatus.Normal;
@@ -413,10 +411,12 @@ namespace TransferControl.Engine
                                 if (Msg.Value.Contains("00000000"))
                                 {
                                     Node.HasAlarm = false;
+                                    Node.LastError = "";
                                 }
                                 else
                                 {
                                     Node.HasAlarm = true;
+                                    Node.LastError = Msg.Value;
                                 }
                                 break;
                             case Transaction.Command.RobotType.GetStatus:
@@ -457,13 +457,16 @@ namespace TransferControl.Engine
                                     }
                                 }
                                 break;
+                            case Transaction.Command.RobotType.GetMode:
+                                Node.Mode = Msg.Value;
+                                break;
                             case Transaction.Command.RobotType.GetRIO:
                                 parser = new MessageParser(Node.Vendor);
                                 Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                 foreach (KeyValuePair<string, string> each in RioResult)
                                 {
-                                    Node.IO.Remove(each.Key);
-                                    Node.IO.Add(each.Key, each.Value);
+                                    //Node.SetIO(each.Key, Msg.Value);
+                                   
                                     switch (each.Key)
                                     {
                                         case "R_Presure_switch":
@@ -605,10 +608,9 @@ namespace TransferControl.Engine
 
                                         }
                                     }
-                                    Job wafer = JobManagement.Add(this);
+                                    Job wafer = JobManagement.Add();
                                     wafer.Slot = (i + 1).ToString();
-                                    wafer.FromPort = port.Name;
-                                    wafer.FromPortSlot = wafer.Slot;
+                                  
                                     wafer.Position = port.Name;
                                     wafer.AlignerFlag = false;
                                     wafer.MappingValue = Mapping[i].ToString();
@@ -618,10 +620,11 @@ namespace TransferControl.Engine
                                     switch (Mapping[i])
                                     {
                                         case '0':
-                                            wafer.Status = Job.MapStatus.Empty;
-                                            wafer.MapFlag = false;
-                                            wafer.ErrPosition = false;
+                                            //wafer.Status = Job.MapStatus.Empty;
+                                            //wafer.MapFlag = false;
+                                            //wafer.ErrPosition = false;
                                             //MappingData.Add(wafer);
+                                            JobManagement.Remove(wafer);
                                             break;
                                         case '1':
 
@@ -685,8 +688,8 @@ namespace TransferControl.Engine
                                 Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                 foreach (KeyValuePair<string, string> each in RioResult)
                                 {
-                                    Node.IO.Remove(each.Key);
-                                    Node.IO.Add(each.Key, each.Value);
+                                    //Node.SetIO(each.Key, Msg.Value);
+                                    
                                     switch (each.Key)
                                     {
                                         case "R_Present":
@@ -821,10 +824,9 @@ namespace TransferControl.Engine
                                 int currentIdx = 1;
                                 for (int i = 0; i < Mapping.Length; i++)
                                 {
-                                    Job wafer = JobManagement.Add(this);
+                                    Job wafer = JobManagement.Add();
                                     wafer.Slot = (i + 1).ToString();
-                                    wafer.FromPort = Node.Name;
-                                    wafer.FromPortSlot = wafer.Slot;
+                                   
                                     wafer.Position = Node.Name;
                                     wafer.AlignerFlag = false;
                                     wafer.MappingValue = Mapping[i].ToString();
@@ -834,10 +836,11 @@ namespace TransferControl.Engine
                                     switch (Mapping[i])
                                     {
                                         case '0':
-                                            wafer.Status = Job.MapStatus.Empty;
-                                            wafer.MapFlag = false;
-                                            wafer.ErrPosition = false;
+                                            //wafer.Status = Job.MapStatus.Empty;
+                                            //wafer.MapFlag = false;
+                                            //wafer.ErrPosition = false;
                                             //MappingData.Add(wafer);
+                                            JobManagement.Remove(wafer);
                                             break;
                                         case '1':
                                             wafer.Status = Job.MapStatus.Normal;
@@ -895,10 +898,9 @@ namespace TransferControl.Engine
                                 int currentIdx = 1;
                                 for (int i = 0; i < Mapping.Length; i++)
                                 {
-                                    Job wafer = JobManagement.Add(this);
+                                    Job wafer = JobManagement.Add();
                                     wafer.Slot = (i + 1).ToString();
-                                    wafer.FromPort = Node.Name;
-                                    wafer.FromPortSlot = wafer.Slot;
+                                   
                                     wafer.Position = Node.Name;
                                     wafer.AlignerFlag = false;
                                     wafer.MappingValue = Mapping[i].ToString();
@@ -908,10 +910,11 @@ namespace TransferControl.Engine
                                     switch (Mapping[i])
                                     {
                                         case '0':
-                                            wafer.Status = Job.MapStatus.Empty;
-                                            wafer.MapFlag = false;
-                                            wafer.ErrPosition = false;
+                                            //wafer.Status = Job.MapStatus.Empty;
+                                            //wafer.MapFlag = false;
+                                            //wafer.ErrPosition = false;
                                             //MappingData.Add(wafer);
+                                            JobManagement.Remove(wafer);
                                             break;
                                         case '1':
 
@@ -1005,7 +1008,7 @@ namespace TransferControl.Engine
                                 break;
                             case Transaction.Command.RobotType.OrginSearch:
                                 Node.State = "READY";
-                                Node.OrgSearchComplete = true;
+                                
                                 Node.Home_Position = false;
                                 break;
                         }
@@ -1076,6 +1079,214 @@ namespace TransferControl.Engine
                                 Node.IsLoad = false;
                                 _UIReport.On_Node_State_Changed(Node, "Ready To Load");
                                 Node.State = "READY";
+                                break;
+                            case Transaction.Command.LoadPortType.GetMapping:
+                            case Transaction.Command.LoadPortType.GetMappingDummy:
+                                //產生Mapping資料.
+                                Node.IsMapping = true;
+                                Node.LoadTime = DateTime.Now;
+                                string Mapping = Msg.Value;
+
+                                if (Node.Vendor.Equals("SANWA_MC"))
+                                {
+                                    Mapping = Mapping.Split(new string[] { ","}, StringSplitOptions.None )[1]=="2"?"?????????????????????????": Mapping.Split(new string[] { "," }, StringSplitOptions.None)[1];
+                                    if (Mapping.Equals("?????????????????????????"))
+                                    {
+                                        Node.IsMapping = false;
+                                    }
+                                }
+
+
+                                if (SystemConfig.Get().DummyMappingData)
+                                {
+                                    if (Node.Name.Equals("LOADPORT01"))
+                                    {
+                                        Mapping = SystemConfig.Get().FakeDataP1;
+
+                                    }
+                                    if (Node.Name.Equals("LOADPORT02"))
+                                    {
+
+                                        Mapping = SystemConfig.Get().FakeDataP2;
+
+                                    }
+                                    Msg.Value = Mapping;
+                                }
+
+                                Node.MappingResult = Mapping;
+
+                                
+
+
+                                int currentIdx = 1;
+                                for (int i = 0; i < Mapping.Length; i++)
+                                {
+                                    if (Node.CarrierType != null)
+                                    {
+                                        if (Node.CarrierType.Equals("OPEN"))
+                                        {
+
+                                            if ((i + 1) > 13)
+                                            {
+                                                continue;
+                                            }
+
+                                        }
+                                    }
+                                    Job wafer = JobManagement.Add();
+                                    wafer.Slot = (i + 1).ToString();
+                                   
+                                    wafer.Position = Node.Name;
+                                    wafer.AlignerFlag = false;
+                                    wafer.MappingValue = Mapping[i].ToString();
+                                    string Slot = (i + 1).ToString("00");
+
+
+                                    switch (Mapping[i])
+                                    {
+                                        case '0':
+                                            //wafer.Status = Job.MapStatus.Empty;
+
+                                            //wafer.MapFlag = false;
+                                            //wafer.ErrPosition = false;
+                                            JobManagement.Remove(wafer);
+                                            break;
+                                        case '1':
+                                            wafer.Status = Job.MapStatus.Normal;
+                                            wafer.MapFlag = true;
+                                            wafer.ErrPosition = false;
+
+                                            break;
+                                        case '2':
+                                        case 'E':
+                                            wafer.Status = Job.MapStatus.Crossed;
+
+                                            wafer.MapFlag = true;
+                                            wafer.ErrPosition = true;
+
+                                            Node.IsMapping = false;
+                                            break;
+                                        default:
+                                        case '?':
+                                            wafer.Status = Job.MapStatus.Undefined;
+
+                                            wafer.MapFlag = true;
+                                            wafer.ErrPosition = true;
+
+                                            Node.IsMapping = false;
+                                            break;
+                                        case 'W':
+                                            wafer.Status = Job.MapStatus.Double;
+
+                                            wafer.MapFlag = true;
+                                            wafer.ErrPosition = true;
+
+                                            Node.IsMapping = false;
+                                            break;
+                                    }
+
+
+                                }
+                                if (!Node.IsMapping)
+                                {
+                                    CommandReturnMessage rem = new CommandReturnMessage();
+                                    rem.Value = "MAPERR";
+                                    _UIReport.On_Command_Error(Node, Txn, rem);
+                                }
+                                break;
+                            case Transaction.Command.LoadPortType.ReadStatus:
+                                parser = new MessageParser(Node.Vendor);
+                                Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
+                                foreach (KeyValuePair<string, string> each in Node.Status)
+                                {
+                                    switch (each.Key)
+                                    {
+                                        case "SLOTPOS":
+                                            Node.CurrentSlotPosition = each.Value;
+
+                                            break;
+                                        case "PIP":
+                                            if (each.Value.Equals("TRUE"))
+                                            {
+                                                Node.Foup_Placement = true;
+                                                Node.Foup_Presence = false;
+                                            }
+                                            else
+                                            {
+                                                Node.Foup_Placement = false;
+                                                Node.Foup_Presence = true;
+                                            }
+                                            break;
+                                        case "PRTST":
+                                            if (each.Value.Equals("UNLK"))
+                                            {
+                                                Node.Foup_Lock = false;
+                                            }
+                                            else
+                                            {
+                                                Node.Foup_Lock = true;
+                                            }
+                                            break;
+                                        case "Door Position":
+                                            Node.Door_Position = each.Value;
+                                            break;
+                                        case "Y Axis Position":
+                                            Node.Y_Axis_Position = each.Value;
+                                            break;
+                                        case "Z Axis Position":
+                                            Node.Z_Axis_Position = each.Value;
+                                            break;
+                                        case "FOUP Clamp Status":
+                                            if (each.Value.Equals("Open"))
+                                            {
+                                                Node.Foup_Lock = false;
+                                            }
+                                            else if (each.Value.Equals("Close"))
+                                            {
+                                                Node.Foup_Lock = true;
+                                            }
+                                            break;
+                                        case "Latch Key Status":
+                                            if (each.Value.Equals("Open"))
+                                            {
+                                                Node.Latch_Open = true;
+                                            }
+                                            else if (each.Value.Equals("Close"))
+                                            {
+                                                Node.Latch_Open = false;
+                                            }
+                                            break;
+                                        case "Cassette Presence":
+                                            if (each.Value.Equals("None"))
+                                            {
+                                                Node.Foup_Placement = false;
+                                                Node.Foup_Presence = false;
+                                            }
+                                            else if (each.Value.Equals("Normal position"))
+                                            {
+                                                Node.Foup_Placement = true;
+                                                Node.Foup_Presence = true;
+                                            }
+                                            else if (each.Value.Equals("Error load"))
+                                            {
+                                                Node.Foup_Placement = false;
+                                                Node.Foup_Presence = false;
+                                            }
+                                            break;
+                                        case "Wafer Protrusion Sensor":
+                                            if (each.Value.Equals("Unblocked"))
+                                            {
+                                                Node.WaferProtrusionSensor = false;
+                                            }
+                                            else if (each.Value.Equals("Blocked"))
+                                            {
+                                                Node.WaferProtrusionSensor = true;
+                                            }
+                                            break;
+                                    }
+                                }
+
+
                                 break;
                             default:
                                 Node.IsLoad = false;
@@ -1196,9 +1407,8 @@ namespace TransferControl.Engine
             logger.Debug("Transaction TimeOut:" + Txn.CommandEncodeStr);
             Node.HasAlarm = true;
             _UIReport.On_Command_TimeOut(Node, Txn);
-            AlarmManagement.Alarm info = AlarmManagement.AddToHistory(Node, "00200002");
-            _UIReport.On_Alarm_Happen(info);
 
+            _UIReport.On_Alarm_Happen( AlarmManagement.NewAlarm(Node, "00200002", Txn.TaskObj.MainTaskId));
         }
         /// <summary>
         /// 事件觸發
@@ -1246,6 +1456,18 @@ namespace TransferControl.Engine
                     case "LOADPORT":
                         switch (Msg.Command)
                         {
+                            case "STS__":
+                                if (Msg.Value.Equals("R-Present,1"))
+                                {
+                                    Node.Foup_Presence = true;
+                                    Node.Foup_Placement = true;
+                                }
+                                else if (Msg.Value.Equals("R-Present,0"))
+                                {
+                                    Node.Foup_Presence = false;
+                                    Node.Foup_Placement = false;
+                                }
+                                break;
                             case "MANSW":
                                 //IO_State_Change(Node.Name, "Access_SW", true);
                                 break;
@@ -1284,13 +1506,13 @@ namespace TransferControl.Engine
                                 //IO_State_Change(Node.Name, "Foup_Placement", false);
                                 break;
                             case "POD_ARRIVED":
-                                //IO_State_Change(Node.Name, "Foup_Presence", false);
-                                //IO_State_Change(Node.Name, "Foup_Placement", true);
+                                Node.Foup_Presence = true;
+                                Node.Foup_Placement = true;
                                 break;
 
                             case "POD_REMOVED":
-                                //IO_State_Change(Node.Name, "Foup_Presence", true);
-                                //IO_State_Change(Node.Name, "Foup_Placement", false);
+                                Node.Foup_Presence = false;
+                                Node.Foup_Placement = false;
                                 break;
                             case "INPUT":
                                 string IO_Name = Msg.Value.Split(',')[0];
@@ -1302,15 +1524,12 @@ namespace TransferControl.Engine
                 }
                 if (Msg.Command.Equals("ERROR"))
                 {
-                    Node.HasAlarm = true;
-                    Node.InitialComplete = false;
-                    Node.OrgSearchComplete = false;
+                   
+                   
                     //_UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "ALARM");
 
-                    AlarmManagement.Alarm info = AlarmManagement.AddToHistory(Node, Msg.Value);
-
-                    _UIReport.On_Alarm_Happen(info);
+                    _UIReport.On_Alarm_Happen( AlarmManagement.NewAlarm(Node, Msg.Value));
                 }
                 else
                 {
@@ -1382,13 +1601,12 @@ namespace TransferControl.Engine
             Node.HasAlarm = true;
  
 
-         
+            _UIReport.On_Alarm_Happen( AlarmManagement.NewAlarm(Node, Msg.Value,Txn.TaskObj.MainTaskId));
        
             _UIReport.On_Command_Error(Node, Txn, Msg);
             _UIReport.On_Node_State_Changed(Node, "ALARM");
 
-            AlarmManagement.Alarm info = AlarmManagement.AddToHistory(Node, Msg.Value);
-            _UIReport.On_Alarm_Happen(info);
+           
             
         }
 
@@ -1413,6 +1631,8 @@ namespace TransferControl.Engine
 
         public void On_Connection_Error(string DIOName, string ErrorMsg)
         {
+
+            _UIReport.On_Alarm_Happen( AlarmManagement.NewAlarm(new Node() { Name= DIOName ,Vendor="SANWA",Type="DIO"}, "00200001"));
             _UIReport.On_Connection_Error(DIOName, ErrorMsg);
         }
 
@@ -1423,15 +1643,9 @@ namespace TransferControl.Engine
 
         public void On_DIO_Alarm_Happen(string DIOName, string ErrorCode)
         {
-            //if (ErrorCode.Equals("00100007"))
-            //{
-            //    ControllerManagement.ClearTransactionList();
-            //    TaskJob.Clear();
-            //}
-            Node dio = new Node();
-            dio.Vendor = "DIO";
-            AlarmManagement.Alarm info = AlarmManagement.AddToHistory(dio, ErrorCode);
-            _UIReport.On_Alarm_Happen(info);
+       
+            _UIReport.On_Alarm_Happen( AlarmManagement.NewAlarm(new Node() { Name = DIOName, Vendor = "SANWA", Type = "DIO" }, ErrorCode));
+
 
         }
 
@@ -1449,9 +1663,6 @@ namespace TransferControl.Engine
             _UIReport.On_Message_Log(Type, Message);
         }
 
-        public void On_Alarm_Happen(AlarmManagement.Alarm Alarm)
-        {
-            _UIReport.On_Alarm_Happen(Alarm);
-        }
+        
     }
 }

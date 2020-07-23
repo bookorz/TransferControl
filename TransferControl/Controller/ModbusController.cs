@@ -35,9 +35,9 @@ namespace TransferControl.Controller
         {
             return Encoder;
         }
-        public bool DoWork(Transaction Txn, bool WaitForData = false)
+        public void DoWork(Transaction Txn, bool WaitForData = false)
         {
-            bool result = false;
+            
             SpinWait.SpinUntil(() => conn!=null, 999999999);
             CommandReturnMessage msg = new CommandReturnMessage();
             lock (conn)
@@ -77,8 +77,7 @@ namespace TransferControl.Controller
                         break;
                 }
             }
-            result = true;
-            return result;
+           
         }
 
         public void On_Transaction_TimeOut(Transaction Txn)

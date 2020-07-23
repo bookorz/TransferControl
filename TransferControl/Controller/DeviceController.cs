@@ -167,16 +167,16 @@ namespace TransferControl.Controller
 
         }
 
-       
 
-        public bool DoWork(Transaction orgTxn, bool WaitForData = false)
+
+        public void DoWork(Transaction orgTxn, bool WaitForData = false)
         {
             Transaction Txn = null;
-          
-            
-                Txn = orgTxn;
-                
-            
+
+
+            Txn = orgTxn;
+
+
             if (Txn.CommandEncodeStr.Equals("GetMappingDummy"))
             {
                 string mappingData = "";
@@ -198,17 +198,17 @@ namespace TransferControl.Controller
                 cm.Value = mappingData;
                 //Txn.Method= Transaction.Command.LoadPortType.GetMapping;
                 _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
-                return true;
+
             }
             conn.WaitForData(WaitForData);
-            bool result = false;
+
             // lock (TransactionList)
             List<CommandReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
 
 
             if (!Txn.NodeType.Equals("OCR"))
             {
-               
+
                 if (msgList.Count != 0)
                 {
                     Txn.Type = msgList[0].Command;
@@ -255,12 +255,21 @@ namespace TransferControl.Controller
 
                     if (orgTxn.CommandEncodeStr.Contains("MCR:"))
                     {
-                        key = Txn.AdrNo;
+                        Txn.CommandType = "CMD";
+                    }
+                    if (Txn.Method == Transaction.Command.LoadPortType.Reset)
+                    {
+                        key = "0";
                     }
                     else
                     {
-                        key = "0" + msgList[0].Command;
+                        key = Txn.AdrNo;
                     }
+                    //}
+                    //else
+                    //{
+                    //    key = "0" + msgList[0].Command;
+                    //}
 
                 }
                 else
@@ -277,10 +286,10 @@ namespace TransferControl.Controller
 
                 Txn.SetTimeOutReport(this);
                 Txn.SetTimeOutMonitor(true);
-          
 
 
-                
+
+
                 //if (Vendor.ToUpper().Equals("ACDT"))
                 //{
                 //    byte[] byteAry = Encoding.UTF8.GetBytes(Txn.CommandEncodeStr);
@@ -290,7 +299,7 @@ namespace TransferControl.Controller
                 //}
                 //else
                 //{
-                
+
                 if (Txn.CommandType.Equals(""))
                 {
                     Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
@@ -309,16 +318,19 @@ namespace TransferControl.Controller
                 }
                 try
                 {
-                    logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
-                    
-                    _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
+                    //logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
+                    if (!this.Vendor.ToUpper().Equals("MITSUBISHI_PLC"))
+                    {
+                        _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
+                    }
                     if (this.Vendor.Equals("SMARTTAG"))
                     {
-                        result = sendWith4Byte(Txn.CommandEncodeStr);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(sendWith4Byte), Txn.CommandEncodeStr);
+
                     }
                     else
                     {
-                        result = conn.Send(Txn.CommandEncodeStr);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), Txn.CommandEncodeStr);
                     }
                 }
                 catch (Exception eex)
@@ -336,47 +348,38 @@ namespace TransferControl.Controller
             else
             {
                 Transaction workingTxn;
-                TransactionList.TryGetValue(key, out workingTxn);
+                TransactionList.TryRemove(key, out workingTxn);
                 logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
                 _ReportTarget.On_Message_Log("CMD", DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
-                result = false;
-            }
-
-            if (!result)
-            {
-                logger.Error("Command Fail:" + Txn.CommandEncodeStr);
                 Txn.SetTimeOutMonitor(false);
-                Transaction tmp;
-                TransactionList.TryRemove(key, out tmp);
-                //_ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
                 CommandReturnMessage rm = new CommandReturnMessage();
-                rm.Value = "ConnectionError";
+                rm.Value = "AlreadyExcuting";
                 _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
             }
 
-            //}
-            return result;
+
+
         }
 
-        public bool sendWith4Byte(string text)
+        public void sendWith4Byte(object text)
         {
-            bool result = true;
+
             string cmd = "";
-            for (int i = 0; i < text.Length; i = i + 12)
+            for (int i = 0; i < text.ToString().Length; i = i + 12)
             {
-                if ((text.Length - i) > 12)
+                if ((text.ToString().Length - i) > 12)
                 {
-                    cmd = text.Substring(i, 12);
+                    cmd = text.ToString().Substring(i, 12);
                 }
                 else
                 {
-                    cmd = text.Substring(i);
+                    cmd = text.ToString().Substring(i);
                 }
-                result = result & conn.SendHexData(cmd);
+                conn.SendHexData(cmd);
                 System.Threading.Thread.Sleep(22);
             }
             //Console.WriteLine("Send:" + text);
-            return result;
+
         }
 
         public void On_Connection_Message(object MsgObj)
@@ -395,13 +398,16 @@ namespace TransferControl.Controller
                 //{
 
                 //}
-                Node Target = null;
+                //Node Target = null;
 
                 List<CommandReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (CommandReturnMessage ReturnMsg in ReturnMsgList)
                 {
-                    logger.Info(DeviceName + " Recieve:" + ReturnMsg.OrgMsg);
-                    _ReportTarget.On_Message_Log("CMD", DeviceName + " Recieve:" + ReturnMsg.OrgMsg);
+                    //logger.Info(DeviceName + " Recieve:" + ReturnMsg.OrgMsg);
+                    if (!this.Vendor.ToUpper().Equals("MITSUBISHI_PLC"))
+                    {
+                        _ReportTarget.On_Message_Log("CMD", DeviceName + " Recieve:" + ReturnMsg.OrgMsg);
+                    }
                     try
                     {
                         Transaction Txn = null;
@@ -458,20 +464,27 @@ namespace TransferControl.Controller
                                 }
                                 else if (Vendor.ToUpper().Equals("SANWA_MC"))
                                 {
-                                    if (ReturnMsg.Command.Equals("MCR__"))
+                                    //if (ReturnMsg.Command.Equals("MCR__"))
+                                    //{
+                                    if (ReturnMsg.Command.Equals("RESET"))
                                     {
-                                        key = ReturnMsg.NodeAdr;
+                                        key = "0";
                                     }
                                     else
                                     {
-                                        key = "0" + ReturnMsg.Command;
+                                        key = ReturnMsg.NodeAdr;
                                     }
+                                    //}
+                                    //else
+                                    //{
+                                    //    key = "0" + ReturnMsg.Command;
+                                    //}
                                 }
                                 else
                                 {
-                                    key = (ReturnMsg.NodeAdr + ReturnMsg.Command).Equals("")? "0": ReturnMsg.NodeAdr + ReturnMsg.Command;
+                                    key = (ReturnMsg.NodeAdr + ReturnMsg.Command).Equals("") ? "0" : ReturnMsg.NodeAdr + ReturnMsg.Command;
                                 }
-                                
+
                                 if (Vendor.ToUpper().Equals("KAWASAKI"))
                                 {
                                     if (TransactionList.TryGetValue(key, out Txn))
@@ -522,7 +535,7 @@ namespace TransferControl.Controller
                                     //{
                                     //    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
                                     //}
-                                    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr.Equals("")?"0": ReturnMsg.NodeAdr);
+                                    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr.Equals("") ? "0" : ReturnMsg.NodeAdr);
                                     if (Node == null)
                                     {
                                         Node = NodeManagement.GetOCRByController(DeviceName);
@@ -534,159 +547,175 @@ namespace TransferControl.Controller
                                 }
                                 //lock (TransactionList)
                                 //{
-                                lock (Node)
+                                //lock (Node)
+                                //{
+                                //Target = Node;
+                                if (Node.Vendor.ToUpper().Equals("COGNEX"))
                                 {
-                                    Target = Node;
-                                    if (Node.Vendor.ToUpper().Equals("COGNEX"))
+                                    if (ReturnMsg.Type == CommandReturnMessage.ReturnType.UserName)
                                     {
-                                        if (ReturnMsg.Type == CommandReturnMessage.ReturnType.UserName)
-                                        {
-                                            conn.Send("admin\r\n");
-                                            continue;
-                                        }
-                                        if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Password)
-                                        {
-                                            conn.Send("\r\n");
-                                            continue;
-                                        }
+                                        conn.Send("admin\r\n");
+                                        continue;
                                     }
-                                    if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Event)
+                                    if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Password)
                                     {
+                                        conn.Send("\r\n");
+                                        continue;
+                                    }
+                                }
+                                if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Event)
+                                {
 
-                                        //_ReportTarget.On_Event_Trigger(Node, ReturnMsg);
+                                    //_ReportTarget.On_Event_Trigger(Node, ReturnMsg);
+                                }
+                                else if ((ReturnMsg.Type == CommandReturnMessage.ReturnType.Information && Node.Vendor.ToUpper().Equals("TDK") && !TransactionList.ContainsKey(key)))
+                                {
+                                    if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Information))
+                                    {
+                                        //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
+                                        conn.Send(ReturnMsg.FinCommand);
+                                        //isWaiting = false;
+                                        logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                     }
-                                    else if ((ReturnMsg.Type == CommandReturnMessage.ReturnType.Information && Node.Vendor.ToUpper().Equals("TDK") && !TransactionList.ContainsKey(key)))
+                                }
+                                else if (TransactionList.TryRemove(key, out Txn))
+                                {
+                                    // Node.InitialComplete = false;
+                                    switch (ReturnMsg.Type)
+                                    {
+                                        case CommandReturnMessage.ReturnType.Excuted:
+                                            if (!Txn.CommandType.Equals("CMD") && !Txn.CommandType.Equals("MOV") && !Txn.CommandType.Equals("HCS"))
+                                            {
+                                                logger.Debug("Txn timmer stoped.");
+                                                Txn.SetTimeOutMonitor(false);
+                                                lock (Node.ExcuteLock)
+                                                {
+                                                    Node.IsExcuting = false;
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                //if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
+                                                //{
+                                                //    logger.Debug("Txn timmer stoped.");
+                                                //    Txn.SetTimeOutMonitor(false);
+
+                                                //}
+                                                //else if (Txn.Method.Equals(Transaction.Command.RobotType.OrginSearch))
+                                                //{
+                                                //    logger.Debug("Txn timmer stoped.");
+                                                //    Txn.SetTimeOutMonitor(false);
+                                                //    //Node.IsExcuting = false;
+                                                //    TransactionList.TryAdd(key, Txn);
+                                                //}
+                                                //else
+                                                //{
+                                                Txn.SetTimeOutMonitor(false);
+                                                Txn.SetTimeOut(Txn.MotionTimeOut);
+                                                Txn.SetTimeOutMonitor(true);
+                                                TransactionList.TryAdd(key, Txn);
+
+                                                //}
+                                            }
+                                            //_ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
+                                            break;
+                                        case CommandReturnMessage.ReturnType.Finished:
+                                            logger.Debug("Txn timmer stoped.");
+                                            Txn.SetTimeOutMonitor(false);
+                                            lock (Node.ExcuteLock)
+                                            {
+                                                Node.IsExcuting = false;
+                                            }
+                                            //_ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
+                                            break;
+                                        case CommandReturnMessage.ReturnType.Error:
+                                            logger.Debug("Txn timmer stoped.");
+                                            Txn.SetTimeOutMonitor(false);
+                                            lock (Node.ExcuteLock)
+                                            {
+                                                Node.IsExcuting = false;
+                                            }
+                                            //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
+                                            if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
+                                            {
+                                                conn.Send(ReturnMsg.FinCommand);
+                                                logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
+                                            }
+                                            break;
+                                        case CommandReturnMessage.ReturnType.Information:
+                                            logger.Debug("Txn timmer stoped.");
+                                            Txn.SetTimeOutMonitor(false);
+                                            lock (Node.ExcuteLock)
+                                            {
+                                                Node.IsExcuting = false;
+                                            }
+                                            if (Vendor.ToUpper().Equals("TDK") && Txn.CommandType.Equals("SET"))
+                                            {
+                                                ReturnMsg.Type = CommandReturnMessage.ReturnType.Excuted;
+
+                                            }
+                                            else
+                                            {
+                                                ReturnMsg.Type = CommandReturnMessage.ReturnType.Finished;
+                                                //Node.IsExcuting = false;
+                                            }
+                                            SpinWait.SpinUntil(() => false, 50);
+                                            //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
+                                            conn.Send(ReturnMsg.FinCommand);
+
+                                            logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
+
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (ReturnMsg.Type != null)
                                     {
                                         if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Information))
                                         {
                                             //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                             conn.Send(ReturnMsg.FinCommand);
-                                            //isWaiting = false;
+
                                             logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                         }
-                                    }
-                                    else if (TransactionList.TryRemove(key, out Txn))
-                                    {
-                                        // Node.InitialComplete = false;
-                                        switch (ReturnMsg.Type)
+                                        else
                                         {
-                                            case CommandReturnMessage.ReturnType.Excuted:
-                                                if (!Txn.CommandType.Equals("CMD") && !Txn.CommandType.Equals("MOV") && !Txn.CommandType.Equals("HCS"))
-                                                {
-                                                    logger.Debug("Txn timmer stoped.");
-                                                    Txn.SetTimeOutMonitor(false);
-                                                   
+                                            if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Error)
+                                            {
+                                                Txn = TransactionList.First().Value;
 
-                                                }
-                                                else
+                                                logger.Debug("Txn timmer stoped.");
+                                                Txn.SetTimeOutMonitor(false);
+                                                lock (Node.ExcuteLock)
                                                 {
-                                                    if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
-                                                    {
-                                                        logger.Debug("Txn timmer stoped.");
-                                                        Txn.SetTimeOutMonitor(false);
-                                                       
-                                                    }
-                                                    else if (Txn.Method.Equals(Transaction.Command.RobotType.OrginSearch))
-                                                    {
-                                                        logger.Debug("Txn timmer stoped.");
-                                                        Txn.SetTimeOutMonitor(false);
-                                                        //Node.IsExcuting = false;
-                                                        TransactionList.TryAdd(key, Txn);
-                                                    }
-                                                    else
-                                                    {
-                                                        Txn.SetTimeOutMonitor(false);
-                                                        Txn.SetTimeOut(Txn.MotionTimeOut);
-                                                        Txn.SetTimeOutMonitor(true);
-                                                        TransactionList.TryAdd(key, Txn);
-                                                        
-                                                    }
+                                                    Node.IsExcuting = false;
                                                 }
-                                                //_ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
-                                                break;
-                                            case CommandReturnMessage.ReturnType.Finished:
-                                                logger.Debug("Txn timmer stoped.");
-                                                Txn.SetTimeOutMonitor(false);
-                                              
-                                                //_ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
-                                                break;
-                                            case CommandReturnMessage.ReturnType.Error:
-                                                logger.Debug("Txn timmer stoped.");
-                                                Txn.SetTimeOutMonitor(false);
-                                              
                                                 //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
                                                 if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
                                                 {
                                                     conn.Send(ReturnMsg.FinCommand);
                                                     logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                                 }
-                                                break;
-                                            case CommandReturnMessage.ReturnType.Information:
-                                                logger.Debug("Txn timmer stoped.");
-                                                Txn.SetTimeOutMonitor(false);
-                                                if (Vendor.ToUpper().Equals("TDK") && Txn.CommandType.Equals("SET"))
-                                                {
-                                                    ReturnMsg.Type = CommandReturnMessage.ReturnType.Excuted;
 
-                                                }
-                                                else
-                                                {
-                                                    ReturnMsg.Type = CommandReturnMessage.ReturnType.Finished;
-                                                    //Node.IsExcuting = false;
-                                                }
-                                                SpinWait.SpinUntil(() => false, 50);
-                                                //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
-                                                conn.Send(ReturnMsg.FinCommand);
+                                                TransactionList.TryRemove(TransactionList.First().Key, out Txn);
+                                            }
+                                            else
+                                            {
 
-                                                logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
-
-                                                break;
+                                                logger.Debug(DeviceName + "(On_Connection_Message Txn is not found. msg:" + Msg);
+                                                continue;
+                                            }
                                         }
                                     }
                                     else
                                     {
-                                        if (ReturnMsg.Type != null)
-                                        {
-                                            if (ReturnMsg.Type.Equals(CommandReturnMessage.ReturnType.Information))
-                                            {
-                                                //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
-                                                conn.Send(ReturnMsg.FinCommand);
-
-                                                logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
-                                            }
-                                            else
-                                            {
-                                                if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Error)
-                                                {
-                                                    Txn = TransactionList.First().Value;
-
-                                                    logger.Debug("Txn timmer stoped.");
-                                                    Txn.SetTimeOutMonitor(false);
-                                                 
-                                                    //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
-                                                    if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
-                                                    {
-                                                        conn.Send(ReturnMsg.FinCommand);
-                                                        logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
-                                                    }
-
-                                                    TransactionList.TryRemove(TransactionList.First().Key, out Txn);
-                                                }
-                                                else
-                                                {
-
-                                                    logger.Debug(DeviceName + "(On_Connection_Message Txn is not found. msg:" + Msg);
-                                                    continue;
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            logger.Debug(DeviceName + "(On_Connection_Message Return type is null. msg:" + Msg);
-                                            continue;
-                                        }
+                                        logger.Debug(DeviceName + "(On_Connection_Message Return type is null. msg:" + Msg);
+                                        continue;
                                     }
                                 }
+                                //}
                             }
                             switch (ReturnMsg.Type)
                             {
@@ -698,12 +727,12 @@ namespace TransferControl.Controller
                                     t.Value = ReturnMsg.Value;
                                     t.CommandEncodeStr = ReturnMsg.OrgMsg;
                                     t.Method = ReturnMsg.Command;
-                                  
+
                                     //TransactionRecord.AddDetail(TransactionRecord.GetUUID(), Node.Name,Node.Type,ReturnMsg.Type,ReturnMsg.Value);
                                     _ReportTarget.On_Event_Trigger(Node, ReturnMsg);
                                     break;
                                 case CommandReturnMessage.ReturnType.Excuted:
-                         
+
                                     _ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
                                     if (Txn.CommandType.Equals("CMD") && !Node.Type.Equals("LOADPORT"))
                                     {
@@ -711,12 +740,12 @@ namespace TransferControl.Controller
                                     }
                                     break;
                                 case CommandReturnMessage.ReturnType.Finished:
-                       
+
                                     //if (Node.Type.Equals("LOADPORT"))
                                     //{
                                     //    Node.InterLock = false;
                                     //}
-                                   
+
                                     _ReportTarget.On_Command_Finished(Node, Txn, ReturnMsg);
                                     if (!Node.Type.Equals("LOADPORT"))
                                     {
@@ -726,7 +755,7 @@ namespace TransferControl.Controller
 
                                     break;
                                 case CommandReturnMessage.ReturnType.Error:
-                          
+
                                     //if (Node.Type.Equals("LOADPORT"))
                                     //{
                                     //    Node.InterLock = false;
@@ -749,7 +778,7 @@ namespace TransferControl.Controller
                         logger.Error(DeviceName + "(On_Connection_Message " + IPAdress + ":" + Port.ToString() + ")" + e.Message + "\n" + e.StackTrace);
                     }
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -849,11 +878,13 @@ namespace TransferControl.Controller
 
             }
             Txn.SetTimeOutMonitor(false);
+
             if (TransactionList.ContainsKey(key))
             {
                 if (TransactionList.TryRemove(key, out Txn))
                 {
                     Node Node = NodeManagement.GetByController(DeviceName, Txn.AdrNo);
+                    Node.IsExcuting = false;
                     if (Node.State.Equals("Pause"))
                     {
                         logger.Debug("Txn timeout,but state is pause. ignore this.");

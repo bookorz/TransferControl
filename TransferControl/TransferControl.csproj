@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -72,6 +74,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="Vila.Core">
+      <HintPath>..\..\Ramiel\packages\Vila.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandConvert\CommandDecoder.cs" />
@@ -89,8 +94,7 @@
     <Compile Include="CommandConvert\Encoder_PTZ.cs" />
     <Compile Include="CommandConvert\Encoder_Robot.cs" />
     <Compile Include="CommandConvert\Encoder_Shelf.cs" />
-    <Compile Include="CommandConvert\Encoder_SmartTag8400.cs" />
-    <Compile Include="CommandConvert\Encoder_SmartTag8200.cs" />
+    <Compile Include="CommandConvert\Encoder_SmartTag.cs" />
     <Compile Include="CommandConvert\CommandReturnMessage.cs" />
     <Compile Include="CommandConvert\Encoder_WHR.cs" />
     <Compile Include="CommandConvert\Encoder_WTSAligner.cs" />
@@ -108,10 +112,60 @@
     <Compile Include="Config\Recipe.cs" />
     <Compile Include="Config\SignalTower\SignalTowerSetting.cs" />
     <Compile Include="Config\SystemConfig.cs" />
+    <Compile Include="Controller\Common\AcquirePoint.cs" />
+    <Compile Include="Controller\Common\AcquirePointConversion.cs" />
+    <Compile Include="Controller\Common\AcquirePointEnum.cs" />
+    <Compile Include="Controller\Common\AcquirePointUnitType.cs" />
+    <Compile Include="Controller\Common\AcquireRawValue.cs" />
+    <Compile Include="Controller\Common\AcquireValue.cs" />
+    <Compile Include="Controller\Common\ConfigItem.cs" />
+    <Compile Include="Controller\Common\ConfigItemCatalogo.cs" />
+    <Compile Include="Controller\Common\ControllerBaseImpl.cs" />
+    <Compile Include="Controller\Common\ControllerType.cs" />
+    <Compile Include="Controller\Common\CraftworkItemInfo.cs" />
+    <Compile Include="Controller\Common\CraftworkMaterialNoEnum.cs" />
+    <Compile Include="Controller\Common\EnumForMixSystem.cs" />
+    <Compile Include="Controller\Common\IControllerAction.cs" />
+    <Compile Include="Controller\Common\IControllerBase.cs" />
+    <Compile Include="Controller\Common\IOServerStatus.cs" />
+    <Compile Include="Controller\Common\WeightingInfoArgs.cs" />
+    <Compile Include="Controller\Common\WeightingStepEnum.cs" />
+    <Compile Include="Controller\Common\WorkRegionEnum.cs" />
+    <Compile Include="Controller\Common\WorkRegionStateItem.cs" />
     <Compile Include="Controller\DeviceController.cs" />
     <Compile Include="Controller\ICommandReport.cs" />
     <Compile Include="Controller\IController.cs" />
     <Compile Include="Controller\ModbusController.cs" />
+    <Compile Include="Controller\PLC\CellDataTypes.cs" />
+    <Compile Include="Controller\PLC\FX\FxAddress.cs" />
+    <Compile Include="Controller\PLC\FX\FxAddressLayoutInfo.cs" />
+    <Compile Include="Controller\PLC\FX\FxAddressManager.cs" />
+    <Compile Include="Controller\PLC\FX\FxCommandArgs.cs" />
+    <Compile Include="Controller\PLC\FX\FxCommandHelper.cs" />
+    <Compile Include="Controller\PLC\FX\FxCommandResponse.cs" />
+    <Compile Include="Controller\PLC\FX\FxCommController.cs" />
+    <Compile Include="Controller\PLC\FX\FxConvert.cs" />
+    <Compile Include="Controller\PLC\FX\FxDefine.cs" />
+    <Compile Include="Controller\PLC\FX\FxRingBuffer.cs" />
+    <Compile Include="Controller\PLC\FX\FxSerialDeamon.cs" />
+    <Compile Include="Controller\PLC\FX\Fx_Test.cs" />
+    <Compile Include="Controller\PLC\MCPackage\MCComponentGroup.cs" />
+    <Compile Include="Controller\PLC\MCPackage\MCDefine.cs" />
+    <Compile Include="Controller\PLC\MCPackage\ResponseMessage.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\IMitsubishiPlc.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McCommand.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McCommandExtersions.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McProtocolApp.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McProtocolBinary.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McProtocolTcp.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McProtocolUdp.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McSwapExtersions.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\McTest.cs" />
+    <Compile Include="Controller\PLC\Mitsubishi\PlcDeviceTypeExtersions.cs" />
+    <Compile Include="Controller\PLC\ResultCodeConst.cs" />
+    <Compile Include="Controller\PLC\SerialDevice\SerialParam.cs" />
+    <Compile Include="Controller\PLC\SerialDevice\SerialPortManager.cs" />
+    <Compile Include="Controller\PLC\SerialDevice\SerialPortSync.cs" />
     <Compile Include="Digital_IO\ChangeHisRecord.cs" />
     <Compile Include="Digital_IO\Comm\IConnection.cs" />
     <Compile Include="Digital_IO\Comm\IConnectionReport.cs" />
@@ -130,7 +184,6 @@
     <Compile Include="Management\ArchiveLog.cs" />
     <Compile Include="Management\Carrier.cs" />
     <Compile Include="Management\CarrierManagement.cs" />
-    <Compile Include="Management\CmdParamManagement.cs" />
     <Compile Include="Management\ControllerManagement.cs" />
     <Compile Include="Management\IJobReport.cs" />
     <Compile Include="Management\ITaskFlowReport.cs" />
@@ -159,11 +212,10 @@
     <Compile Include="Parser\Sanwa_MCParser.cs" />
     <Compile Include="Parser\TDKParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SECS\ControlJob.cs" />
-    <Compile Include="SECS\ProcessJob.cs" />
     <Compile Include="TaksFlow\ITaskFlow.cs" />
     <Compile Include="TaksFlow\Sanwa_Sorter.cs" />
     <Compile Include="TaksFlow\Kawasaki_3P_EFEM.cs" />
+    <Compile Include="TaksFlow\Sanwa_EFEM.cs" />
     <Compile Include="TaksFlow\VerticalChamberOven_200.cs" />
     <Compile Include="TaksFlow\WTS.cs" />
   </ItemGroup>

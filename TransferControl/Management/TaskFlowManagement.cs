@@ -1,4 +1,6 @@
-﻿using log4net;
+﻿using InControls.PLC.MCPackage;
+using InControls.PLC.Mitsubishi;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,17 +18,29 @@ namespace TransferControl.Management
         static IUserInterfaceReport _TaskReport;
         static ITaskFlow TaskFlow;
         static Dictionary<string, CurrentProcessTask> CurrentProcessTasks = new Dictionary<string, CurrentProcessTask>();
+        public MainControl Ctrl;
         public class CurrentProcessTask
         {
             public string Id { get; set; }
             public Command TaskName { get; set; }
             public Dictionary<string, string> Params { get; set; }
             public List<ExcutedCmd> CheckList = new List<ExcutedCmd>();
+            public string MainTaskId = "";
             public int RepeatCount = 0;
             public int CurrentIndex = 0;
             public bool Finished = false;
             public bool HasError = false;
-           
+            public TaskState State = TaskState.None;
+
+            
+            public enum TaskState
+            {
+                None,
+                ACK,
+                Cancel,
+                Abort
+            }
+
             public bool Promise()
             {
                 while (!Finished)
@@ -55,7 +69,7 @@ namespace TransferControl.Management
         {
 
             _TaskReport = TaskReport;
-            MainControl ctrl = new MainControl(this);
+
             switch (SystemConfig.Get().TaskFlow.ToUpper())
             {
                 case "KAWASAKI_3P_EFEM":
@@ -70,9 +84,25 @@ namespace TransferControl.Management
                 case "VERTICALCHAMBEROVEN_200":
                     TaskFlow = new VerticalChamberOven_200(this);
                     break;
+                case "SANWA_EFEM":
+                    TaskFlow = new Sanwa_EFEM(this); ;
+                    break;
                 default:
                     throw new NotSupportedException();
             }
+            Ctrl = new MainControl(this);
+            
+                    
+             
+        }
+        public static CurrentProcessTask GetTask(string TaskId)
+        {
+            CurrentProcessTask result = null;
+            lock (CurrentProcessTasks)
+            {
+                CurrentProcessTasks.TryGetValue(TaskId, out result);
+            }
+            return result;
         }
         public static void Clear()
         {
@@ -83,79 +113,80 @@ namespace TransferControl.Management
         }
         public static void TaskRemove(CurrentProcessTask Task)
         {
-           
+
             lock (CurrentProcessTasks)
             {
 
-                logger.Debug("Delete Task "+ Task.TaskName.ToString()+ ":" + Task.Id);
+                logger.Debug("Delete Task " + Task.TaskName.ToString() + ":" + Task.Id);
 
                 CurrentProcessTasks.Remove(Task.Id);
             }
-           
+
         }
         private static void Next(Node Node, Transaction Txn, string ReturnType)
         {
             CurrentProcessTask CurrentTask = Txn.TaskObj;
             int count = 0;
-           
-                lock (CurrentProcessTasks)
-                {
-                    var findExcuted = from each in CurrentTask.CheckList
-                                      where each.ExcuteName.Equals(Txn.Method) && each.ExcuteType.Equals(ReturnType.ToUpper()) && each.NodeName.Equals(Txn.NodeName) && !each.Finished
-                                      select each;
-                    if (findExcuted.Count() != 0)//標記完成的命令
-                    {
-                        findExcuted.First().Finished = true;
-                    }
 
-                    findExcuted = from each in CurrentTask.CheckList
-                                  where !each.Finished
-                                  select each;
-                    count = findExcuted.Count();
-                }
-                if (count == 0)//當全部完成後，繼續下一步
-                {
-                    CurrentTask.CurrentIndex++;
-                    CurrentTask.CheckList.Clear();
-                    if (!TaskFlow.Excute(CurrentTask))
-                    {
-                        //TaskRemove(CurrentTask.Id);//執行發生異常時，移除此Task
-                    }
-                }
-           
-
-        }
-        public static CurrentProcessTask Excute( Command TaskName, Dictionary<string, string> param = null)
-        {
-            CurrentProcessTask result = null;
-            string Id = Guid.NewGuid().ToString();
             lock (CurrentProcessTasks)
             {
-                if (!CurrentProcessTasks.ContainsKey(Id))
+                var findExcuted = from each in CurrentTask.CheckList
+                                  where each.ExcuteName.Equals(Txn.Method) && each.ExcuteType.Equals(ReturnType.ToUpper()) && each.NodeName.Equals(Txn.NodeName) && !each.Finished
+                                  select each;
+                if (findExcuted.Count() != 0)//標記完成的命令
+                {
+                    findExcuted.First().Finished = true;
+                }
+
+                findExcuted = from each in CurrentTask.CheckList
+                              where !each.Finished
+                              select each;
+                count = findExcuted.Count();
+            }
+            if (count == 0)//當全部完成後，繼續下一步
+            {
+                CurrentTask.CurrentIndex++;
+                CurrentTask.CheckList.Clear();
+                TaskFlow.Excute(CurrentTask);
+
+            }
+
+
+        }
+        public static CurrentProcessTask Excute(Command TaskName, Dictionary<string, string> param = null,string TaskId="" ,string MainTaskId = "")
+        {
+            CurrentProcessTask result = null;
+            string uid = TaskId.Equals("")? Guid.NewGuid().ToString():TaskId;
+            lock (CurrentProcessTasks)
+            {
+                if (!CurrentProcessTasks.ContainsKey(uid))
                 {
                     result = new CurrentProcessTask();
-                    CurrentProcessTasks.Add(Id, result);
-                    result.Id = Id;
+                    CurrentProcessTasks.Add(uid, result);
+            
+                    result.Id = uid;
+                    result.MainTaskId = TaskId.Equals("") ? MainTaskId : TaskId;
                     result.Params = param;
                     result.TaskName = TaskName;
-                    logger.Debug("TaskName:" + TaskName.ToString());
-                    if (!TaskFlow.Excute(result))
-                    {
-                        //TaskRemove(result.Id);//執行發生異常時，移除此Task
-                    }
                 }
                 else
                 {
-                    logger.Error("ID is exsit:" + Id);
+                    logger.Error("ID is exsit:" + uid);
+                    return null;
                 }
             }
+            logger.Debug("TaskName:" + TaskName.ToString());
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(TaskFlow.Excute), result);
+
+
             return result;
         }
 
         public void On_Command_Excuted(Node Node, Transaction Txn, CommandReturnMessage Msg)
         {
             Next(Node, Txn, "Excuted");
-            _TaskReport.On_Command_Excuted(Node,  Txn,  Msg);
+            _TaskReport.On_Command_Excuted(Node, Txn, Msg);
         }
 
         public void On_Command_Error(Node Node, Transaction Txn, CommandReturnMessage Msg)
@@ -172,8 +203,8 @@ namespace TransferControl.Management
 
         public void On_Command_TimeOut(Node Node, Transaction Txn)
         {
-            _TaskReport.On_Command_TimeOut(Node, Txn);           
-            
+            _TaskReport.On_Command_TimeOut(Node, Txn);
+
             On_TaskJob_Aborted(Txn.TaskObj);
         }
 
@@ -199,7 +230,7 @@ namespace TransferControl.Management
 
         public void On_DIO_Data_Chnaged(string Parameter, string Value, string Type)
         {
-            _TaskReport.On_DIO_Data_Chnaged( Parameter,  Value,  Type);
+            _TaskReport.On_DIO_Data_Chnaged(Parameter, Value, Type);
         }
 
         public void On_Connection_Error(string DIOName, string ErrorMsg)
@@ -209,18 +240,22 @@ namespace TransferControl.Management
 
         public void On_Connection_Status_Report(string DIOName, string Status)
         {
-            _TaskReport.On_Connection_Status_Report( DIOName,  Status);
+            _TaskReport.On_Connection_Status_Report(DIOName, Status);
         }
 
         public void On_Alarm_Happen(AlarmManagement.Alarm Alarm)
         {
-            _TaskReport.On_Alarm_Happen( Alarm);
+            logger.Info("Alarm_Happen Node:" + Alarm.nodeName + " Error code:" + Alarm.errorCode +" Desc:"+Alarm.errDesc);
+            _TaskReport.On_Message_Log("CMD", "Alarm_Happen Node:" + Alarm.nodeName + " Error code:" + Alarm.errorCode + " Desc:" + Alarm.errDesc);
+            _TaskReport.On_Alarm_Happen(Alarm);
         }
 
         public void On_TaskJob_Ack(CurrentProcessTask Task)
         {
+            _TaskReport.On_TaskJob_Ack(Task);
 
-            _TaskReport.On_TaskJob_Ack( Task);
+
+
         }
 
         public void On_TaskJob_Aborted(CurrentProcessTask Task)
@@ -228,8 +263,11 @@ namespace TransferControl.Management
             Task.HasError = true;
             Task.Finished = true;
             _TaskReport.On_TaskJob_Aborted(Task);
-            
+
+
+
             TaskRemove(Task);
+            logger.Debug("On_TaskJob_Aborted");
         }
 
         public void On_TaskJob_Finished(CurrentProcessTask Task)
@@ -237,28 +275,37 @@ namespace TransferControl.Management
             Task.Finished = true;
             _TaskReport.On_TaskJob_Finished(Task);
             TaskRemove(Task);
+            logger.Debug("On_TaskJob_Finished");
+
+
         }
+
 
         public void On_Message_Log(string Type, string Message)
         {
-            _TaskReport.On_Message_Log( Type,  Message);
+            _TaskReport.On_Message_Log(Type, Message);
         }
 
         public void On_Status_Changed(string Type, string Message)
         {
-            _TaskReport.On_Status_Changed( Type,  Message);
+            _TaskReport.On_Status_Changed(Type, Message);
         }
 
         public enum Command
         {
-            CCLINK_,
+            RESET_ALL,
+            GET_PRESENCE,
+            GET_CLAMP,
+            GET_CSTID,
+            SET_CSTID,
             FFU_SET_SPEED,
             FFU_START,
             FFU_STOP,
             FFU_ALARM_BYPASS,
+            ROBOT_INIT,
             ROBOT_RESET,
-            CCLINK_POWER_ON,
             ROBOT_ORGSH,
+            ROBOT_SHOME,
             ROBOT_HOME,
             ROBOT_RETRACT,
             ROBOT_SERVO,
@@ -270,7 +317,13 @@ namespace TransferControl.Management
             ROBOT_GET,
             ROBOT_PUTWAIT,
             ROBOT_PUT,
-            ROBOT_GET_ERROR,
+            ROBOT_GET_SPEED,
+            ROBOT_GET_MAPDT,
+            ROBOT_CARRY,
+            ROBOT_PAUSE,
+            ROBOT_RESTR,
+            ROBOT_ABORT,
+            ROBOT_HOLD,
             ALIGNER_ALIGN,
             ALIGNER_HOME,
             ALIGNER_INIT,
@@ -308,7 +361,13 @@ namespace TransferControl.Management
             LOADPORT_READ_LED,
             LOADPORT_READ_STATUS,
             LOADPORT_READ_VERSION,
+            LOADPORT_SET_SPEED, 
+            LOADPORT_SLOT,
+            LOADPORT_TWKUP,
+            LOADPORT_TWKDN,
+            LOADPORT_READ_MAP,
             ALL_INIT,
+            ALL_ORGSH,
             DISABLE_OPACCESS,
             SET_ALL_SPEED,
             STOP,
@@ -414,7 +473,14 @@ namespace TransferControl.Management
             FOUPROBOT_SET_SPEED,
             GET_IO,
             SET_IO,
-            CONTROL_MODE
+            CONTROL_MODE,
+            CCLINK_GET_IO,
+            CCLINK_SET_IO,
+            CCLINK_SET_MODE,
+            CCLINK_SET_SPEED,
+            CCLINK_POWER_ON,
+            CCLINK_CMD_EXE,
+            CCLINK_CMD_PARAM,
         }
     }
 }

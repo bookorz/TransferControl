@@ -39,18 +39,8 @@ namespace TransferControl.Management
         /// 廠牌
         /// </summary>
         public string Vendor { get; set; }
-        /// <summary>
-        /// Control Job ID
-        /// </summary>
-        public string CjID { get; set; }
-        /// <summary>
-        /// Process Request ID
-        /// </summary>
-        public string PrID { get; set; }
-        /// <summary>
-        /// Robot專用，取片階段用於標記Foup
-        /// </summary>
-        public string CurrentLoadPort { get; set; }
+
+
         /// <summary>
         /// Robot專用，目前手臂的位置
         /// </summary>
@@ -59,7 +49,7 @@ namespace TransferControl.Management
         /// 啟用或停用此Node
         /// </summary>
         public bool Enable { get; set; }
-        public bool ForcePutToUnload { get; set; }
+
         /// <summary>
         /// LoadPort用於標記True為目前不能取放片，其他裝置用於標記True為正在執行命令中
         /// </summary>
@@ -72,6 +62,7 @@ namespace TransferControl.Management
         /// 上一次的機況
         /// </summary>
         public bool HasAlarm { get; set; }
+        public string LastError { get; set; }
         /// <summary>
         /// LoadPort專用，標記LD/UD/LU
         /// </summary>
@@ -87,10 +78,7 @@ namespace TransferControl.Management
         /// </summary>
         public bool IsMapping { get; set; }
         public bool MappingHasError = false;
-        /// <summary>
-        /// LoadPort專用，目前可以取片
-        /// </summary>
-        public bool Fetchable { get; set; }
+
         /// <summary>
         /// 標記為虛擬裝置
         /// </summary>
@@ -110,7 +98,7 @@ namespace TransferControl.Management
 
         public string LastFinMethod { get; set; }
 
-        public bool WaitForFinish { get; set; }
+
 
         public string WaferSize { get; set; }
 
@@ -190,20 +178,6 @@ namespace TransferControl.Management
 
         public bool Connected { get; set; }
 
-        public bool ReadyForGet { get; set; }
-
-        public bool ReadyForPut { get; set; }
-
-        public bool AccessAutoMode { get; set; }
-
-        public int E87_TransferState { get; set; }
-
-        public int E87_ReservationState { get; set; }
-
-        public int E87_AssociationState { get; set; }
-
-        public int PTN { get; set; }
-
         public string Speed { get; set; }
 
         public bool ByPassCheck { get; set; }
@@ -229,16 +203,16 @@ namespace TransferControl.Management
         public bool Home_Position { get; set; }
         public bool ManaulControl { get; set; }
         public Dictionary<string, string> Status { get; set; }
-        public Dictionary<string, string> IO { get; set; }
+        public Dictionary<string, byte[]> IO { get; set; }
 
-
+        public bool DataReady { get; set; }
         public Carrier Carrier { get; set; }
         public int RobotGetState { get; set; }
         public int RobotPutState { get; set; }
         public string ArmExtend { get; set; }
         public string MappingDataSnapshot { get; set; }
         public bool WaferProtrusionSensor { get; set; }
-       
+        public object ExcuteLock = new object();
 
         public IController GetController()
         {
@@ -247,7 +221,7 @@ namespace TransferControl.Management
 
         public void InitialObject()
         {
-            
+            DataReady = false;
             ArmExtend = "";
             RobotGetState = 0;
             RobotPutState = 0;
@@ -257,28 +231,23 @@ namespace TransferControl.Management
             ByPassCheck = false;
             Connected = false;
             OPACCESS = false;
-            AccessAutoMode = false;
+
             MappingResult = "";
-            CurrentLoadPort = "";
+
             CurrentStatus = "";
             MappingDataSnapshot = "";
-            PrID = "";
-            CjID = "";
+
             R_Flip_Degree = "0";
             L_Flip_Degree = "0";
             CurrentPosition = "";
             IsMoving = false;
             FoupID = "";
             Status = new Dictionary<string, string>();
-            IO = new Dictionary<string, string>();
+            IO = new Dictionary<string, byte[]>();
             State = "UNORG";
-            ReadyForPut = true;
-            ReadyForGet = true;
-            E87_TransferState = 0;
-            E87_ReservationState = 0;
-            E87_AssociationState = 0;
+
             Home_Position = false;
-            ForcePutToUnload = false;
+
             //if (Type.Equals("LOADPORT"))
             //{
             //    State = "Ready To Load";
@@ -293,7 +262,6 @@ namespace TransferControl.Management
             Busy = false;
             //InterLock = false;
             OCRSuccess = false;
-            WaitForFinish = false;
             InitialComplete = false;
             OrgSearchComplete = false;
             IsWaferHold = false;
@@ -303,7 +271,6 @@ namespace TransferControl.Management
             CurrentSlotPosition = "??";
             ErrorMsg = "";
             //Enable = true;
-            Fetchable = false;
             LoadTime = new DateTime();
 
             MappingResult = "";
@@ -348,19 +315,58 @@ namespace TransferControl.Management
             Speed = "100";
 
         }
-        
+       
 
+        public byte[] GetIO(string Area)
+        {
+
+            return this.IO[Area];
+
+        }
+        public void SetIO(string Area, byte[] Val)
+        {
+            byte[] ResultCopy = new byte[512];
+            Val.CopyTo(ResultCopy, 0);
+
+            if (this.IO.ContainsKey(Area))
+            {
+                this.IO[Area] = ResultCopy;
+            }
+            else
+            {
+                this.IO.Add(Area, ResultCopy);
+            }
+
+        }
+        public void SetIO(string Area, int Pos, byte Val)
+        {
+
+            this.GetIO(Area)[Pos] = Val;
+
+
+        }
         /// <summary>
         /// 傳送命令
         /// </summary>
         /// <param name="txn"></param>
         /// <param name="Force"></param>
         /// <returns></returns>
-        public bool SendCommand(Transaction txn, out string Message, bool Force = false)
+        public bool SendCommand(Transaction txn)
         {
+            lock (ExcuteLock)
+            {
+                if (IsExcuting)
+                {
 
-            Message = "";
-          
+                    return false;
+                }
+                else
+                {
+                    IsExcuting = true;
+                }
+            }
+
+
             try
             {
                 txn.Slot = int.Parse(txn.Slot).ToString();
@@ -370,7 +376,7 @@ namespace TransferControl.Management
             {
 
             }
-          
+
             bool result = false;
             try
             {
@@ -507,7 +513,7 @@ namespace TransferControl.Management
                         switch (txn.Method)
                         {
                             case Transaction.Command.Mitsubishi_PLC.ReadBit:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().PLC.ReadBit(txn.PLC_Station,txn.PLC_Area,txn.PLC_StartAddress,txn.PLC_Len);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().PLC.ReadBit(txn.PLC_Station, txn.PLC_Area, txn.PLC_StartAddress, txn.PLC_Len);
                                 txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.Mitsubishi_PLC.ReadWord:
@@ -980,6 +986,10 @@ namespace TransferControl.Management
                     case "LOADPORT":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.LoadPortType.SetSpeed:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSpeed(txn.Value);
+                                txn.CommandType = "SET";
+                                break;
                             case Transaction.Command.LoadPortType.GetSlotOffset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetSlotOffset();
                                 txn.CommandType = "GET";
@@ -1126,6 +1136,11 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Load(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
                                 break;
+                            case Transaction.Command.LoadPortType.LoadWithLift:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.LoadWithLift(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;
+
                             case Transaction.Command.LoadPortType.MappingLoad:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingLoad(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
@@ -1144,6 +1159,10 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.LoadPortType.Mapping:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingInLoad(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;
+                            case Transaction.Command.LoadPortType.RetryMapping:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.RetryMapping(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.GetCount:
@@ -1231,7 +1250,7 @@ namespace TransferControl.Management
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MoveToSlot:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Slot(EncoderLoadPort.CommandType.Normal, txn.Value);
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Slot(EncoderLoadPort.CommandType.Normal, txn.Value, txn.Val2);
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.SetAllEvent:
@@ -1597,8 +1616,8 @@ namespace TransferControl.Management
                         break;
                 }
 
-                
-           
+
+
                 bool IsWaitData = false;
                 if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData))
                 {
@@ -1607,23 +1626,11 @@ namespace TransferControl.Management
 
                 txn.AckTimeOut = this.AckTimeOut;
                 logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
-               
+
                 txn.MotionTimeOut = this.MotionTimeOut;
                 logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
-                if (Ctrl.DoWork(txn, IsWaitData))
-                {
-                    result = true;
-                }
-                else
-                {
-                    logger.Debug("SendCommand fail.");
-                    Message = "COMM_ERR";
-                    result = false;
-                    //if (this.Type.Equals("LOADPORT"))
-                    //{
-                    //    this.InterLock = false;
-                    //}
-                }
+                Ctrl.DoWork(txn, IsWaitData);
+                result = true;
 
 
             }
@@ -1636,9 +1643,11 @@ namespace TransferControl.Management
             //watch.Stop();
             //var elapsedMs = watch.ElapsedMilliseconds;
             //logger.Info("SendCommand ProcessTime:"+ elapsedMs.ToString());
+
             return result;
+
         }
 
-        
+
     }
 }

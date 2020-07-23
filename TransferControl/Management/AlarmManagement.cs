@@ -13,7 +13,7 @@ namespace TransferControl.Management
     {
         static ILog logger = LogManager.GetLogger(typeof(AlarmManagement));
         private static List<Alarm> AlarmHis = new List<Alarm>();
-        private static List<Alarm> CurrentAlarm = new List<Alarm>();
+        private static Dictionary<string, Alarm> CurrentAlarm = new Dictionary<string, Alarm>();
         //private static List<AlarmInfo> AlarmHistory = new List<AlarmInfo>();
         private static List<AlarmInfo> AlarmData = new List<AlarmInfo>();
         private class AlarmInfo
@@ -22,8 +22,8 @@ namespace TransferControl.Management
             public string errorCode { get; set; }
             public string errDesc { get; set; }
             public bool isAlert { get; set; }
-            
-            
+
+
         }
 
         public class Alarm
@@ -33,37 +33,72 @@ namespace TransferControl.Management
             public string errorCode { get; set; }
             public string errDesc { get; set; }
             public bool isAlert { get; set; }
+            public string taskID { get; set; }
             public DateTime TimeStamp { get; set; }
 
-            public Alarm(Node Node, string ErrorCode)
+            
+        }
+        public static Alarm NewAlarm(Node Node, string ErrorCode, string TaskID = "")
+        {
+            Alarm result = new Alarm();
+            result.nodeName = Node == null ? "SYSTEM" : (Node.Name==null? "SYSTEM" : Node.Name);
+            result.errorCode = ErrorCode;
+            result.TimeStamp = DateTime.Now;
+            result.taskID = TaskID;
+            if (AlarmData != null && Node != null)
             {
-                if (AlarmData != null)
+                var find = from alm in AlarmData
+                           where (alm.vendor.ToUpper().Equals(Node.Vendor.ToUpper()) && alm.errorCode.ToUpper().Equals(ErrorCode.ToUpper()))
+                           select alm;
+                if (find.Count() != 0)
                 {
-                    var find = from alm in AlarmData
-                               where (alm.vendor.ToUpper().Equals(Node.Vendor.ToUpper()) && alm.errorCode.ToUpper().Equals(ErrorCode.ToUpper()))
-                               select alm;
-                    if (find.Count() != 0)
-                    {
-                        vendor = find.First().vendor;
-                        errorCode = find.First().errorCode;
-                        errDesc = find.First().errDesc;
-                        isAlert = find.First().isAlert;
-                    }
-                    else
-                    {
-                        vendor = "";
-                        errDesc = "Error code 不存在";
-                        errorCode = ErrorCode;
-                        isAlert = false;
-                    }
-                    TimeStamp = DateTime.Now;
+                    result.vendor = find.First().vendor;
+                    result.errorCode = find.First().errorCode;
+                    result.errDesc = find.First().errDesc;
+                    result.isAlert = find.First().isAlert;
+                }
+                else
+                {
+                    result.vendor = "";
+                    result.errDesc = "Error code 不存在";
+                    result.errorCode = ErrorCode;
+                    result.isAlert = true;
+                }
+
+            }
+            else
+            {
+                result.vendor = "";
+                result.errDesc = "Error code 不存在";
+                result.errorCode = ErrorCode;
+                result.isAlert = true;
+            }
+            lock (CurrentAlarm)
+            {
+                if (CurrentAlarm.ContainsKey(result.errorCode))
+                {
+                    CurrentAlarm[result.errorCode] = result;
+                }
+                else
+                {
+                    CurrentAlarm.Add(result.errorCode, result);
                 }
             }
+            AlarmHis.Insert(0, result);
+            if (AlarmHis.Count > 5000)
+            {
+                AlarmHis.RemoveAt(AlarmHis.Count - 1);
+            }
+            lock (AlarmHis)
+            {
+                new ConfigTool<List<Alarm>>().WriteFile("config/AlarmHistory.json", AlarmHis);
+            }
+            return result;
         }
 
         public static void InitialAlarm()
         {
-            AlarmData = new ConfigTool<List<AlarmInfo>>().ReadFile("config/error_code.json");
+            AlarmData = new ConfigTool<List<AlarmInfo>>().ReadFile("config/error_code_en.json");
             AlarmHis = new ConfigTool<List<Alarm>>().ReadFile("config/AlarmHistory.json");
 
             if (AlarmHis == null)
@@ -72,31 +107,7 @@ namespace TransferControl.Management
             }
         }
 
-        public static Alarm AddToHistory(Node node, string ErrorCode)
-        {
-            Alarm alarm = new Alarm(node, ErrorCode);
-            try
-            {
-                
-               
-                lock (AlarmHis)
-                {
-                    AlarmHis.Insert(0, alarm);
-                    CurrentAlarm.Insert(0, alarm);
-                    if (AlarmHis.Count > 2000)
-                    {
-                        AlarmHis.RemoveAt(AlarmHis.Count-1);
-                    }
-                }
-                new ConfigTool<List<Alarm>>().WriteFile("config/AlarmHistory.json", AlarmHis);
 
-            }
-            catch (Exception e)
-            {
-                logger.Error("AddToHistory error:" + e.StackTrace);
-            }
-            return alarm;
-        }
 
         public static List<Alarm> GetHistory()
         {
@@ -117,7 +128,8 @@ namespace TransferControl.Management
             List<Alarm> result = null;
             try
             {
-                result = CurrentAlarm;
+                result = CurrentAlarm.Values.ToList();
+                result.Sort((x, y) => { return y.TimeStamp.CompareTo(x.TimeStamp); });
             }
             catch (Exception e)
             {
@@ -127,7 +139,42 @@ namespace TransferControl.Management
             return result;
         }
 
+        public static void ClearALL()
+        {
+            
+            try
+            {
+                CurrentAlarm.Clear();
+            }
+            catch (Exception e)
+            {
+                logger.Error("GetCurrent error:" + e.StackTrace);
+            }
+
+            
+        }
+        public static void Clear(string NodeName)
+        {
+
+            try
+            {
+                var find = from alm in CurrentAlarm.Values.ToList()
+                           where alm.nodeName.Equals(NodeName)
+                           select alm;
+                if (find.Count() != 0)
+                {
+                    foreach(Alarm each in find)
+                    {
+                        CurrentAlarm.Remove(each.errorCode);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error("GetCurrent error:" + e.StackTrace);
+            }
 
 
+        }
     }
 }

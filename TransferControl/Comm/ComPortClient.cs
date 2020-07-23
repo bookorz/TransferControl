@@ -23,7 +23,7 @@ namespace TransferControl.Comm
         {
             cfg = _Config;
             ConnReport = _ConnReport;
-            Parity p = Parity.Odd;
+            Parity p = Parity.None;
             //switch (_Config.ParityBit)
             //{
             //    case "Even":
@@ -114,8 +114,9 @@ namespace TransferControl.Comm
             }
         }
 
-        public bool Send(object Message)
+        public void Send(object Message)
         {
+            logger.Debug( this.cfg.GetDeviceName()+" Send:"+Message);
             try
             {
                 if (cfg.GetVendor().ToUpper().Equals("ACDT"))
@@ -137,13 +138,13 @@ namespace TransferControl.Comm
                     //port.Read(buf, 0, buf.Length);
                     //string data = ByteArrayToString(buf);
                 }
-                return true;
+               
             }
             catch (Exception e)
             {
                 //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
                 ConnReport.On_Connection_Error("(ConnectServer )" + e.Message + "\n" + e.StackTrace);
-                return false;
+               
             }
         }
 
@@ -182,13 +183,17 @@ namespace TransferControl.Comm
                         break;
                     case "ATEL_NEW":
                     case "SANWA":
+                    case "SANWA_MC":
                         port.DataReceived += new SerialDataReceivedEventHandler(Sanwa_DataReceived);
                         break;
                     case "ASYST":
                         port.DataReceived += new SerialDataReceivedEventHandler(ASYST_DataReceived);
                         break;
-                    case "SMARTTAG":
-                        port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG_DataReceived);
+                    case "SMARTTAG8200":
+                        port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG8200_DataReceived);
+                        break;
+                    case "SMARTTAG8400":
+                        port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG8400_DataReceived);
                         break;
                     case "MITSUBISHI_PLC":
                         port.DataReceived += new SerialDataReceivedEventHandler(MITSUBISHI_PLC_DataReceived); 
@@ -206,10 +211,11 @@ namespace TransferControl.Comm
         {
             try
             {
+
                 string data = "";
 
                 data = port.ReadTo("\r\n");
-
+                logger.Debug(this.cfg.GetDeviceName() + "Received:" + data);
 
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
             }
@@ -253,13 +259,22 @@ namespace TransferControl.Comm
                     tmp += Encoding.ASCII.GetString(buf);
                     if (tmp.IndexOf((char)2) != -1 && tmp.IndexOf((char)3) != -1)
                     {
-                        string msg = tmp.Substring(tmp.IndexOf((char)2), (tmp.IndexOf((char)3) + 1) - tmp.IndexOf((char)2));
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
-                        tmp = tmp.Substring(tmp.IndexOf((char)3)+1);
+                        if (tmp.IndexOf((char)3) < tmp.IndexOf((char)2))
+                        {
+                            tmp = tmp.Substring(tmp.IndexOf((char)2));
+                        }
+                        else
+                        {
+                            string msg = tmp.Substring(tmp.IndexOf((char)2), (tmp.IndexOf((char)3) + 1) - tmp.IndexOf((char)2));
+                            //logger.Debug("Received:" + msg);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
+                            tmp = tmp.Substring(tmp.IndexOf((char)3) + 1);
+                        }
                     }
                     else if(tmp.IndexOf((char)6) != -1 && tmp.Substring(tmp.IndexOf((char)6)).Length>6)
                     {
                         string msg = tmp.Substring(tmp.IndexOf((char)6));
+                        //logger.Debug("Received:" + msg);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
                         tmp = "";
                     }
@@ -269,10 +284,10 @@ namespace TransferControl.Comm
             catch (Exception e1)
             {
                 //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
-                ConnReport.On_Connection_Error("(ASYST_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+                ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
-        private void SMARTTAG_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void SMARTTAG8200_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
@@ -281,6 +296,7 @@ namespace TransferControl.Comm
                 byte[] buf = new byte[250];
                 port.Read(buf, 0, buf.Length);
                 string data = ByteArrayToString(buf);
+                logger.Debug(this.cfg.GetDeviceName() +  " Received:" + data);
                 ConnReport.On_Connection_Message(data.Trim());
 
             }
@@ -288,6 +304,53 @@ namespace TransferControl.Comm
             {
                 //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
                 ConnReport.On_Connection_Error("(ASYST_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+            }
+        }
+        private void SMARTTAG8400_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                //SpinWait.SpinUntil(() => !_WaitForData, 1000);
+                if ((sender as SerialPort).BytesToRead > 0)
+                {
+                    byte[] buf = new byte[(sender as SerialPort).BytesToRead];
+                    port.Read(buf, 0, buf.Length);
+                    tmp += Encoding.ASCII.GetString(buf);
+                    if (tmp[0]==(char)4 || tmp[0]==(char)6)
+                    {
+                        string msg = tmp[0].ToString();
+                        logger.Debug(this.cfg.GetDeviceName() + " Received:" + msg);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
+                        
+                        if (tmp.IndexOf((char)5) != -1)
+                        {
+                            Send((char)4);
+                        }
+                        tmp = "";
+                    }
+                    else if(tmp.IndexOf((char)5) != -1)
+                    {
+                        Send((char)4);
+                        tmp = "";
+                    }
+                    else
+                    {
+                        if (Convert.ToInt16(tmp[0]) == tmp.Length - 1 + 2)
+                        {
+                            string msg = tmp;
+                            logger.Debug(this.cfg.GetDeviceName() + " Received:" + msg);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
+                            tmp = "";
+                            Send((char)6);
+                        }
+                    }
+
+                }
+            }
+            catch (Exception e1)
+            {
+                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
+                ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
 
@@ -306,7 +369,7 @@ namespace TransferControl.Comm
                 data = port.ReadTo(((char)3).ToString());
                 //        break;
                 //}
-
+                logger.Debug(this.cfg.GetDeviceName() + " Received:" + data);
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
             }
             catch (Exception e1)
@@ -340,6 +403,7 @@ namespace TransferControl.Comm
                 //}
                 currentIdx = 0;
                 readB = new byte[100];
+                logger.Debug(this.cfg.GetDeviceName() + " Received:" + data);
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
             }
             catch (Exception e1)
@@ -357,7 +421,7 @@ namespace TransferControl.Comm
 
                 data = port.ReadTo("\r");
 
-
+                logger.Debug(this.cfg.GetDeviceName() + " Received:" + data);
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
             }
             catch (Exception e1)

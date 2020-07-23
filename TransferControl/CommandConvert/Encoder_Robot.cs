@@ -205,12 +205,12 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                    commandStr = "${0}{1}SET:STOP_:1";
-                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    commandStr = "${0}{1}SET:STOP_:{2}";
+                    commandStr = string.Format(commandStr, Address, Sequence,m1) + EndCode();
                     break;
                 case "ATEL_NEW":
-                    commandStr = "${0}{1}SET:STOP_";
-                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    commandStr = "${0}{1}SET:STOP_:{2}";
+                    commandStr = string.Format(commandStr, Address, Sequence,m1) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -355,7 +355,7 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
-                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "0") + EndCode();
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4,'0'), Slot.PadLeft(2,'0'), Arm, "0") + EndCode();
                     break;
                 case "KAWASAKI":
 
@@ -391,7 +391,7 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
-                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "3") + EndCode();
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4,'0'), Slot.PadLeft(2,'0'), Arm, "3") + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
@@ -418,9 +418,12 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:GETW_:{2},{3},{4}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
+                    break;
+                case "ATEL_NEW":
+                    commandStr = "${0}{1}CMD:GETW_:{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4,'0'), Slot.PadLeft(2,'0'), Arm) + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
@@ -454,7 +457,7 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
-                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "1") + EndCode();
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4,'0'), Slot.PadLeft(2,'0'), Arm, "1") + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
@@ -488,7 +491,7 @@ namespace TransferControl.CommandConvert
                     break;
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:GET__:{2},{3},{4},{5}";
-                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "2") + EndCode();
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4, '0'), Slot.PadLeft(2, '0'), Arm, "2") + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
@@ -1026,9 +1029,13 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "0") + EndCode();
+                    break;
+                    
+                case "ATEL_NEW":
+                    commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4, '0'), Slot.PadLeft(2, '0'), Arm, "0") + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},PUTS,{1},{2},{3},{4}";
@@ -1056,9 +1063,13 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "3") + EndCode();
+                    break;
+                    
+                case "ATEL_NEW":
+                    commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4, '0'), Slot.PadLeft(2, '0'), Arm, "3") + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
@@ -1087,9 +1098,13 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "2") + EndCode();
+                    break;
+                    
+                case "ATEL_NEW":
+                    commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4, '0'), Slot.PadLeft(2, '0'), Arm, "2") + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
@@ -1117,9 +1132,12 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:PUTW_:{2},{3},{4}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
+                    break;
+                case "ATEL_NEW":
+                    commandStr = "${0}{1}CMD:PUTW_:{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4,'0'), Slot.PadLeft(2,'0'), Arm) + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
@@ -1147,9 +1165,13 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm, "1") + EndCode();
+                    break;
+                    
+                case "ATEL_NEW":
+                    commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4, '0'), Slot.PadLeft(2, '0'), Arm, "1") + EndCode();
                     break;
                 case "KAWASAKI":
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";

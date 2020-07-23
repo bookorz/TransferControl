@@ -53,8 +53,12 @@ namespace TransferControl.CommandConvert
                     case "ASYST":
                         result = ASYSTCodeAnalysis(Message);
                         break;
-                    case "SMARTTAG":
-                        result = SmartTagCodeAnalysis(Message);
+                    case "SMARTTAG_8200":
+                        result = SmartTag8200CodeAnalysis(Message);
+
+                        break;
+                    case "SMARTTAG_8400":
+                        result = SmartTag8400CodeAnalysis(Message);
 
                         break;
                     case "ACDT":
@@ -174,7 +178,7 @@ namespace TransferControl.CommandConvert
             return result;
         }
 
-        private List<CommandReturnMessage> SmartTagCodeAnalysis(string Message)
+        private List<CommandReturnMessage> SmartTag8200CodeAnalysis(string Message)
         {
             List<CommandReturnMessage> result;
 
@@ -233,6 +237,41 @@ namespace TransferControl.CommandConvert
             return result;
         }
 
+        private List<CommandReturnMessage> SmartTag8400CodeAnalysis(string Message)
+        {
+            List<CommandReturnMessage> result;
+
+
+            try
+            {
+                result = new List<CommandReturnMessage>();
+                
+                while (true)
+                {
+                    CommandReturnMessage r = new CommandReturnMessage();
+                    if (Message[0] == (char)4)
+                    {
+                        r.Type = CommandReturnMessage.ReturnType.Excuted;
+                    }
+                    else if (Message[0] == (char)6)
+                    {
+                        r.Type = CommandReturnMessage.ReturnType.Excuted;
+                    }
+                    else
+                    {
+                        r.Type = CommandReturnMessage.ReturnType.Event;
+                        r.Value = Message;
+                    }
+                    result.Add(r);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
+            return result;
+        }
         private string parseTag(string tag)
         {
             string[] datas = tag.Replace("60 00 AF 0A ", "").Split(' ');
@@ -540,11 +579,11 @@ namespace TransferControl.CommandConvert
 
                         }
                     }
-                    if (each.Command.Equals("RESET")|| each.Command.Equals("SP___") || each.Command.Equals("PAUSE") || each.Command.Equals("CONT_") || each.Command.Equals("STOP_"))
-                    {
-                        each.NodeAdr = "0";
-                        each.CommandType = "SET";
-                    }
+                    //if (each.Command.Equals("RESET")|| each.Command.Equals("SP___") || each.Command.Equals("PAUSE") || each.Command.Equals("CONT_") || each.Command.Equals("STOP_"))
+                    //{
+                    //    each.NodeAdr = "0";
+                    //    //each.CommandType = "SET";
+                    //}
                     result.Add(each);
                 }
             }

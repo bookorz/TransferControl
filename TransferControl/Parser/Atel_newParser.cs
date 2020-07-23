@@ -32,6 +32,9 @@ namespace TransferControl.Parser
             string[] MsgAry = Message.Split(',');
             switch (MsgAry[0])
             {
+                case "1":
+                    result.Add("R_Vacuum_Solenoid", MsgAry[1]=="1"?"ON":"OFF");
+                    break;
                 case "27":
                     result.Add("R_Presure_switch", MsgAry[1]);
                     break;
@@ -48,6 +51,7 @@ namespace TransferControl.Parser
                     result.Add("R_180_Degree_Sensor", MsgAry[1]);
                     break;
             }
+           
             return result;
         }
 
@@ -82,7 +86,7 @@ namespace TransferControl.Parser
                 switch (i + 1)
                 {
                     case 10:                       
-                        result.Add("Servo", Message[i].ToString());
+                        result.Add("Servo", Message[i].ToString()=="1"?"ON":"OFF");
                         break;
                 }
             }
