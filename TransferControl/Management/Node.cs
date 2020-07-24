@@ -228,7 +228,7 @@ namespace TransferControl.Management
             Speed = "";
             ConfigList = "";
 
-            ByPassCheck = false;
+            //ByPassCheck = false;
             Connected = false;
             OPACCESS = false;
 

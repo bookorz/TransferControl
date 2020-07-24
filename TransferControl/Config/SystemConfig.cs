@@ -28,6 +28,7 @@ namespace TransferControl.Config
         public string FakeDataP1 { get; set; }
         public string FakeDataP2 { get; set; }
         public string FakeDataP3 { get; set; }
+        public string FakeDataP4 { get; set; }
         public string Language { get; set; }
 
         public static SystemConfig Get()

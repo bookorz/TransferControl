@@ -280,21 +280,7 @@ namespace TransferControl.Engine
                                 string Mapping = Msg.Value;
 
 
-                                if (SystemConfig.Get().DummyMappingData)
-                                {
-                                    if (Node.Name.Equals("LOADPORT01"))
-                                    {
-                                        Mapping = SystemConfig.Get().FakeDataP1;
-
-                                    }
-                                    if (Node.Name.Equals("LOADPORT02"))
-                                    {
-
-                                        Mapping = SystemConfig.Get().FakeDataP2;
-
-                                    }
-                                    Msg.Value = Mapping;
-                                }
+                                
 
                                 Node.MappingResult = Mapping;
 
@@ -1209,12 +1195,12 @@ namespace TransferControl.Engine
                                             if (each.Value.Equals("TRUE"))
                                             {
                                                 Node.Foup_Placement = true;
-                                                Node.Foup_Presence = false;
+                                                Node.Foup_Presence = true;
                                             }
                                             else
                                             {
                                                 Node.Foup_Placement = false;
-                                                Node.Foup_Presence = true;
+                                                Node.Foup_Presence = false;
                                             }
                                             break;
                                         case "PRTST":
@@ -1406,9 +1392,10 @@ namespace TransferControl.Engine
 
             logger.Debug("Transaction TimeOut:" + Txn.CommandEncodeStr);
             Node.HasAlarm = true;
+            _UIReport.On_Alarm_Happen(AlarmManagement.NewAlarm(new Node() { Vendor = "SYSTEM", Name = Node.Name }, "S0300177", Txn.TaskObj.MainTaskId));
             _UIReport.On_Command_TimeOut(Node, Txn);
 
-            _UIReport.On_Alarm_Happen( AlarmManagement.NewAlarm(Node, "00200002", Txn.TaskObj.MainTaskId));
+            
         }
         /// <summary>
         /// 事件觸發

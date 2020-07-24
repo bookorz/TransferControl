@@ -43,27 +43,13 @@ namespace TransferControl.Parser
                     case 3:
                        
                         break;
-                    case 4:
+                    case 5:
                         result.Add("PIP", tmp[i]=="1"?"TRUE":"FALSE");
                         break;
-                    case 5:
-                        result.Add("PRTST", tmp[i] == "1" ? "LK" : "UNLK");
-                        break;
                     case 6:
-                       
+                        result.Add("PRTST", tmp[i] == "0" ? "LK" : "UNLK");
                         break;
-                    case 7:
-                        
-                        break;
-                    case 8:
-                        ;
-                        break;
-                    case 9:
-                        
-                        break;
-                    case 10:
-                        
-                        break;
+                    
                     default:
                         result.Add("SHELF" + (idx - 5).ToString(), tmp[i]);
                         break;

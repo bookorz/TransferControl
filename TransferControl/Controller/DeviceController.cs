@@ -193,6 +193,11 @@ namespace TransferControl.Controller
                 {
                     mappingData = SystemConfig.Get().FakeDataP3;
                 }
+                else if (Txn.NodeName.Equals("LOADPORT04"))
+                {
+                    mappingData = SystemConfig.Get().FakeDataP4;
+                }
+
                 CommandReturnMessage cm = new CommandReturnMessage();
                 //cm.CommandType = Transaction.Command.LoadPortType.GetMapping;
                 cm.Value = mappingData;

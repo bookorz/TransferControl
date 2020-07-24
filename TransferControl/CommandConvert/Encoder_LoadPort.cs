@@ -714,7 +714,17 @@ namespace TransferControl.CommandConvert
                     }
                     break;
                 case "SANWA_MC":
-                    commandStr = "$1MCR:MODE_:1,0";
+                    switch (modeType)
+                    {
+                        case ModeType.Online:
+                            commandStr = "$1MCR:MODE_:1,0";
+
+                            break;
+                        case ModeType.Maintenance:
+                            commandStr = "$1MCR:MODE_:1,1";
+                            break;
+                    }
+              
                     break;
                 default:
                     throw new NotSupportedException();
