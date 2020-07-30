@@ -221,6 +221,8 @@ namespace TransferControl.Management
 
         public void InitialObject()
         {
+            R_Vacuum_Solenoid = "";
+            L_Vacuum_Solenoid = "";
             DataReady = false;
             ArmExtend = "";
             RobotGetState = 0;

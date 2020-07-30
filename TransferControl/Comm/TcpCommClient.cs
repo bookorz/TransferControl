@@ -46,7 +46,7 @@ namespace TransferControl.Comm
           
         }
 
-        public bool SendHexData(object Message)
+        public void SendHexData(object Message)
         {
             throw new NotImplementedException();
         }

@@ -89,31 +89,31 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
 
-                                if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
-                                    return;
-                                }
+                                //if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
+                                //    return;
+                                //}
                                 //AckTask(TaskJob);
                                 if (NodeManagement.Get("ROBOT01").Enable)
                                 {
@@ -148,31 +148,31 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
 
-                                if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
-                                    return;
-                                }
+                                //if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 if (NodeManagement.Get("ROBOT01").Enable)
                                 {
@@ -261,31 +261,31 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
-                                    return;
-                                }
-                                if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
-                                    return;
-                                }
+                                //if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
+                                //    return;
+                                //}
+                                //if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 if (NodeManagement.Get("ROBOT01").Enable)
                                 {
@@ -404,15 +404,15 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM" }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM" }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 if (!Target.IsPause)
                                 {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "01" }));
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
                                 }
                                 break;
                             case 1:
@@ -429,20 +429,23 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-
-                                if (!Position.InitialComplete)
+                                if (!Position.Type.Equals("LoadLock"))
                                 {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300168");
-                                    return;
+                                    if (!Position.InitialComplete)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300168");
+                                        return;
+                                    }
+
+                                    if (!Position.OrgSearchComplete)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300169");
+                                        return;
+                                    }
                                 }
                                 if (!Target.InitialComplete)
                                 {
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
-                                    return;
-                                }
-                                if (!Position.OrgSearchComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300169");
                                     return;
                                 }
                                 if (!Target.OrgSearchComplete)
@@ -450,16 +453,17 @@ namespace TransferControl.TaksFlow
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
                                     return;
                                 }
-                                if (Position.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
-                                    return;
-                                }
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+
+                                //if (Position.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
+                                //    return;
+                                //}
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
 
                                 if (Position.Type.Equals("LOADPORT") && !Position.IsMapping)
                                 {
@@ -476,21 +480,35 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
                                 //Check presence
-                                Wafer = JobManagement.Get(Position.Name, Slot);
-
-
-                                if (Wafer == null)
+                                if (Position.Type.Equals("LoadLock"))
                                 {
+                                    if (MainControl.Instance.DIO.GetIO("DIN", Position.Name + "_ARM_EXTEND_ENABLE").ToUpper().Equals("FALSE") && !TaskJob.Params["@BYPASS_CHECK"].Equals("TRUE"))
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300164");
+                                        return;
+                                    }
+                                    MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
-                                    AckTask(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = "1", Slot = "1" }));
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Slot, Val2 = "0" }));
+
                                 }
                                 else
                                 {
+                                    Wafer = JobManagement.Get(Position.Name, Slot);
 
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300171");
-                                    return;
+
+                                    if (Wafer == null)
+                                    {
+
+                                        AckTask(TaskJob);
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = "1", Slot = "1" }));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Slot, Val2 = "0" }));
+                                    }
+                                    else
+                                    {
+
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300171");
+                                        return;
+                                    }
                                 }
                                 break;
                             case 2:
@@ -500,17 +518,22 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 3:
                                 //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.TweekUp }));
+
                                 Wafer = JobManagement.Get(Target.Name, "1");
                                 if (Wafer == null)
                                 {
                                     Wafer = JobManagement.Add();
-
+                                    Wafer.MapFlag = true;
                                 }
                                 Wafer.LastNode = Wafer.Position;
                                 Wafer.LastSlot = Convert.ToInt16(Wafer.Slot).ToString();
                                 Wafer.Position = Position.Name;
                                 Wafer.Slot = Convert.ToInt16(Slot).ToString();
-
+                                if (Position.Type.Equals("LoadLock"))
+                                {
+                                    JobManagement.Remove(Wafer);
+                                    MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "true");
+                                }
                                 _TaskReport.On_Job_Location_Changed(Wafer);
                                 break;
                             default:
@@ -522,19 +545,23 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!Position.InitialComplete)
+                                if (!Position.Type.Equals("LoadLock"))
                                 {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300168");
-                                    return;
+                                    if (!Position.InitialComplete)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300168");
+                                        return;
+                                    }
+
+                                    if (!Position.OrgSearchComplete)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300169");
+                                        return;
+                                    }
                                 }
                                 if (!Target.InitialComplete)
                                 {
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
-                                    return;
-                                }
-                                if (!Position.OrgSearchComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300169");
                                     return;
                                 }
                                 if (!Target.OrgSearchComplete)
@@ -542,16 +569,16 @@ namespace TransferControl.TaksFlow
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
                                     return;
                                 }
-                                if (Position.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
-                                    return;
-                                }
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Position.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
+                                //    return;
+                                //}
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
 
                                 if (Position.Type.Equals("LOADPORT") && !Position.IsMapping)
                                 {
@@ -565,27 +592,42 @@ namespace TransferControl.TaksFlow
                                     }
                                 }
 
+
                                 break;
                             case 1:
                                 //Check presence
 
-                                Wafer = JobManagement.Get(Position.Name, Slot);
+                                if (Position.Type.Equals("LoadLock"))
+                                {
+                                    if (MainControl.Instance.DIO.GetIO("DIN", Position.Name + "_ARM_EXTEND_ENABLE").ToUpper().Equals("FALSE") && !TaskJob.Params["@BYPASS_CHECK"].Equals("TRUE"))
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300164");
+                                        return;
+                                    }
+                                    MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
-                                if (Wafer == null)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
-                                    return;
-                                }
-                                else if (!Wafer.MapFlag || Wafer.ErrPosition)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
-                                    return;
+
                                 }
                                 else
                                 {
-                                    AckTask(TaskJob);
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = "1", Slot = "1" }));
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Slot, Val2 = "0" }));
+                                    Wafer = JobManagement.Get(Position.Name, Slot);
+
+                                    if (Wafer == null)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
+                                        return;
+                                    }
+                                    else if (!Wafer.MapFlag || Wafer.ErrPosition)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        AckTask(TaskJob);
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = "1", Slot = "1" }));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Slot, Val2 = "0" }));
+                                    }
                                 }
                                 break;
                             case 2:
@@ -595,11 +637,15 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 3:
                                 //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.TweekDn }));
+                                if (Position.Type.Equals("LoadLock"))
+                                {
+                                    MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "true");
+                                }
                                 Wafer = JobManagement.Get(Position.Name, Slot);
                                 if (Wafer == null)
                                 {
                                     Wafer = JobManagement.Add();
-
+                                    Wafer.MapFlag = true;
                                 }
                                 Wafer.LastNode = Wafer.Position;
                                 Wafer.LastSlot = Convert.ToInt16(Wafer.Slot).ToString();
@@ -638,16 +684,16 @@ namespace TransferControl.TaksFlow
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
                                     return;
                                 }
-                                if (Position.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
-                                    return;
-                                }
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Position.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
+                                //    return;
+                                //}
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 //Get safety check
                                 Wafer = JobManagement.Get(TaskJob.Params["@FromPosition"], TaskJob.Params["@FromSlot"]);
 
@@ -661,12 +707,19 @@ namespace TransferControl.TaksFlow
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
                                     return;
                                 }
-                                Wafer = JobManagement.Get(TaskJob.Params["@ToPosition"], TaskJob.Params["@ToSlot"]);
-                                //Put safety check
-                                if (Wafer != null)
+                                if (TaskJob.Params["@FromPosition"].Equals(TaskJob.Params["@ToPosition"]) && TaskJob.Params["@FromSlot"].Equals(TaskJob.Params["@ToSlot"]))
                                 {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300171");
-                                    return;
+
+                                }
+                                else
+                                {
+                                    Wafer = JobManagement.Get(TaskJob.Params["@ToPosition"], TaskJob.Params["@ToSlot"]);
+                                    //Put safety check
+                                    if (Wafer != null)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300171");
+                                        return;
+                                    }
                                 }
                                 AckTask(TaskJob);
 
@@ -712,11 +765,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = "1", Slot = "1" }));
 
@@ -747,11 +800,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = "1", Slot = "1" }));
 
@@ -782,11 +835,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferRelease, Arm = Arm }));
 
@@ -817,11 +870,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm }));
 
@@ -840,11 +893,11 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = Value }));
@@ -876,11 +929,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.ArmReturn }));
 
@@ -898,14 +951,14 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
 
-                                AckTask(TaskJob);
+                                //AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Speed, Value = Value }));
 
                                 break;
@@ -925,11 +978,11 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
 
                                 AckTask(TaskJob);
@@ -962,11 +1015,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Home }));
 
@@ -990,23 +1043,23 @@ namespace TransferControl.TaksFlow
 
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
+                                //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
 
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_INIT, TaskJob.Params).Promise())
-                                {
-                                    //中止Task
-                                    AbortTask(TaskJob, null, "TASK_ABORT");
+                                //if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_INIT, TaskJob.Params).Promise())
+                                //{
+                                //    //中止Task
+                                //    AbortTask(TaskJob, null, "TASK_ABORT");
 
-                                    break;
-                                }
+                                //    break;
+                                //}
                                 break;
                             case 2:
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.OrginSearch }));
@@ -1026,11 +1079,11 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 //AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
 
@@ -1056,11 +1109,11 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
+                                //    return;
+                                //}
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
 
@@ -1116,11 +1169,11 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 if (SystemConfig.Get().DummyMappingData)
@@ -1154,11 +1207,11 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 if (SystemConfig.Get().DummyMappingData)
@@ -1189,11 +1242,11 @@ namespace TransferControl.TaksFlow
 
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
@@ -1211,11 +1264,11 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 //AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
@@ -1242,11 +1295,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnClamp }));
@@ -1274,11 +1327,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Clamp }));
@@ -1306,11 +1359,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.RetryMapping }));
@@ -1341,11 +1394,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.TweekDn }));
@@ -1372,11 +1425,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.TweekUp }));
@@ -1403,11 +1456,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Value, Val2 = "0" }));
@@ -1425,11 +1478,11 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.SetSpeed, Value = Value }));
@@ -1458,11 +1511,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
@@ -1490,11 +1543,11 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Load }));
@@ -1521,17 +1574,17 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
                                 break;
                             case 1:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.GetLCDData }));
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.SmartTagType.GetLCDData }));
 
                                 break;
                             default:
@@ -1545,16 +1598,20 @@ namespace TransferControl.TaksFlow
                             case 0:
 
 
-                                if (Target.IsExcuting)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                    return;
-                                }
+                                //if (Target.IsExcuting)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
+                                //    return;
+                                //}
 
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
                                 break;
                             case 1:
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SelectLCDData }));
+
+                                break;
+                            case 2:
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SetLCDData, Value = Value }));
 
                                 break;
@@ -1571,7 +1628,15 @@ namespace TransferControl.TaksFlow
                     foreach (TaskFlowManagement.ExcutedCmd eachCmd in TaskJob.CheckList)
                     {
                         eachCmd.Txn.TaskObj = TaskJob;
-                        NodeManagement.Get(eachCmd.NodeName).SendCommand(eachCmd.Txn);
+                        if (NodeManagement.Get(eachCmd.NodeName).Connected)
+                        {
+                            NodeManagement.Get(eachCmd.NodeName).SendCommand(eachCmd.Txn);
+                        }
+                        else
+                        {
+                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = eachCmd.NodeName }, "S0300175");
+                            return;
+                        }
                         if (eachCmd.Txn.Method == Transaction.Command.LoadPortType.GetMappingDummy)
                         {
                             break;

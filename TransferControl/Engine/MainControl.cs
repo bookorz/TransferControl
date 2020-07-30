@@ -46,12 +46,12 @@ namespace TransferControl.Engine
             AlarmManagement.InitialAlarm();
             DIO = new DIO(this);
 
-
+            //初始化所有Node
+            NodeManagement.LoadConfig();
 
             ControllerManagement.LoadConfig(this);
 
-            //初始化所有Node
-            NodeManagement.LoadConfig();
+           
 
 
             //初始化Robot點位表
@@ -951,7 +951,7 @@ namespace TransferControl.Engine
                         {
                             case Transaction.Command.SmartTagType.GetLCDData:
 
-                                Node.Carrier.CarrierID = Msg.Value;
+                                Node.FoupID = Msg.Value;
                                 break;
                         }
                         break;
@@ -1537,7 +1537,7 @@ namespace TransferControl.Engine
         public void On_Controller_State_Changed(string Device_ID, string Status)
         {
             var find = from node in NodeManagement.GetList()
-                       where node.Controller.Equals(Device_ID)
+                       where node.Controller.ToUpper().Equals(Device_ID.ToUpper())
                        select node;
             foreach (Node each in find)
             {
@@ -1550,6 +1550,7 @@ namespace TransferControl.Engine
                     case "Disconnected":
                     case "Connection_Error":
                         each.Connected = false;
+                        
                         break;
                 }
                 _UIReport.On_Node_Connection_Changed(each.Name, Status);

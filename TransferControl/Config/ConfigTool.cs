@@ -34,7 +34,7 @@ namespace TransferControl.Config
         {
             try
             {
-                File.WriteAllText(FilePath, JsonConvert.SerializeObject(Obj));
+                File.WriteAllText(FilePath, JsonConvert.SerializeObject(Obj, Formatting.Indented));
             }
             catch (Exception ex)
             {

@@ -40,6 +40,10 @@ namespace TransferControl.Parser
                 case "AIRTECH":
                     P = new AIRTECHParser();
                     break;
+                case "SMARTTAG8200":
+                case "SMARTTAG8400":
+
+                    break;
                 default:
                     throw new Exception(Supplier + " 不存在");
                     

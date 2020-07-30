@@ -32,10 +32,10 @@ namespace TransferControl.CommandConvert
             string result = "";
             switch (Supplier)
             {
-                case "8200":
+                case "SMARTTAG8200":
                     result = "FC FF B5 FF";
                     break;
-                case "8400":
+                case "SMARTTAG8400":
                     result = "05";
                     break;
                 default:
@@ -50,10 +50,10 @@ namespace TransferControl.CommandConvert
             string result = "";
             switch (Supplier)
             {
-                case "8200":
+                case "SMARTTAG8200":
                     result = "FF FF EF FF F7 FF FF 07 D0 FF 7F DB FF 7F FF";
                     break;
-                case "8400":
+                case "SMARTTAG8400":
                     result = "10 00 00 E4 79 80 01 00 00 00 05 B1 04 00 00 00 07 02 9F";
                     break;
                 default:
@@ -67,7 +67,7 @@ namespace TransferControl.CommandConvert
             string result = "";
             switch (Supplier)
             {
-                case "8200":
+                case "SMARTTAG8200":
                     result= "FF FF 1F FF 77 FF FF 07 B0 FF BB FF 7F FF";
                     break;
                 default:
@@ -82,11 +82,11 @@ namespace TransferControl.CommandConvert
             string result = "";
             switch (Supplier)
             {
-                case "8200":
+                case "SMARTTAG8200":
                     Data += "                ";
                     result= "FF FF D0 FF F5 FF " + parseWriteData(Data) + CalculateWriteChecksum(Data);
                     break;
-                case "8400":
+                case "SMARTTAG8400":
                     string tmp = "00 00 E4 77 80 01 00 00 00 09 01 04 B1 04 00 00 2E A5 A5 01 01 41 10 31 39 39 39 30 31 30 31 30 30 30 30 30 30 30 30 41 " + parseWriteData(Data);
                     string CheckSum = CalculateWriteChecksum(tmp);
                     string Length = ((byte)tmp.Split(' ').Length).ToString("X2");
@@ -108,7 +108,7 @@ namespace TransferControl.CommandConvert
             string Result = "";
             switch (Supplier)
             {
-                case "8200":
+                case "SMARTTAG8200":
                     for (int i = 0; i < ttl_len; i++)
                     {
                         if (i < start_idx)
@@ -126,7 +126,7 @@ namespace TransferControl.CommandConvert
                     }
                     Result = tmpResult.ToString();
                     break;
-                case "8400":
+                case "SMARTTAG8400":
                     byte[] temp = Encoding.ASCII.GetBytes(text);
                     for (int i = 0; i < temp.Length; i++)
                     {
@@ -167,7 +167,7 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
 
-                case "8200":
+                case "SMARTTAG8200":
                     byte[] byteToCalculate = Encoding.ASCII.GetBytes(dataToCalculate);
                    
                     byte[] bdata = { 0x50 };
@@ -188,7 +188,7 @@ namespace TransferControl.CommandConvert
                     string char4 = getWriteMappingChar(temp.Substring(3, 1));
                     result = "FF " + char4 + char3 + " FF " + char2 + char1 + " FF ";
                     break;
-                case "8400":
+                case "SMARTTAG8400":
                     string[] ary = dataToCalculate.Trim().Split(' ');
 
                     

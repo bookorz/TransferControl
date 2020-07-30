@@ -21,7 +21,7 @@ namespace TransferControl.CommandConvert
 
             try
             {
-                switch (Supplier)
+               switch (Supplier)
                 {
                     case "SANWA_MC":
                         result = SANWA_MCCodeAnalysis(Message);
@@ -53,11 +53,11 @@ namespace TransferControl.CommandConvert
                     case "ASYST":
                         result = ASYSTCodeAnalysis(Message);
                         break;
-                    case "SMARTTAG_8200":
+                    case "SMARTTAG8200":
                         result = SmartTag8200CodeAnalysis(Message);
 
                         break;
-                    case "SMARTTAG_8400":
+                    case "SMARTTAG8400":
                         result = SmartTag8400CodeAnalysis(Message);
 
                         break;

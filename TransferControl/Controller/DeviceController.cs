@@ -231,6 +231,11 @@ namespace TransferControl.Controller
 
                 key = Txn.Seq;
             }
+            if (DeviceType.ToUpper().Equals("SMARTTAG"))
+            {
+
+                key = "00";
+            }
             else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
             {
                 key = "1" + Txn.Type;
@@ -328,13 +333,18 @@ namespace TransferControl.Controller
                     {
                         _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
                     }
-                    if (this.Vendor.Equals("SMARTTAG"))
+                    if (this.Vendor.Equals("SMARTTAG8200") || this.Vendor.Equals("SMARTTAG8400"))
                     {
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(sendWith4Byte), Txn.CommandEncodeStr);
+                        //if (Txn.Method == Transaction.Command.SmartTagType.GetLCDData)
+                        //{
+                        //    conn.WaitForData(true);
+                        //}
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(conn.SendHexData), Txn.CommandEncodeStr);
 
                     }
                     else
                     {
+
                         ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), Txn.CommandEncodeStr);
                     }
                 }
@@ -484,6 +494,10 @@ namespace TransferControl.Controller
                                     //{
                                     //    key = "0" + ReturnMsg.Command;
                                     //}
+                                }
+                                else if (DeviceType.Equals("SMARTTAG"))
+                                {
+                                    key = "00";
                                 }
                                 else
                                 {
@@ -642,7 +656,7 @@ namespace TransferControl.Controller
                                                 Node.IsExcuting = false;
                                             }
                                             //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
-                                            if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
+                                            if (Vendor.ToUpper().Equals("TDK") || DeviceType.ToUpper().Equals("SMARTTAG"))
                                             {
                                                 conn.Send(ReturnMsg.FinCommand);
                                                 logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
@@ -698,7 +712,7 @@ namespace TransferControl.Controller
                                                     Node.IsExcuting = false;
                                                 }
                                                 //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
-                                                if (Vendor.ToUpper().Equals("TDK") || Vendor.ToUpper().Equals("SMARTTAG"))
+                                                if (Vendor.ToUpper().Equals("TDK") || DeviceType.ToUpper().Equals("SMARTTAG"))
                                                 {
                                                     conn.Send(ReturnMsg.FinCommand);
                                                     logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
@@ -842,6 +856,7 @@ namespace TransferControl.Controller
             //TransactionList.Clear();
             ChangeNodeConnectionStatus("Connection_Error");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connection_Error");
+            
             _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Connection_Error");
             conn.Reconnect();
         }

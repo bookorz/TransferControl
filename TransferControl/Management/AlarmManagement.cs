@@ -45,19 +45,29 @@ namespace TransferControl.Management
             result.errorCode = ErrorCode;
             result.TimeStamp = DateTime.Now;
             result.taskID = TaskID;
+
             if (AlarmData != null && Node != null)
             {
-                var find = from alm in AlarmData
-                           where (alm.vendor.ToUpper().Equals(Node.Vendor.ToUpper()) && alm.errorCode.ToUpper().Equals(ErrorCode.ToUpper()))
-                           select alm;
-                if (find.Count() != 0)
+                try
                 {
-                    result.vendor = find.First().vendor;
-                    result.errorCode = find.First().errorCode;
-                    result.errDesc = find.First().errDesc;
-                    result.isAlert = find.First().isAlert;
-                }
-                else
+                    var find = from alm in AlarmData
+                               where (alm.vendor.ToUpper().Equals(Node.Vendor.ToUpper()) && alm.errorCode.ToUpper().Equals(ErrorCode.ToUpper()))
+                               select alm;
+                    if (find.Count() != 0)
+                    {
+                        result.vendor = find.First().vendor;
+                        result.errorCode = find.First().errorCode;
+                        result.errDesc = find.First().errDesc;
+                        result.isAlert = find.First().isAlert;
+                    }
+                    else
+                    {
+                        result.vendor = "";
+                        result.errDesc = "Error code 不存在";
+                        result.errorCode = ErrorCode;
+                        result.isAlert = true;
+                    }
+                }catch(Exception e)
                 {
                     result.vendor = "";
                     result.errDesc = "Error code 不存在";
@@ -75,13 +85,13 @@ namespace TransferControl.Management
             }
             lock (CurrentAlarm)
             {
-                if (CurrentAlarm.ContainsKey(result.errorCode))
+                if (CurrentAlarm.ContainsKey(result.nodeName+result.errorCode))
                 {
-                    CurrentAlarm[result.errorCode] = result;
+                    CurrentAlarm[result.nodeName + result.errorCode] = result;
                 }
                 else
                 {
-                    CurrentAlarm.Add(result.errorCode, result);
+                    CurrentAlarm.Add(result.nodeName + result.errorCode, result);
                 }
             }
             AlarmHis.Insert(0, result);

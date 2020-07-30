@@ -23,7 +23,19 @@ namespace TransferControl.Comm
         {
             cfg = _Config;
             ConnReport = _ConnReport;
-            Parity p = Parity.None;
+            Parity p;
+            if (_Config.GetVendor().Equals("SMARTTAG8200"))
+            {
+                p = Parity.Mark;
+            }
+            else if (_Config.GetVendor().Equals("SMARTTAG8400"))
+            {
+                p = Parity.Even;
+            }
+            else
+            {
+                p = Parity.None;
+            }
             //switch (_Config.ParityBit)
             //{
             //    case "Even":
@@ -62,18 +74,20 @@ namespace TransferControl.Comm
 
             port = new SerialPort(_Config.GetPortName(), _Config.GetBaudRate(), p, 8, s);
 
-        
-            
-            
-    
 
-            if (_Config.GetVendor().Equals("SMARTTAG"))
+
+
+
+
+            if (_Config.GetVendor().Equals("SMARTTAG8200"))
             {
                 port.Handshake = Handshake.None;
-                port.RtsEnable = true;
-                port.ReadTimeout = 5000;
-                port.WriteTimeout = 5000;
-            }else if (_Config.GetVendor().Equals("MITSUBISHI_PLC"))
+            }
+            else if (_Config.GetVendor().Equals("SMARTTAG8400"))
+            {
+                port.Handshake = Handshake.None;
+            }
+            else if(_Config.GetVendor().Equals("MITSUBISHI_PLC"))
             {
                 port.DtrEnable = true;
                 port.RtsEnable = true;
@@ -148,20 +162,20 @@ namespace TransferControl.Comm
             }
         }
 
-        public bool SendHexData(object Message)
+        public void SendHexData(object Message)
         {
             try
             {
                 byte[] buf = HexStringToByteArray(Message.ToString());
 
                 port.Write(buf, 0, buf.Length);
-                return true;
+                
             }
             catch (Exception e)
             {
                 //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
                 ConnReport.On_Connection_Error("(ConnectServer )" + e.Message + "\n" + e.StackTrace);
-                return false;
+               
             }
         }
 
@@ -292,10 +306,14 @@ namespace TransferControl.Comm
             try
             {
                 SpinWait.SpinUntil(() => !_WaitForData, 1000);
-
-                byte[] buf = new byte[250];
-                port.Read(buf, 0, buf.Length);
-                string data = ByteArrayToString(buf);
+                _WaitForData = false;
+                //byte[] buf = new byte[250];
+                //port.Read(buf, 0, buf.Length);
+                //string data = ByteArrayToString(buf);
+                //string data = port.ReadExisting();
+                byte[] buff = new byte[port.BytesToRead];
+                port.Read(buff, 0, buff.Length);
+                string data = ByteArrayToString(buff);
                 logger.Debug(this.cfg.GetDeviceName() +  " Received:" + data);
                 ConnReport.On_Connection_Message(data.Trim());
 

@@ -52,9 +52,10 @@ namespace TransferControl.Management
             {
                 //if (each.Enable)
                 //{
-                    each.InitialObject();
-                    NodeList.TryAdd(each.Name, each);
-                    NodeListByCtrl.TryAdd(each.Controller + each.AdrNo, each);
+                NodeList.TryAdd(each.Name, each);
+                NodeListByCtrl.TryAdd(each.Controller + each.AdrNo, each);
+                each.InitialObject();
+                    
                 
                 //}
             }
@@ -153,13 +154,45 @@ namespace TransferControl.Management
 
             return result;
         }
+        class NodeConfig
+        {
+            public string Name { get; set; }
+
+            public string Controller { get; set; }
+
+            public string AdrNo { get; set; }
+
+            public string Type { get; set; }
+
+            public string Vendor { get; set; }
+            public bool ByPass { get; set; }
+            public bool Enable { get; set; }
+            public string WaferSize { get; set; }
+            public bool DoubleArmActive { get; set; }
+            public string R_Flip_Degree { get; set; }
+            public string Associated_Node { get; set; }
+            public bool LArmActive { get; set; }
+            public bool RArmActive { get; set; }
+            public string CarrierType { get; set; }
+            public string Mode { get; set; }
+            public int AckTimeOut { get; set; }
+            public int MotionTimeOut { get; set; }
+            public bool ByPassCheck { get; set; }
+           
+        }
         public static void Save()
         {
+            
+
+
             List<Node> result = NodeList.Values.ToList();
 
             result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });
-
             new ConfigTool<List<Node>>().WriteFile("config/Node.json", result);
+            //簡潔化
+            List<NodeConfig> cvt = new ConfigTool<List<NodeConfig>>().ReadFile("config/Node.json");
+
+            new ConfigTool<List<NodeConfig>>().WriteFile("config/Node.json", cvt);
         }
         
 

@@ -351,6 +351,14 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+                                if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]),0))
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+
                                 TaskJob.Params.Add("@Command", "3");
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
                                 {
@@ -380,6 +388,15 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 3:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]), 1))
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -443,6 +460,13 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+                                if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]), 1))
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
                                 TaskJob.Params.Add("@Command", "5");
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
                                 {
@@ -472,6 +496,15 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 3:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]), 0))
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -690,7 +723,7 @@ namespace TransferControl.TaksFlow
                         string SpeedStr = TaskJob.Params["@Speed"];
                         double Speed = (int)Math.Round(Convert.ToDouble(SpeedStr));
                         int digit10 = (int)(Speed / Math.Pow(10, 1) % 10);
-                        binaryStr = Convert.ToString(digit10, 2).PadLeft(4, '0');
+                        binaryStr = Convert.ToString(digit10==0?10:digit10, 2).PadLeft(4, '0');
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -787,7 +820,7 @@ namespace TransferControl.TaksFlow
                                 Target.SetIO("OUTPUT", 40 + (CstRobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
                                 Target.SetIO("OUTPUT", 41 + (CstRobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
 
-                                SpinWait.SpinUntil(() =>  false, 500);
+                                SpinWait.SpinUntil(() => false, 500);
                                 //REQ_INPUT(DI_01)
                                 Target.SetIO("OUTPUT", 1 + (CstRobotStation - 1) * 32, 1);
                                 //STS_INPUT (DO_03) 
@@ -982,7 +1015,7 @@ namespace TransferControl.TaksFlow
         }
         private void AbortTask(TaskFlowManagement.CurrentProcessTask TaskJob, Node Node, string Message)
         {
-            _TaskReport.On_Alarm_Happen( AlarmManagement.NewAlarm(Node, Message));
+            _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(Node, Message));
 
             _TaskReport.On_TaskJob_Aborted(TaskJob);
             _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() + " Aborted");
@@ -1004,6 +1037,38 @@ namespace TransferControl.TaksFlow
             return Target.GetIO(Area)[Pos];
         }
 
+        private bool CheckPresence(Node Target,int Pos,int State)
+        {
+            bool result = true;
+            if (Pos <= 12)
+            {
+                Pos = (Pos - 1) * 2;
+            }
+            else if (Pos == 22 || Pos == 23)
+            {
+                return true;
+            }
+            else if (Pos >= 18)
+            {
+                Pos = (Pos - 5 - 1) * 2;
+            }
+            else
+            {
+                Pos = (Pos + 4 - 1) * 2;
+            }
+
+            if (Target.GetIO("PRESENCE")[Pos] != State)
+            {
+                _TaskReport.On_Message_Log("CMD", "Shelf_" + Pos + "_1 presence error");
+                result = false;
+            }
+            if (Target.GetIO("PRESENCE")[Pos + 1] != State)
+            { 
+                _TaskReport.On_Message_Log("CMD", "Shelf_" + Pos + "_2 presence error");
+                result = false;
+            }
+            return result;
+        }
         public class IN
         {
             public const int B1_1 = 1;
