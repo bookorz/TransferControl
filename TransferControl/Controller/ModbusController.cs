@@ -1,5 +1,6 @@
 ﻿using log4net;
 using Modbus.Device;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.IO.Ports;
@@ -14,8 +15,10 @@ namespace TransferControl.Controller
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(ModbusController));
         ConcurrentDictionary<string, Transaction> TransactionList = new ConcurrentDictionary<string, Transaction>();
+        [JsonIgnore]
         public ICommandReport _ReportTarget;
         IModbusMaster conn;
+        [JsonIgnore]
         public CommandEncoder Encoder;
         public int TrxNo = 1;
         public string Name { get; set; }
@@ -186,6 +189,10 @@ namespace TransferControl.Controller
         public string GetVendor()
         {
             return this.Vendor;
+        }
+        public void SetVendor(string Vendor)
+        {
+            this.Vendor = Vendor;
         }
         public string GetPortName()
         {

@@ -30,7 +30,7 @@ namespace TransferControl.Comm
             }
             else if (_Config.GetVendor().Equals("SMARTTAG8400"))
             {
-                p = Parity.Even;
+                p = Parity.None;
             }
             else
             {
@@ -166,6 +166,7 @@ namespace TransferControl.Comm
         {
             try
             {
+                logger.Debug(this.cfg.GetDeviceName() + " Send:" + Message.ToString());
                 byte[] buf = HexStringToByteArray(Message.ToString());
 
                 port.Write(buf, 0, buf.Length);
@@ -328,38 +329,54 @@ namespace TransferControl.Comm
         {
             try
             {
+                
                 //SpinWait.SpinUntil(() => !_WaitForData, 1000);
                 if ((sender as SerialPort).BytesToRead > 0)
                 {
                     byte[] buf = new byte[(sender as SerialPort).BytesToRead];
                     port.Read(buf, 0, buf.Length);
                     tmp += Encoding.ASCII.GetString(buf);
-                    if (tmp[0]==(char)4 || tmp[0]==(char)6)
+                    logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+                    if (tmp[0]==(char)4)
                     {
                         string msg = tmp[0].ToString();
-                        logger.Debug(this.cfg.GetDeviceName() + " Received:" + msg);
+                        
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
                         
-                        if (tmp.IndexOf((char)5) != -1)
-                        {
-                            Send((char)4);
-                        }
+                        //if (tmp.IndexOf((char)5) != -1)
+                        //{
+                            
+                        //    ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "04");
+                        //}
                         tmp = "";
                     }
-                    else if(tmp.IndexOf((char)5) != -1)
+                    else if(tmp[0] == (char)6)
                     {
-                        Send((char)4);
+                        tmp = "";
+                    }
+                    else if(tmp[0] == (char)5)
+                    {
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "04");
                         tmp = "";
                     }
                     else
                     {
-                        if (Convert.ToInt16(tmp[0]) == tmp.Length - 1 + 2)
+                        if (tmp.Length>= Convert.ToInt16(tmp[0]))
                         {
-                            string msg = tmp;
-                            logger.Debug(this.cfg.GetDeviceName() + " Received:" + msg);
+                            string msg = "";
+                            if (tmp.Length > 18)
+                            {
+                                msg = tmp.Substring(18, Convert.ToInt16(tmp[17]));
+                            }
+                            else
+                            {
+                                msg = tmp.Substring(10);
+                            }
+                            //logger.Debug(this.cfg.GetDeviceName() + " Received:" + msg);
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
                             tmp = "";
-                            Send((char)6);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "06");
+                            
                         }
                     }
 
@@ -371,7 +388,7 @@ namespace TransferControl.Comm
                 ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
-
+        
         private void TDK_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try

@@ -9,21 +9,26 @@ using System.Collections.Concurrent;
 using System.Threading;
 using TransferControl.CommandConvert;
 using TransferControl.Config;
+using Newtonsoft.Json;
 
 namespace TransferControl.Controller
 {
     public class DeviceController : IConnectionReport, ITransactionReport, IController
     {
         private static readonly ILog logger = LogManager.GetLogger(typeof(DeviceController));
+        [JsonIgnore]
         public ICommandReport _ReportTarget;
         IConnection conn;
 
         CommandDecoder _Decoder;
+        [JsonIgnore]
         public CommandEncoder Encoder;
         ConcurrentDictionary<string, Transaction> TransactionList = new ConcurrentDictionary<string, Transaction>();
         public string Name { get; set; }
+        [JsonIgnore]
         public string Status = "Disconnected";
         private bool _IsConnected { get; set; }
+        [JsonIgnore]
         public int TrxNo = 1;
 
 
@@ -65,6 +70,10 @@ namespace TransferControl.Controller
         public string GetVendor()
         {
             return this.Vendor;
+        }
+        public void SetVendor(string Vendor)
+        {
+            this.Vendor=Vendor;
         }
         public string GetPortName()
         {

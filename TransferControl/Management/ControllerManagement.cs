@@ -96,7 +96,17 @@ namespace TransferControl.Management
                 }
             }
         }
+        public static void Save()
+        {
 
+
+
+            List<IController> result = Controllers.Values.ToList();
+
+            result.Sort((x, y) => { return x.GetDeviceName().CompareTo(y.GetDeviceName()); });
+            new ConfigTool<List<IController>>().WriteFile("config/Controller.json", result);
+           
+        }
         public static IController Get(string Name)
         {
             IController result = null;

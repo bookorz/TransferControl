@@ -5,12 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TransferControl.CommandConvert;
+using Newtonsoft.Json;
 
 namespace TransferControl.Controller
 {
     public interface IController
     {
 
+        
         void SetReport(ICommandReport ReportTarget);
         string GetDeviceName();
         bool GetEnable();
@@ -19,6 +21,7 @@ namespace TransferControl.Controller
         string GetIPAdress();
         int GetPort();
         string GetVendor();
+        void SetVendor(string Vendor);
         string GetPortName();
         int GetBaudRate();
         string GetStatus();

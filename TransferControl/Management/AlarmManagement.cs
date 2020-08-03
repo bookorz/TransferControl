@@ -62,10 +62,25 @@ namespace TransferControl.Management
                     }
                     else
                     {
-                        result.vendor = "";
-                        result.errDesc = "Error code 不存在";
-                        result.errorCode = ErrorCode;
-                        result.isAlert = true;
+
+                        find = from alm in AlarmData
+                               where (alm.vendor.ToUpper().Equals(Node.Vendor.ToUpper()) && alm.errorCode.Substring(0,5).ToUpper().Equals(ErrorCode.Substring(0, 5).ToUpper()))
+                               select alm;
+                        if (find.Count() != 0)
+                        {
+                            result.vendor = find.First().vendor;
+                            result.errorCode = ErrorCode;
+                            result.errDesc = find.First().errDesc;
+                            result.isAlert = find.First().isAlert;
+                        }
+                        else
+                        {
+
+                            result.vendor = "";
+                            result.errDesc = "Error code 不存在";
+                            result.errorCode = ErrorCode;
+                            result.isAlert = true;
+                        }
                     }
                 }catch(Exception e)
                 {

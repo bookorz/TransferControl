@@ -21,7 +21,7 @@ namespace TransferControl.CommandConvert
 
             try
             {
-               switch (Supplier)
+                switch (Supplier)
                 {
                     case "SANWA_MC":
                         result = SANWA_MCCodeAnalysis(Message);
@@ -91,14 +91,14 @@ namespace TransferControl.CommandConvert
                 result = new List<CommandReturnMessage>();
                 CommandReturnMessage msg = new CommandReturnMessage();
                 msg.Type = CommandReturnMessage.ReturnType.Excuted;
-                msg.Value = Message.Substring(Message.IndexOf("FB0000")+6, Message.IndexOf((char)3)==-1? Message.Length- (Message.IndexOf("FB0000") + 6) : Message.IndexOf((char)3)-( Message.IndexOf("FB0000") + 6));
+                msg.Value = Message.Substring(Message.IndexOf("FB0000") + 6, Message.IndexOf((char)3) == -1 ? Message.Length - (Message.IndexOf("FB0000") + 6) : Message.IndexOf((char)3) - (Message.IndexOf("FB0000") + 6));
                 msg.OrgMsg = Message;
                 result.Add(msg);
             }
             catch (Exception ex)
             {
-                
-                throw new Exception(Message+":"+ex.ToString());
+
+                throw new Exception(Message + ":" + ex.ToString());
             }
 
             return result;
@@ -245,25 +245,24 @@ namespace TransferControl.CommandConvert
             try
             {
                 result = new List<CommandReturnMessage>();
-                
-                while (true)
+
+
+                CommandReturnMessage r = new CommandReturnMessage();
+                if (Message[0] == (char)4)
                 {
-                    CommandReturnMessage r = new CommandReturnMessage();
-                    if (Message[0] == (char)4)
-                    {
-                        r.Type = CommandReturnMessage.ReturnType.Excuted;
-                    }
-                    else if (Message[0] == (char)6)
-                    {
-                        r.Type = CommandReturnMessage.ReturnType.Excuted;
-                    }
-                    else
-                    {
-                        r.Type = CommandReturnMessage.ReturnType.Event;
-                        r.Value = Message;
-                    }
-                    result.Add(r);
+                    r.Type = CommandReturnMessage.ReturnType.Excuted;
                 }
+                else if (Message[0] == (char)6 || Message[0] == (char)5)
+                {
+                    r.Type = CommandReturnMessage.ReturnType.Information;
+                }
+                else
+                {
+                    r.Type = CommandReturnMessage.ReturnType.Finished;
+                    r.Value = Message;
+                }
+                result.Add(r);
+
             }
             catch (Exception ex)
             {
@@ -495,7 +494,7 @@ namespace TransferControl.CommandConvert
                                     case "MCR":
                                     case "SET":
                                         each.Command = content[i];
-                                        
+
                                         each.Type = CommandReturnMessage.ReturnType.Sending;
                                         break;
                                     case "EVT":
@@ -554,7 +553,7 @@ namespace TransferControl.CommandConvert
                                                 {
                                                     each.Type = CommandReturnMessage.ReturnType.Error;
                                                 }
-                                                
+
                                             }
 
                                         }

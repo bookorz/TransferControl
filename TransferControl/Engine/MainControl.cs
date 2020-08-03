@@ -129,7 +129,7 @@ namespace TransferControl.Engine
                         switch (Txn.Method)
                         {
                             case Transaction.Command.SmartTagType.GetLCDData:
-                                Node.Carrier.CarrierID = Msg.Value;
+                                Node.FoupID = Msg.Value;
                                 break;
                         }
                         break;
