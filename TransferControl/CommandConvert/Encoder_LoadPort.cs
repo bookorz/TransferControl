@@ -1326,7 +1326,32 @@ namespace TransferControl.CommandConvert
             }
             return commandStr + EndCode();
         }
-
+        public string Lift(CommandType commandType)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    commandStr = "$1MCR:LIFT_:1,1";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
+        public string UnLift(CommandType commandType)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    commandStr = "$1MCR:LIFT_:1,0";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
         /// <summary>
         ///  Load Port Undock
         /// </summary>

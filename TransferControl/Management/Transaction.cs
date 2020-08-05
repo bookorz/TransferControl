@@ -237,6 +237,8 @@ namespace TransferControl.Management
                 public const string GetCount = "GetCount";
                 public const string UnClamp = "UnClamp";
                 public const string Clamp = "Clamp";
+                public const string Lift = "Lift";
+                public const string UnLift = "UnLift";
                 public const string UnDock = "UnDock";
                 public const string Dock = "Dock";
                 public const string VacuumOFF = "VacuumOFF";

@@ -49,7 +49,15 @@ namespace TransferControl.Parser
                     case 6:
                         result.Add("PRTST", tmp[i] == "0" ? "LK" : "UNLK");
                         break;
-                    
+                    case 7:
+                        result.Add("POS", tmp[i] == "0" ? "LK" : "UNLK");
+                        break;
+                    case 11:
+                        result.Add("LPS", tmp[i] == "0" ? "FALSE" : "TRUE");
+                        break;
+                    case 12:
+                        result.Add("LLS", tmp[i] == "0" ? "FALSE" : "TRUE");
+                        break;
                     default:
                         result.Add("SHELF" + (idx - 5).ToString(), tmp[i]);
                         break;

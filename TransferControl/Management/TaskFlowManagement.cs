@@ -30,6 +30,7 @@ namespace TransferControl.Management
             public int CurrentIndex = 0;
             public bool Finished = false;
             public bool HasError = false;
+            public bool IsSubTask = false;
             public TaskState State = TaskState.None;
 
             
@@ -166,6 +167,7 @@ namespace TransferControl.Management
             
                     result.Id = uid;
                     result.MainTaskId = TaskId.Equals("") ? MainTaskId : TaskId;
+                    result.IsSubTask = TaskId.Equals("");
                     result.Params = param;
                     result.TaskName = TaskName;
                 }
@@ -345,6 +347,8 @@ namespace TransferControl.Management
             LOADPORT_READYTOLOAD,
             LOADPORT_CLAMP,
             LOADPORT_UNCLAMP,
+            LOADPORT_LIFT,
+            LOADPORT_UNLIFT,
             LOADPORT_DOCK,
             LOADPORT_UNDOCK,
             LOADPORT_DOOR_CLOSE,

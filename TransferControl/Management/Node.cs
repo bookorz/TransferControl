@@ -1179,6 +1179,14 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.FOUPClampFix(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
                                 break;
+                            case Transaction.Command.LoadPortType.Lift:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Lift(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;
+                            case Transaction.Command.LoadPortType.UnLift:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.UnLift(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;
                             case Transaction.Command.LoadPortType.Dock:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Dock(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";

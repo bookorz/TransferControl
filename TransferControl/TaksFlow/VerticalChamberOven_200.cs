@@ -38,7 +38,8 @@ namespace TransferControl.TaksFlow
             }
             if (TaskJob.CurrentIndex == 0 && TaskJob.TaskName.ToString().IndexOf("CCLINK") == -1)
             {
-                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() + " Executing");
+                
+                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString()+ " " + (TaskJob.Params.ContainsKey("@Target")?TaskJob.Params["@Target"]:"") + " Executing");
             }
             string Message = "";
             Node Target = null;
@@ -107,6 +108,30 @@ namespace TransferControl.TaksFlow
                         }
                         break;
                     case TaskFlowManagement.Command.LOADPORT_CLAMP:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Clamp }));
+
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+                    case TaskFlowManagement.Command.LOADPORT_LIFT:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Lift }));
+
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+                    case TaskFlowManagement.Command.LOADPORT_UNLIFT:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -214,7 +239,7 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
 
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params,"",TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, Target, "TASK_ABORT");
@@ -223,7 +248,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, Target, "TASK_ABORT");
@@ -232,7 +257,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //    //中止Task
                                     AbortTask(TaskJob, Target, "TASK_ABORT");
@@ -241,7 +266,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 4:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, Target, "TASK_ABORT");
@@ -260,7 +285,7 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 TaskJob.Params.Add("@Command", "1");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -269,7 +294,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -278,7 +303,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -287,7 +312,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -306,7 +331,7 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 TaskJob.Params.Add("@Command", "2");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -315,7 +340,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -324,7 +349,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -333,7 +358,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -360,7 +385,7 @@ namespace TransferControl.TaksFlow
                                 }
 
                                 TaskJob.Params.Add("@Command", "3");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -369,7 +394,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -378,7 +403,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -387,7 +412,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -415,7 +440,7 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 TaskJob.Params.Add("@Command", "4");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -424,7 +449,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -433,7 +458,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -442,7 +467,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -468,7 +493,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 TaskJob.Params.Add("@Command", "5");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -477,7 +502,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -486,7 +511,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -495,7 +520,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -523,7 +548,7 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 TaskJob.Params.Add("@Command", "6");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -532,7 +557,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -541,7 +566,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -550,7 +575,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -569,7 +594,7 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 TaskJob.Params.Add("@Command", "12");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -578,7 +603,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -587,7 +612,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -596,7 +621,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -615,7 +640,7 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 TaskJob.Params.Add("@Command", "13");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -624,7 +649,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -633,7 +658,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -642,7 +667,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -661,7 +686,7 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 TaskJob.Params.Add("@Command", "16");
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -670,7 +695,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 1:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -679,7 +704,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -688,7 +713,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 3:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -802,7 +827,7 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_POWER_ON, TaskJob.Params).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_POWER_ON, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, Target, "TASK_ABORT");
@@ -1007,7 +1032,7 @@ namespace TransferControl.TaksFlow
             }
             catch (Exception e)
             {
-                logger.Error("Excute fail Task Name:" + TaskJob.TaskName.ToString() + " exception: " + e.StackTrace);
+                logger.Error("Excute fail Task Name:" + TaskJob.TaskName.ToString() + " " + (TaskJob.Params.ContainsKey("@Target") ? TaskJob.Params["@Target"] : "") + " exception: " + e.StackTrace);
                 AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), e.StackTrace);
                 return;
             }
@@ -1018,14 +1043,14 @@ namespace TransferControl.TaksFlow
             _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(Node, Message));
 
             _TaskReport.On_TaskJob_Aborted(TaskJob);
-            _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() + " Aborted");
+            _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() + " " + (TaskJob.Params.ContainsKey("@Target") ? TaskJob.Params["@Target"] : "") + " Aborted");
 
         }
         private void FinishTask(TaskFlowManagement.CurrentProcessTask TaskJob)
         {
             if (TaskJob.TaskName.ToString().IndexOf("CCLINK") == -1)
             {
-                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() + " Finished");
+                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() +" "+ (TaskJob.Params.ContainsKey("@Target") ? TaskJob.Params["@Target"] : "") + " Finished");
             }
             _TaskReport.On_TaskJob_Finished(TaskJob);
 
@@ -1040,6 +1065,7 @@ namespace TransferControl.TaksFlow
         private bool CheckPresence(Node Target,int Pos,int State)
         {
             bool result = true;
+            string OrgPos = Pos.ToString();
             if (Pos <= 12)
             {
                 Pos = (Pos - 1) * 2;
@@ -1059,12 +1085,12 @@ namespace TransferControl.TaksFlow
 
             if (Target.GetIO("PRESENCE")[Pos] != State)
             {
-                _TaskReport.On_Message_Log("CMD", "Shelf_" + Pos + "_1 presence error");
+                _TaskReport.On_Message_Log("CMD", "Shelf_" + OrgPos + "_1 presence error");
                 result = false;
             }
             if (Target.GetIO("PRESENCE")[Pos + 1] != State)
             { 
-                _TaskReport.On_Message_Log("CMD", "Shelf_" + Pos + "_2 presence error");
+                _TaskReport.On_Message_Log("CMD", "Shelf_" + OrgPos + "_2 presence error");
                 result = false;
             }
             return result;
