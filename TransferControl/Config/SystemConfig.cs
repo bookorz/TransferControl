@@ -9,7 +9,6 @@ namespace TransferControl.Config
     public class SystemConfig
     {
         private static SystemConfig Content;
-        public string DBConnectionString { get; set; }
         public string OCR1ImgSourcePath { get; set; }
         public string OCR1ImgToJpgPath { get; set; }
         public string OCR2ImgSourcePath { get; set; }

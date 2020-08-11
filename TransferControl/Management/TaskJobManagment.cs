@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using LiteDB;
+using log4net;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -19,7 +20,7 @@ namespace TransferControl.Management
         ILog logger = LogManager.GetLogger(typeof(TaskJobManagment));
         ConcurrentDictionary<string, List<TaskJob>> TaskJobList;
         ConcurrentDictionary<string, CurrentProceedTask> CurrentProceedTasks;
-        private DBUtil dBUtil = new DBUtil();
+       // private DBUtil dBUtil = new DBUtil();
         ITaskJobReport _TaskReport;
         bool SaftyCheckByPass = true;
 
@@ -43,14 +44,22 @@ namespace TransferControl.Management
             TaskJobList = new ConcurrentDictionary<string, List<TaskJob>>();
             CurrentProceedTasks = new ConcurrentDictionary<string, CurrentProceedTask>();
 
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            string Sql = @"SELECT t.task_name as TaskName,t.excute_obj as ExcuteObj, t.check_condition as CheckCondition, t.task_index as TaskIndex,t.skip_condition as SkipCondition,t.is_safety_check as IsSafetyCheck
-                            FROM config_task_job t WHERE t.equipment_model_id = @equipment_model_id";
-            keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
-            DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
+            //Dictionary<string, object> keyValues = new Dictionary<string, object>();
+            //string Sql = @"SELECT t.task_name as TaskName,t.excute_obj as ExcuteObj, t.check_condition as CheckCondition, t.task_index as TaskIndex,t.skip_condition as SkipCondition,t.is_safety_check as IsSafetyCheck
+            //                FROM config_task_job t WHERE t.equipment_model_id = @equipment_model_id";
+            //keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
+            //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
 
-            List<TaskJob> tJList = JsonConvert.DeserializeObject<List<TaskJob>>(str_json);
+            //List<TaskJob> tJList = JsonConvert.DeserializeObject<List<TaskJob>>(str_json);
+            List<TaskJob> tJList = null;
+            using (var db = new LiteDatabase(@"MyData.db"))
+            {
+                // Get customer collection
+                var col = db.GetCollection<TaskJob>("config_task_job");
+                var result = col.Query().Where(x => x.equipment_model_id.Equals(SystemConfig.Get().SystemMode));
+                tJList = result.ToList();
+            }
             List<TaskJob> tmp;
 
             foreach (TaskJob each in tJList)

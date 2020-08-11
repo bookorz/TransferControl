@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using LiteDB;
+using log4net;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,20 +17,26 @@ namespace TransferControl.Management
     {
 
         ILog logger = LogManager.GetLogger(typeof(Node));
+        [BsonField("ack_timeout")]
         public int AckTimeOut { get; set; }
+        [BsonField("motion_timeout")]
         public int MotionTimeOut { get; set; }
         public string ConnectionStatus { get; set; }
+        public string equipment_model_id { get; set; }
         /// <summary>
         /// 名稱
         /// </summary>
+        [BsonField("node_id")]
         public string Name { get; set; }
         /// <summary>
         /// 目前使用的Controoler名稱
         /// </summary>
+          [BsonField("controller_id")]
         public string Controller { get; set; }
         /// <summary>
         /// Address Number
         /// </summary>
+        [BsonField("conn_address")]
         public string AdrNo { get; set; }
         /// <summary>
         /// Node 類型
@@ -38,6 +45,7 @@ namespace TransferControl.Management
         /// <summary>
         /// 廠牌
         /// </summary>
+               [BsonField("vendor")]
         public string Brand { get; set; }
         /// <summary>
         /// LoadPort專用，目前取片中
@@ -67,6 +75,7 @@ namespace TransferControl.Management
         /// <summary>
         /// 啟用或停用此Node
         /// </summary>
+        [BsonField("enable_flg")]
         public bool Enable { get; set; }
         /// <summary>
         /// Robot專用，未來需要此Robot，還沒有搬送的數量
@@ -161,7 +170,7 @@ namespace TransferControl.Management
 
         //Demo用Condition
         public bool PortUnloadAndLoadFinished { get; set; }
-
+        [BsonField("carrier_type")]
         public string CarrierType { get; set; }
 
         public bool Busy { get; set; }
@@ -171,13 +180,13 @@ namespace TransferControl.Management
         public string LastFinMethod { get; set; }
 
         public bool WaitForFinish { get; set; }
-
+        [BsonField("wafer_size")]
         public string WaferSize { get; set; }
-
+        [BsonField("Double_Arm")]
         public bool DoubleArmActive { get; set; }
-
+        [BsonField("r_arm")]
         public bool RArmActive { get; set; }
-
+        [BsonField("l_arm")]
         public bool LArmActive { get; set; }
 
         public int CarryCount { get; set; }
@@ -191,7 +200,7 @@ namespace TransferControl.Management
         public string ErrorMsg { get; set; }
 
         public string DesignatesAngle { get; set; }
-
+        [BsonField("Notch_Angle")]
         public int NotchAngle { get; set; }
 
         public string MappingResult { get; set; }
@@ -300,7 +309,7 @@ namespace TransferControl.Management
         public Dictionary<string, string> Status { get; set; }
         public Dictionary<string, string> IO { get; set; }
         public Dictionary<string, ActionRequest> RequestQueue = new Dictionary<string, ActionRequest>();
-        private static DBUtil dBUtil = new DBUtil();
+        //private static DBUtil dBUtil = new DBUtil();
         public Carrier Carrier { get; set; }
         public int RobotGetState { get; set; }
         public int RobotPutState { get; set; }

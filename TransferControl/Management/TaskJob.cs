@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LiteDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,11 +9,18 @@ namespace TransferControl.Management
 {
     public class TaskJob
     {
+        public string equipment_model_id { get; set; }
+        [BsonField("task_name")]
         public string TaskName { get; set; }
+        [BsonField("excute_obj")]
         public string ExcuteObj { get; set; }
+        [BsonField("check_condition")]
         public string CheckCondition { get; set; }
+        [BsonField("skip_condition")]
         public string SkipCondition { get; set; }
+        [BsonField("is_safety_check")]
         public bool IsSafetyCheck { get; set; }
+        [BsonField("task_index")]
         public int TaskIndex { get; set; }
         public class Excuted
         {
@@ -23,6 +31,6 @@ namespace TransferControl.Management
             public Transaction Txn { get; set; }
             public string FinishTrigger { get; set; }
             public bool Finished = false;
-        }        
+        }
     }
 }

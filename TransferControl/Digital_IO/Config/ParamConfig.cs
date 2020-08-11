@@ -1,9 +1,14 @@
-﻿using System;
+﻿using LiteDB;
+using Newtonsoft.Json;
+using System;
 
 namespace TransferControl.Digital_IO.Config
 {
     class ParamConfig
     {
+      
+        public string equipment_model_id { get; set; }
+        [BsonField("dioname")]
         public string DeviceName { get; set; }
         public string Type { get; set; }
         public string Address { get; set; }

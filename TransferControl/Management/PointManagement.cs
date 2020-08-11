@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using LiteDB;
+using log4net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;
@@ -13,19 +14,26 @@ namespace TransferControl.Management
         public static Dictionary<string, List<RobotPoint>> PointList;
         static ILog logger = LogManager.GetLogger(typeof(PointManagement));
 
-        private static DBUtil dBUtil = new DBUtil();
+       // private static DBUtil dBUtil = new DBUtil();
         public static void LoadConfig()
         {
             PointList = new Dictionary<string, List<RobotPoint>>();
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            string Sql = @"SELECT t.recipe_id AS RecipeID,t.node_name AS NodeName,t.position AS POSITION,t.position_type AS PositionType,t.point as Point, t.`offset` as Offset 
-                            FROM config_point t 
-                            WHERE t.equipment_model_id = @equipment_model_id";
-            keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
-            DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
-            List<RobotPoint> cmdScpList = JsonConvert.DeserializeObject<List<RobotPoint>>(str_json);
-
+            //Dictionary<string, object> keyValues = new Dictionary<string, object>();
+            //string Sql = @"SELECT t.recipe_id AS RecipeID,t.node_name AS NodeName,t.position AS POSITION,t.position_type AS PositionType,t.point as Point, t.`offset` as Offset 
+            //                FROM config_point t 
+            //                WHERE t.equipment_model_id = @equipment_model_id";
+            //keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
+            //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
+            //List<RobotPoint> cmdScpList = JsonConvert.DeserializeObject<List<RobotPoint>>(str_json);
+            List<RobotPoint> cmdScpList = null;
+            using (var db = new LiteDatabase(@"MyData.db"))
+            {
+                // Get customer collection
+                var col = db.GetCollection<RobotPoint>("config_point");
+                var result = col.Query().Where(x => x.equipment_model_id.Equals(SystemConfig.Get().SystemMode));
+                cmdScpList = result.ToList();
+            }
             List<RobotPoint> tmp;
             foreach (RobotPoint each in cmdScpList)
             {

@@ -1,4 +1,5 @@
 ﻿
+using LiteDB;
 using log4net;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
@@ -16,46 +17,53 @@ namespace TransferControl.Management
         private static ConcurrentDictionary<string, Node> NodeListByCtrl;
         static ILog logger = LogManager.GetLogger(typeof(NodeManagement));
 
-        private static DBUtil dBUtil = new DBUtil();
+   
 
         public static void LoadConfig()
         {
             NodeList = new ConcurrentDictionary<string, Node>();
             NodeListByCtrl = new ConcurrentDictionary<string, Node>();
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            string Sql = @"SELECT 
-	                        UPPER(t.node_id) AS name, UPPER(t.controller_id) AS controller,
-	                        t.conn_address AS adrno, UPPER(t.node_type) AS TYPE, 
-	                        UPPER(t.vendor) AS brand,t.bypass,t.enable_flg AS ENABLE,                        
-	                        t.wafer_size as WaferSize,
-                            t.Double_Arm as DoubleArmActive,
-                            t.Notch_Angle as NotchAngle,
-                            t.R_Flip_Degree as R_Flip_Degree,
-                            t.associated_node as Associated_Node,
-                            t.r_arm as RArmActive,
-                            t.l_arm as LArmActive,
-                            t.carrier_type AS CarrierType,
-                            t.mode as Mode,
-                            t.ack_timeout as AckTimeOut,
-                            t.motion_timeout as MotionTimeOut
-                        FROM config_node t
-                        WHERE t.equipment_model_id = @equipment_model_id";
-            keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
-            DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
-            //str_json = str_json.Replace("\"[", "[").Replace("]\"", "]").Replace("\\\"", "\"");
-            List<Node> nodeList = JsonConvert.DeserializeObject<List<Node>>(str_json);
-
-            foreach (Node each in nodeList)
+            //Dictionary<string, object> keyValues = new Dictionary<string, object>();
+            //string Sql = @"SELECT 
+            //             UPPER(t.node_id) AS name, UPPER(t.controller_id) AS controller,
+            //             t.conn_address AS adrno, UPPER(t.node_type) AS TYPE, 
+            //             UPPER(t.vendor) AS brand,t.bypass,t.enable_flg AS ENABLE,                        
+            //             t.wafer_size as WaferSize,
+            //                t.Double_Arm as DoubleArmActive,
+            //                t.Notch_Angle as NotchAngle,
+            //                t.R_Flip_Degree as R_Flip_Degree,
+            //                t.associated_node as Associated_Node,
+            //                t.r_arm as RArmActive,
+            //                t.l_arm as LArmActive,
+            //                t.carrier_type AS CarrierType,
+            //                t.mode as Mode,
+            //                t.ack_timeout as AckTimeOut,
+            //                t.motion_timeout as MotionTimeOut
+            //            FROM config_node t
+            //            WHERE t.equipment_model_id = @equipment_model_id";
+            //keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
+            //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
+            ////str_json = str_json.Replace("\"[", "[").Replace("]\"", "]").Replace("\\\"", "\"");
+            //List<Node> nodeList = JsonConvert.DeserializeObject<List<Node>>(str_json);
+            using (var db = new LiteDatabase(@"MyData.db"))
             {
-                //if (each.Enable)
-                //{
+                // Get customer collection
+                var col = db.GetCollection<Node>("config_node");
+                var result = col.Query().Where(x => x.equipment_model_id.Equals(SystemConfig.Get().SystemMode) );
+                List<Node> cfgList = result.ToList();
+
+
+                foreach (Node each in cfgList)
+                {
+                    //if (each.Enable)
+                    //{
                     each.InitialObject();
                     NodeList.TryAdd(each.Name, each);
                     NodeListByCtrl.TryAdd(each.Controller + each.AdrNo, each);
-                //}
+                    //}
+                }
             }
-
         }
 
         public static void InitialNodes()

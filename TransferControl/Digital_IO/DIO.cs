@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using LiteDB;
+using log4net;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -20,7 +21,7 @@ namespace TransferControl.Digital_IO
         ConcurrentDictionary<string, IDIOController> Ctrls;
         ConcurrentDictionary<string, ParamConfig> Params;
         ConcurrentDictionary<string, ParamConfig> Controls;
-        private static DBUtil dBUtil = new DBUtil();
+        //private static DBUtil dBUtil = new DBUtil();
 
         public DIO(IDIOTriggerReport ReportTarget)
         {
@@ -45,24 +46,43 @@ namespace TransferControl.Digital_IO
                 each.Close();
             }
         }
+        public class config_controller_setting
+        {
+            public string equipment_model_id { get; set; }
+            public string device_name { get; set; }
+            public string vendor { get; set; }
+            public string device_type { get; set; }
+            public string conn_address { get; set; }
+            public string conn_type { get; set; }
+            public string conn_port { get; set; }
+            public bool enable_flg { get; set; }
+            public string controller_type { get; set; }
 
+        }
         public void Initial()
         {
             Ctrls = new ConcurrentDictionary<string, IDIOController>();
             Params = new ConcurrentDictionary<string, ParamConfig>();
             Controls = new ConcurrentDictionary<string, ParamConfig>();
-            Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //Dictionary<string, object> keyValues = new Dictionary<string, object>();
+            ////keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
+            //DataTable dt = new DataTable();
 
 
+            //string Sql = @"select t.dioname DeviceName,t.`type` 'Type',t.address ,upper(t.Parameter) Parameter,t.abnormal,t.error_code  from config_dio_point t
+            ////        where  t.equipment_model_id = @equipment_model_id";
+            ////DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
+            //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
 
-            string Sql = @"select t.dioname DeviceName,t.`type` 'Type',t.address ,upper(t.Parameter) Parameter,t.abnormal,t.error_code  from config_dio_point t
-                    where  t.equipment_model_id = @equipment_model_id";
-            DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
-
-            List<ParamConfig> ParamList = JsonConvert.DeserializeObject<List<ParamConfig>>(str_json);
-
+            //List<ParamConfig> ParamList = JsonConvert.DeserializeObject<List<ParamConfig>>(str_json);
+            List<ParamConfig> ParamList = null;
+            using (var db = new LiteDatabase(@"MyData.db"))
+            {
+                // Get customer collection
+                var col = db.GetCollection<ParamConfig>("config_dio_point");
+                var result = col.Query().Where(x => x.equipment_model_id.Equals(SystemConfig.Get().SystemMode));
+                ParamList = result.ToList();
+            }
 
             foreach (ParamConfig each in ParamList)
             {
@@ -79,21 +99,51 @@ namespace TransferControl.Digital_IO
                 }
             }
 
-            Sql = @"SELECT t.device_name as DeviceName,t.device_type as DeviceType,t.vendor as vendor,
-                            case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
-                            case when t.conn_type = 'Socket' then  CONVERT(t.conn_port,SIGNED) else 0 end as Port ,
-                            case when t.conn_type = 'Comport' then   CONVERT(t.conn_port,SIGNED) else 0 end as BaudRate ,
-                            case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,             
-                            t.conn_type as ConnectionType,
-                            t.enable_flg as Enable
-                            FROM config_controller_setting t
-                            WHERE t.equipment_model_id = @equipment_model_id
-                            AND t.device_type = 'DIO'";
+            //Sql = @"SELECT t.device_name as DeviceName,t.device_type as DeviceType,t.vendor as vendor,
+            //                case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
+            //                case when t.conn_type = 'Socket' then  CONVERT(t.conn_port,SIGNED) else 0 end as Port ,
+            //                case when t.conn_type = 'Comport' then   CONVERT(t.conn_port,SIGNED) else 0 end as BaudRate ,
+            //                case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,             
+            //                t.conn_type as ConnectionType,
+            //                t.enable_flg as Enable
+            //                FROM config_controller_setting t
+            //                WHERE t.equipment_model_id = @equipment_model_id
+            //                AND t.device_type = 'DIO'";
 
-            dt = dBUtil.GetDataTable(Sql, keyValues);
-            str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
+            //dt = dBUtil.GetDataTable(Sql, keyValues);
+            //str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
 
-            List<CtrlConfig> ctrlList = JsonConvert.DeserializeObject<List<CtrlConfig>>(str_json);
+            //List<CtrlConfig> ctrlList = JsonConvert.DeserializeObject<List<CtrlConfig>>(str_json);
+            List<CtrlConfig> ctrlList = new List<CtrlConfig>();
+            using (var db = new LiteDatabase(@"MyData.db"))
+            {
+                // Get customer collection
+                var col = db.GetCollection<config_controller_setting>("config_controller_setting");
+                var result = col.Query().Where(x => x.equipment_model_id.Equals("SACHIEL") && x.device_type.Equals("DIO"));
+
+                List<config_controller_setting> dddlList = result.ToList();
+                foreach(config_controller_setting each in dddlList)
+                {
+                    CtrlConfig tmp = new CtrlConfig();
+                    tmp.DeviceName = each.device_name;
+                    tmp.DeviceType = each.device_type;
+                    tmp.Enable = each.enable_flg;
+                    tmp.Vendor = each.vendor;
+                    tmp.ConnectionType = each.conn_type;
+                    if (each.conn_type.Equals("Socket"))
+                    {
+                        tmp.IPAdress = each.conn_address;
+                        tmp.Port = Convert.ToInt16(each.conn_port);
+                    }
+                    else if (each.conn_type.Equals("Comport"))
+                    {
+                        tmp.PortName = each.conn_address;
+                        tmp.BaudRate = Convert.ToInt16(each.conn_port);
+                    }
+                    ctrlList.Add(tmp);
+                }
+            }
+            
             // List<CtrlConfig> ctrlList = new List<CtrlConfig>();
             foreach (CtrlConfig each in ctrlList)
             {
