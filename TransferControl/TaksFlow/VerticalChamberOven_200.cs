@@ -38,8 +38,8 @@ namespace TransferControl.TaksFlow
             }
             if (TaskJob.CurrentIndex == 0 && TaskJob.TaskName.ToString().IndexOf("CCLINK") == -1)
             {
-                
-                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString()+ " " + (TaskJob.Params.ContainsKey("@Target")?TaskJob.Params["@Target"]:"") + " Executing");
+
+                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() + " " + (TaskJob.Params.ContainsKey("@Target") ? TaskJob.Params["@Target"] : "") + " Executing");
             }
             string Message = "";
             Node Target = null;
@@ -77,6 +77,15 @@ namespace TransferControl.TaksFlow
                             case 0:
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
 
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", Target.Name } }, "", TaskJob.MainTaskId).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -135,7 +144,7 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Clamp }));
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnLift }));
 
                                 break;
                             default:
@@ -204,13 +213,33 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
+                    case TaskFlowManagement.Command.LOADPORT_READ_STATUS:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
 
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.CLOSE_FOUP:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
 
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", Target.Name } }, "", TaskJob.MainTaskId).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -224,6 +253,15 @@ namespace TransferControl.TaksFlow
                             case 0:
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.LoadWithLift }));
 
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", Target.Name } }, "", TaskJob.MainTaskId).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -239,7 +277,7 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
 
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params,"",TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, Target, "TASK_ABORT");
@@ -376,7 +414,41 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]),0))
+                                if (Convert.ToInt32(TaskJob.Params["@Position"]) == 22)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF1" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+                                    if (!NodeManagement.Get("SMIF1").Status["POS"].Equals("3") || !NodeManagement.Get("SMIF1").Status["LPS"].Equals("TRUE") || !NodeManagement.Get("SMIF1").Status["LLS"].Equals("TRUE"))
+                                    {
+                                        _TaskReport.On_Message_Log("CMD", "SMIF1 presence error");
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+                                    }
+                                }
+                                else if (Convert.ToInt32(TaskJob.Params["@Position"]) == 23)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF2" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+                                    if (!NodeManagement.Get("SMIF2").Status["POS"].Equals("3") || !NodeManagement.Get("SMIF2").Status["LPS"].Equals("TRUE") || !NodeManagement.Get("SMIF2").Status["LLS"].Equals("TRUE"))
+                                    {
+                                        _TaskReport.On_Message_Log("CMD", "SMIF2 presence error");
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+                                    }
+                                }
+                                break;
+                            case 1:
+                                if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]), 0))
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
@@ -393,7 +465,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 1:
+                            case 2:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
@@ -402,7 +474,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 2:
+                            case 3:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
@@ -411,7 +483,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 3:
+                            case 4:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
@@ -420,7 +492,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 4:
+                            case 5:
                                 if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]), 1))
                                 {
                                     //中止Task
@@ -428,6 +500,31 @@ namespace TransferControl.TaksFlow
 
                                     break;
                                 }
+                                break;
+                            case 6:
+                                if (Convert.ToInt32(TaskJob.Params["@Position"]) == 22)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF1" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+
+                                }
+                                else if (Convert.ToInt32(TaskJob.Params["@Position"]) == 23)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF2" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+
+                                }
+
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -485,6 +582,40 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+                                if (Convert.ToInt32(TaskJob.Params["@Position"]) == 22)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF1" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+                                    if (!NodeManagement.Get("SMIF1").Status["POS"].Equals("3") || !NodeManagement.Get("SMIF1").Status["LPS"].Equals("FALSE") || !NodeManagement.Get("SMIF1").Status["LLS"].Equals("TRUE"))
+                                    {
+                                        _TaskReport.On_Message_Log("CMD", "SMIF1 presence error");
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+                                    }
+                                }
+                                else if (Convert.ToInt32(TaskJob.Params["@Position"]) == 23)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF2" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+                                    if (!NodeManagement.Get("SMIF2").Status["POS"].Equals("3") || !NodeManagement.Get("SMIF2").Status["LPS"].Equals("FALSE") || !NodeManagement.Get("SMIF2").Status["LLS"].Equals("TRUE"))
+                                    {
+                                        _TaskReport.On_Message_Log("CMD", "SMIF2 presence error");
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+                                    }
+                                }
+                                break;
+                            case 1:
                                 if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]), 1))
                                 {
                                     //中止Task
@@ -492,6 +623,7 @@ namespace TransferControl.TaksFlow
 
                                     break;
                                 }
+                                
                                 TaskJob.Params.Add("@Command", "5");
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
@@ -501,7 +633,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 1:
+                            case 2:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
@@ -510,7 +642,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 2:
+                            case 3:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
@@ -519,7 +651,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 3:
+                            case 4:
                                 if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
@@ -528,7 +660,7 @@ namespace TransferControl.TaksFlow
                                     break;
                                 }
                                 break;
-                            case 4:
+                            case 5:
                                 if (!CheckPresence(Target, Convert.ToInt32(TaskJob.Params["@Position"]), 0))
                                 {
                                     //中止Task
@@ -536,6 +668,31 @@ namespace TransferControl.TaksFlow
 
                                     break;
                                 }
+                                break;
+                            case 6:
+                                if (Convert.ToInt32(TaskJob.Params["@Position"]) == 22)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF1" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+
+                                }
+                                else if (Convert.ToInt32(TaskJob.Params["@Position"]) == 23)
+                                {
+                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF2" } }, "", TaskJob.MainTaskId).Promise())
+                                    {
+                                        //中止Task
+                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                        break;
+                                    }
+
+                                }
+
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -748,7 +905,7 @@ namespace TransferControl.TaksFlow
                         string SpeedStr = TaskJob.Params["@Speed"];
                         double Speed = (int)Math.Round(Convert.ToDouble(SpeedStr));
                         int digit10 = (int)(Speed / Math.Pow(10, 1) % 10);
-                        binaryStr = Convert.ToString(digit10==0?10:digit10, 2).PadLeft(4, '0');
+                        binaryStr = Convert.ToString(digit10 == 0 ? 10 : digit10, 2).PadLeft(4, '0');
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -1050,7 +1207,7 @@ namespace TransferControl.TaksFlow
         {
             if (TaskJob.TaskName.ToString().IndexOf("CCLINK") == -1)
             {
-                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() +" "+ (TaskJob.Params.ContainsKey("@Target") ? TaskJob.Params["@Target"] : "") + " Finished");
+                _TaskReport.On_Message_Log("CMD", TaskJob.TaskName.ToString() + " " + (TaskJob.Params.ContainsKey("@Target") ? TaskJob.Params["@Target"] : "") + " Finished");
             }
             _TaskReport.On_TaskJob_Finished(TaskJob);
 
@@ -1062,7 +1219,7 @@ namespace TransferControl.TaksFlow
             return Target.GetIO(Area)[Pos];
         }
 
-        private bool CheckPresence(Node Target,int Pos,int State)
+        private bool CheckPresence(Node Target, int Pos, int State)
         {
             bool result = true;
             string OrgPos = Pos.ToString();
@@ -1089,7 +1246,7 @@ namespace TransferControl.TaksFlow
                 result = false;
             }
             if (Target.GetIO("PRESENCE")[Pos + 1] != State)
-            { 
+            {
                 _TaskReport.On_Message_Log("CMD", "Shelf_" + OrgPos + "_2 presence error");
                 result = false;
             }

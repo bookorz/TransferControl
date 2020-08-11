@@ -31,8 +31,8 @@ namespace TransferControl.Parser
             string[] tmp = Message.Split(',');
             for (int i = 0; i < tmp.Length; i++)
             {
-                int idx = i + 1;
-                switch (idx)
+                //int idx = i + 1;
+                switch (i)
                 {
                     case 1:
                         
@@ -43,24 +43,22 @@ namespace TransferControl.Parser
                     case 3:
                        
                         break;
-                    case 5:
+                    case 4:
                         result.Add("PIP", tmp[i]=="1"?"TRUE":"FALSE");
                         break;
-                    case 6:
+                    case 5:
                         result.Add("PRTST", tmp[i] == "0" ? "LK" : "UNLK");
                         break;
-                    case 7:
-                        result.Add("POS", tmp[i] == "0" ? "LK" : "UNLK");
+                    case 6:
+                        result.Add("POS", tmp[i].ToString());
                         break;
-                    case 11:
+                    case 10:
                         result.Add("LPS", tmp[i] == "0" ? "FALSE" : "TRUE");
                         break;
-                    case 12:
+                    case 11:
                         result.Add("LLS", tmp[i] == "0" ? "FALSE" : "TRUE");
                         break;
-                    default:
-                        result.Add("SHELF" + (idx - 5).ToString(), tmp[i]);
-                        break;
+                    
                 }
             }
             return result;
