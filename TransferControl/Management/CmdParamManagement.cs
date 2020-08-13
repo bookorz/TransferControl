@@ -1,8 +1,10 @@
-﻿using log4net;
+﻿using LiteDB;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using TransferControl.Comm;
+using TransferControl.Config;
 
 namespace TransferControl.Management
 {
@@ -10,11 +12,16 @@ namespace TransferControl.Management
     {
         public class ParamMapping
         {
+            [BsonField("func_type")]
             public string FuncType { get; set; }
+            [BsonField("param_name")]
             public string ParamName { get; set; }
+            [BsonField("code_id")]
             public string CodeId { get; set; }
+            [BsonField("code_desc")]
             public string CodeDesc { get; set; }
             public string Vendor { get; set; }
+            [BsonField("mapping_code")]
             public string MappingCode { get; set; }
         }
 
@@ -26,27 +33,35 @@ namespace TransferControl.Management
             try
             {
                 MappingList = new Dictionary<string, ParamMapping>();
-                DBUtil dBUtil = new DBUtil();
+                //DBUtil dBUtil = new DBUtil();
 
-                DataTable dtCommand = new DataTable();
+                //DataTable dtCommand = new DataTable();
 
-                string strSql = "SELECT  func_type,param_name, code_id, code_desc, vendor, mapping_code FROM param_mapping";
+                //string strSql = "SELECT  func_type,param_name, code_id, code_desc, vendor, mapping_code FROM param_mapping";
 
 
 
-                dtCommand = dBUtil.GetDataTable(strSql, null);
-
-                if (dtCommand.Rows.Count > 0)
+                //dtCommand = dBUtil.GetDataTable(strSql, null);
+                List<ParamMapping> tJList = null;
+                 using (var db = new LiteDatabase(@"MyData.db"))
                 {
-                    foreach (DataRow row in dtCommand.Rows)
+                    // Get customer collection
+                    var col = db.GetCollection<ParamMapping>("config_task_job");
+                    var result = col.Query();
+                    tJList = result.ToList();
+                }
+
+                if (tJList.Count > 0)
+                {
+                    foreach (ParamMapping row in tJList)
                     {
                         ParamMapping each = new ParamMapping();
-                        each.CodeDesc = row["code_desc"].ToString();
-                        each.CodeId = row["code_id"].ToString();
-                        each.FuncType = row["func_type"].ToString();
-                        each.ParamName = row["param_name"].ToString();
-                        each.MappingCode = row["mapping_code"].ToString();
-                        each.Vendor = row["vendor"].ToString();
+                        each.CodeDesc = row.CodeDesc;
+                        each.CodeId = row.CodeId;
+                        each.FuncType = row.FuncType;
+                        each.ParamName = row.ParamName;
+                        each.MappingCode = row.MappingCode;
+                        each.Vendor = row.Vendor;
                         string key = each.Vendor + each.FuncType + each.ParamName + each.CodeId;
                         MappingList.Add(key, each);
                     }

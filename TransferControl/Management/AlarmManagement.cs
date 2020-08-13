@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using LiteDB;
+using log4net;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -53,27 +54,60 @@ namespace TransferControl.Management
         {
             return GetHistory(DateTime.Now.AddDays(-1),DateTime.Now);
         }
-
+        public class log_alarm_his
+        {
+            public string node_name { get; set; }
+            public string system_alarm_code { get; set; }
+            public string alarm_code { get; set; }
+            public string alarm_desc { get; set; }
+            public string alarm_eng_desc { get; set; }
+            public string alarm_type { get; set; }
+            public bool is_stop { get; set; }
+            public bool need_reset { get; set; }
+            public DateTime time_stamp { get; set; }
+        }
         public static List<AlarmInfo> GetHistory(DateTime From, DateTime To)
         {
-            List<AlarmInfo> result = null;
+            List<AlarmInfo> result = new List<AlarmInfo>(); ;
 
-            DBUtil dBUtil = new DBUtil();
+           
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
             DataTable dtTemp;
 
             try
             {
-                string SQL = @"SELECT t.node_name AS NodeName,t.system_alarm_code AS SystemAlarmCode,t.alarm_code AS AlarmCode,t.alarm_desc AS 'DESC',t.alarm_eng_desc AS EngDesc,t.alarm_type AS AlarmType from log_alarm_his t
-                                where t.time_stamp between
-                                STR_TO_DATE(@From, '%Y-%m-%d %H:%i:%s') and
-                                STR_TO_DATE(@To, '%Y-%m-%d %H:%i:%s')";
-                keyValues.Add("@From", From.ToString("yyyy-MM-dd HH:mm:ss"));
-                keyValues.Add("@To", To.ToString("yyyy-MM-dd HH:mm:ss"));
-                dtTemp = dBUtil.GetDataTable(SQL, keyValues);
+                //string SQL = @"SELECT t.node_name AS NodeName,t.system_alarm_code AS SystemAlarmCode,t.alarm_code AS AlarmCode,t.alarm_desc AS 'DESC',t.alarm_eng_desc AS EngDesc,t.alarm_type AS AlarmType from log_alarm_his t
+                //                where t.time_stamp between
+                //                STR_TO_DATE(@From, '%Y-%m-%d %H:%i:%s') and
+                //                STR_TO_DATE(@To, '%Y-%m-%d %H:%i:%s')";
+                //keyValues.Add("@From", From.ToString("yyyy-MM-dd HH:mm:ss"));
+                //keyValues.Add("@To", To.ToString("yyyy-MM-dd HH:mm:ss"));
+                //dtTemp = dBUtil.GetDataTable(SQL, keyValues);
 
-                string str_json = JsonConvert.SerializeObject(dtTemp, Formatting.Indented);
-                result = JsonConvert.DeserializeObject<List<AlarmInfo>>(str_json);
+                //string str_json = JsonConvert.SerializeObject(dtTemp, Formatting.Indented);
+                //result = JsonConvert.DeserializeObject<List<AlarmInfo>>(str_json);
+                List<log_alarm_his> tJList = null;
+                using (var db = new LiteDatabase(@"MyData.db"))
+                {
+                    // Get customer collection
+                    var col = db.GetCollection<log_alarm_his>("log_alarm_his");
+                    var tmp = col.Query().Where(x => From.CompareTo(x.time_stamp)<0 && To.CompareTo(x.time_stamp)>0);
+                    tJList = tmp.ToList();
+                }
+                foreach(log_alarm_his each in tJList)
+                {
+                    AlarmInfo tmp = new AlarmInfo();
+                    tmp.AlarmCode = each.alarm_code;
+                    tmp.AlarmType = each.alarm_type;
+                    tmp.Desc = each.alarm_desc;
+                    tmp.EngDesc = each.alarm_eng_desc;
+                    tmp.IsStop = each.is_stop;
+                    tmp.NeedReset = each.need_reset;
+                    tmp.NodeName = each.node_name;
+                    tmp.SystemAlarmCode = each.system_alarm_code;
+                    tmp.TimeStamp = each.time_stamp;
+                    result.Add(tmp);
+                }
 
             }
             catch (Exception e)
@@ -111,29 +145,52 @@ namespace TransferControl.Management
         public static void InsertToDB(AlarmInfo alm)
         {
 
-            DBUtil dBUtil = new DBUtil();
+            
             Dictionary<string, object> keyValues = new Dictionary<string, object>();
 
             try
             {
-                string SQL = @"insert into log_alarm_his (node_name,system_alarm_code,alarm_code,alarm_desc,alarm_eng_desc,alarm_type,is_stop,need_reset,time_stamp)
-                                values(@node_name,@system_alarm_code,@alarm_code,@alarm_desc,@alarm_eng_desc,@alarm_type,@is_stop,@need_reset,@time_stamp)";
+                //string SQL = @"insert into log_alarm_his (node_name,system_alarm_code,alarm_code,alarm_desc,alarm_eng_desc,alarm_type,is_stop,need_reset,time_stamp)
+                //                values(@node_name,@system_alarm_code,@alarm_code,@alarm_desc,@alarm_eng_desc,@alarm_type,@is_stop,@need_reset,@time_stamp)";
 
-                keyValues.Add("@node_name", alm.NodeName);
-                keyValues.Add("@system_alarm_code", alm.SystemAlarmCode);
-                //keyValues.Add("@alarm_tpye", alm.AlarmType);
-                keyValues.Add("@alarm_code", alm.AlarmCode);
-                keyValues.Add("@alarm_desc", alm.Desc);
-                keyValues.Add("@alarm_eng_desc", alm.EngDesc);
-                keyValues.Add("@alarm_type", alm.Type);
-                keyValues.Add("@is_stop", alm.IsStop);
-                keyValues.Add("@need_reset", alm.NeedReset);
-                keyValues.Add("@time_stamp", alm.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss.ffffff"));
-                
+                //keyValues.Add("@node_name", alm.NodeName);
+                //keyValues.Add("@system_alarm_code", alm.SystemAlarmCode);
+                ////keyValues.Add("@alarm_tpye", alm.AlarmType);
+                //keyValues.Add("@alarm_code", alm.AlarmCode);
+                //keyValues.Add("@alarm_desc", alm.Desc);
+                //keyValues.Add("@alarm_eng_desc", alm.EngDesc);
+                //keyValues.Add("@alarm_type", alm.Type);
+                //keyValues.Add("@is_stop", alm.IsStop);
+                //keyValues.Add("@need_reset", alm.NeedReset);
+                //keyValues.Add("@time_stamp", alm.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss.ffffff"));
 
-                dBUtil.ExecuteNonQueryAsync(SQL, keyValues);
-                
 
+                //dBUtil.ExecuteNonQueryAsync(SQL, keyValues);
+
+                var Alm = new log_alarm_his()
+                {
+                    node_name = alm.SystemAlarmCode,
+                    system_alarm_code = alm.SystemAlarmCode,
+                    alarm_type = alm.AlarmType,
+                    alarm_code = alm.AlarmCode,
+                    alarm_desc = alm.Desc,
+                    alarm_eng_desc = alm.EngDesc,
+                    is_stop = alm.IsStop,
+                    need_reset = alm.NeedReset,
+                    time_stamp = alm.TimeStamp
+                };
+                using (var db = new LiteDatabase(@"MyData.db"))
+                {
+                    var col = db.GetCollection<log_alarm_his>("log_alarm_his");
+                    // Create index in Name field
+                    col.EnsureIndex(x => x.time_stamp);
+
+                    // Insert new customer document (Id will be auto-incremented)
+                    col.Insert(Alm);
+
+                    col.DeleteMany(x => x.time_stamp < DateTime.Now.AddMonths(-1));
+
+                }
             }
             catch (Exception e)
             {

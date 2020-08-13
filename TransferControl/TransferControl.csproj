@@ -78,7 +78,6 @@
     <Compile Include="Controller\ICommandReport.cs" />
     <Compile Include="Controller\IController.cs" />
     <Compile Include="Controller\ModbusController.cs" />
-    <Compile Include="Digital_IO\ChangeHisRecord.cs" />
     <Compile Include="Digital_IO\Comm\IConnection.cs" />
     <Compile Include="Digital_IO\Comm\IConnectionReport.cs" />
     <Compile Include="Digital_IO\Comm\SocketClient.cs" />
@@ -118,7 +117,6 @@
     <Compile Include="Management\TaskJob.cs" />
     <Compile Include="Management\TaskJobManagment.cs" />
     <Compile Include="Management\Transaction.cs" />
-    <Compile Include="Management\TransactionRecord.cs" />
     <Compile Include="Operation\XfeCrossZone.cs" />
     <Compile Include="Parser\ASYSTParser.cs" />
     <Compile Include="Parser\COGNEXParser.cs" />

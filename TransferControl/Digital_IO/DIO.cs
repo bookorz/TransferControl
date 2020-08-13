@@ -335,7 +335,7 @@ namespace TransferControl.Digital_IO
                     {
                         if (!Value.Equals(ctrlCfg.Status))
                         {
-                            ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, Value, ctrlCfg.Status);
+                            //ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, Value, ctrlCfg.Status);
                         }
                         ctrlCfg.Status = Value;
                         ctrl.SetOutWithoutUpdate(ctrlCfg.Address, Value);
@@ -378,7 +378,7 @@ namespace TransferControl.Digital_IO
                     {
                         if (!ctrlCfg.Status.ToUpper().Equals("BLINK"))
                         {
-                            ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "Blink", ctrlCfg.Status);
+                            //ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "Blink", ctrlCfg.Status);
                         }
                         ctrlCfg.Status = "Blink";
                         new Thread(() =>
@@ -392,7 +392,7 @@ namespace TransferControl.Digital_IO
                     {
                         if (!ctrlCfg.Status.ToUpper().Equals("FALSE"))
                         {
-                            ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "False", ctrlCfg.Status);
+                            //ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "False", ctrlCfg.Status);
                         }
                         ctrlCfg.Status = "False";
                         new Thread(() =>

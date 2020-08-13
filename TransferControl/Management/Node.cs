@@ -573,14 +573,38 @@ namespace TransferControl.Management
             }
             return result;
         }
-
-        public void SetEnable(bool enable)
+        public class config_node
         {
-            this.isPool = enable;
-            this.Enable = enable;
-            string SQL = @"update config_node set enable_flg = " + Convert.ToByte(enable).ToString() + " where equipment_model_id = '" + SystemConfig.Get().SystemMode + "' and node_id = '" + this.Name + "'";
-            dBUtil.ExecuteNonQuery(SQL, null);
+            public string equipment_model_id { get; set; }
+            public string node_id { get; set; }
+            public string associated_node { get; set; }
+            public string node_type { get; set; }
+            public string carrier_type { get; set; }
+            public string mode { get; set; }
+            public int ack_timeout { get; set; }
+            public int motion_timeout { get; set; }
+            public bool Double_Arm { get; set; }
+            public bool r_arm { get; set; }
+            public bool l_arm { get; set; }
+            public int sn_no { get; set; }
+            public string vendor { get; set; }
+            public string wafer_size { get; set; }
+            public int Notch_Angle { get; set; }
+            public string R_Flip_Degree { get; set; }
+            public string conn_address { get; set; }
+            public string controller_id { get; set; }
+            public bool bypass { get; set; }
+            public int PTN { get; set; }
+
+
         }
+        //public void SetEnable(bool enable)
+        //{
+        //    this.isPool = enable;
+        //    this.Enable = enable;
+        //    string SQL = @"update config_node set enable_flg = " + Convert.ToByte(enable).ToString() + " where equipment_model_id = '" + SystemConfig.Get().SystemMode + "' and node_id = '" + this.Name + "'";
+        //    dBUtil.ExecuteNonQuery(SQL, null);
+        //}
 
         /// <summary>
         /// 傳送命令
