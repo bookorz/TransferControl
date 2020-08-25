@@ -76,7 +76,7 @@ namespace TransferControl.Digital_IO
 
             //List<ParamConfig> ParamList = JsonConvert.DeserializeObject<List<ParamConfig>>(str_json);
             List<ParamConfig> ParamList = null;
-            using (var db = new LiteDatabase(@"MyData.db"))
+            using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
             {
                 // Get customer collection
                 var col = db.GetCollection<ParamConfig>("config_dio_point");
@@ -89,13 +89,13 @@ namespace TransferControl.Digital_IO
                 if (each.Type.ToUpper().Equals("AIN") || each.Type.ToUpper().Equals("DIN"))
                 {
 
-                    Params.TryAdd(each.DeviceName + each.Address + each.Type, each);
+                    Params.TryAdd(each.DeviceName.ToUpper() + each.Address + each.Type, each);
                 }
                 else if (each.Type.ToUpper().Equals("AOUT") || each.Type.ToUpper().Equals("DOUT"))
                 {
 
                     each.Status = "N/A";
-                    Controls.TryAdd(each.Parameter, each);
+                    Controls.TryAdd(each.Parameter.ToUpper(), each);
                 }
             }
 
@@ -115,7 +115,7 @@ namespace TransferControl.Digital_IO
 
             //List<CtrlConfig> ctrlList = JsonConvert.DeserializeObject<List<CtrlConfig>>(str_json);
             List<CtrlConfig> ctrlList = new List<CtrlConfig>();
-            using (var db = new LiteDatabase(@"MyData.db"))
+            using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
             {
                 // Get customer collection
                 var col = db.GetCollection<config_controller_setting>("config_controller_setting");
@@ -287,6 +287,7 @@ namespace TransferControl.Digital_IO
 
             try
             {
+                Parameter = Parameter.ToUpper();
                 ParamConfig ctrlCfg;
                 if (Controls.TryGetValue(Parameter.ToUpper(), out ctrlCfg))
                 {

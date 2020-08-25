@@ -46,7 +46,7 @@ namespace TransferControl.Management
             //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
             ////str_json = str_json.Replace("\"[", "[").Replace("]\"", "]").Replace("\\\"", "\"");
             //List<Node> nodeList = JsonConvert.DeserializeObject<List<Node>>(str_json);
-            using (var db = new LiteDatabase(@"MyData.db"))
+            using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
             {
                 // Get customer collection
                 var col = db.GetCollection<Node>("config_node");
@@ -192,7 +192,7 @@ namespace TransferControl.Management
             List<Node> result = new List<Node>();
 
             var findA = from A in NodeList.Values.ToList()
-                           where A.Type.Equals("ALIGNER") && A.Enable
+                           where A.Type.ToUpper().Equals("ALIGNER") && A.Enable
                            select A;
 
             if (findA.Count() != 0)

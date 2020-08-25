@@ -45,7 +45,7 @@ namespace TransferControl.Management
             //    }
             //}
             //  Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            //  Controllers = new ConcurrentDictionary<string, IController>();
+              Controllers = new ConcurrentDictionary<string, IController>();
             //  string Sql = @"SELECT UPPER(t.device_name) as DeviceName,t.device_type as DeviceType,
             //UPPER(t.vendor) as vendor,
             //                  case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
@@ -60,7 +60,7 @@ namespace TransferControl.Management
             //                  AND t.device_type <> 'DIO'";
             //  keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
             //  DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            using (var db = new LiteDatabase(@"MyData.db"))
+            using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
             {
                 // Get customer collection
                 var col = db.GetCollection<config_controller_setting>("config_controller_setting");
@@ -82,7 +82,7 @@ namespace TransferControl.Management
                             d.IPAdress = row.conn_address;
                             d.Port = Convert.ToInt32(row.conn_port);
                         }
-                        else if (row.conn_type.Equals("Comport"))
+                        else if (row.conn_type.ToUpper().Equals("COMPORT"))
                         {
                             d.BaudRate = Convert.ToInt32(row.conn_port);
                             d.PortName = row.conn_address;
@@ -122,7 +122,7 @@ namespace TransferControl.Management
                         //each.IPAdress = "127.0.0.1";
                         //each.Port = 9527;
                         ctrl.SetReport(Report);
-                        Controllers.TryAdd(ctrl.GetDeviceName(), ctrl);
+                        Controllers.TryAdd(ctrl.GetDeviceName().ToUpper(), ctrl);
                     }
 
                 }
@@ -142,9 +142,9 @@ namespace TransferControl.Management
             bool result = false;
 
 
-            if (!Controllers.ContainsKey(Name))
+            if (!Controllers.ContainsKey(Name.ToUpper()))
             {
-                Controllers.TryAdd(Name, Controller);
+                Controllers.TryAdd(Name.ToUpper(), Controller);
                 result = true;
             }
 

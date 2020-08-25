@@ -27,7 +27,7 @@ namespace TransferControl.Management
             //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
             //List<RobotPoint> cmdScpList = JsonConvert.DeserializeObject<List<RobotPoint>>(str_json);
             List<RobotPoint> cmdScpList = null;
-            using (var db = new LiteDatabase(@"MyData.db"))
+            using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
             {
                 // Get customer collection
                 var col = db.GetCollection<RobotPoint>("config_point");

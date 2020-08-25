@@ -87,11 +87,11 @@ namespace TransferControl.Management
                 //string str_json = JsonConvert.SerializeObject(dtTemp, Formatting.Indented);
                 //result = JsonConvert.DeserializeObject<List<AlarmInfo>>(str_json);
                 List<log_alarm_his> tJList = null;
-                using (var db = new LiteDatabase(@"MyData.db"))
+                using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
                 {
                     // Get customer collection
                     var col = db.GetCollection<log_alarm_his>("log_alarm_his");
-                    var tmp = col.Query().Where(x => From.CompareTo(x.time_stamp)<0 && To.CompareTo(x.time_stamp)>0);
+                    var tmp = col.Query().Where(x => x.time_stamp > From && x.time_stamp<To);
                     tJList = tmp.ToList();
                 }
                 foreach(log_alarm_his each in tJList)
@@ -179,7 +179,7 @@ namespace TransferControl.Management
                     need_reset = alm.NeedReset,
                     time_stamp = alm.TimeStamp
                 };
-                using (var db = new LiteDatabase(@"MyData.db"))
+                using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
                 {
                     var col = db.GetCollection<log_alarm_his>("log_alarm_his");
                     // Create index in Name field

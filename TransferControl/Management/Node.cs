@@ -41,6 +41,7 @@ namespace TransferControl.Management
         /// <summary>
         /// Node 類型
         /// </summary>
+        [BsonField("node_type")] 
         public string Type { get; set; }
         /// <summary>
         /// 廠牌
@@ -782,7 +783,7 @@ namespace TransferControl.Management
                     }
                 }
 
-                switch (this.Type)
+                switch (this.Type.ToUpper())
                 {
                     case "FFU":
                         switch (txn.Method)
@@ -1292,7 +1293,7 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.OCRType.Online:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.SetOnline(EncoderOCR.OnlineStatus.Online);
-                                txn.CommandType = "";
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.OCRType.Offline:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.SetOnline(EncoderOCR.OnlineStatus.Offline);

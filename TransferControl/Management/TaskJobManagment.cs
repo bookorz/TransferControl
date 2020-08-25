@@ -26,7 +26,7 @@ namespace TransferControl.Management
 
         public class CurrentProceedTask
         {
-            public string Id { get; set; }
+            public string Id ="";
             
             public TaskJob ProceedTask { get; set; }
             public Dictionary<string, string> Params { get; set; }
@@ -53,7 +53,7 @@ namespace TransferControl.Management
 
             //List<TaskJob> tJList = JsonConvert.DeserializeObject<List<TaskJob>>(str_json);
             List<TaskJob> tJList = null;
-            using (var db = new LiteDatabase(@"MyData.db"))
+            using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
             {
                 // Get customer collection
                 var col = db.GetCollection<TaskJob>("config_task_job");
@@ -295,7 +295,7 @@ namespace TransferControl.Management
                         {//當安全檢查取消打開時，跳過所有標記為安全檢查的項目
                             return true;
                         }
-                        string ConditionsStr = ExcutedTask.ProceedTask.CheckCondition;
+                        string ConditionsStr = ExcutedTask.ProceedTask.CheckCondition==null?"": ExcutedTask.ProceedTask.CheckCondition;
                         //指令替代
                         if (ExcutedTask.Params != null)
                         {
@@ -311,7 +311,7 @@ namespace TransferControl.Management
 
 
                         string[] ExcuteObjs = ConditionsStr.Split(';');
-                        if (ExcutedTask.ProceedTask.CheckCondition.Trim().Equals(""))
+                        if (ConditionsStr.Trim().Equals(""))
                         {
                             return true;
                         }
@@ -1540,8 +1540,9 @@ namespace TransferControl.Management
                         foreach (TaskJob eachTask in tk)
                         {
                             string SkipCondition = "";
-                            if (eachTask.SkipCondition.Trim().Equals(""))
+                            if (eachTask.SkipCondition==null || eachTask.SkipCondition.Trim().Equals(""))
                             {
+                                eachTask.SkipCondition = "";
                                 tmp1.Add(eachTask);
                             }
                             else
@@ -1689,7 +1690,10 @@ namespace TransferControl.Management
                             {
                                 Task = CurrTask;
                                 string ExcuteObjStr = CurrTask.ProceedTask.ExcuteObj;
-
+                                if (ExcuteObjStr == null)
+                                {
+                                    ExcuteObjStr = "";
+                                }
                                 if (ExcuteObjStr.Trim().Equals(""))
                                 {
                                     Transaction t = new Transaction();

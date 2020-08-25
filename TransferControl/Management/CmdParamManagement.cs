@@ -43,10 +43,10 @@ namespace TransferControl.Management
 
                 //dtCommand = dBUtil.GetDataTable(strSql, null);
                 List<ParamMapping> tJList = null;
-                 using (var db = new LiteDatabase(@"MyData.db"))
+                using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
                 {
                     // Get customer collection
-                    var col = db.GetCollection<ParamMapping>("config_task_job");
+                    var col = db.GetCollection<ParamMapping>("param_mapping");
                     var result = col.Query();
                     tJList = result.ToList();
                 }

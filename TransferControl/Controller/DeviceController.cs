@@ -212,9 +212,10 @@ namespace TransferControl.Controller
                 //支援同時多發命令
                 for (int seq = 0; seq <= 99; seq++)
                 {
-                    key = key + seq.ToString("00");
-                    if (!TransactionList.ContainsKey(key))
+                    string tmpKey = key + seq.ToString("00");
+                    if (TransactionList.ContainsKey(tmpKey.ToUpper()))
                     {
+                        key = tmpKey;
                         break;
                     }
                     if (seq == 99)
@@ -255,7 +256,10 @@ namespace TransferControl.Controller
                 //{
                 logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", "") + " Wafer:" + waferids);
                 //}
-                Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
+                if (Txn.CommandType.Equals(""))
+                {
+                    Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
+                }
                 //if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
                 //{
                     Txn.SetTimeOut(Txn.AckTimeOut);
@@ -375,9 +379,10 @@ namespace TransferControl.Controller
                                     key = ReturnMsg.NodeAdr + ReturnMsg.Command;
                                     for (int seq = 0; seq <= 99; seq++)
                                     {
-                                        key = key + seq.ToString("00");
-                                        if (TransactionList.ContainsKey(key))
+                                        string tmpKey = key + seq.ToString("00");
+                                        if (TransactionList.ContainsKey(tmpKey.ToUpper()))
                                         {
+                                            key = tmpKey;
                                             break;
                                         }
                                         if (seq == 99)
@@ -700,15 +705,19 @@ namespace TransferControl.Controller
             {
                 key = "1";
             }
-
+            else if (Vendor.ToUpper().Equals("TDK"))
+            {
+                key = Txn.AdrNo + Txn.Type;
+            }
             else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
-                key = Txn.AdrNo + Txn.Method;
+                key = Txn.AdrNo + Txn.Method.ToUpper();
                 for (int seq = 0; seq <= 99; seq++)
                 {
-                    key = key + seq.ToString("00");
-                    if (TransactionList.ContainsKey(key))
+                    string tmpKey = key + seq.ToString("00");
+                    if (TransactionList.ContainsKey(tmpKey.ToUpper()))
                     {
+                        key = tmpKey;
                         break;
                     }
                     if (seq == 99)
@@ -784,7 +793,6 @@ namespace TransferControl.Controller
             {
                 key = "1";
             }
-
             else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Method;

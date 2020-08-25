@@ -1134,8 +1134,10 @@ namespace TransferControl.Engine
                     MTask.Finished = true;
                     Task.Id = Task.MainTaskId;
                 }
-               
-                _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", "TimeOut");
+                if (!Task.Id.Equals(""))
+                {
+                    _UIReport.On_TaskJob_Aborted(Task, Node.Name, "ABS", "TimeOut");
+                }
                 _UIReport.On_Command_TimeOut(Node, Txn);
             }
         }

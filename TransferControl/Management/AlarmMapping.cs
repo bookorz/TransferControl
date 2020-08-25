@@ -107,15 +107,21 @@ namespace TransferControl.Management
                 alarm = new AlarmMessage();
                 alarm.Return_Code_ID = error_message;
 
-                using (var db = new LiteDatabase(@"MyData.db"))
+                using (var db = new LiteDatabase(@"Filename=config\MyData.db;Connection=shared;"))
                 {
                     // Get customer collection
+
                     var col = db.GetCollection<view_alarm_code>("view_alarm_code");
-                    var result = col.Query().Where(x => x.equipment_model_id.Equals(SystemConfig.Get().SystemMode) && 
+                    var result = Target is null?
+                        col.Query().Where(x => x.equipment_model_id.Equals(SystemConfig.Get().SystemMode) &&
+                                                   x.node_type.Equals("SYSTEM") &&
+                                                   x.return_code.Equals(error_message))
+                        :
+                        col.Query().Where(x => x.equipment_model_id.Equals(SystemConfig.Get().SystemMode) && 
                                                    x.node_type.Equals(Target.Type) &&
-                                                   x.vendor.Equals(Target.Brand) &&
+                                                   x.vendor.Equals( Target.Brand) &&
                                                    x.return_code.Equals(error_message) &&
-                                                   x.device_address_id.Equals(Target.AdrNo));
+                                                   x.device_address_id.Equals( Target.AdrNo));
 
 
 

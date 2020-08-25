@@ -362,7 +362,7 @@ namespace TransferControl.Operation
                         logger.Debug(NodeName + " 開始執行:" + req.TaskName);
                         Node nodeLD;
 
-                        switch (Target.Type)
+                        switch (Target.Type.ToUpper())
                         {
                             case "ROBOT":
                                 switch (req.TaskName)
@@ -658,6 +658,7 @@ namespace TransferControl.Operation
                                                     Running = false;
 
                                                     _Report.On_Transfer_Complete(this);
+                                                   
                                                 }
                                                 //    //結束工作
                                                 //}
