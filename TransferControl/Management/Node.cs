@@ -73,6 +73,7 @@ namespace TransferControl.Management
         /// Robot專用，目前手臂的位置
         /// </summary>
         public string CurrentPosition { get; set; }
+  
         /// <summary>
         /// 啟用或停用此Node
         /// </summary>

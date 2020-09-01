@@ -1617,7 +1617,7 @@ namespace TransferControl.Management
                                                 string[] ConditionAry = EachSkipConditionAry[1].Split(new string[] { "<>" }, StringSplitOptions.None);
                                                 string Value = ConditionAry[1];
                                                 string Attr = ConditionAry[0];
-                                                string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
+                                                string AttrVal = Node.GetType().GetProperty(Attr).GetValue(Node, null) == null?"": Node.GetType().GetProperty(Attr).GetValue(Node, null).ToString().ToUpper();
                                                 if (!AttrVal.Equals(Value.ToUpper()))
                                                 {
                                                     isSkip = true;

@@ -213,7 +213,7 @@ namespace TransferControl.Controller
                 for (int seq = 0; seq <= 99; seq++)
                 {
                     string tmpKey = key + seq.ToString("00");
-                    if (TransactionList.ContainsKey(tmpKey.ToUpper()))
+                    if (!TransactionList.ContainsKey(tmpKey.ToUpper()))
                     {
                         key = tmpKey;
                         break;
