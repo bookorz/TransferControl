@@ -151,7 +151,7 @@ namespace TransferControl.Controller
         //public void Connect()
         //{
         //    try
-        //    {
+        //    { 
         //        Close();
         //        conn.Connect();
         //    }
@@ -242,7 +242,6 @@ namespace TransferControl.Controller
             }
             if (DeviceType.ToUpper().Equals("SMARTTAG"))
             {
-
                 key = "00";
             }
             else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
@@ -256,9 +255,11 @@ namespace TransferControl.Controller
                 //支援同時多發命令
                 for (int seq = 0; seq <= 99; seq++)
                 {
-                    key = key + seq.ToString("00");
-                    if (!TransactionList.ContainsKey(key))
+                    string tmpKey = key + seq.ToString("00");
+                    
+                    if (!TransactionList.ContainsKey(tmpKey))
                     {
+                        key = tmpKey;
                         break;
                     }
                     if (seq == 99)
@@ -475,9 +476,11 @@ namespace TransferControl.Controller
                                     key = ReturnMsg.NodeAdr + ReturnMsg.Command;
                                     for (int seq = 0; seq <= 99; seq++)
                                     {
-                                        key = key + seq.ToString("00");
-                                        if (TransactionList.ContainsKey(key))
+                                        string tmpKey = key + seq.ToString("00");
+                                       
+                                        if (TransactionList.ContainsKey(tmpKey))
                                         {
+                                            key = tmpKey;
                                             break;
                                         }
                                         if (seq == 99)
@@ -890,9 +893,11 @@ namespace TransferControl.Controller
                 key = Txn.AdrNo + Txn.Method;
                 for (int seq = 0; seq <= 99; seq++)
                 {
-                    key = key + seq.ToString("00");
-                    if (TransactionList.ContainsKey(key))
+                    string tmpKey = key + seq.ToString("00");
+                    
+                    if (TransactionList.ContainsKey(tmpKey))
                     {
+                        key = tmpKey;
                         break;
                     }
                     if (seq == 99)
@@ -980,9 +985,11 @@ namespace TransferControl.Controller
                 key = Txn.AdrNo + Txn.Method;
                 for (int seq = 0; seq <= 99; seq++)
                 {
-                    key = key + seq.ToString("00");
-                    if (TransactionList.ContainsKey(key))
+                    string tmpKey = key + seq.ToString("00");
+                    
+                    if (TransactionList.ContainsKey(tmpKey))
                     {
+                        key = tmpKey;
                         break;
                     }
                     if (seq == 99)

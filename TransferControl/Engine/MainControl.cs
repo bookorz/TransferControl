@@ -1444,7 +1444,12 @@ namespace TransferControl.Engine
                         switch (Msg.Command)
                         {
                             case "STS__":
-                                if (Msg.Value.Equals("R-Present,1"))
+                                if (Msg.Value.Equals("R-Present,2"))
+                                {
+                                    Node.Foup_Presence = true;
+                                    Node.Foup_Placement = false;
+                                }
+                                else if (Msg.Value.Equals("R-Present,1"))
                                 {
                                     Node.Foup_Presence = true;
                                     Node.Foup_Placement = true;
@@ -1651,6 +1656,14 @@ namespace TransferControl.Engine
             _UIReport.On_Message_Log(Type, Message);
         }
 
-        
+        public void On_Alarm_Happen(AlarmManagement.Alarm Alarm)
+        {
+            _UIReport.On_Alarm_Happen(Alarm);
+        }
+
+        public void On_DIO_Data_Chnaged(string Parameter, string Value, string Type)
+        {
+            _UIReport.On_DIO_Data_Chnaged(Parameter,  Value,  Type);
+        }
     }
 }

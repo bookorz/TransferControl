@@ -136,6 +136,7 @@
     <Compile Include="Controller\ICommandReport.cs" />
     <Compile Include="Controller\IController.cs" />
     <Compile Include="Controller\ModbusController.cs" />
+    <Compile Include="Controller\PLCController.cs" />
     <Compile Include="Controller\PLC\CellDataTypes.cs" />
     <Compile Include="Controller\PLC\FX\FxAddress.cs" />
     <Compile Include="Controller\PLC\FX\FxAddressLayoutInfo.cs" />

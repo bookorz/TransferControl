@@ -13,5 +13,7 @@ namespace TransferControl.Controller
         void On_Node_State_Changed(Node Node, string Status);
         void On_Controller_State_Changed(string Device_ID, string Status);
         void On_Message_Log(string Type, string Message);
+        void On_Alarm_Happen(AlarmManagement.Alarm Alarm);
+        void On_DIO_Data_Chnaged(string Parameter, string Value, string Type);
     }
 }

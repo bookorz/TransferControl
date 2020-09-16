@@ -83,7 +83,21 @@ namespace TransferControl.Management
                         m.ControllerType = each.ControllerType;
                         ctrl = m;
                     }
-
+                    else if (each.ControllerType.Equals("PLC"))
+                    {
+                        PLCController m = new PLCController();
+                        m.DeviceName = each.DeviceName;
+                        m.DeviceType = each.DeviceType;
+                        m.Vendor = each.Vendor;
+                        m.IPAdress = each.IPAdress;
+                        m.Port = each.Port;
+                        m.BaudRate = each.BaudRate;
+                        m.PortName = each.PortName;
+                        m.ConnectionType = each.ConnectionType;
+                        m.Enable = each.Enable;
+                        m.ControllerType = each.ControllerType;
+                        ctrl = m;
+                    }
 
                     if (ctrl.GetEnable())
                     {
