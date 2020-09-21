@@ -59,7 +59,7 @@ namespace InControls.PLC.Mitsubishi
 		{
 			StringBuilder data = new StringBuilder();
 			data.AppendFormat("{0}", iType.ToAsciiName());
-			data.AppendFormat("{0:000000}", iAddress);
+			data.AppendFormat("{0:X6}", iAddress);
 			data.AppendFormat("{0:0000}", iSize);
 
 			for (int i = 0; i < onOffBits.Length; i++) {

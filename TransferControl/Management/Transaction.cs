@@ -402,8 +402,8 @@ namespace TransferControl.Management
             //Enabled = false;
             if (Enabled)
             {
-                timeOutTimer.Enabled = true;
-                timeOutTimer.Start();
+                //timeOutTimer.Enabled = true;
+                //timeOutTimer.Start();
             }
             else
             {
