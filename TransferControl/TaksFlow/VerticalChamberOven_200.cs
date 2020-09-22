@@ -502,28 +502,28 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 6:
-                                if (Convert.ToInt32(TaskJob.Params["@Position"]) == 22)
-                                {
-                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF1" } }, "", TaskJob.MainTaskId).Promise())
-                                    {
-                                        //中止Task
-                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+                                //if (Convert.ToInt32(TaskJob.Params["@Position"]) == 22)
+                                //{
+                                //    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF1" } }, "", TaskJob.MainTaskId).Promise())
+                                //    {
+                                //        //中止Task
+                                //        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
 
-                                        break;
-                                    }
+                                //        break;
+                                //    }
 
-                                }
-                                else if (Convert.ToInt32(TaskJob.Params["@Position"]) == 23)
-                                {
-                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF2" } }, "", TaskJob.MainTaskId).Promise())
-                                    {
-                                        //中止Task
-                                        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+                                //}
+                                //else if (Convert.ToInt32(TaskJob.Params["@Position"]) == 23)
+                                //{
+                                //    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_READ_STATUS, new Dictionary<string, string>() { { "@Target", "SMIF2" } }, "", TaskJob.MainTaskId).Promise())
+                                //    {
+                                //        //中止Task
+                                //        AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
 
-                                        break;
-                                    }
+                                //        break;
+                                //    }
 
-                                }
+                                //}
 
                                 break;
                             default:

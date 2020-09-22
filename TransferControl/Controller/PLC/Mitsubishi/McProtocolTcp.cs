@@ -27,6 +27,8 @@ namespace InControls.PLC.Mitsubishi
 		override protected void DoConnect()
 		{
 			TcpClient c = Client;
+            c.Close();
+            c = new TcpClient();
 			if (!c.Connected) {
 				// Keep Alive機能の実装
 				var ka = new List<byte>(sizeof(uint) * 3);
@@ -35,6 +37,7 @@ namespace InControls.PLC.Mitsubishi
 				ka.AddRange(BitConverter.GetBytes(5000u));
 				c.Client.IOControl(IOControlCode.KeepAliveValues, ka.ToArray(), null);
 				try {
+                    
 					c.Connect(HostName, PortNumber);
 					Stream = c.GetStream();
 				} catch (SocketException e1) {

@@ -600,7 +600,14 @@ namespace TransferControl.Controller
                 {
                     _ReportTarget.On_Message_Log("IO", "Lost connection with PLC");
                     SpinWait.SpinUntil(() => false, 5000);
-                    //PLC.Open();
+                    try
+                    {
+                        PLC.Open();
+                    }catch(Exception eeee)
+                    {
+                        _ReportTarget.On_Message_Log("IO", eeee.StackTrace);
+                    }
+                  
                 }
             }
         }
