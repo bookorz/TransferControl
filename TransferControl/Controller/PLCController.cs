@@ -14,9 +14,9 @@ using TransferControl.Management;
 
 namespace TransferControl.Controller
 {
-    public class PLCController :   ITransactionReport, IController
+    public class PLCController : ITransactionReport, IController
     {
-        
+
         [JsonIgnore]
         public CommandEncoder Encoder;
         ConcurrentDictionary<string, Transaction> TransactionList = new ConcurrentDictionary<string, Transaction>();
@@ -34,7 +34,7 @@ namespace TransferControl.Controller
         public string PortName { get; set; }
         public int BaudRate { get; set; }
         public bool Enable { get; set; }
-     
+
         private string ch1Send = "";
         private string ch2Send = "";
         [JsonIgnore]
@@ -416,7 +416,7 @@ namespace TransferControl.Controller
             _ReportTarget = ReportTarget;
 
 
-           
+
             _Decoder = new CommandConvert.CommandDecoder(Vendor);
 
             Encoder = new CommandEncoder(Vendor);
@@ -424,7 +424,7 @@ namespace TransferControl.Controller
 
             this.Name = DeviceName;
             this.Status = "";
-            
+
             ThreadPool.QueueUserWorkItem(new WaitCallback(Start), NodeManagement.Get("CSTROBOT"));
         }
 
@@ -437,41 +437,46 @@ namespace TransferControl.Controller
             //SpinWait.SpinUntil(() => Target.GetController().GetStatus().Equals("Connected"), 9999999);
             //McProtocolTcp PLC = new McProtocolTcp("192.168.3.39", 2000);
             McProtocolTcp PLC = new McProtocolTcp(this.IPAdress, this.Port);
-            PLC.Open();
+
             this._IsConnected = true;
             byte[] result = new byte[512];
             int[] WResult = new int[32];
-
-            //INIT
-            result = new byte[512];
-            PLC.GetBitDevice(PlcDeviceType.Y, AddrOffset, 512, result);
-
-            Target.SetIO("OUTPUT", result);
-            result = new byte[512];
-            Target.SetIO("OUTPUT_OLD", result);
-            result = new byte[512];
-            PLC.GetBitDevice(PlcDeviceType.X, AddrOffset, 512, result);
-            Target.SetIO("INPUT", result);
-            result = new byte[512];
-            Target.SetIO("INPUT_OLD", result);
-            WResult = new int[32];
-            PLC.ReadDeviceBlock(PlcDeviceType.D, 24576, 32, WResult);
-            result = ConvertToBit(WResult);
-            Target.SetIO("PRESENCE", result);
-            result = new byte[512];
-            Target.SetIO("PRESENCE_OLD", result);
-            WResult = new int[2];
-            PLC.ReadDeviceBlock(PlcDeviceType.D, 25856, 2, WResult);
-            int RecieveIndex_1 = WResult[0];
-            int RecieveIndex_2 = WResult[1];
-
-
+            bool isInit = false;
+            int RecieveIndex_1 = 0;
+            int RecieveIndex_2 = 0;
             //PLC.SetBitDevice(PlcDeviceType.Y, new Dictionary<int, byte>() { { 1280,1}, { 1281, 1 }, { 1285, 1 } });
 
             while (true)
             {
                 try
                 {
+                    if (!isInit)
+                    {
+                        PLC.Open();
+                        //INIT
+                        result = new byte[512];
+                        PLC.GetBitDevice(PlcDeviceType.Y, AddrOffset, 512, result);
+
+                        Target.SetIO("OUTPUT", result);
+                        result = new byte[512];
+                        Target.SetIO("OUTPUT_OLD", result);
+                        result = new byte[512];
+                        PLC.GetBitDevice(PlcDeviceType.X, AddrOffset, 512, result);
+                        Target.SetIO("INPUT", result);
+                        result = new byte[512];
+                        Target.SetIO("INPUT_OLD", result);
+                        WResult = new int[32];
+                        PLC.ReadDeviceBlock(PlcDeviceType.D, 24576, 32, WResult);
+                        result = ConvertToBit(WResult);
+                        Target.SetIO("PRESENCE", result);
+                        result = new byte[512];
+                        Target.SetIO("PRESENCE_OLD", result);
+                        WResult = new int[2];
+                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25856, 2, WResult);
+                        RecieveIndex_1 = WResult[0];
+                        RecieveIndex_2 = WResult[1];
+                        isInit = true;
+                    }
                     if (!ch1Send.Equals(""))
                     {
                         int[] SendDataBytes = ByteArrayToIntArray(Encoding.ASCII.GetBytes(ch1Send));
@@ -499,9 +504,9 @@ namespace TransferControl.Controller
                         int[] WResult1 = new int[90];
                         PLC.ReadDeviceBlock(PlcDeviceType.D, 25360, 90, WResult1);
                         string rData1 = "";
-                        foreach(int dec in WResult1)
+                        foreach (int dec in WResult1)
                         {
-                            rData1 += dec.ToString("X4").Substring(2, 2) + dec.ToString("X4").Substring(0,2);
+                            rData1 += dec.ToString("X4").Substring(2, 2) + dec.ToString("X4").Substring(0, 2);
                         }
                         rData1 = Encoding.ASCII.GetString(StringToByteArray(rData1)).Trim('\0');
                         //On_Connection_Message(rData1);
@@ -602,12 +607,16 @@ namespace TransferControl.Controller
                     SpinWait.SpinUntil(() => false, 5000);
                     try
                     {
-                        PLC.Open();
-                    }catch(Exception eeee)
+                        if (isInit)
+                        {
+                            PLC.Open();
+                        }
+                    }
+                    catch (Exception eeee)
                     {
                         _ReportTarget.On_Message_Log("IO", eeee.StackTrace);
                     }
-                  
+
                 }
             }
         }
@@ -626,10 +635,10 @@ namespace TransferControl.Controller
             }
             return Enumerable.Range(0, bytes.Length)
                              .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToInt32(BitConverter.ToInt16(bytes,x)))
+                             .Select(x => Convert.ToInt32(BitConverter.ToInt16(bytes, x)))
                              .ToArray();
         }
-       
+
         private byte[] ConvertToBit(int[] WResult)
         {
             string BitStr = "";
