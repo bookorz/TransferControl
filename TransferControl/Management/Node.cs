@@ -321,9 +321,14 @@ namespace TransferControl.Management
 
         public byte[] GetIO(string Area)
         {
-
-            return this.IO[Area];
-
+            try
+            {
+                return this.IO[Area];
+            }
+            catch
+            {
+                return null;
+            }
         }
         public void SetIO(string Area, byte[] Val)
         {
@@ -342,9 +347,13 @@ namespace TransferControl.Management
         }
         public void SetIO(string Area, int Pos, byte Val)
         {
-
+            try { 
             this.GetIO(Area)[Pos] = Val;
-
+            }
+            catch
+            {
+              
+            }
 
         }
         /// <summary>

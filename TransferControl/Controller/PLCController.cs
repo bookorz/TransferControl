@@ -466,7 +466,7 @@ namespace TransferControl.Controller
                         result = new byte[512];
                         Target.SetIO("INPUT_OLD", result);
                         WResult = new int[32];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 24576, 32, WResult);
+                        PLC.ReadDeviceBlock(PlcDeviceType.D, 24576+1, 32, WResult);
                         result = ConvertToBit(WResult);
                         Target.SetIO("PRESENCE", result);
                         result = new byte[512];
@@ -581,7 +581,7 @@ namespace TransferControl.Controller
                     }
 
                     WResult = new int[32];
-                    PLC.ReadDeviceBlock(PlcDeviceType.D, 24576, 32, WResult);
+                    PLC.ReadDeviceBlock(PlcDeviceType.D, 24576+1, 32, WResult);
                     result = ConvertToBit(WResult);
                     Target.SetIO("PRESENCE", result);
                     if (!Target.GetIO("PRESENCE").SequenceEqual(Target.GetIO("PRESENCE_OLD")))
