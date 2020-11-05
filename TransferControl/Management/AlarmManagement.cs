@@ -16,7 +16,7 @@ namespace TransferControl.Management
         private static List<Alarm> CurrentAlarm = new List<Alarm>();
         //private static List<AlarmInfo> AlarmHistory = new List<AlarmInfo>();
         private static List<AlarmInfo> AlarmData = new List<AlarmInfo>();
-        private class AlarmInfo
+        public class AlarmInfo
         {
             public string vendor { get; set; }
             public string errorCode { get; set; }
