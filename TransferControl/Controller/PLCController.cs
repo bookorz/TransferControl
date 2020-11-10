@@ -475,6 +475,12 @@ namespace TransferControl.Controller
                         PLC.ReadDeviceBlock(PlcDeviceType.D, 25856, 2, WResult);
                         RecieveIndex_1 = WResult[0];
                         RecieveIndex_2 = WResult[1];
+                        WResult = new int[1];
+                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25862, 1, WResult);
+                        result = ConvertToBit(WResult);
+                        Target.SetIO("INTERLOCK", result);
+                        result = new byte[16];
+                        Target.SetIO("INTERLOCK_OLD", result);
                         isInit = true;
                     }
                     if (!ch1Send.Equals(""))
@@ -550,6 +556,19 @@ namespace TransferControl.Controller
 
                     }
 
+                    if (!Target.GetIO("INTERLOCK").SequenceEqual(Target.GetIO("INTERLOCK_OLD")))
+                    {
+                        string binAry = "";
+                        foreach (byte each in Target.GetIO("INTERLOCK"))
+                        {
+                            binAry = each.ToString()+ binAry;
+                        }
+                        int[] tmp = new int[1] { 0};
+                        tmp[0] = Convert.ToInt32(binAry, 2);
+                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25862, tmp.Length, tmp);
+                        Target.SetIO("INTERLOCK_OLD",  Target.GetIO("INTERLOCK"));
+                    }
+                    result = new byte[512];
                     PLC.GetBitDevice(PlcDeviceType.X, AddrOffset, 512, result);
                     Target.SetIO("INPUT", result);
                     if (!Target.GetIO("INPUT").SequenceEqual(Target.GetIO("INPUT_OLD")))
@@ -642,7 +661,7 @@ namespace TransferControl.Controller
         private byte[] ConvertToBit(int[] WResult)
         {
             string BitStr = "";
-            byte[] result = new byte[512];
+            byte[] result = new byte[WResult.Length*16];
             for (int i = 0; i < WResult.Length; i++)
             {
                 BitStr += new String(Convert.ToString(Convert.ToInt16(WResult[i]), 2).PadLeft(16, '0').Reverse().ToArray());

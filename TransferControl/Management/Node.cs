@@ -332,7 +332,7 @@ namespace TransferControl.Management
         }
         public void SetIO(string Area, byte[] Val)
         {
-            byte[] ResultCopy = new byte[512];
+            byte[] ResultCopy = new byte[Val.Length];
             Val.CopyTo(ResultCopy, 0);
 
             if (this.IO.ContainsKey(Area))
