@@ -559,9 +559,13 @@ namespace TransferControl.Controller
                     if (!Target.GetIO("INTERLOCK").SequenceEqual(Target.GetIO("INTERLOCK_OLD")))
                     {
                         string binAry = "";
-                        foreach (byte each in Target.GetIO("INTERLOCK"))
+                        for (int i = 0; i< Target.GetIO("INTERLOCK").Length;i++)
                         {
-                            binAry = each.ToString()+ binAry;
+                            if (Target.GetIO("INTERLOCK")[i] != Target.GetIO("INTERLOCK_OLD")[i])
+                            {
+                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("INTERLOCK")[i].ToString(), "INTERLOCK");
+                            }
+                            binAry = Target.GetIO("INTERLOCK")[i].ToString()+ binAry;
                         }
                         int[] tmp = new int[1] { 0};
                         tmp[0] = Convert.ToInt32(binAry, 2);
