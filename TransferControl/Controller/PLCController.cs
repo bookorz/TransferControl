@@ -475,12 +475,29 @@ namespace TransferControl.Controller
                         PLC.ReadDeviceBlock(PlcDeviceType.D, 25856, 2, WResult);
                         RecieveIndex_1 = WResult[0];
                         RecieveIndex_2 = WResult[1];
+
                         WResult = new int[1];
                         PLC.ReadDeviceBlock(PlcDeviceType.D, 25862, 1, WResult);
                         result = ConvertToBit(WResult);
-                        Target.SetIO("INTERLOCK", result);
+                        Target.SetIO("CSTINTERLOCK", result);
                         result = new byte[16];
-                        Target.SetIO("INTERLOCK_OLD", result);
+                        Target.SetIO("CSTINTERLOCK_OLD", result);
+                        isInit = true;
+
+                        WResult = new int[1];
+                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25878, 1, WResult);
+                        result = ConvertToBit(WResult);
+                        Target.SetIO("VIPINTERLOCK", result);
+                        result = new byte[16];
+                        Target.SetIO("VIPINTERLOCK_OLD", result);
+                        isInit = true;
+
+                        WResult = new int[2];
+                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25857, 2, WResult);
+                        result = ConvertToBit(WResult);
+                        Target.SetIO("SHELFINTERLOCK", result);
+                        result = new byte[32];
+                        Target.SetIO("SHELFINTERLOCK_OLD", result);
                         isInit = true;
                     }
                     if (!ch1Send.Equals(""))
@@ -556,21 +573,53 @@ namespace TransferControl.Controller
 
                     }
 
-                    if (!Target.GetIO("INTERLOCK").SequenceEqual(Target.GetIO("INTERLOCK_OLD")))
+                    if (!Target.GetIO("CSTINTERLOCK").SequenceEqual(Target.GetIO("CSTINTERLOCK_OLD")))
                     {
                         string binAry = "";
-                        for (int i = 0; i< Target.GetIO("INTERLOCK").Length;i++)
+                        for (int i = 0; i< Target.GetIO("CSTINTERLOCK").Length;i++)
                         {
-                            if (Target.GetIO("INTERLOCK")[i] != Target.GetIO("INTERLOCK_OLD")[i])
+                            if (Target.GetIO("CSTINTERLOCK")[i] != Target.GetIO("CSTINTERLOCK_OLD")[i])
                             {
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("INTERLOCK")[i].ToString(), "INTERLOCK");
+                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("CSTINTERLOCK")[i].ToString(), "CSTINTERLOCK");
                             }
-                            binAry = Target.GetIO("INTERLOCK")[i].ToString()+ binAry;
+                            binAry = Target.GetIO("CSTINTERLOCK")[i].ToString()+ binAry;
                         }
                         int[] tmp = new int[1] { 0};
                         tmp[0] = Convert.ToInt32(binAry, 2);
                         PLC.WriteDeviceBlock(PlcDeviceType.D, 25862, tmp.Length, tmp);
-                        Target.SetIO("INTERLOCK_OLD",  Target.GetIO("INTERLOCK"));
+                        Target.SetIO("CSTINTERLOCK_OLD",  Target.GetIO("CSTINTERLOCK"));
+                    }
+                    if (!Target.GetIO("VIPINTERLOCK").SequenceEqual(Target.GetIO("VIPINTERLOCK_OLD")))
+                    {
+                        string binAry = "";
+                        for (int i = 0; i < Target.GetIO("VIPINTERLOCK").Length; i++)
+                        {
+                            if (Target.GetIO("VIPINTERLOCK")[i] != Target.GetIO("VIPINTERLOCK_OLD")[i])
+                            {
+                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("VIPINTERLOCK")[i].ToString(), "VIPINTERLOCK");
+                            }
+                            binAry = Target.GetIO("VIPINTERLOCK")[i].ToString() + binAry;
+                        }
+                        int[] tmp = new int[1] { 0 };
+                        tmp[0] = Convert.ToInt32(binAry, 2);
+                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25878, tmp.Length, tmp);
+                        Target.SetIO("VIPINTERLOCK_OLD", Target.GetIO("VIPINTERLOCK"));
+                    }
+                    if (!Target.GetIO("SHELFINTERLOCK").SequenceEqual(Target.GetIO("SHELFINTERLOCK_OLD")))
+                    {
+                        string binAry = "";
+                        for (int i = 0; i < Target.GetIO("SHELFINTERLOCK").Length; i++)
+                        {
+                            if (Target.GetIO("SHELFINTERLOCK")[i] != Target.GetIO("SHELFINTERLOCK_OLD")[i])
+                            {
+                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("SHELFINTERLOCK")[i].ToString(), "SHELFINTERLOCK");
+                            }
+                            binAry = Target.GetIO("SHELFINTERLOCK")[i].ToString() + binAry;
+                        }
+                        int[] tmp = new int[1] { 0 };
+                        tmp[0] = Convert.ToInt32(binAry, 2);
+                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25857, tmp.Length, tmp);
+                        Target.SetIO("SHELFINTERLOCK_OLD", Target.GetIO("SHELFINTERLOCK"));
                     }
                     result = new byte[512];
                     PLC.GetBitDevice(PlcDeviceType.X, AddrOffset, 512, result);
