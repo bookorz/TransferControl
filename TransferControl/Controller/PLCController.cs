@@ -482,10 +482,13 @@ namespace TransferControl.Controller
                         Target.SetIO("CSTINTERLOCK", result);
                         result = new byte[16];
                         Target.SetIO("CSTINTERLOCK_OLD", result);
+                        Target.SetIO("CSTINTERLOCK_OLD", result);
+                        Target.SetIO("CSTINTERLOCK_OLD", result);
+                        Target.SetIO("CSTINTERLOCK_OLD", result);
                         isInit = true;
 
                         WResult = new int[1];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25878, 1, WResult);
+                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25890, 1, WResult);
                         result = ConvertToBit(WResult);
                         Target.SetIO("VIPINTERLOCK", result);
                         result = new byte[16];
@@ -602,7 +605,7 @@ namespace TransferControl.Controller
                         }
                         int[] tmp = new int[1] { 0 };
                         tmp[0] = Convert.ToInt32(binAry, 2);
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25878, tmp.Length, tmp);
+                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25890, tmp.Length, tmp);
                         Target.SetIO("VIPINTERLOCK_OLD", Target.GetIO("VIPINTERLOCK"));
                     }
                     if (!Target.GetIO("SHELFINTERLOCK").SequenceEqual(Target.GetIO("SHELFINTERLOCK_OLD")))
