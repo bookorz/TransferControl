@@ -1568,6 +1568,18 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
+                    case TaskFlowManagement.Command.LOADPORT_DOCK:
+                    case TaskFlowManagement.Command.LOADPORT_UNDOCK:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.GET_CSTID:
                         switch (TaskJob.CurrentIndex)
                         {
