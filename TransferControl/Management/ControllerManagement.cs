@@ -94,24 +94,7 @@ namespace TransferControl.Management
                         Controllers.TryAdd(ctrl.GetDeviceName(), ctrl);
                     }
                 }
-                else
-                {
-                    IController ctrl = null;
-                    DeviceController d = new DeviceController();
-                    d.DeviceName = each.DeviceName;
-                    d.DeviceType = each.DeviceType;
-                    d.Vendor = each.Vendor;
-                    d.IPAdress = each.IPAdress;
-                    d.Port = each.Port;
-                    d.BaudRate = each.BaudRate;
-                    d.PortName = each.PortName;
-                    d.ConnectionType = each.ConnectionType;
-                    d.Enable = each.Enable;
-                    d.ControllerType = each.ControllerType;
-
-                    ctrl = d;
-                    Controllers.TryAdd(ctrl.GetDeviceName(), ctrl);
-                }
+                
             }
         }
         public static void Save()

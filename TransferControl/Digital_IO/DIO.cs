@@ -98,7 +98,7 @@ namespace TransferControl.Digital_IO
             //dt = dBUtil.GetDataTable(Sql, keyValues);
             //str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
 
-            List<CtrlConfig> ctrlList = new ConfigTool<List<CtrlConfig>>().ReadFile("config/Controller.json");
+            List<CtrlConfig> ctrlList = new ConfigTool<List<CtrlConfig>>().ReadFile("config/DIOController.json");
             var dioCtrl = from dio in ctrlList
                           where dio.DeviceType.Equals("DIO")
                        select dio;
