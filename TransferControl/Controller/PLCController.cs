@@ -611,7 +611,7 @@ namespace TransferControl.Controller
                     if (!Target.GetIO("SHELFINTERLOCK").SequenceEqual(Target.GetIO("SHELFINTERLOCK_OLD")))
                     {
                         string binAry = "";
-                        for (int i = 0; i < Target.GetIO("SHELFINTERLOCK").Length; i++)
+                        for (int i = 0; i < 16; i++)
                         {
                             if (Target.GetIO("SHELFINTERLOCK")[i] != Target.GetIO("SHELFINTERLOCK_OLD")[i])
                             {
@@ -622,6 +622,20 @@ namespace TransferControl.Controller
                         int[] tmp = new int[1] { 0 };
                         tmp[0] = Convert.ToInt32(binAry, 2);
                         PLC.WriteDeviceBlock(PlcDeviceType.D, 25857, tmp.Length, tmp);
+                        
+
+                        binAry = "";
+                        for (int i = 16; i < 32; i++)
+                        {
+                            if (Target.GetIO("SHELFINTERLOCK")[i] != Target.GetIO("SHELFINTERLOCK_OLD")[i])
+                            {
+                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("SHELFINTERLOCK")[i].ToString(), "SHELFINTERLOCK");
+                            }
+                            binAry = Target.GetIO("SHELFINTERLOCK")[i].ToString() + binAry;
+                        }
+                        tmp = new int[1] { 0 };
+                        tmp[0] = Convert.ToInt32(binAry, 2);
+                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25858, tmp.Length, tmp);
                         Target.SetIO("SHELFINTERLOCK_OLD", Target.GetIO("SHELFINTERLOCK"));
                     }
                     result = new byte[512];
