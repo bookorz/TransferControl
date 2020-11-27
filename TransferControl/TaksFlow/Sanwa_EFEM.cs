@@ -651,13 +651,18 @@ namespace TransferControl.TaksFlow
                                 Wafer.LastSlot = Convert.ToInt16(Wafer.Slot).ToString();
                                 Wafer.Position = Target.Name;
                                 Wafer.Slot = "1";
-
-                                Job ghost = JobManagement.Get(Wafer.LastNode, Wafer.LastSlot);
-                                if(ghost != null)
+                                while (true)
                                 {
-                                    JobManagement.Remove(ghost);
+                                    Job ghost = JobManagement.Get(Wafer.LastNode, Wafer.LastSlot);
+                                    if (ghost != null)
+                                    {
+                                        JobManagement.Remove(ghost);
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
                                 }
-
                                 _TaskReport.On_Job_Location_Changed(Wafer);
                                 break;
                             default:
