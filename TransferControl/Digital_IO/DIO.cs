@@ -450,6 +450,41 @@ namespace TransferControl.Digital_IO
             }
             return result;
         }
+        public string GetIOStatus(string Type, string Parameter)
+        {
+            string result = "";
+            try
+            {
+                if (Type.Equals("DOUT"))
+                {
+                    ParamConfig outCfg;
+                    if (Controls.TryGetValue(Parameter, out outCfg))
+                    {
+                        result = outCfg.Status;
+                    }
+                }
+                else
+                {
+
+                    var find = from Param in Params.Values.ToList()
+                               where Param.Parameter.ToUpper().Equals(Parameter.ToUpper())
+                               select Param;
+
+
+                    if (find.Count() != 0)
+                    {
+                        ParamConfig inCfg;
+                        inCfg = find.First();
+                        result = inCfg.Status;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Debug("GetIOStatus:" + e.Message);
+            }
+            return result;
+        }
 
         public void On_Data_Chnaged(string DIOName, string Type, string Address, string OldValue, string NewValue)
         {
