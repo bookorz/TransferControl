@@ -1444,16 +1444,29 @@ namespace TransferControl.Engine
                         switch (Msg.Command)
                         {
                             case "STS__":
+
                                 if (Msg.Value.Equals("R-Present,1"))
                                 {
                                     Node.Foup_Presence = true;
-                                    Node.Foup_Placement = true;
+                                    Node.Foup_Placement = false;
                                 }
                                 else if (Msg.Value.Equals("R-Present,0"))
                                 {
                                     Node.Foup_Presence = false;
-                                    Node.Foup_Placement = false;
+                                    Node.Foup_Placement = true;
                                 }
+
+                                //if (Msg.Value.Equals("R-Present,1"))
+                                //{
+                                //    Node.Foup_Presence = true;
+                                //    Node.Foup_Placement = true;
+                                //}
+                                //else if (Msg.Value.Equals("R-Present,0"))
+                                //{
+                                //    Node.Foup_Presence = false;
+                                //    Node.Foup_Placement = false;
+                                //}
+
                                 break;
                             case "MANSW":
                                 //IO_State_Change(Node.Name, "Access_SW", true);

@@ -168,6 +168,10 @@ namespace TransferControl.Digital_IO
             Thread BlinkTd = new Thread(Blink);
             BlinkTd.IsBackground = true;
             BlinkTd.Start();
+
+            Thread ShortBlinkTd = new Thread(ShortBlink);
+            ShortBlinkTd.IsBackground = true;
+            ShortBlinkTd.Start();
         }
         private void Blink()
         {
@@ -221,26 +225,73 @@ namespace TransferControl.Digital_IO
                     Current = "TRUE";
                 }
 
-                //var inCfg = from parm in Params.Values.ToList()
-                //            where parm.Parameter.Equals("IONIZERALARM")
-                //            select parm;
-
-
-                //ParamConfig Cfg = inCfg.First();
-
-                //string key = Cfg.DeviceName + Cfg.Address + Cfg.Type;
-                //if (Cfg.Abnormal.Equals(GetIO("IN", key).ToUpper()))
-                //{
-                //    _Report.On_Data_Chnaged(Cfg.Parameter, "BLINK");
-                //}
-
-
-
 
                 SpinWait.SpinUntil(() => false, 700);
             }
         }
+        private void ShortBlink()
+        {
+            string Current = "TRUE";
+            while (true)
+            {
+                var find = from Out in Controls.Values.ToList()
+                           where Out.Status.Equals("ShortBlink")
+                           select Out;
+                Dictionary<string, IDIOController> DIOList = new Dictionary<string, IDIOController>();
+                foreach (ParamConfig each in find)
+                {
+                    IDIOController ctrl;
+                    if (Ctrls.TryGetValue(each.DeviceName, out ctrl))
+                    {
+                        try
+                        {
+                            ctrl.SetOutWithoutUpdate(each.Address, Current);
+                            if (!DIOList.ContainsKey(each.DeviceName))
+                            {
+                                DIOList.Add(each.DeviceName, ctrl);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            logger.Error(e.StackTrace);
+                        }
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            _Report.On_Data_Chnaged(each.Parameter, Current, each.Type);
+                        }).Start();
 
+                    }
+                    else
+                    {
+                        logger.Debug("SetIO:DeviceName is not exist.");
+                    }
+                }
+                foreach (IDIOController eachDIO in DIOList.Values)
+                {
+                    eachDIO.UpdateOut();
+                }
+
+                if (Current.Equals("TRUE"))
+                {
+                    Current = "FALSE";
+                }
+                else
+                {
+                    Current = "TRUE";
+                }
+
+                if(find.Count() > 0)
+                {
+                    SpinWait.SpinUntil(() => false, 50);
+                }
+                else
+                {
+                    SpinWait.SpinUntil(() => false, 1000);
+                }
+
+            }
+        }
         public void SetIO(string Parameter, string Value)
         {
 
@@ -324,7 +375,32 @@ namespace TransferControl.Digital_IO
                 eachDIO.UpdateOut();
             }
         }
-
+        public void SetBlinkStop(string Parameter,string Value)
+        {
+            try
+            {
+                ParamConfig ctrlCfg;
+                if (Controls.TryGetValue(Parameter, out ctrlCfg))
+                {
+                    if (Value.ToUpper().Equals("TRUE"))
+                    {
+                        ctrlCfg.Status = "BlinkStop";
+                    }
+                    else
+                    {
+                        ctrlCfg.Status = "Blink";
+                    }
+                }
+                else
+                {
+                    logger.Debug("SetBlinkStop:Parameter is not exist.");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Debug("SetBlinkStop:" + e.Message);
+            }
+        }
         public bool SetBlink(string Parameter, string Value)
         {
             bool result = false;
@@ -374,7 +450,55 @@ namespace TransferControl.Digital_IO
             }
             return result;
         }
+        public bool SetShortBlink(string Parameter, string Value)
+        {
+            bool result = false;
+            try
+            {
+                ParamConfig ctrlCfg;
+                if (Controls.TryGetValue(Parameter, out ctrlCfg))
+                {
+                    if (Value.ToUpper().Equals("TRUE"))
+                    {
+                        if (!ctrlCfg.Status.ToUpper().Equals("SHORTBLINK"))
+                        {
+                            ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "Blink", ctrlCfg.Status);
+                        }
+                        ctrlCfg.Status = "ShortBlink";
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            _Report.On_Data_Chnaged(Parameter, "SHORTBLINK", ctrlCfg.Type);
+                        }).Start();
 
+                    }
+                    else
+                    {
+                        if (!ctrlCfg.Status.ToUpper().Equals("FALSE"))
+                        {
+                            ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "False", ctrlCfg.Status);
+                        }
+                        ctrlCfg.Status = "False";
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            _Report.On_Data_Chnaged(Parameter, "FALSE", ctrlCfg.Type);
+                        }).Start();
+
+                    }
+
+                }
+                else
+                {
+                    logger.Debug("SetShortBlink:Parameter is not exist.");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Debug("SetShortBlink:" + e.Message);
+            }
+            return result;
+        }
         public string GetALL()
         {
             string result = "";
