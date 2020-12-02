@@ -194,12 +194,12 @@ namespace TransferControl.Engine
                                             if (each.Value.Equals("TRUE"))
                                             {
                                                 Node.Foup_Placement = true;
-                                                Node.Foup_Presence = false;
+                                                Node.Foup_Presence = true;
                                             }
                                             else
                                             {
                                                 Node.Foup_Placement = false;
-                                                Node.Foup_Presence = true;
+                                                Node.Foup_Presence = false;
                                             }
                                             break;
                                         case "PRTST":
@@ -1183,6 +1183,7 @@ namespace TransferControl.Engine
                             case Transaction.Command.LoadPortType.ReadStatus:
                                 parser = new MessageParser(Node.Vendor);
                                 Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
+
                                 foreach (KeyValuePair<string, string> each in Node.Status)
                                 {
                                     switch (each.Key)
@@ -1204,6 +1205,7 @@ namespace TransferControl.Engine
                                             }
                                             break;
                                         case "PRTST":
+
                                             if (each.Value.Equals("UNLK"))
                                             {
                                                 Node.Foup_Lock = false;
@@ -1397,6 +1399,15 @@ namespace TransferControl.Engine
 
             
         }
+
+        private void FakePlacementSensor(Node Node, CommandReturnMessage Msg)
+        {
+            Node.Foup_Placement = false;
+            Node.Foup_Presence = true;
+            Node.Foup_Lock = false;
+
+            _UIReport.On_Event_Trigger(Node, Msg);
+        }
         /// <summary>
         /// 事件觸發
         /// </summary>
@@ -1445,27 +1456,20 @@ namespace TransferControl.Engine
                         {
                             case "STS__":
 
+                                //搭配華海清科修改流程
+                                //仿照ASYST通訊流程
+                                //需發送一個假的訊號變化
+                                FakePlacementSensor(Node, Msg);
                                 if (Msg.Value.Equals("R-Present,1"))
                                 {
                                     Node.Foup_Presence = true;
-                                    Node.Foup_Placement = false;
+                                    Node.Foup_Placement = true;                                    
                                 }
                                 else if (Msg.Value.Equals("R-Present,0"))
                                 {
                                     Node.Foup_Presence = false;
-                                    Node.Foup_Placement = true;
+                                    Node.Foup_Placement = false;
                                 }
-
-                                //if (Msg.Value.Equals("R-Present,1"))
-                                //{
-                                //    Node.Foup_Presence = true;
-                                //    Node.Foup_Placement = true;
-                                //}
-                                //else if (Msg.Value.Equals("R-Present,0"))
-                                //{
-                                //    Node.Foup_Presence = false;
-                                //    Node.Foup_Placement = false;
-                                //}
 
                                 break;
                             case "MANSW":
@@ -1522,6 +1526,7 @@ namespace TransferControl.Engine
                         }
                         break;
                 }
+
                 if (Msg.Command.Equals("ERROR"))
                 {
                    
