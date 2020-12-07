@@ -511,7 +511,16 @@ namespace TransferControl.Digital_IO
                     {
                         result += ",";
                     }
-                    result += outCfg.Parameter + "=" + ctrl.GetOut(outCfg.Address);
+
+                    if(outCfg.Type.Equals("DOUT"))
+                    {
+                        result += outCfg.Parameter + "=" + ctrl.GetOut(outCfg.Address);
+                    }
+                    else
+                    {
+                        result += outCfg.Parameter + "=" + ctrl.GetIn(outCfg.Address);
+                    }
+
                 }
             }
             foreach (ParamConfig outCfg in Params.Values)
@@ -523,8 +532,35 @@ namespace TransferControl.Digital_IO
                     {
                         result += ",";
                     }
-                    //result += outCfg.Parameter + "=" + ctrl.GetOut(outCfg.Address);
-                    result += outCfg.Parameter + "=" + "True";
+
+                    if (outCfg.Type.Equals("DOUT"))
+                    {
+                        result += outCfg.Parameter + "=" + ctrl.GetOut(outCfg.Address);
+                    }
+                    else
+                    {
+                        if (outCfg.Abnormal.ToUpper().Equals("TRUE"))
+                        {
+                            string GetResult = "True";
+                            if (ctrl.GetIn(outCfg.Address).ToUpper().Equals("TRUE"))
+                            {
+                                GetResult = "False";
+                            }
+                            else
+                            {
+                                GetResult = "True";
+                            }
+
+                            result += outCfg.Parameter + "=" + GetResult;
+                        }
+                        else
+                        {
+                            result += outCfg.Parameter + "=" + ctrl.GetIn(outCfg.Address);
+                        }
+                    }
+
+                    //20201205 Pingchung Mark
+                    //result += outCfg.Parameter + "=" + "True";
                 }
             }
             return result;

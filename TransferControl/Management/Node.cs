@@ -77,6 +77,8 @@ namespace TransferControl.Management
         /// LoadPort專用，Mapping完成
         /// </summary>
         public bool IsMapping { get; set; }
+        //public bool IsCheckReMappingResult = true;
+
         public bool MappingHasError = false;
 
         /// <summary>

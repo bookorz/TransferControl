@@ -278,14 +278,11 @@ namespace TransferControl.Engine
                                 //產生Mapping資料
                                 Node.LoadTime = DateTime.Now;
                                 string Mapping = Msg.Value;
-
-
-                                
-
+        
                                 Node.MappingResult = Mapping;
 
                                 Node.IsMapping = true;
-
+                                bool IsError = false;
 
                                 int currentIdx = 1;
                                 for (int i = 0; i < Mapping.Length; i++)
@@ -318,6 +315,7 @@ namespace TransferControl.Engine
 
                                             //wafer.MapFlag = false;
                                             //wafer.ErrPosition = false;
+
                                             JobManagement.Remove(wafer);
                                             break;
                                         case '1':
@@ -333,7 +331,10 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
+                                            //20201202 Pingchung 
                                             Node.IsMapping = false;
+                                            //Node.IsMapping = true;
+                                            IsError = true;
                                             break;
                                         default:
                                         case '?':
@@ -342,7 +343,11 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
+                                            //20201202 Pingchung 
                                             Node.IsMapping = false;
+                                            //Node.IsMapping = true;
+
+                                            IsError = true;
                                             break;
                                         case 'W':
                                             wafer.Status = Job.MapStatus.Double;
@@ -350,13 +355,20 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
+                                            //20201202 Pingchung 
                                             Node.IsMapping = false;
+                                            //Node.IsMapping = true;
+
+                                            IsError = true;
                                             break;
                                     }
 
 
                                 }
+
+                                //20201202 Pingchung 
                                 if (!Node.IsMapping)
+                                //if (IsError)
                                 {
                                     CommandReturnMessage rem = new CommandReturnMessage();
                                     rem.Value = "MAPERR";
@@ -1150,7 +1162,7 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
-                                            Node.IsMapping = false;
+                                            //Node.IsMapping = false;
                                             break;
                                         default:
                                         case '?':
@@ -1159,7 +1171,7 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
-                                            Node.IsMapping = false;
+                                            //Node.IsMapping = false;
                                             break;
                                         case 'W':
                                             wafer.Status = Job.MapStatus.Double;
@@ -1167,7 +1179,7 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
-                                            Node.IsMapping = false;
+                                            //Node.IsMapping = false;
                                             break;
                                     }
 
@@ -1285,10 +1297,6 @@ namespace TransferControl.Engine
 
                 _UIReport.On_Command_Finished(Node, Txn, Msg);
 
-
-
-
-
             }
             catch (Exception e)
             {
@@ -1297,9 +1305,6 @@ namespace TransferControl.Engine
             //watch.Stop();
             //var elapsedMs = watch.ElapsedMilliseconds;
             //logger.Debug("On_Command_Finished ProcessTime:" + elapsedMs.ToString());
-
-
-
 
         }
         /// <summary>
