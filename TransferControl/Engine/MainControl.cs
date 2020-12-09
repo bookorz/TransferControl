@@ -51,25 +51,15 @@ namespace TransferControl.Engine
 
             ControllerManagement.LoadConfig(this);
 
-           
-
-
             //初始化Robot點位表
             PointManagement.LoadConfig();
             //初始化工作腳本
-
             
         }
-
 
         /// <summary>
         /// 對所有Controller連線
         /// </summary>
-
-
-
-
-
 
         /// <summary>
         /// 命令傳送成功
@@ -1062,6 +1052,16 @@ namespace TransferControl.Engine
                         UpdateNodeStatus(Node, Txn);
                         switch (Txn.Method)
                         {
+                            case Transaction.Command.LoadPortType.GetOPMode:
+                                //0.HW: Hardware Type(0 = Standard、1 = Extend)
+                                //1.PUSH: Pusher Support(0 = Not Support、1 = Support Pusher Function)
+                                //2.WORK: Workpiece(0 = None、1 = Pod、2 = Open Cassette、9 = Unknow)
+                                string[] OPMode = Msg.Value.Split(',');
+                                Node.HardwareType = Convert.ToInt32(OPMode[0]);
+                                Node.PusherSupport = Convert.ToInt32(OPMode[1]);
+                                Node.Workpiece = Convert.ToInt32(OPMode[2]);
+
+                                break;
                             case Transaction.Command.LoadPortType.MappingLoad:
                             case Transaction.Command.LoadPortType.Load:
 

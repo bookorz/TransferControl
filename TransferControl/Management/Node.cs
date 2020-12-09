@@ -216,6 +216,26 @@ namespace TransferControl.Management
         public bool WaferProtrusionSensor { get; set; }
         public object ExcuteLock = new object();
 
+        /// <summary>
+        /// SMIF 硬體總類
+        /// -1 = Unknow
+        /// 0 = Standard
+        /// 1 = Extend
+        /// </summary>
+        public int HardwareType { get; set; }
+        /// <summary>
+        /// -1 = Unknow 
+        /// 0 = Not Support
+        /// 1 = Support Pusher Function
+        /// </summary>
+        public int PusherSupport { get; set; }
+        /// <summary>
+        /// 0 = None
+        /// 1 = Pod
+        /// 2 = Open Cassette
+        /// 9 = Unknow
+        /// </summary>
+        public int Workpiece { get; set; }
         public IController GetController()
         {
             return ControllerManagement.Get(Controller);
@@ -318,6 +338,9 @@ namespace TransferControl.Management
             PoolInterval = 50;
             Speed = "100";
 
+            HardwareType = -1;
+            PusherSupport = -1;
+            Workpiece = -9;
         }
        
 
@@ -1283,6 +1306,13 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Tweek(EncoderLoadPort.TweekType.TweekUp);
                                 txn.CommandType = "CMD";
                                 break;
+                            //取得CST模式
+                            case Transaction.Command.LoadPortType.GetOPMode:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetOPMode(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "GET";
+                                break;
+
+
                                 //case Transaction.Command.LoadPortType.SetSlotOffset:
                                 //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
                                 //    break;

@@ -182,9 +182,7 @@ namespace TransferControl.Controller
         {
             Transaction Txn = null;
 
-
             Txn = orgTxn;
-
 
             if (Txn.CommandEncodeStr.Equals("GetMappingDummy"))
             {
@@ -219,20 +217,17 @@ namespace TransferControl.Controller
             // lock (TransactionList)
             List<CommandReturnMessage> msgList = _Decoder.GetMessage(Txn.CommandEncodeStr);
 
-
             if (!Txn.NodeType.Equals("OCR"))
             {
 
                 if (msgList.Count != 0)
                 {
                     Txn.Type = msgList[0].Command;
-                    //Txn.CommandType = msgList[0].CommandType;
                 }
             }
             else
             {
                 Txn.Type = "";
-                //Txn.CommandType = "";
             }
             string key = "";
             if (Vendor.ToUpper().Equals("KAWASAKI"))
@@ -249,7 +244,6 @@ namespace TransferControl.Controller
             {
                 key = "1" + Txn.Type;
             }
-
             else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Type;
@@ -299,25 +293,8 @@ namespace TransferControl.Controller
 
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
             {
-
-
-
-
                 Txn.SetTimeOutReport(this);
                 Txn.SetTimeOutMonitor(true);
-
-
-
-
-                //if (Vendor.ToUpper().Equals("ACDT"))
-                //{
-                //    byte[] byteAry = Encoding.UTF8.GetBytes(Txn.CommandEncodeStr);
-
-
-                //    logger.Debug(DeviceName + " Send:" + BitConverter.ToString(byteAry) + " Wafer:" + waferids);
-                //}
-                //else
-                //{
 
                 if (Txn.CommandType.Equals(""))
                 {
@@ -344,16 +321,11 @@ namespace TransferControl.Controller
                     }
                     if (this.Vendor.Equals("SMARTTAG8200") || this.Vendor.Equals("SMARTTAG8400"))
                     {
-                        //if (Txn.Method == Transaction.Command.SmartTagType.GetLCDData)
-                        //{
-                        //    conn.WaitForData(true);
-                        //}
                         ThreadPool.QueueUserWorkItem(new WaitCallback(conn.SendHexData), Txn.CommandEncodeStr);
 
                     }
                     else
                     {
-
                         ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), Txn.CommandEncodeStr);
                     }
                 }
@@ -380,9 +352,6 @@ namespace TransferControl.Controller
                 rm.Value = "AlreadyExcuting";
                 _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
             }
-
-
-
         }
 
         public void sendWith4Byte(object text)

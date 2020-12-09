@@ -29,10 +29,6 @@ namespace TransferControl.TaksFlow
             TaskFlowManagement.CurrentProcessTask TaskJob = (TaskFlowManagement.CurrentProcessTask)input;
             logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" + TaskJob.CurrentIndex.ToString());
 
-
-
-
-
             string Message = "";
             Node Target = null;
             Node Position = null;
@@ -88,33 +84,6 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-
-                                //if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
-                                //    return;
-                                //}
-                                //AckTask(TaskJob);
                                 if (NodeManagement.Get("ROBOT01").Enable)
                                 {
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ROBOT01", "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
@@ -148,31 +117,6 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
 
-                                //if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
-                                //    return;
-                                //}
                                 AckTask(TaskJob);
                                 if (NodeManagement.Get("ROBOT01").Enable)
                                 {
@@ -261,31 +205,6 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                //if (NodeManagement.Get("ROBOT01").Enable && NodeManagement.Get("ROBOT01").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300010");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT01").Enable && NodeManagement.Get("LOADPORT01").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT02").Enable && NodeManagement.Get("LOADPORT02").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT03").Enable && NodeManagement.Get("LOADPORT03").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300001");
-                                //    return;
-                                //}
-                                //if (NodeManagement.Get("LOADPORT04").Enable && NodeManagement.Get("LOADPORT04").IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300001");
-                                //    return;
-                                //}
                                 AckTask(TaskJob);
                                 if (NodeManagement.Get("ROBOT01").Enable)
                                 {
@@ -1579,6 +1498,19 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
+                    case TaskFlowManagement.Command.LOADPORT_OPMOD:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetOPMode }));
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
                     case TaskFlowManagement.Command.LOADPORT_DOCK:
                     case TaskFlowManagement.Command.LOADPORT_UNDOCK:
                         switch (TaskJob.CurrentIndex)

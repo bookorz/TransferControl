@@ -16,7 +16,7 @@ namespace TransferControl.Engine
         //void On_Controller_State_Changed(string Device_ID, string Status);
         void On_Node_Connection_Changed(string NodeName,string Status);
         void On_Job_Location_Changed(Job Job);
-
+        void On_CST_Mode_Changed(Node node);
         void On_DIO_Data_Chnaged(string Parameter, string Value , string Type);
         void On_Connection_Error(string DIOName, string ErrorMsg);
         void On_Connection_Status_Report(string DIOName, string Status);

@@ -1326,6 +1326,24 @@ namespace TransferControl.CommandConvert
             }
             return commandStr + EndCode();
         }
+        /// <summary>
+        /// 取得CST形式與總類
+        /// </summary>
+        /// <param name="commandType"></param>
+        /// <returns></returns>
+        public string GetOPMode(CommandType commandType)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    commandStr = "$1MCR:OPMOD:1";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
 
         /// <summary>
         ///  Load Port Undock

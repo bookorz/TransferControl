@@ -228,6 +228,11 @@ namespace TransferControl.Management
             _TaskReport.On_Job_Location_Changed(Job);
         }
 
+        public void On_CST_Mode_Changed(Node node)
+        {
+            ///由上層邊變更即可                
+        }
+
         public void On_DIO_Data_Chnaged(string Parameter, string Value, string Type)
         {
             _TaskReport.On_DIO_Data_Chnaged(Parameter, Value, Type);
@@ -366,6 +371,7 @@ namespace TransferControl.Management
             LOADPORT_TWKUP,
             LOADPORT_TWKDN,
             LOADPORT_READ_MAP,
+            LOADPORT_OPMOD,
             ALL_INIT,
             ALL_ORGSH,
             DISABLE_OPACCESS,
