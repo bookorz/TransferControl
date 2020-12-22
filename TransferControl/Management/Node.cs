@@ -236,6 +236,58 @@ namespace TransferControl.Management
         /// 9 = Unknow
         /// </summary>
         public int Workpiece { get; set; }
+        /// <summary>
+        /// for Sanwa-SMIF
+        /// 0 = Auto, 1 = Manual
+        /// </summary>
+        public int ManualMode { get; set; }
+        /// <summary>
+        /// for Sanwa-SMIF
+        ///0 = Indexer is not ready(No ORG Serch 、 Alarm)
+        ///1 = Indexer ready for new command
+        /// </summary>
+        public int Ready { get; set; }
+        /// <summary>
+        ///for Sanwa-SMIF
+        ///0 = Power up (Boot /Reset
+        ///1 = Homing Calibration(ORG__)
+        ///2 = Close/Auto Home(HOME_)
+        ///3 = Open/Reach Stage(STAGE)
+        ///4 = Index(GOTO_/TWEEK)
+        ///5 = Map(MAP__)
+        ///6 = W afer search(MSLOT)
+        ///7 = Slot search(SLOT_)
+        ///8 = Unknown(STEST
+        /// </summary>
+        public string LFUNC { get; set; }
+        /// <summary>
+        /// Sanwa SMIF POS(Position)
+        ///0 = Unknown
+        ///1 = Home
+        ///2 = Lift
+        ///3 = Stage
+        ///4 = Z Axis Li mit+
+        ///5 = Other
+        /// </summary>
+        public string Position { get; set; }
+        /// <summary>
+        /// Sanwa SMIF
+        /// 0~25 (0 : Ignore)
+        /// </summary>
+        public int SlotNumber { get; set; }
+        /// <summary>
+        /// Sanwa SMIF 
+        /// ELUD (Elevator Up/Down)
+        /// 0 = Down
+        /// 1 = Up
+        /// </summary>
+        public bool ElevatorUp { get; set; }
+        /// <summary>
+        /// LPS(Lift Present Status)
+        /// 0 = Absence
+        /// 1 = Present
+        /// </summary>
+        public bool LiftPresent { get; set; }
         public IController GetController()
         {
             return ControllerManagement.Get(Controller);
@@ -341,6 +393,14 @@ namespace TransferControl.Management
             HardwareType = -1;
             PusherSupport = -1;
             Workpiece = -9;
+
+            ManualMode = 0;
+            Ready = 1;
+            LFUNC = "0";
+            Position = "0";
+            SlotNumber = 25;
+            ElevatorUp = true;
+            LiftPresent = true;
         }
        
 

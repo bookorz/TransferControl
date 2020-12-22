@@ -733,7 +733,7 @@ namespace TransferControl.CommandConvert
         }
 
         /// <summary>
-        /// Status [TDK, ASYST]
+        /// Status [TDK, ASYST,SANWA_MC]
         /// </summary>
         /// <returns></returns>
         public string Status()
