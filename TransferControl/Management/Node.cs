@@ -440,12 +440,25 @@ namespace TransferControl.Management
         /// <returns></returns>
         public bool SendCommand(Transaction txn)
         {
+
             lock (ExcuteLock)
             {
                 if (IsExcuting)
                 {
 
+                    logger.Debug("SendCommand(Transaction txn)" + "if (IsExcuting)");
                     return false;
+                    //SpinWait.SpinUntil(() => !IsExcuting, 2000);
+                    //if(!IsExcuting)
+                    //{
+                    //    logger.Debug("SendCommand(Transaction txn)" + "if(!IsExcuting)");
+                    //    IsExcuting = true;
+                    //}
+                    //else
+                    //{
+                    //    logger.Debug("SendCommand(Transaction txn)" + "return false");
+                    //    return false;
+                    //}
                 }
                 else
                 {

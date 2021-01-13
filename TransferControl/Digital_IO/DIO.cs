@@ -411,16 +411,19 @@ namespace TransferControl.Digital_IO
                 {
                     if (Value.ToUpper().Equals("TRUE"))
                     {
-                        if (!ctrlCfg.Status.ToUpper().Equals("BLINK"))
-                        {
-                            ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "Blink", ctrlCfg.Status);
+                        if(!ctrlCfg.Status.ToUpper().Equals("BLINK"))
+                        { 
+                            //if (!ctrlCfg.Status.ToUpper().Equals("BLINK"))
+                            //{
+                                ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "Blink", ctrlCfg.Status);
+                            //}
+                            ctrlCfg.Status = "Blink";
+                            new Thread(() =>
+                            {
+                                Thread.CurrentThread.IsBackground = true;
+                                _Report.On_Data_Chnaged(Parameter, "BLINK", ctrlCfg.Type);
+                            }).Start();
                         }
-                        ctrlCfg.Status = "Blink";
-                        new Thread(() =>
-                        {
-                            Thread.CurrentThread.IsBackground = true;
-                            _Report.On_Data_Chnaged(Parameter, "BLINK", ctrlCfg.Type);
-                        }).Start();
 
                     }
                     else
@@ -460,17 +463,20 @@ namespace TransferControl.Digital_IO
                 {
                     if (Value.ToUpper().Equals("TRUE"))
                     {
+                        //如果是SHORTBLINK就不再進行
                         if (!ctrlCfg.Status.ToUpper().Equals("SHORTBLINK"))
                         {
-                            ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "Blink", ctrlCfg.Status);
+                            //if (!ctrlCfg.Status.ToUpper().Equals("SHORTBLINK"))
+                            //{
+                                ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "ShortBlink", ctrlCfg.Status);
+                            //}
+                            ctrlCfg.Status = "ShortBlink";
+                            new Thread(() =>
+                            {
+                                Thread.CurrentThread.IsBackground = true;
+                                _Report.On_Data_Chnaged(Parameter, "SHORTBLINK", ctrlCfg.Type);
+                            }).Start();
                         }
-                        ctrlCfg.Status = "ShortBlink";
-                        new Thread(() =>
-                        {
-                            Thread.CurrentThread.IsBackground = true;
-                            _Report.On_Data_Chnaged(Parameter, "SHORTBLINK", ctrlCfg.Type);
-                        }).Start();
-
                     }
                     else
                     {

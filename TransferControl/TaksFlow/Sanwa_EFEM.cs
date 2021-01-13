@@ -39,6 +39,8 @@ namespace TransferControl.TaksFlow
             string Arm = "";
             string Slot = "";
 
+            Node FromPosition = null;
+            Node ToPosition = null;
             if (TaskJob.Params != null)
             {
                 foreach (KeyValuePair<string, string> item in TaskJob.Params)
@@ -52,6 +54,10 @@ namespace TransferControl.TaksFlow
                         case "@FromPosition":
                         case "@ToPosition":
                             Position = NodeManagement.Get(item.Value);
+                            if(item.Key.Equals("@FromPosition"))
+                                FromPosition = NodeManagement.Get(item.Value);
+                            if(item.Key.Equals("@ToPosition"))
+                                ToPosition = NodeManagement.Get(item.Value);
                             break;
                         case "@Value":
                             Value = item.Value;
@@ -448,12 +454,15 @@ namespace TransferControl.TaksFlow
                                 Wafer.LastSlot = Convert.ToInt16(Wafer.Slot).ToString();
                                 Wafer.Position = Position.Name;
                                 Wafer.Slot = Convert.ToInt16(Slot).ToString();
+
+                                _TaskReport.On_Job_Location_Changed(Wafer);
+
                                 if (Position.Type.Equals("LoadLock"))
                                 {
                                     JobManagement.Remove(Wafer);
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "true");
                                 }
-                                _TaskReport.On_Job_Location_Changed(Wafer);
+
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -570,6 +579,9 @@ namespace TransferControl.TaksFlow
                                 Wafer.LastSlot = Convert.ToInt16(Wafer.Slot).ToString();
                                 Wafer.Position = Target.Name;
                                 Wafer.Slot = "1";
+
+                                _TaskReport.On_Job_Location_Changed(Wafer);
+
                                 while (true)
                                 {
                                     Job ghost = JobManagement.Get(Wafer.LastNode, Wafer.LastSlot);
@@ -582,7 +594,7 @@ namespace TransferControl.TaksFlow
                                         break;
                                     }
                                 }
-                                _TaskReport.On_Job_Location_Changed(Wafer);
+
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -594,26 +606,100 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!Position.InitialComplete)
+                                //if (!Position.Type.Equals("LoadLock"))
+                                //{
+                                //    if (!Position.InitialComplete)
+                                //    {
+                                //        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300168");
+                                //        return;
+                                //    }
+                                //}
+                                //if (!Target.InitialComplete)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
+                                //    return;
+                                //}
+                                //if (!Position.Type.Equals("LoadLock"))
+                                //{
+                                //    if (!Position.OrgSearchComplete)
+                                //    {
+                                //        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300169");
+                                //        return;
+                                //    }
+                                //}
+                                //if (!Target.OrgSearchComplete)
+                                //{
+                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
+                                //    return;
+                                //}
+
+                                if (FromPosition != null)
                                 {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300168");
-                                    return;
+                                    if (!FromPosition.Type.Equals("LoadLock"))
+                                    {
+                                        if (!FromPosition.InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = FromPosition.Name }, "S0300168");
+                                            return;
+                                        }
+
+                                        if (!FromPosition.OrgSearchComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = FromPosition.Name }, "S0300169");
+                                            return;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (MainControl.Instance.DIO.GetIO("DIN", FromPosition.Name + "_ARM_EXTEND_ENABLE").ToUpper().Equals("FALSE") && !TaskJob.Params["@From_BYPASS_CHECK"].Equals("TRUE"))
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = FromPosition.Name }, "S0300164");
+                                            return;
+                                        }
+                                        MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + FromPosition.Name, "false");
+                                    }
                                 }
+
+                                if (ToPosition != null)
+                                {
+                                    if (!ToPosition.Type.Equals("LoadLock"))
+                                    {
+                                        if (!ToPosition.InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = ToPosition.Name }, "S0300168");
+                                            return;
+                                        }
+
+                                        if (!ToPosition.OrgSearchComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = ToPosition.Name }, "S0300169");
+                                            return;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (MainControl.Instance.DIO.GetIO("DIN", ToPosition.Name + "_ARM_EXTEND_ENABLE").ToUpper().Equals("FALSE") && !TaskJob.Params["@To_BYPASS_CHECK"].Equals("TRUE"))
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = ToPosition.Name }, "S0300164");
+                                            return;
+                                        }
+                                        MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + ToPosition.Name, "false");
+                                    }
+                                }
+
                                 if (!Target.InitialComplete)
                                 {
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
                                     return;
                                 }
-                                if (!Position.OrgSearchComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300169");
-                                    return;
-                                }
+
                                 if (!Target.OrgSearchComplete)
                                 {
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
                                     return;
                                 }
+
+
                                 //if (Position.IsExcuting)
                                 //{
                                 //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
@@ -625,18 +711,22 @@ namespace TransferControl.TaksFlow
                                 //    return;
                                 //}
                                 //Get safety check
-                                Wafer = JobManagement.Get(TaskJob.Params["@FromPosition"], TaskJob.Params["@FromSlot"]);
+                                if (!TaskJob.Params["@FromPosition"].Contains("BF"))
+                                {
+                                    Wafer = JobManagement.Get(TaskJob.Params["@FromPosition"], TaskJob.Params["@FromSlot"]);
 
-                                if (Wafer == null)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
-                                    return;
+                                    if (Wafer == null)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
+                                        return;
+                                    }
+                                    else if (!Wafer.MapFlag || Wafer.ErrPosition)
+                                    {
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
+                                        return;
+                                    }
                                 }
-                                else if (!Wafer.MapFlag || Wafer.ErrPosition)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
-                                    return;
-                                }
+
                                 if (TaskJob.Params["@FromPosition"].Equals(TaskJob.Params["@ToPosition"]) && TaskJob.Params["@FromSlot"].Equals(TaskJob.Params["@ToSlot"]))
                                 {
 
@@ -656,7 +746,7 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
 
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"] } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -665,7 +755,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] },{ "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"] } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -1584,10 +1674,52 @@ namespace TransferControl.TaksFlow
                 {
                     foreach (TaskFlowManagement.ExcutedCmd eachCmd in TaskJob.CheckList)
                     {
+                        Node CtrlNode = NodeManagement.Get(eachCmd.NodeName);
                         eachCmd.Txn.TaskObj = TaskJob;
-                        if (NodeManagement.Get(eachCmd.NodeName).Connected)
+                        //if (NodeManagement.Get(eachCmd.NodeName).Connected)
+                        //{
+                        //    if(!NodeManagement.Get(eachCmd.NodeName).SendCommand(eachCmd.Txn))
+                        //    {
+                        //        ///通訊傳送失敗
+                        //        logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" + 
+                        //            TaskJob.CurrentIndex.ToString() + "SendCommand Return false(1)");
+
+                        //        if (!NodeManagement.Get(eachCmd.NodeName).SendCommand(eachCmd.Txn))
+                        //        {
+                        //            ///通訊傳送失敗
+                        //            logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" +
+                        //                TaskJob.CurrentIndex.ToString() + "SendCommand Return false(2)");
+                        //        }
+                        //    }
+                        //}
+                        if (CtrlNode.Connected)
                         {
-                            NodeManagement.Get(eachCmd.NodeName).SendCommand(eachCmd.Txn);
+                            if (!CtrlNode.SendCommand(eachCmd.Txn))
+                            {
+                                ///通訊傳送失敗
+                                logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" +
+                                    TaskJob.CurrentIndex.ToString() + "SendCommand Return false(1)");
+
+                                //等30秒後
+                                SpinWait.SpinUntil(() => !CtrlNode.IsExcuting, 30000);
+                                if (!CtrlNode.IsExcuting)
+                                {
+                                    logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + 
+                                        "SendCommand Again" + "if (!CtrlNode.IsExcuting)");
+                                }
+                                else
+                                {
+                                    logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + 
+                                        "SendCommand Again" + "Timeout");
+                                }
+
+                                if (!CtrlNode.SendCommand(eachCmd.Txn))
+                                {
+                                    ///通訊傳送失敗
+                                    logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" +
+                                        TaskJob.CurrentIndex.ToString() + "SendCommand Return false(2)");
+                                }
+                            }
                         }
                         else
                         {
