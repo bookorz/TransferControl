@@ -379,17 +379,6 @@ namespace TransferControl.TaksFlow
                                     return;
                                 }
 
-                                //if (Position.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
-                                //    return;
-                                //}
-                                //if (Target.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                //    return;
-                                //}
-
                                 if (Position.Type.Equals("LOADPORT") && !Position.IsMapping)
                                 {
                                     AckTask(TaskJob);
@@ -412,9 +401,11 @@ namespace TransferControl.TaksFlow
                                         AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300164");
                                         return;
                                     }
+
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
-
+                                    if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
+                                        AckTask(TaskJob);
                                 }
                                 else
                                 {
@@ -423,14 +414,12 @@ namespace TransferControl.TaksFlow
 
                                     if (Wafer == null)
                                     {
-
                                         AckTask(TaskJob);
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = "1", Slot = "1" }));
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Slot, Val2 = "0" }));
                                     }
                                     else
                                     {
-
                                         AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300171");
                                         return;
                                     }
@@ -497,16 +486,6 @@ namespace TransferControl.TaksFlow
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
                                     return;
                                 }
-                                //if (Position.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
-                                //    return;
-                                //}
-                                //if (Target.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                //    return;
-                                //}
 
                                 if (Position.Type.Equals("LOADPORT") && !Position.IsMapping)
                                 {
@@ -534,6 +513,9 @@ namespace TransferControl.TaksFlow
                                     }
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
+                                    if(!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
+                                        AckTask(TaskJob);
+                                    
 
                                 }
                                 else
@@ -606,33 +588,6 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                //if (!Position.Type.Equals("LoadLock"))
-                                //{
-                                //    if (!Position.InitialComplete)
-                                //    {
-                                //        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300168");
-                                //        return;
-                                //    }
-                                //}
-                                //if (!Target.InitialComplete)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
-                                //    return;
-                                //}
-                                //if (!Position.Type.Equals("LoadLock"))
-                                //{
-                                //    if (!Position.OrgSearchComplete)
-                                //    {
-                                //        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300169");
-                                //        return;
-                                //    }
-                                //}
-                                //if (!Target.OrgSearchComplete)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
-                                //    return;
-                                //}
-
                                 if (FromPosition != null)
                                 {
                                     if (!FromPosition.Type.Equals("LoadLock"))
@@ -700,16 +655,6 @@ namespace TransferControl.TaksFlow
                                 }
 
 
-                                //if (Position.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
-                                //    return;
-                                //}
-                                //if (Target.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
-                                //    return;
-                                //}
                                 //Get safety check
                                 if (!TaskJob.Params["@FromPosition"].Contains("BF"))
                                 {
@@ -746,7 +691,7 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
 
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"] } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"]}, {"@IsTransCommand", "TRUE"} }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -755,7 +700,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] },{ "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"] } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] },{ "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"]}, {"@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
