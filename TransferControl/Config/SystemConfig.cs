@@ -31,6 +31,11 @@ namespace TransferControl.Config
         public string FakeDataP4 { get; set; }
         public string Language { get; set; }
 
+        public bool OfflineMode { get; set; } = false;
+
+        public string User { get; set; } = "Sanwa";
+
+
         public static SystemConfig Get()
         {
             if(Content == null)

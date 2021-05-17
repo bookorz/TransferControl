@@ -179,7 +179,6 @@ namespace TransferControl.Management
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(TaskFlow.Excute), result);
 
-
             return result;
         }
 
@@ -258,8 +257,6 @@ namespace TransferControl.Management
         public void On_TaskJob_Ack(CurrentProcessTask Task)
         {
             _TaskReport.On_TaskJob_Ack(Task);
-
-
 
         }
 
