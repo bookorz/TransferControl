@@ -54,33 +54,54 @@ namespace TransferControl.Management
                     IController ctrl = null;
                     if (each.ControllerType.Equals("ASCII"))
                     {
-                        DeviceController d = new DeviceController();
-                        d.DeviceName = each.DeviceName;
-                        d.DeviceType = each.DeviceType;
-                        d.Vendor = each.Vendor;
-                        d.IPAdress = each.IPAdress;
-                        d.Port = each.Port;
-                        d.BaudRate = each.BaudRate;
-                        d.PortName = each.PortName;
-                        d.ConnectionType = each.ConnectionType;
-                        d.Enable = each.Enable;
-                        d.ControllerType = each.ControllerType;
+                        DeviceController d = new DeviceController
+                        {
+                            DeviceName = each.DeviceName,
+                            DeviceType = each.DeviceType,
+                            Vendor = each.Vendor,
+                            IPAdress = each.IPAdress,
+                            Port = each.Port,
+                            BaudRate = each.BaudRate,
+                            PortName = each.PortName,
+                            ConnectionType = each.ConnectionType,
+                            Enable = each.Enable,
+                            ControllerType = each.ControllerType
+                        };
 
                         ctrl = d;
                     }
                     else if (each.ControllerType.Equals("MODBUS"))
                     {
-                        ModbusController m = new ModbusController();
-                        m.DeviceName = each.DeviceName;
-                        m.DeviceType = each.DeviceType;
-                        m.Vendor = each.Vendor;
-                        m.IPAdress = each.IPAdress;
-                        m.Port = each.Port;
-                        m.BaudRate = each.BaudRate;
-                        m.PortName = each.PortName;
-                        m.ConnectionType = each.ConnectionType;
-                        m.Enable = each.Enable;
-                        m.ControllerType = each.ControllerType;
+                        ModbusController m = new ModbusController
+                        {
+                            DeviceName = each.DeviceName,
+                            DeviceType = each.DeviceType,
+                            Vendor = each.Vendor,
+                            IPAdress = each.IPAdress,
+                            Port = each.Port,
+                            BaudRate = each.BaudRate,
+                            PortName = each.PortName,
+                            ConnectionType = each.ConnectionType,
+                            Enable = each.Enable,
+                            ControllerType = each.ControllerType
+                        };
+                        ctrl = m;
+                    }
+                    else if (each.ControllerType.Equals("PLC"))
+                    {
+                        PLCController m = new PLCController
+                        {
+                            DeviceName = each.DeviceName,
+                            DeviceType = each.DeviceType,
+                            Vendor = each.Vendor,
+                            IPAdress = each.IPAdress,
+                            Port = each.Port,
+                            BaudRate = each.BaudRate,
+                            PortName = each.PortName,
+                            ConnectionType = each.ConnectionType,
+                            Enable = each.Enable,
+                            ControllerType = each.ControllerType
+                        };
                         ctrl = m;
                     }
 
