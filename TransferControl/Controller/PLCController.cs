@@ -35,8 +35,8 @@ namespace TransferControl.Controller
         public int BaudRate { get; set; }
         public bool Enable { get; set; }
 
-        private string ch1Send = "";
-        private string ch2Send = "";
+        //private string ch1Send = "";
+        //private string ch2Send = "";
         [JsonIgnore]
         public string Status = "Disconnected";
         [JsonIgnore]
@@ -150,11 +150,6 @@ namespace TransferControl.Controller
                     {
                         key = Txn.AdrNo;
                     }
-                    //}
-                    //else
-                    //{
-                    //    key = "0" + msgList[0].Command;
-                    //}
 
                 }
                 else
@@ -165,34 +160,14 @@ namespace TransferControl.Controller
 
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
             {
-
-
-
-
                 Txn.SetTimeOutReport(this);
                 Txn.SetTimeOutMonitor(true);
-
-
-
-
-                //if (Vendor.ToUpper().Equals("ACDT"))
-                //{
-                //    byte[] byteAry = Encoding.UTF8.GetBytes(Txn.CommandEncodeStr);
-
-
-                //    logger.Debug(DeviceName + " Send:" + BitConverter.ToString(byteAry) + " Wafer:" + waferids);
-                //}
-                //else
-                //{
 
                 if (Txn.CommandType.Equals(""))
                 {
                     Txn.CommandType = _Decoder.GetMessage(Txn.CommandEncodeStr)[0].CommandType;
                 }
-                //if (Txn.CommandType.Equals("GET") || Txn.CommandType.IndexOf("FS") != -1)
-                //{
 
-                //}
                 if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
                 {
                     Txn.SetTimeOut(15000);
@@ -200,49 +175,6 @@ namespace TransferControl.Controller
                 else
                 {
                     Txn.SetTimeOut(Txn.AckTimeOut);
-                }
-                try
-                {
-                    //logger.Info(DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
-                    //if (!this.Vendor.ToUpper().Equals("MITSUBISHI_PLC"))
-                    //{
-                    //    _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
-                    //}
-                    //if (this.Vendor.Equals("SMARTTAG8200") || this.Vendor.Equals("SMARTTAG8400"))
-                    //{
-                    //    //if (Txn.Method == Transaction.Command.SmartTagType.GetLCDData)
-                    //    //{
-                    //    //    conn.WaitForData(true);
-                    //    //}
-                    //    ThreadPool.QueueUserWorkItem(new WaitCallback(conn.SendHexData), Txn.CommandEncodeStr);
-
-                    //}
-                    //else
-                    //{
-
-                    //    ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), Txn.CommandEncodeStr);
-                    //}
-                    if (Txn.NodeName.ToUpper().Equals("SMIF1"))
-                    {
-                        ch1Send = Txn.CommandEncodeStr;
-                    }
-                    else if (Txn.NodeName.ToUpper().Equals("SMIF2"))
-                    {
-                        ch2Send = Txn.CommandEncodeStr;
-                    }
-
-
-                }
-                catch (Exception eex)
-                {
-                    logger.Error(eex.StackTrace);
-                    _ReportTarget.On_Message_Log("CMD", DeviceName + " Err:" + eex.StackTrace);
-                    Txn.SetTimeOutMonitor(false);
-                    Transaction tmp;
-                    TransactionList.TryRemove(key, out tmp);
-                    CommandReturnMessage rm = new CommandReturnMessage();
-                    rm.Value = "ConnectionError";
-                    _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
                 }
             }
             else
@@ -256,8 +188,6 @@ namespace TransferControl.Controller
                 rm.Value = "AlreadyExcuting";
                 _ReportTarget.On_Command_Error(NodeManagement.Get(Txn.NodeName), Txn, rm);
             }
-
-
 
         }
         public string GetNextSeq()
@@ -389,14 +319,7 @@ namespace TransferControl.Controller
                         TransactionList.TryAdd(key, Txn);
                         return;
                     }
-                    //if (Node != null)
-                    //{
-                    //    _ReportTarget.On_Command_TimeOut(Node, Txn);
-                    //}
-                    //else
-                    //{
-                    //    logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
-                    //}
+
                 }
                 else
                 {
@@ -415,9 +338,7 @@ namespace TransferControl.Controller
         {
             _ReportTarget = ReportTarget;
 
-
-
-            _Decoder = new CommandConvert.CommandDecoder(Vendor);
+            _Decoder = new CommandDecoder(Vendor);
 
             Encoder = new CommandEncoder(Vendor);
 
@@ -425,7 +346,7 @@ namespace TransferControl.Controller
             this.Name = DeviceName;
             this.Status = "";
 
-            ThreadPool.QueueUserWorkItem(new WaitCallback(Start), NodeManagement.Get("CSTROBOT"));
+            ThreadPool.QueueUserWorkItem(new WaitCallback(Start), NodeManagement.Get("CCLinkController"));
         }
 
 
@@ -433,21 +354,17 @@ namespace TransferControl.Controller
         {
             //PLC內X與Y區的起始位置為500(16進位) => 1280十進位
             int AddrOffset = 1280;
-            int CstRobotStation = 9;
-            int VipRobotStation = 13;
+            //int CstRobotStation = 9;
+            //int VipRobotStation = 13;
             Node Target = (Node)node;
-            //SpinWait.SpinUntil(() => Target.GetController().GetStatus().Equals("Connected"), 9999999);
-            //McProtocolTcp PLC = new McProtocolTcp("192.168.3.39", 2000);
+
             McProtocolTcp PLC = new McProtocolTcp(this.IPAdress, this.Port);
 
             this._IsConnected = true;
             byte[] result = new byte[512];
             int[] WResult = new int[32];
             bool isInit = false;
-            int RecieveIndex_1 = 0;
-            int RecieveIndex_2 = 0;
-            //PLC.SetBitDevice(PlcDeviceType.Y, new Dictionary<int, byte>() { { 1280,1}, { 1281, 1 }, { 1285, 1 } });
-            int dunit = 1;  //取出DWORD的數量
+
             while (true)
             {
                 try
@@ -466,126 +383,10 @@ namespace TransferControl.Controller
                         Target.SetIO("OUTPUT_OLD", result);
 
                         result = new byte[512];
-                        Target.SetIO("OUTPUT_ReCheck", result);
-
-                        result = new byte[512];
                         PLC.GetBitDevice(PlcDeviceType.X, AddrOffset, 512, result);
                         Target.SetIO("INPUT", result);
                         result = new byte[512];
                         Target.SetIO("INPUT_OLD", result);
-
-                        //PRESENCE起始位置為D6000
-                        //D6000 + 1 (HEX) => 24577(DEC)
-                        WResult = new int[32];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 24577, 32, WResult);
-                        result = ConvertToBit(WResult);
-                        Target.SetIO("PRESENCE", result);
-                        result = new byte[512];
-                        Target.SetIO("PRESENCE_OLD", result);
-
-                        //VIP_PRESENCE起始位置D6016
-                        //D6016 (HEX) => 24598(DEC)
-                        dunit = 8;
-                        WResult = new int[dunit];   //取到D6024以前
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 24598, dunit, WResult);
-                        result = ConvertToBit(WResult);
-                        Target.SetIO("VIP_PRESENCE", result);
-                        result = new byte[dunit * 16];
-                        Target.SetIO("VIP_PRESENCE_OLD", result);
-
-
-                        WResult = new int[2];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25856, 2, WResult);
-                        RecieveIndex_1 = WResult[0];
-                        RecieveIndex_2 = WResult[1];
-
-                        //CSTINTERLOCK起始位置為D6506
-                        //D6506(HEX) => 25862(DEC)
-                        WResult = new int[1];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25862, 1, WResult);
-                        result = ConvertToBit(WResult);
-                        Target.SetIO("CSTINTERLOCK", result);
-                        result = new byte[16];
-                        Target.SetIO("CSTINTERLOCK_OLD", result);
-                        Target.SetIO("CSTINTERLOCK_OLD", result);
-                        Target.SetIO("CSTINTERLOCK_OLD", result);
-                        Target.SetIO("CSTINTERLOCK_OLD", result);
-                        isInit = true;
-
-                        //VIP Robot起始位置為D6516
-                        //Work Area #6
-                        //D6516 + 6 (HEX) => 25890(DEC)
-                        WResult = new int[1];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25890, 1, WResult);
-                        result = ConvertToBit(WResult);
-                        Target.SetIO("VIPINTERLOCK", result);
-                        result = new byte[16];
-                        Target.SetIO("VIPINTERLOCK_OLD", result);
-                        isInit = true;
-
-                        //VIP Robot起始位置為D6501
-                        //D6501 => 25890(DEC)
-                        WResult = new int[2];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25857, 2, WResult);
-                        result = ConvertToBit(WResult);
-                        Target.SetIO("SHELFINTERLOCK", result);
-                        result = new byte[32];
-                        Target.SetIO("SHELFINTERLOCK_OLD", result);
-                        isInit = true;
-                    }
-                    if (!ch1Send.Equals(""))
-                    {
-                        int[] SendDataBytes = ByteArrayToIntArray(Encoding.ASCII.GetBytes(ch1Send));
-
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 24848, SendDataBytes.Length, SendDataBytes);
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 24834, 1, new int[] { SendDataBytes.Length });
-                        PLC.SetBitDevice(PlcDeviceType.Y, 1776, 1, new byte[] { 1 });
-                        ch1Send = "";
-                    }
-                    if (!ch2Send.Equals(""))
-                    {
-                        int[] SendDataBytes = ByteArrayToIntArray(Encoding.ASCII.GetBytes(ch2Send));
-
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25104, SendDataBytes.Length, SendDataBytes);
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25090, 1, new int[] { SendDataBytes.Length });
-                        PLC.SetBitDevice(PlcDeviceType.Y, 1778, 1, new byte[] { 1 });
-                        ch2Send = "";
-                    }
-                    //SpinWait.SpinUntil(() => false, 10);
-                    WResult = new int[90];
-                    PLC.ReadDeviceBlock(PlcDeviceType.D, 25856, 2, WResult);
-                    if (RecieveIndex_1 != WResult[0])
-                    {
-                        RecieveIndex_1 = WResult[0];
-                        int[] WResult1 = new int[90];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25360, 90, WResult1);
-                        string rData1 = "";
-                        foreach (int dec in WResult1)
-                        {
-                            rData1 += dec.ToString("X4").Substring(2, 2) + dec.ToString("X4").Substring(0, 2);
-                        }
-                        rData1 = Encoding.ASCII.GetString(StringToByteArray(rData1)).Trim('\0');
-                        //On_Connection_Message(rData1);
-
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(On_Connection_Message), rData1);
-
-                    }
-                    if (RecieveIndex_2 != WResult[1])
-                    {
-                        RecieveIndex_2 = WResult[1];
-                        int[] WResult1 = new int[90];
-                        PLC.ReadDeviceBlock(PlcDeviceType.D, 25616, 90, WResult1);
-                        string rData2 = "";
-                        foreach (int dec in WResult1)
-                        {
-                            rData2 += dec.ToString("X4").Substring(2, 2) + dec.ToString("X4").Substring(0, 2);
-                        }
-
-                        rData2 = Encoding.ASCII.GetString(StringToByteArray(rData2)).Trim('\0');
-                        //On_Connection_Message(rData2);
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(On_Connection_Message), rData2);
-
-
                     }
 
                     if (!Target.GetIO("OUTPUT").SequenceEqual(Target.GetIO("OUTPUT_OLD")))
@@ -595,101 +396,17 @@ namespace TransferControl.Controller
                         {
                             if (Target.GetIO("OUTPUT")[i] != Target.GetIO("OUTPUT_OLD")[i])
                             {
-                                //logger.Debug("IO OUTPUT=> i :" + i.ToString() + ", Value :" + Target.GetIO("OUTPUT")[i].ToString());
 
-                                //changedList.Add(i + AddrOffset, Target.GetIO("OUTPUT")[i]);
                                 Target.SetIO("OUTPUT_OLD", i, Target.GetIO("OUTPUT")[i]);
 
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("OUTPUT")[i].ToString(), "OUTPUT");
-
+                                Target.Mode = "OUTPUT";
+                                Target.Position = i.ToString();
+                                _ReportTarget.On_Node_State_Changed(Target, Target.GetIO("OUTPUT")[i].ToString());
                                 PLC.SetBitDevice(PlcDeviceType.Y, i + AddrOffset, 1, new byte[] { Target.GetIO("OUTPUT")[i] });
-
-
                             }
                         }
-                        //PLC.SetBitDevice(PlcDeviceType.Y, changedList);
-
-                        //result = new byte[512];
-                        //PLC.GetBitDevice(PlcDeviceType.Y, AddrOffset, 512, result);
-                        //Target.SetIO("OUTPUT_ReCheck", result);
-                        //if (!Target.GetIO("OUTPUT_OLD").SequenceEqual(Target.GetIO("OUTPUT_ReCheck")))
-                        //{
-                        //    changedList.Clear();
-                        //    for (int i = 0; i < Target.GetIO("OUTPUT_OLD").Length; i++)
-                        //    {
-                        //        if (Target.GetIO("OUTPUT_OLD")[i] != Target.GetIO("OUTPUT_ReCheck")[i])
-                        //        {
-                        //            logger.Debug("IO OUTPUT_OLD=> i :" + i.ToString() + ", Value :" + Target.GetIO("OUTPUT_OLD")[i].ToString());
-
-                        //            changedList.Add(i + AddrOffset, Target.GetIO("OUTPUT_OLD")[i]);
-                        //        }
-                        //    }
-                        //    PLC.SetBitDevice(PlcDeviceType.Y, changedList);
-                        //}
                     }
 
-                    if (!Target.GetIO("CSTINTERLOCK").SequenceEqual(Target.GetIO("CSTINTERLOCK_OLD")))
-                    {
-                        string binAry = "";
-                        for (int i = 0; i< Target.GetIO("CSTINTERLOCK").Length;i++)
-                        {
-                            if (Target.GetIO("CSTINTERLOCK")[i] != Target.GetIO("CSTINTERLOCK_OLD")[i])
-                            {
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("CSTINTERLOCK")[i].ToString(), "CSTINTERLOCK");
-                            }
-                            binAry = Target.GetIO("CSTINTERLOCK")[i].ToString()+ binAry;
-                        }
-                        int[] tmp = new int[1] { 0};
-                        tmp[0] = Convert.ToInt32(binAry, 2);
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25862, tmp.Length, tmp);
-                        Target.SetIO("CSTINTERLOCK_OLD",  Target.GetIO("CSTINTERLOCK"));
-                    }
-                    if (!Target.GetIO("VIPINTERLOCK").SequenceEqual(Target.GetIO("VIPINTERLOCK_OLD")))
-                    {
-                        string binAry = "";
-                        for (int i = 0; i < Target.GetIO("VIPINTERLOCK").Length; i++)
-                        {
-                            if (Target.GetIO("VIPINTERLOCK")[i] != Target.GetIO("VIPINTERLOCK_OLD")[i])
-                            {
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("VIPINTERLOCK")[i].ToString(), "VIPINTERLOCK");
-                            }
-                            binAry = Target.GetIO("VIPINTERLOCK")[i].ToString() + binAry;
-                        }
-                        int[] tmp = new int[1] { 0 };
-                        tmp[0] = Convert.ToInt32(binAry, 2);
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25890, tmp.Length, tmp);
-                        Target.SetIO("VIPINTERLOCK_OLD", Target.GetIO("VIPINTERLOCK"));
-                    }
-                    if (!Target.GetIO("SHELFINTERLOCK").SequenceEqual(Target.GetIO("SHELFINTERLOCK_OLD")))
-                    {
-                        string binAry = "";
-                        for (int i = 0; i < 16; i++)
-                        {
-                            if (Target.GetIO("SHELFINTERLOCK")[i] != Target.GetIO("SHELFINTERLOCK_OLD")[i])
-                            {
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("SHELFINTERLOCK")[i].ToString(), "SHELFINTERLOCK");
-                            }
-                            binAry = Target.GetIO("SHELFINTERLOCK")[i].ToString() + binAry;
-                        }
-                        int[] tmp = new int[1] { 0 };
-                        tmp[0] = Convert.ToInt32(binAry, 2);
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25857, tmp.Length, tmp);
-                        
-
-                        binAry = "";
-                        for (int i = 16; i < 32; i++)
-                        {
-                            if (Target.GetIO("SHELFINTERLOCK")[i] != Target.GetIO("SHELFINTERLOCK_OLD")[i])
-                            {
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("SHELFINTERLOCK")[i].ToString(), "SHELFINTERLOCK");
-                            }
-                            binAry = Target.GetIO("SHELFINTERLOCK")[i].ToString() + binAry;
-                        }
-                        tmp = new int[1] { 0 };
-                        tmp[0] = Convert.ToInt32(binAry, 2);
-                        PLC.WriteDeviceBlock(PlcDeviceType.D, 25858, tmp.Length, tmp);
-                        Target.SetIO("SHELFINTERLOCK_OLD", Target.GetIO("SHELFINTERLOCK"));
-                    }
                     result = new byte[512];
                     PLC.GetBitDevice(PlcDeviceType.X, AddrOffset, 512, result);
                     Target.SetIO("INPUT", result);
@@ -697,84 +414,46 @@ namespace TransferControl.Controller
                     {
                         for (int i = 0; i < Target.GetIO("INPUT").Length; i++)
                         {
-
                             if (Target.GetIO("INPUT")[i] != Target.GetIO("INPUT_OLD")[i])
                             {
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("INPUT")[i].ToString(), "INPUT");
+                                Target.Mode = "INPUT";
+                                Target.Position = i.ToString();
+                                _ReportTarget.On_Node_State_Changed(Target, Target.GetIO("INPUT")[i].ToString());
                             }
                         }
 
-                        //6為ERROR Bit(for CST Robot)
-                        if (Target.GetIO("INPUT")[6 + (CstRobotStation - 1) * 32] == 1 && Target.GetIO("INPUT_OLD")[6 + (CstRobotStation - 1) * 32] == 0)
-                        {
-                            string errAry = "";
-                            for (int i = 32; i <= 64; i++)
-                            {
-                                errAry += Target.GetIO("INPUT")[i + (CstRobotStation - 1) * 32].ToString();
-                            }
+                        ////6為ERROR Bit(for CST Robot)
+                        //if (Target.GetIO("INPUT")[6 + (CstRobotStation - 1) * 32] == 1 && Target.GetIO("INPUT_OLD")[6 + (CstRobotStation - 1) * 32] == 0)
+                        //{
+                        //    string errAry = "";
+                        //    for (int i = 32; i <= 64; i++)
+                        //    {
+                        //        errAry += Target.GetIO("INPUT")[i + (CstRobotStation - 1) * 32].ToString();
+                        //    }
 
-                            string error = new String(errAry.Reverse().ToArray());
-                            error = Convert.ToInt32(error, 2).ToString("X");
-                            //_ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(Target, error, ""));
-                            _ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(new Node() { Name = "CSTRobot", Vendor = "SANWA_MC", Type = "ROBOT" }, error));
-                        }
+                        //    string error = new String(errAry.Reverse().ToArray());
+                        //    error = Convert.ToInt32(error, 2).ToString("X");
+                        //    _ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(new Node() { Name = "CSTRobot", Vendor = "SANWA_MC", Type = "ROBOT" }, error));
+                        //}
 
-                        //6為ERROR Bit(for VIP Robot)
-                        if (Target.GetIO("INPUT")[6 + (VipRobotStation - 1) * 32] == 1 && Target.GetIO("INPUT_OLD")[6 + (VipRobotStation - 1) * 32] == 0)
-                        {
-                            string errAry = "";
-                            for (int i = 32; i <= 64; i++)
-                            {
-                                errAry += Target.GetIO("INPUT")[i + (VipRobotStation - 1) * 32].ToString();
-                            }
+                        ////6為ERROR Bit(for VIP Robot)
+                        //if (Target.GetIO("INPUT")[6 + (VipRobotStation - 1) * 32] == 1 && Target.GetIO("INPUT_OLD")[6 + (VipRobotStation - 1) * 32] == 0)
+                        //{
+                        //    string errAry = "";
+                        //    for (int i = 32; i <= 64; i++)
+                        //    {
+                        //        errAry += Target.GetIO("INPUT")[i + (VipRobotStation - 1) * 32].ToString();
+                        //    }
 
-                            string error = new String(errAry.Reverse().ToArray());
-                            error = Convert.ToInt32(error, 2).ToString("X");
-                            //_ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(Target, error, ""));
-                            _ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(new Node() { Name = "VIPRobot", Vendor = "SANWA_MC", Type = "ROBOT" }, error));
+                        //    string error = new String(errAry.Reverse().ToArray());
+                        //    error = Convert.ToInt32(error, 2).ToString("X");
+                        //    //_ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(Target, error, ""));
+                        //    _ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(new Node() { Name = "VIPRobot", Vendor = "SANWA_MC", Type = "ROBOT" }, error));
 
-                        }
+                        //}
+
                         Target.SetIO("INPUT_OLD", Target.GetIO("INPUT"));
 
-                    }
-
-                    WResult = new int[32];
-                    PLC.ReadDeviceBlock(PlcDeviceType.D, 24576+1, 32, WResult);
-                    result = ConvertToBit(WResult);
-                    Target.SetIO("PRESENCE", result);
-                    if (!Target.GetIO("PRESENCE").SequenceEqual(Target.GetIO("PRESENCE_OLD")))
-                    {
-                        for (int i = 0; i < Target.GetIO("PRESENCE").Length; i++)
-                        {
-
-                            if (Target.GetIO("PRESENCE")[i] != Target.GetIO("PRESENCE_OLD")[i])
-                            {
-                                //_TaskReport.On_Message_Log("IO", "X Area [" + (i + AddrOffset).ToString("X4") + "] " + Target.GetIO("INPUT_OLD")[i] + "->" + Target.GetIO("INPUT")[i]);
-                                //UpdateUI("PRESENCE", i, Target.GetIO("PRESENCE")[i], Target);
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("PRESENCE")[i].ToString(), "PRESENCE");
-                            }
-                        }
-
-                        Target.SetIO("PRESENCE_OLD", Target.GetIO("PRESENCE"));
-
-                    }
-
-                    dunit = 8;
-                    WResult = new int[dunit];
-                    PLC.ReadDeviceBlock(PlcDeviceType.D, 24598, dunit, WResult);
-                    result = ConvertToBit(WResult);
-                    Target.SetIO("VIP_PRESENCE", result);
-                    if (!Target.GetIO("VIP_PRESENCE").SequenceEqual(Target.GetIO("VIP_PRESENCE_OLD")))
-                    {
-                        for (int i = 0; i < Target.GetIO("VIP_PRESENCE").Length; i++)
-                        {
-                            if (Target.GetIO("VIP_PRESENCE")[i] != Target.GetIO("VIP_PRESENCE_OLD")[i])
-                            {
-                                _ReportTarget.On_DIO_Data_Chnaged(i.ToString(), Target.GetIO("VIP_PRESENCE")[i].ToString(), "VIP_PRESENCE");
-                            }
-                        }
-
-                        Target.SetIO("VIP_PRESENCE_OLD", Target.GetIO("VIP_PRESENCE"));
                     }
                 }
                 catch (Exception e)
@@ -835,18 +514,6 @@ namespace TransferControl.Controller
             try
             {
                 string Msg = (string)MsgObj;
-                //if (Vendor.ToUpper().Equals("ACDT"))
-                //{
-                //    byte[] byteAry = Encoding.ASCII.GetBytes(Msg);
-
-
-                //    logger.Debug(DeviceName + " Recieve:" + BitConverter.ToString(byteAry));
-                //}
-                //else
-                //{
-
-                //}
-                //Node Target = null;
 
                 List<CommandReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (CommandReturnMessage ReturnMsg in ReturnMsgList)
@@ -981,14 +648,6 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    //if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET") || ReturnMsg.Command.Equals("SP___") || ReturnMsg.Command.Equals("PAUSE") || ReturnMsg.Command.Equals("CONT_") || ReturnMsg.Command.Equals("STOP_") || ReturnMsg.Command.Equals("TGEVT"))
-                                    //{
-                                    //    Node = NodeManagement.GetFirstByController(DeviceName);
-                                    //}
-                                    //else
-                                    //{
-                                    //    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
-                                    //}
                                     Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr.Equals("") ? "0" : ReturnMsg.NodeAdr);
                                     if (Node == null)
                                     {
@@ -999,11 +658,7 @@ namespace TransferControl.Controller
                                         Node = NodeManagement.GetFirstByController(DeviceName);
                                     }
                                 }
-                                //lock (TransactionList)
-                                //{
-                                //lock (Node)
-                                //{
-                                //Target = Node;
+
                                 if (Node.Vendor.ToUpper().Equals("COGNEX"))
                                 {
                                     if (ReturnMsg.Type == CommandReturnMessage.ReturnType.UserName)

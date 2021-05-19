@@ -87,6 +87,11 @@ namespace TransferControl.Management
                 case "SANWA_EFEM":
                     TaskFlow = new Sanwa_EFEM(this); ;
                     break;
+
+                case "CCLINKCONTROLLER":
+                    TaskFlow = new Sanwa_CCLinkController(this); ;
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }

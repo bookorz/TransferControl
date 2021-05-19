@@ -198,6 +198,7 @@
     <Compile Include="Parser\TDKParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaksFlow\ITaskFlow.cs" />
+    <Compile Include="TaksFlow\Sanwa_CCLinkController.cs" />
     <Compile Include="TaksFlow\Sanwa_Sorter.cs" />
     <Compile Include="TaksFlow\Kawasaki_3P_EFEM.cs" />
     <Compile Include="TaksFlow\Sanwa_EFEM.cs" />
