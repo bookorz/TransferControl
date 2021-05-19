@@ -346,7 +346,7 @@ namespace TransferControl.Controller
             this.Name = DeviceName;
             this.Status = "";
 
-            ThreadPool.QueueUserWorkItem(new WaitCallback(Start), NodeManagement.Get("CCLinkController"));
+            ThreadPool.QueueUserWorkItem(new WaitCallback(Start), NodeManagement.Get("CCLINKCONTROLLER"));
         }
 
 
@@ -387,6 +387,8 @@ namespace TransferControl.Controller
                         Target.SetIO("INPUT", result);
                         result = new byte[512];
                         Target.SetIO("INPUT_OLD", result);
+
+                        isInit = true;
                     }
 
                     if (!Target.GetIO("OUTPUT").SequenceEqual(Target.GetIO("OUTPUT_OLD")))
