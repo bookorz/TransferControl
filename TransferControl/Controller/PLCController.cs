@@ -348,21 +348,19 @@ namespace TransferControl.Controller
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(Start), NodeManagement.Get("CCLINKCONTROLLER"));
         }
-
+        
 
         public void Start(object node)
         {
             //PLC內X與Y區的起始位置為500(16進位) => 1280十進位
             int AddrOffset = 1280;
-            //int CstRobotStation = 9;
-            //int VipRobotStation = 13;
             Node Target = (Node)node;
 
             McProtocolTcp PLC = new McProtocolTcp(this.IPAdress, this.Port);
 
             this._IsConnected = true;
             byte[] result = new byte[512];
-            int[] WResult = new int[32];
+            //int[] WResult = new int[32];
             bool isInit = false;
 
             while (true)
@@ -393,18 +391,18 @@ namespace TransferControl.Controller
 
                     if (!Target.GetIO("OUTPUT").SequenceEqual(Target.GetIO("OUTPUT_OLD")))
                     {
-                        //Dictionary<int, byte> changedList = new Dictionary<int, byte>();
                         for (int i = 0; i < Target.GetIO("OUTPUT").Length; i++)
                         {
                             if (Target.GetIO("OUTPUT")[i] != Target.GetIO("OUTPUT_OLD")[i])
                             {
-
                                 Target.SetIO("OUTPUT_OLD", i, Target.GetIO("OUTPUT")[i]);
 
                                 Target.Mode = "OUTPUT";
                                 Target.Position = i.ToString();
-                                _ReportTarget.On_Node_State_Changed(Target, Target.GetIO("OUTPUT")[i].ToString());
+
                                 PLC.SetBitDevice(PlcDeviceType.Y, i + AddrOffset, 1, new byte[] { Target.GetIO("OUTPUT")[i] });
+
+                                _ReportTarget.On_Node_State_Changed(Target, Target.GetIO("OUTPUT")[i].ToString());
                             }
                         }
                     }
@@ -423,36 +421,6 @@ namespace TransferControl.Controller
                                 _ReportTarget.On_Node_State_Changed(Target, Target.GetIO("INPUT")[i].ToString());
                             }
                         }
-
-                        ////6為ERROR Bit(for CST Robot)
-                        //if (Target.GetIO("INPUT")[6 + (CstRobotStation - 1) * 32] == 1 && Target.GetIO("INPUT_OLD")[6 + (CstRobotStation - 1) * 32] == 0)
-                        //{
-                        //    string errAry = "";
-                        //    for (int i = 32; i <= 64; i++)
-                        //    {
-                        //        errAry += Target.GetIO("INPUT")[i + (CstRobotStation - 1) * 32].ToString();
-                        //    }
-
-                        //    string error = new String(errAry.Reverse().ToArray());
-                        //    error = Convert.ToInt32(error, 2).ToString("X");
-                        //    _ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(new Node() { Name = "CSTRobot", Vendor = "SANWA_MC", Type = "ROBOT" }, error));
-                        //}
-
-                        ////6為ERROR Bit(for VIP Robot)
-                        //if (Target.GetIO("INPUT")[6 + (VipRobotStation - 1) * 32] == 1 && Target.GetIO("INPUT_OLD")[6 + (VipRobotStation - 1) * 32] == 0)
-                        //{
-                        //    string errAry = "";
-                        //    for (int i = 32; i <= 64; i++)
-                        //    {
-                        //        errAry += Target.GetIO("INPUT")[i + (VipRobotStation - 1) * 32].ToString();
-                        //    }
-
-                        //    string error = new String(errAry.Reverse().ToArray());
-                        //    error = Convert.ToInt32(error, 2).ToString("X");
-                        //    //_ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(Target, error, ""));
-                        //    _ReportTarget.On_Alarm_Happen(AlarmManagement.NewAlarm(new Node() { Name = "VIPRobot", Vendor = "SANWA_MC", Type = "ROBOT" }, error));
-
-                        //}
 
                         Target.SetIO("INPUT_OLD", Target.GetIO("INPUT"));
 
