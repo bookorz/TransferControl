@@ -358,9 +358,9 @@ namespace TransferControl.Controller
 
             McProtocolTcp PLC = new McProtocolTcp(this.IPAdress, this.Port);
 
-            this._IsConnected = true;
+            _IsConnected = true;
             byte[] result = new byte[512];
-            //int[] WResult = new int[32];
+
             bool isInit = false;
 
             while (true)
