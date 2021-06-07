@@ -30,6 +30,7 @@ namespace TransferControl.Management
             public int CurrentIndex = 0;
             public bool Finished = false;
             public bool HasError = false;
+            public bool IsSubTask = false;
             public TaskState State = TaskState.None;
 
             
@@ -171,6 +172,7 @@ namespace TransferControl.Management
             
                     result.Id = uid;
                     result.MainTaskId = TaskId.Equals("") ? MainTaskId : TaskId;
+                    result.IsSubTask = TaskId.Equals("");
                     result.Params = param;
                     result.TaskName = TaskName;
                 }
@@ -314,6 +316,7 @@ namespace TransferControl.Management
             ROBOT_ORGSH,
             ROBOT_SHOME,
             ROBOT_HOME,
+            ROBOT_RHOME,
             ROBOT_RETRACT,
             ROBOT_SERVO,
             ROBOT_WAFER_HOLD,
@@ -331,6 +334,22 @@ namespace TransferControl.Management
             ROBOT_RESTR,
             ROBOT_ABORT,
             ROBOT_HOLD,
+            ROBOT_SAVE_POINT,
+            ROBOT_SAVE_LOG,
+            ROBOT_SEARCH_SUBSTRATE_EDGE,
+            ROBOT_FORK_MOTION,
+            ROBOT_WAFER_EXCHANGE,
+            ROBOT_MAPPING,
+            ROBOT_MULTI_PANEL_ENABLE,
+            ROBOT_SET_MOTION_OFFSET,
+            ROBOT_CHECK_PANEL,
+            ROBOT_GET_USE_SELECTOR,
+            ROBOT_SET_POINT_DATA,
+            ROBOT_GET_USE_RL_SELECTOR,
+            ROBOT_GET_STEP_BY_STEP,
+            ROBOT_PUT_STEP_BY_STEP,
+            ROBOT_FORK_ORGSH,
+            ROBOT_PUSH,
             ALIGNER_ALIGN,
             ALIGNER_HOME,
             ALIGNER_INIT,

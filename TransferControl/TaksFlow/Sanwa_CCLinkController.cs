@@ -58,7 +58,6 @@ namespace TransferControl.TaksFlow
                 switch (TaskJob.TaskName)
                 {
                     case TaskFlowManagement.Command.ROBOT_SHOME:
-
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -106,8 +105,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_HOME:
 
+                    case TaskFlowManagement.Command.ROBOT_HOME:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -152,8 +151,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_RETRACT:
 
+                    case TaskFlowManagement.Command.ROBOT_RETRACT:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -198,8 +197,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_GET:
 
+                    case TaskFlowManagement.Command.ROBOT_GET:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -244,8 +243,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_GETWAIT:
 
+                    case TaskFlowManagement.Command.ROBOT_GETWAIT:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -290,8 +289,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_PUT:
 
+                    case TaskFlowManagement.Command.ROBOT_PUT:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -336,8 +335,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_PUTWAIT:
 
+                    case TaskFlowManagement.Command.ROBOT_PUTWAIT:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -382,8 +381,192 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_WAFER_HOLD:
 
+                    case TaskFlowManagement.Command.ROBOT_SEARCH_SUBSTRATE_EDGE:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "7");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_FORK_MOTION:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "8");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_WAFER_EXCHANGE:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "9");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_MAPPING:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "10");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+                    
+                    case TaskFlowManagement.Command.ROBOT_WAFER_HOLD:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -428,8 +611,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_WAFER_RELEASE:
 
+                    case TaskFlowManagement.Command.ROBOT_WAFER_RELEASE:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -474,8 +657,103 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_ORGSH:
 
+                    case TaskFlowManagement.Command.ROBOT_MULTI_PANEL_ENABLE:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "14");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+                     
+                    case TaskFlowManagement.Command.ROBOT_RHOME:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "15");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_ORGSH:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -520,6 +798,534 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
+
+                    case TaskFlowManagement.Command.ROBOT_SET_MOTION_OFFSET:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "17");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+                        
+                    case TaskFlowManagement.Command.ROBOT_CHECK_PANEL:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "18");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_GET_USE_SELECTOR:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "19");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_SET_POINT_DATA:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "20");
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 1:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, NodeManagement.Get("SYSTEM"), "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_SAVE_POINT:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "21");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_SAVE_LOG:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "22");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_GET_USE_RL_SELECTOR:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "23");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_GET_STEP_BY_STEP:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "24");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_PUT_STEP_BY_STEP:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "25");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_FORK_ORGSH:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "26");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+                        
+                    case TaskFlowManagement.Command.ROBOT_PUSH:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                TaskJob.Params.Add("@Command", "27");
+                                break;
+                            case 1:
+
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_MODE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_SET_SPEED, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 3:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_PARAM, TaskJob.Params).Promise())
+                                {
+                                    //    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            case 4:
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.CCLINK_CMD_EXE, TaskJob.Params).Promise())
+                                {
+                                    //中止Task
+                                    AbortTask(TaskJob, Target, "TASK_ABORT");
+
+                                    break;
+                                }
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
                     case TaskFlowManagement.Command.CCLINK_SET_MODE:
                         string modeStr = TaskJob.Params["@Mode"];
                         binaryStr = Convert.ToString(Convert.ToUInt16(modeStr), 2).PadLeft(2, '0');
@@ -566,49 +1372,390 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Position") ? TaskJob.Params["@Position"] : "0"), 2).PadLeft(11, '0');
+                                if(TaskJob.Params["@Command"].Equals("8") ||        //FORK_ 
+                                    TaskJob.Params["@Command"].Equals("12") ||      //WHLD_ 
+                                    TaskJob.Params["@Command"].Equals("13") ||      //WRLS_
+                                     TaskJob.Params["@Command"].Equals("18") ||     //PNSTS
+                                    TaskJob.Params["@Command"].Equals("26"))        //FOKCB
+                                {
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Arm") ? TaskJob.Params["@Arm"] : "1"), 2).PadLeft(2, '0');
+                                    Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
 
-                                Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
-                                Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
-                                Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
-                                Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
-                                Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
-                                Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
-                                Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
-                                Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
-                                Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
-                                Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
-                                Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Fork") ? TaskJob.Params["@Fork"] : "0"), 2).PadLeft(2, '0');
+                                    Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
 
-                                binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Slot") ? TaskJob.Params["@Slot"] : "1", 2)).PadLeft(10, '0');
-                                Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
-                                Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
-                                Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
-                                Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
-                                Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
-                                Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
-                                Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
-                                Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
-                                Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
-                                Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Vac") ? TaskJob.Params["@Vac"] : "0"), 2).PadLeft(2, '0');
+                                    Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
 
-                                binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Arm") ? TaskJob.Params["@Arm"] : "1", 2)).PadLeft(2, '0');
-                                Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
-                                Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 69 + (RobotStation - 1) * 32, 0);
+                                }
+                                else if(TaskJob.Params["@Command"].Equals("0") ||   //SHOME
+                                    TaskJob.Params["@Command"].Equals("1") ||       //HOME_
+                                    TaskJob.Params["@Command"].Equals("2") ||       //RET__
+                                    TaskJob.Params["@Command"].Equals("7") ||       //ATX__ 
+                                    TaskJob.Params["@Command"].Equals("10") ||      //MAP__
+                                    TaskJob.Params["@Command"].Equals("15") ||      //RHOME
+                                    TaskJob.Params["@Command"].Equals("16") ||      //ORG__
+                                    TaskJob.Params["@Command"].Equals("21") ||      //SAVEP 
+                                    TaskJob.Params["@Command"].Equals("22"))        //LOGSV
+                                {
+                                    binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Position") ? TaskJob.Params["@Position"] : "0"), 2).PadLeft(11, '0');
+                                    Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
 
-                                binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Option") ? TaskJob.Params["@Option"] : "0", 2)).PadLeft(2, '0');
-                                Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
-                                Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    if(TaskJob.Params.ContainsKey("@Arm"))
+                                    {
+                                        binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params["@Arm"]), 2).PadLeft(2, '0');
+                                        Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                        Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    }
+                                    else if(TaskJob.Params.ContainsKey("@Col"))
+                                    {
+                                        binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params["@Col"]), 2).PadLeft(2, '0');
+                                        Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                        Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    }
+                                    else
+                                    {
+                                        Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, 0);
+                                        Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, 0);
+                                    }
 
-                                binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@AL") ? TaskJob.Params["@AL"] : "0", 2));
-                                Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
-                                Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 69 + (RobotStation - 1) * 32, 0);
+                                }
+                                else if(TaskJob.Params["@Command"].Equals("14"))
+                                {
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Arm") ? TaskJob.Params["@Arm"] : "1"), 2).PadLeft(2, '0');
+                                    Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
 
-                                binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@APD") ? TaskJob.Params["@APD"] : "0", 2));
-                                Target.SetIO("OUTPUT", 69 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    binaryStr = TaskJob.Params.ContainsKey("@Selector") ? TaskJob.Params["@Selector"].PadLeft(16, '0') : "0000000000000000";
+                                    Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[15].ToString()));
+                                    Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[14].ToString()));
+                                    Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[13].ToString()));
+                                    Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[12].ToString()));
+                                    Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[11].ToString()));
+                                    Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, 0);
+                                    Target.SetIO("OUTPUT", 69 + (RobotStation - 1) * 32, 0);
+                                }
+                                else if(TaskJob.Params["@Command"].Equals("17"))    //AOFST
+                                {
+                                    binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Position") ? TaskJob.Params["@Position"] : "0"), 2).PadLeft(11, '0');
+                                    Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = "";
+                                    for (int i = 0; i < 27; i++) binaryStr += "0";
+                                    if(TaskJob.Params.ContainsKey("@Offset"))
+                                        binaryStr = Convert.ToString(Math.Abs(Convert.ToInt32(TaskJob.Params["@Offset"])), 2).PadLeft(27,'0');
+
+                                    Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[26].ToString()));
+                                    Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[25].ToString()));
+                                    Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[24].ToString()));
+                                    Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[23].ToString()));
+                                    Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[22].ToString()));
+                                    Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[21].ToString()));
+                                    Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[20].ToString()));
+                                    Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[19].ToString()));
+                                    Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[18].ToString()));
+                                    Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[17].ToString()));
+                                    Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[16].ToString()));
+                                    Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[15].ToString()));
+                                    Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[14].ToString()));
+                                    Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[13].ToString()));
+                                    Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[12].ToString()));
+                                    Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[11].ToString()));
+                                    Target.SetIO("OUTPUT", 69 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 70 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 71 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 72 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 73 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 74 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 75 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 76 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 77 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 78 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 79 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = TaskJob.Params.ContainsKey("@Offset") ? (Convert.ToInt32(TaskJob.Params["@Offset"]) < 0 ? "1" : "0"): "0";
+                                    Target.SetIO("OUTPUT", 80 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                }
+                                else if (TaskJob.Params["@Command"].Equals("20"))   //PDATA
+                                {
+                                    binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Position") ? TaskJob.Params["@Position"] : "0"), 2).PadLeft(11, '0');
+                                    Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@FieldOffset") ? TaskJob.Params["@FieldOffset"] : "0"), 2).PadLeft(9, '0');
+                                    Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = "";
+                                    for (int i = 0; i < 27; i++) binaryStr += "0";
+                                    if (TaskJob.Params.ContainsKey("@Offset"))
+                                        binaryStr = Convert.ToString(Math.Abs(Convert.ToInt32(TaskJob.Params["@Offset"])), 2).PadLeft(27, '0');
+
+                                    Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[26].ToString()));
+                                    Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[25].ToString()));
+                                    Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[24].ToString()));
+                                    Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[23].ToString()));
+                                    Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[22].ToString()));
+                                    Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[21].ToString()));
+                                    Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[20].ToString()));
+                                    Target.SetIO("OUTPUT", 69 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[19].ToString()));
+                                    Target.SetIO("OUTPUT", 70 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[18].ToString()));
+                                    Target.SetIO("OUTPUT", 71 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[17].ToString()));
+                                    Target.SetIO("OUTPUT", 72 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[16].ToString()));
+                                    Target.SetIO("OUTPUT", 73 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[15].ToString()));
+                                    Target.SetIO("OUTPUT", 74 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[14].ToString()));
+                                    Target.SetIO("OUTPUT", 75 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[13].ToString()));
+                                    Target.SetIO("OUTPUT", 76 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[12].ToString()));
+                                    Target.SetIO("OUTPUT", 77 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[11].ToString()));
+                                    Target.SetIO("OUTPUT", 78 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 79 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 80 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 81 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 82 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 83 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 84 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 85 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 86 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 87 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 88 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = TaskJob.Params.ContainsKey("@Offset") ? (Convert.ToInt32(TaskJob.Params["@Offset"]) < 0 ? "1" : "0") : "0";
+                                    Target.SetIO("OUTPUT", 89 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                }
+                                else if(TaskJob.Params["@Command"].Equals("24") ||  //GETST 
+                                    TaskJob.Params["@Command"].Equals("25"))        //PUTST
+                                {
+                                    binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Position") ? TaskJob.Params["@Position"] : "0"), 2).PadLeft(11, '0');
+
+                                    Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Slot") ? TaskJob.Params["@Slot"] : "1"), 2).PadLeft(10, '0');
+
+                                    Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Arm") ? TaskJob.Params["@Arm"] : "1"), 2).PadLeft(2, '0');
+                                    Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Step") ? TaskJob.Params["@Step"] : "0"), 2).PadLeft(4, '0');
+                                    Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                }
+                                else
+                                {
+                                    binaryStr = Convert.ToString(Convert.ToInt16(TaskJob.Params.ContainsKey("@Position") ? TaskJob.Params["@Position"] : "0"), 2).PadLeft(11, '0');
+
+                                    Target.SetIO("OUTPUT", 42 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                    Target.SetIO("OUTPUT", 43 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 44 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 45 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 46 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 47 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 48 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 49 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 50 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 51 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 52 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Slot") ? TaskJob.Params["@Slot"] : "1"), 2).PadLeft(10, '0');
+
+                                    Target.SetIO("OUTPUT", 53 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                    Target.SetIO("OUTPUT", 54 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                    Target.SetIO("OUTPUT", 55 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                    Target.SetIO("OUTPUT", 56 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                    Target.SetIO("OUTPUT", 57 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                    Target.SetIO("OUTPUT", 58 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                    Target.SetIO("OUTPUT", 59 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                    Target.SetIO("OUTPUT", 60 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                    Target.SetIO("OUTPUT", 61 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 62 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Arm") ? TaskJob.Params["@Arm"] : "1"), 2).PadLeft(2, '0');
+
+                                    Target.SetIO("OUTPUT", 63 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 64 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@Option") ? TaskJob.Params["@Option"] : "0", 2)).PadLeft(2, '0');
+
+                                    Target.SetIO("OUTPUT", 65 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                    Target.SetIO("OUTPUT", 66 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@AL") ? TaskJob.Params["@AL"] : "0", 2));
+
+                                    Target.SetIO("OUTPUT", 67 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    Target.SetIO("OUTPUT", 68 + (RobotStation - 1) * 32, 0);
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@APD") ? TaskJob.Params["@APD"] : "0", 2));
+
+                                    Target.SetIO("OUTPUT", 69 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    binaryStr = Convert.ToString(Convert.ToInt32(TaskJob.Params.ContainsKey("@PUSH") ? TaskJob.Params["@PUSH"] : "0", 2));
+
+                                    Target.SetIO("OUTPUT", 70 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+
+                                    if(TaskJob.Params.ContainsKey("@Selector"))
+                                    {
+                                        binaryStr = TaskJob.Params["@Selector"].PadLeft(16, '0');
+                                        Target.SetIO("OUTPUT", 70 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[15].ToString()));
+                                        Target.SetIO("OUTPUT", 71 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[14].ToString()));
+                                        Target.SetIO("OUTPUT", 72 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[13].ToString()));
+                                        Target.SetIO("OUTPUT", 73 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[12].ToString()));
+                                        Target.SetIO("OUTPUT", 74 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[11].ToString()));
+                                        Target.SetIO("OUTPUT", 75 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                        Target.SetIO("OUTPUT", 76 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                        Target.SetIO("OUTPUT", 77 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                        Target.SetIO("OUTPUT", 78 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                        Target.SetIO("OUTPUT", 79 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                        Target.SetIO("OUTPUT", 80 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                        Target.SetIO("OUTPUT", 81 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                        Target.SetIO("OUTPUT", 82 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                        Target.SetIO("OUTPUT", 83 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                        Target.SetIO("OUTPUT", 84 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                        Target.SetIO("OUTPUT", 85 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    }
+
+                                    if (TaskJob.Params.ContainsKey("@Selector2"))
+                                    {
+                                        binaryStr = TaskJob.Params["@Selector2"].PadLeft(16, '0');
+                                        Target.SetIO("OUTPUT", 86 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[15].ToString()));
+                                        Target.SetIO("OUTPUT", 87 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[14].ToString()));
+                                        Target.SetIO("OUTPUT", 88 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[13].ToString()));
+                                        Target.SetIO("OUTPUT", 89 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[12].ToString()));
+                                        Target.SetIO("OUTPUT", 90 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[11].ToString()));
+                                        Target.SetIO("OUTPUT", 91 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[10].ToString()));
+                                        Target.SetIO("OUTPUT", 92 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[9].ToString()));
+                                        Target.SetIO("OUTPUT", 93 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[8].ToString()));
+                                        Target.SetIO("OUTPUT", 94 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[7].ToString()));
+                                        Target.SetIO("OUTPUT", 95 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[6].ToString()));
+                                        Target.SetIO("OUTPUT", 96 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[5].ToString()));
+                                        Target.SetIO("OUTPUT", 97 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[4].ToString()));
+                                        Target.SetIO("OUTPUT", 98 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[3].ToString()));
+                                        Target.SetIO("OUTPUT", 99 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[2].ToString()));
+                                        Target.SetIO("OUTPUT", 100 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[1].ToString()));
+                                        Target.SetIO("OUTPUT", 101 + (RobotStation - 1) * 32, Convert.ToByte(binaryStr[0].ToString()));
+                                    }
 
 
-
+                                }
                                 break;
 
                             default:
@@ -617,7 +1764,6 @@ namespace TransferControl.TaksFlow
                         }
                         break;
                     case TaskFlowManagement.Command.CCLINK_CMD_EXE:
-
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -695,6 +1841,7 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
+
                     case TaskFlowManagement.Command.CCLINK_POWER_ON:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -739,8 +1886,8 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-                    case TaskFlowManagement.Command.ROBOT_RESET:
 
+                    case TaskFlowManagement.Command.ROBOT_RESET:
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
@@ -771,8 +1918,8 @@ namespace TransferControl.TaksFlow
                                 return;
 
                         }
-
                         break;
+
                     default:
                         throw new NotSupportedException();
                 }
