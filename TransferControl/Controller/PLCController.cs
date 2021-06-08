@@ -367,10 +367,8 @@ namespace TransferControl.Controller
             {
                 try
                 {
-
                     if (!isInit)
                     {
-
                         PLC.Open();
                         //INIT
                         result = new byte[512];
@@ -385,7 +383,7 @@ namespace TransferControl.Controller
                         Target.SetIO("INPUT", result);
                         result = new byte[512];
                         Target.SetIO("INPUT_OLD", result);
-
+                            
                         isInit = true;
                     }
 
@@ -397,12 +395,7 @@ namespace TransferControl.Controller
                             {
                                 Target.SetIO("OUTPUT_OLD", i, Target.GetIO("OUTPUT")[i]);
 
-                                Target.Mode = "OUTPUT";
-                                Target.Position = i.ToString();
-
                                 PLC.SetBitDevice(PlcDeviceType.Y, i + AddrOffset, 1, new byte[] { Target.GetIO("OUTPUT")[i] });
-
-                                _ReportTarget.On_Node_State_Changed(Target, Target.GetIO("OUTPUT")[i].ToString());
                             }
                         }
                     }
@@ -412,18 +405,32 @@ namespace TransferControl.Controller
                     Target.SetIO("INPUT", result);
                     if (!Target.GetIO("INPUT").SequenceEqual(Target.GetIO("INPUT_OLD")))
                     {
-                        for (int i = 0; i < Target.GetIO("INPUT").Length; i++)
+                        //for (int i = 0; i < Target.GetIO("INPUT").Length; i++)
+                        //{
+                        //    //有訊號變化就發出來
+                        //    if (Target.GetIO("INPUT")[i] != Target.GetIO("INPUT_OLD")[i])
+                        //        _ReportTarget.On_Node_State_Changed(Target, "INPUT" + "/" + i.ToString());
+                        //}
+
+                        for (int i = 0; i < 64; i++)
                         {
-                            if (Target.GetIO("INPUT")[i] != Target.GetIO("INPUT_OLD")[i])
+                            if (6 + (i* 32) < 512)
                             {
-                                Target.Mode = "INPUT";
-                                Target.Position = i.ToString();
-                                _ReportTarget.On_Node_State_Changed(Target, Target.GetIO("INPUT")[i].ToString());
+                                if (Target.GetIO("INPUT")[6 + i* 32] == 1 && Target.GetIO("INPUT_OLD")[6 + i* 32] == 0)
+                                {
+                                    CommandReturnMessage CRM = new CommandReturnMessage
+                                    {
+                                        NodeAdr = i.ToString(),
+                                        Value = "1",
+                                        Command = "ErrorTrigger"
+                                    };
+                                    _ReportTarget.On_Event_Trigger(Target, CRM);
+                                }
                             }
+
                         }
 
                         Target.SetIO("INPUT_OLD", Target.GetIO("INPUT"));
-
                     }
                 }
                 catch (Exception e)
@@ -433,9 +440,7 @@ namespace TransferControl.Controller
                     try
                     {
                         if (isInit)
-                        {
                             PLC.Open();
-                        }
                     }
                     catch (Exception eeee)
                     {
@@ -444,6 +449,8 @@ namespace TransferControl.Controller
 
                 }
             }
+
+
         }
         public static byte[] StringToByteArray(string hex)
         {

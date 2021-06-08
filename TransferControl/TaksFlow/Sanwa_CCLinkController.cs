@@ -1789,7 +1789,7 @@ namespace TransferControl.TaksFlow
                                 //REQ_INPUT(DI_01)
                                 Target.SetIO("OUTPUT", 1 + (RobotStation - 1) * 32, 1);
                                 //STS_INPUT (DO_03) 
-                                SpinWait.SpinUntil(() => Target.GetIO("INPUT")[3 + (RobotStation - 1) * 32] == 1, 1000);
+                                SpinWait.SpinUntil(() => Target.GetIO("INPUT")[3 + (RobotStation - 1) * 32] == 1, 3000);
 
                                 if (Target.GetIO("INPUT")[3 + (RobotStation - 1) * 32] == 0)//Check STS_INPUT (DO_03) 
                                 {
