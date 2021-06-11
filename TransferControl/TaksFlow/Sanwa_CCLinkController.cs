@@ -1808,8 +1808,16 @@ namespace TransferControl.TaksFlow
                                 //    AbortTask(TaskJob, Target, "STS_INPUT (DO_03)   not match to 1");
                                 //    return;
                                 //}
+                                int TimeOut = 5000;
+
+                                if (TaskJob.Params["@Command"].Equals("21") ||   //SAVEP 
+                                    TaskJob.Params["@Command"].Equals("22"))    //LOGSV
+                                {
+                                    TimeOut = 30000;
+                                }
+
                                 //STS_EXEC (DO_04)
-                                SpinWait.SpinUntil(() => Target.GetIO("INPUT")[4 + (RobotStation - 1) * 32] == 1, 1000);
+                                SpinWait.SpinUntil(() => Target.GetIO("INPUT")[4 + (RobotStation - 1) * 32] == 1, TimeOut);
 
                                 if (Target.GetIO("INPUT")[4 + (RobotStation - 1) * 32] == 0)//Check STS_EXEC (DO_04)
                                 {

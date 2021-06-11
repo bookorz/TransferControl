@@ -404,34 +404,7 @@ namespace TransferControl.Controller
                     PLC.GetBitDevice(PlcDeviceType.X, AddrOffset, 512, result);
                     Target.SetIO("INPUT", result);
                     if (!Target.GetIO("INPUT").SequenceEqual(Target.GetIO("INPUT_OLD")))
-                    {
-                        //for (int i = 0; i < Target.GetIO("INPUT").Length; i++)
-                        //{
-                        //    //有訊號變化就發出來
-                        //    if (Target.GetIO("INPUT")[i] != Target.GetIO("INPUT_OLD")[i])
-                        //        _ReportTarget.On_Node_State_Changed(Target, "INPUT" + "/" + i.ToString());
-                        //}
-
-                        for (int i = 0; i < 64; i++)
-                        {
-                            if (6 + (i* 32) < 512)
-                            {
-                                if (Target.GetIO("INPUT")[6 + i* 32] == 1 && Target.GetIO("INPUT_OLD")[6 + i* 32] == 0)
-                                {
-                                    CommandReturnMessage CRM = new CommandReturnMessage
-                                    {
-                                        NodeAdr = i.ToString(),
-                                        Value = "1",
-                                        Command = "ErrorTrigger"
-                                    };
-                                    _ReportTarget.On_Event_Trigger(Target, CRM);
-                                }
-                            }
-
-                        }
-
                         Target.SetIO("INPUT_OLD", Target.GetIO("INPUT"));
-                    }
                 }
                 catch (Exception e)
                 {
