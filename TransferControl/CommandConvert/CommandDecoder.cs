@@ -67,6 +67,11 @@ namespace TransferControl.CommandConvert
                     case "MITSUBISHI_PLC":
                         result = MITSUBISHI_PLCAnalysis(Message);
                         break;
+
+                    case "OMRON_V640":
+                        result = RFIDOMRONV640CodeAnalysis(Message);
+                        break;
+
                     default:
                         throw new NotImplementedException();
 
@@ -169,6 +174,102 @@ namespace TransferControl.CommandConvert
 
                 result.Add(each);
 
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
+            return result;
+        }
+
+        private List<CommandReturnMessage> RFIDOMRONV640CodeAnalysis(string Message)
+        {
+            List<CommandReturnMessage> result;
+            string[] msgAry;
+
+            try
+            {
+                result = new List<CommandReturnMessage>();
+
+                msgAry = Message.Split('\r');
+
+                foreach (string Msg in msgAry)
+                {
+                    if (Msg.Trim().Equals(""))
+                    {
+                        continue;
+                    }
+
+                    CommandReturnMessage each = new CommandReturnMessage();
+                    each.OrgMsg = Msg;
+
+                    each.NodeAdr = "01";
+
+                    string strResponseCode = Msg.Substring(3, 2);
+
+                    switch(strResponseCode)
+                    {
+                        case "00":
+                            each.Type = CommandReturnMessage.ReturnType.Finished;
+
+                            if(Msg.Length > 7)
+                            {
+                                string temp = Msg.Substring(5, 32);
+
+                                string[] Data = new string[16];
+                                //取得FOUP_ID
+                                for(int i = 0; i<16; i++)
+                                    Data[i] = temp[i * 2].ToString() + temp[i * 2 + 1].ToString();
+
+                                each.Value = "";
+
+                                foreach(string d in Data)
+                                {
+                                    if(!d.Equals("00"))
+                                        each.Value += Char.ConvertFromUtf32(Convert.ToInt32(d, 16));
+                                }
+                                    
+
+                                each.Value = each.Value.Trim();
+                            }
+                            break;
+                        case "14":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "14";//"FormatError";
+                            break;
+                        case "70":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "70";//"CommunicationsError";
+                            break;
+                        case "71":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "71";//"VerificationError";
+                            break;
+                        case "72":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "72";// "NoTagError";
+                            break;
+                        case "7B":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "7B";// "OutsideWriteAreaError";
+                            break;
+                        case "7E":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "7E";// "IDSystemError_1";
+                            break;
+                        case "7F":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "7F";// "IDSystemError_2";
+                            break;
+                        default:
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = "Unknow";
+                            break;
+                    }
+
+                    result.Add(each);
+                }
             }
             catch (Exception ex)
             {

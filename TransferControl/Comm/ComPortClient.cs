@@ -87,6 +87,10 @@ namespace TransferControl.Comm
             {
                 port.Handshake = Handshake.None;
             }
+            else if (_Config.GetVendor().Equals("OMRON_V640"))
+            {
+                port.Handshake = Handshake.None;
+            }
             else if(_Config.GetVendor().Equals("MITSUBISHI_PLC"))
             {
                 port.DtrEnable = true;
@@ -199,6 +203,7 @@ namespace TransferControl.Comm
                     case "ATEL_NEW":
                     case "SANWA":
                     case "SANWA_MC":
+                    case "OMRON_V640":
                         port.DataReceived += new SerialDataReceivedEventHandler(Sanwa_DataReceived);
                         break;
                     case "ASYST":

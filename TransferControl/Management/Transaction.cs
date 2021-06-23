@@ -197,6 +197,13 @@ namespace TransferControl.Management
                 public const string SelectLCDData = "SelectLCDData";
                 public const string SetLCDData = "SetLCDData";
             }
+
+            public class RFIDType
+            {
+                public const string GetCarrierID = "GetCarrierID";
+                public const string SetCarrierID = "SetCarrierID";
+            }
+
             //LoadPort
             public class LoadPortType
             {

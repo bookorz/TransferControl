@@ -238,7 +238,7 @@ namespace TransferControl.TaksFlow
                                 {
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT04", "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
                                 }
-                                
+
                                 break;
 
                             default:
@@ -517,7 +517,7 @@ namespace TransferControl.TaksFlow
 
                                     if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
                                         AckTask(TaskJob);
-                                    
+
 
                                 }
                                 else
@@ -692,7 +692,7 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
 
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"]}, {"@IsTransCommand", "TRUE"} }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -701,7 +701,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] },{ "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"]}, {"@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -1001,7 +1001,7 @@ namespace TransferControl.TaksFlow
                                 }
 
                                 AckTask(TaskJob);
- 
+
                                 break;
                             case 1:
 
@@ -1053,7 +1053,7 @@ namespace TransferControl.TaksFlow
                             case 0:
 
                                 AckTask(TaskJob);
-                                if(!SystemConfig.Get().OfflineMode)
+                                if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
 
                                 break;
@@ -1083,7 +1083,7 @@ namespace TransferControl.TaksFlow
                             case 4:
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
-                                
+
                                 break;
                             case 5:
                                 if (!SystemConfig.Get().OfflineMode)
@@ -1118,7 +1118,7 @@ namespace TransferControl.TaksFlow
                             case 0:
 
                                 AckTask(TaskJob);
-                                if(!SystemConfig.Get().OfflineMode)
+                                if (!SystemConfig.Get().OfflineMode)
                                 {
                                     if (SystemConfig.Get().DummyMappingData)
                                     {
@@ -1267,7 +1267,7 @@ namespace TransferControl.TaksFlow
 
                                 AckTask(TaskJob);
 
-                                if(!SystemConfig.Get().OfflineMode)
+                                if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Clamp }));
 
                                 break;
@@ -1295,7 +1295,7 @@ namespace TransferControl.TaksFlow
 
                                 AckTask(TaskJob);
 
-                                if(!SystemConfig.Get().OfflineMode)
+                                if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.RetryMapping }));
 
                                 break;
@@ -1515,57 +1515,78 @@ namespace TransferControl.TaksFlow
                         }
                         break;
                     case TaskFlowManagement.Command.GET_CSTID:
-                        switch (TaskJob.CurrentIndex)
+                        if (Target.Type.ToUpper().Equals("SMARTTAG"))
                         {
-                            case 0:
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
 
+                                    AckTask(TaskJob);
 
-                                //if (Target.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                //    return;
-                                //}
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
 
-                                AckTask(TaskJob);
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
-                                break;
-                            case 1:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.SmartTagType.GetLCDData }));
+                                    break;
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.SmartTagType.GetLCDData }));
 
-                                break;
-                            default:
-                                FinishTask(TaskJob);
-                                return;
+                                    break;
+                                default:
+                                    FinishTask(TaskJob);
+                                    return;
+                            }
                         }
+                        else if (Target.Type.ToUpper().Equals("RFID"))
+                        {
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    AckTask(TaskJob);
+
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID }));
+                                    break;
+                                default:
+                                    FinishTask(TaskJob);
+                                    return;
+                            }
+                        }
+
                         break;
                     case TaskFlowManagement.Command.SET_CSTID:
-                        switch (TaskJob.CurrentIndex)
+                        if (Target.Type.ToUpper().Equals("SMARTTAG"))
+                        { 
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    AckTask(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
+                                    break;
+                                case 1:
+                                    if (Target.Vendor.ToUpper().Equals("SMARTTAG8200"))
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SelectLCDData }));
+                                    }
+                                    break;
+                                case 2:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SetLCDData, Value = Value }));
+
+                                    break;
+                                default:
+                                    FinishTask(TaskJob);
+                                    return;
+                            }
+                        }
+                        else if (Target.Type.ToUpper().Equals("RFID"))
                         {
-                            case 0:
-
-
-                                //if (Target.IsExcuting)
-                                //{
-                                //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300001");
-                                //    return;
-                                //}
-
-                                AckTask(TaskJob);
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
-                                break;
-                            case 1:
-                                if (Target.Vendor.ToUpper().Equals("SMARTTAG8200"))
-                                {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SelectLCDData }));
-                                }
-                                break;
-                            case 2:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SetLCDData, Value = Value }));
-
-                                break;
-                            default:
-                                FinishTask(TaskJob);
-                                return;
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    AckTask(TaskJob);
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
+                                    break;
+                                default:
+                                    FinishTask(TaskJob);
+                                    return;
+                            }
                         }
                         break;
                     default:

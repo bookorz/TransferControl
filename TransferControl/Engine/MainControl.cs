@@ -261,13 +261,16 @@ namespace TransferControl.Engine
                     //    }
                     //    break;
                     case "SMARTTAG":
+                    case "RFID":
                         switch (Txn.Method)
                         {
+                            case Transaction.Command.RFIDType.GetCarrierID:
                             case Transaction.Command.SmartTagType.GetLCDData:
                                 Node.FoupID = Msg.Value;
                                 break;
                         }
                         break;
+
                     case "LOADPORT":
                         switch (Txn.Method)
                         {
@@ -1095,10 +1098,11 @@ namespace TransferControl.Engine
                         }
                         break;
                     case "SMARTTAG":
+                    case "RFID":
                         switch (Txn.Method)
                         {
                             case Transaction.Command.SmartTagType.GetLCDData:
-
+                            case Transaction.Command.RFIDType.GetCarrierID:
                                 Node.FoupID = Msg.Value;
                                 break;
                         }

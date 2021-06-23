@@ -23,6 +23,7 @@ namespace TransferControl.CommandConvert
         public Encoder_WHR WHR;
         public Encoder_WTSAligner WTSAligner;
         public Encoder_Mitsubishi_PLC PLC;
+        public Encoder_RFID RFID;
 
 
         private string Supplier;
@@ -56,6 +57,7 @@ namespace TransferControl.CommandConvert
                 WTSAligner = new Encoder_WTSAligner(Supplier);
                 PLC = new Encoder_Mitsubishi_PLC(Supplier);
                 SmartTag = new Encoder_SmartTag(Supplier);
+                RFID = new Encoder_RFID(Supplier);
             }
             catch (Exception ex)
             {

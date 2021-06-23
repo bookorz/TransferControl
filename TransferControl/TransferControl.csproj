@@ -76,6 +76,7 @@
     <Compile Include="CommandConvert\Encoder_Mitsubishi_PLC.cs" />
     <Compile Include="CommandConvert\Encoder_OCR.cs" />
     <Compile Include="CommandConvert\Encoder_PTZ.cs" />
+    <Compile Include="CommandConvert\Encoder_RFID.cs" />
     <Compile Include="CommandConvert\Encoder_Robot.cs" />
     <Compile Include="CommandConvert\Encoder_Shelf.cs" />
     <Compile Include="CommandConvert\Encoder_SmartTag.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="Parser\Sanwa_MCParser.cs" />
     <Compile Include="Parser\TDKParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaksFlow\Innolux_CCLinkController.cs" />
     <Compile Include="TaksFlow\ITaskFlow.cs" />
     <Compile Include="TaksFlow\Sanwa_CCLinkController.cs" />
     <Compile Include="TaksFlow\Sanwa_Sorter.cs" />

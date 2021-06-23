@@ -92,6 +92,9 @@ namespace TransferControl.Management
                 case "CCLINKCONTROLLER":
                     TaskFlow = new Sanwa_CCLinkController(this); ;
                     break;
+                case "CCLINKCONTROLLER_INNOLUX":
+                    TaskFlow = new Innolux_CCLinkController(this);
+                    break;
 
                 default:
                     throw new NotSupportedException();

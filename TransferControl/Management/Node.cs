@@ -1083,6 +1083,18 @@ namespace TransferControl.Management
                                 break;
                         }
                         break;
+                    case "RFID":
+                        switch (txn.Method)
+                        {
+                            case Transaction.Command.RFIDType.GetCarrierID:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.ReadCarrierID();
+
+                                break;
+                            case Transaction.Command.RFIDType.SetCarrierID:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.WriteCarrierID(txn.Value);
+                                break;
+                        }
+                        break;
                     case "LOADPORT":
                         switch (txn.Method)
                         {
@@ -1726,7 +1738,8 @@ namespace TransferControl.Management
 
 
                 bool IsWaitData = false;
-                if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData))
+                if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData) ||
+                    txn.Method.Equals(Transaction.Command.RFIDType.GetCarrierID))
                 {
                     IsWaitData = true;
                 }

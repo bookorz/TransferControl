@@ -310,7 +310,11 @@ namespace TransferControl.Controller
                     case Transaction.Command.SmartTagType.GetLCDData:
                         cm.Type = CommandReturnMessage.ReturnType.Finished;
                         cm.Value = "Offline-FoupID";
+                        break;
 
+                    case Transaction.Command.RFIDType.GetCarrierID:
+                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                        cm.Value = "Offline-FoupID";
                         break;
 
 
@@ -318,6 +322,7 @@ namespace TransferControl.Controller
                     case Transaction.Command.RobotType.Pause:
                     case Transaction.Command.RobotType.Stop:
                     case Transaction.Command.SmartTagType.Hello:
+                    case Transaction.Command.RFIDType.SetCarrierID:
                         cm.Type = CommandReturnMessage.ReturnType.Excuted;
                         break;
 
@@ -382,7 +387,7 @@ namespace TransferControl.Controller
 
                 key = Txn.Seq;
             }
-            if (DeviceType.ToUpper().Equals("SMARTTAG"))
+            if (DeviceType.ToUpper().Equals("SMARTTAG") || DeviceType.ToUpper().Equals("RFID"))
             {
 
                 key = "00";
@@ -620,7 +625,7 @@ namespace TransferControl.Controller
                                     //    key = "0" + ReturnMsg.Command;
                                     //}
                                 }
-                                else if (DeviceType.Equals("SMARTTAG"))
+                                else if (DeviceType.Equals("SMARTTAG") || DeviceType.ToUpper().Equals("RFID"))
                                 {
                                     key = "00";
                                 }
