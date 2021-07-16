@@ -224,6 +224,7 @@ namespace TransferControl.Management
                 public const string TweekUp = "TweekUp";
                 public const string SetAllEvent = "SetAllEvent";
                 public const string SetCompleteEvent = "SetCompleteEvent";
+                public const string SetFoupEvent = "SetFoupEvent";
                 public const string MoveToSlot = "MoveToSlot";
                 public const string EQASP = "EQASP";
                 public const string Mode = "Mode";
@@ -260,6 +261,8 @@ namespace TransferControl.Management
                 public const string MapperStartPosition = "MapperStartPosition";
                 public const string MapperArmRetracted = "MapperArmRetracted";
                 public const string MapperArmStretch = "MapperArmStretch";
+                public const string MapperStopperOn = "MapperStopperOn";
+                public const string MapperStopperOff = "MapperStopperOff";
                 public const string MappingDown = "MappingDown";
                 public const string SetOpAccess = "SetOpAccess";
                 public const string SetOpAccessBlink = "SetOpAccessBlink";
@@ -315,6 +318,14 @@ namespace TransferControl.Management
                 public const string PreMapping = "PreMapping";
                 public const string GetMapping = "GetMapping";
                 public const string SetSV = "SetSV";
+                public const string PutByRArm = "PutByRArm";
+                public const string PutByLArm = "PutByLArm";
+                public const string GetByRArm = "GetByRArm";
+                public const string GetByLArm = "GetByLArm";
+                public const string PutWaitByRArm = "PutWaitByRArm";
+                public const string PutWaitByLArm = "PutWaitByLArm";
+                public const string GetWaitByRArm = "GetWaitByRArm";
+                public const string GetWaitByLArm = "GetWaitByLArm";
             }
             //Aligner
             public class AlignerType
@@ -365,6 +376,22 @@ namespace TransferControl.Management
                 public const string AlarmBypass = "AlarmBypass";
                 public const string SetSpeed = "SetSpeed";
                 public const string GetStatus = "GetStatus";
+            }
+
+            public class E84
+            {
+                public const string Reset = "Reset";
+                public const string SetAutoMode = "SetAutoMode";
+                public const string SetManualMode = "SetManualMode";
+                public const string GetDOStatus = "GetDOStatus";
+                public const string GetDIStatus = "GetDIStatus";
+                public const string GetOperateStatus = "GetOperateStatus";
+                public const string SetTP1 = "TP1";
+                public const string SetTP2 = "TP2";
+                public const string SetTP3 = "TP3";
+                public const string SetTP4 = "TP4";
+                public const string SetTP5 = "TP5";
+                public const string SetTP6 = "TP6";
             }
         }
 

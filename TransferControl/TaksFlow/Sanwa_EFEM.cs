@@ -405,7 +405,8 @@ namespace TransferControl.TaksFlow
 
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
-                                    if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
+                                    if (TaskJob.Params.ContainsKey("@IsTransCommand"))
+                                        if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
                                         AckTask(TaskJob);
                                 }
                                 else
@@ -515,8 +516,9 @@ namespace TransferControl.TaksFlow
 
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
-                                    if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
-                                        AckTask(TaskJob);
+                                    if (TaskJob.Params.ContainsKey("@IsTransCommand"))
+                                        if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
+                                            AckTask(TaskJob);
 
 
                                 }
@@ -612,7 +614,7 @@ namespace TransferControl.TaksFlow
                                             AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = FromPosition.Name }, "S0300164");
                                             return;
                                         }
-                                        MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + FromPosition.Name, "false");
+                                        //MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + FromPosition.Name, "false");
                                     }
                                 }
 
@@ -687,6 +689,13 @@ namespace TransferControl.TaksFlow
                                         return;
                                     }
                                 }
+
+                                if(FromPosition.Type.Equals("LoadLock"))
+                                    MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + FromPosition.Name, "FALSE");
+
+                                if (ToPosition.Type.Equals("LoadLock"))
+                                    MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + ToPosition.Name, "FALSE");
+
                                 AckTask(TaskJob);
 
                                 break;
@@ -864,7 +873,7 @@ namespace TransferControl.TaksFlow
                                 //    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300010");
                                 //    return;
                                 //}
-                                AckTask(TaskJob);
+                                //AckTask(TaskJob);
                                 AckTask(TaskJob);
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = Value }));
 
@@ -901,7 +910,8 @@ namespace TransferControl.TaksFlow
                                 //    return;
                                 //}
                                 AckTask(TaskJob);
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.ArmReturn }));
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.ArmReturn }));
 
                                 break;
 

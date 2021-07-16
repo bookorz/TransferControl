@@ -27,5 +27,6 @@ namespace TransferControl.Engine
          void On_Message_Log(string Type,string Message);
         void On_Status_Changed(string Type, string Message);
 
+
     }
 }

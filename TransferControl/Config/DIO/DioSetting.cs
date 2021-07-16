@@ -15,6 +15,8 @@ namespace TransferControl.Config.DIO
         public string abnormal { get; set; }
         public string error_code { get; set; }
 
+        public string Label { get; set; }
+
         public static List<DioSetting> Get(string DeviceName)
         {
             List<DioSetting> result = null;

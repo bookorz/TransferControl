@@ -218,6 +218,9 @@ namespace TransferControl.Comm
                     case "MITSUBISHI_PLC":
                         port.DataReceived += new SerialDataReceivedEventHandler(MITSUBISHI_PLC_DataReceived); 
                         break;
+                    case "FRANCES":
+                        port.DataReceived += new SerialDataReceivedEventHandler(FRANCES_DataReceived);
+                        break;
                 }
             }
             catch (Exception e)
@@ -468,6 +471,66 @@ namespace TransferControl.Comm
             {
                 //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
                 ConnReport.On_Connection_Error("(Sanwa_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+            }
+        }
+        private void FRANCES_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            if ((sender as SerialPort).BytesToRead > 0)
+            {
+                byte[] buf = new byte[(sender as SerialPort).BytesToRead];
+                port.Read(buf, 0, buf.Length);
+                tmp += ByteArrayToString(buf);
+
+                logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+
+                byte[] hexbuf = HexStringToByteArray(tmp.ToString());
+
+                if (hexbuf[hexbuf.Length -1 ] != 0xbb)
+                {
+                    logger.Debug(this.cfg.GetDeviceName() + "buf incomplete");
+                    return;
+                }
+
+
+                //byte[] hexbuf = HexStringToByteArray(tmp.ToString());
+                string data = "";
+                for (int i = 0; i < hexbuf.Length;)
+                {
+                    //ex. 0xaa 0x?? 0x?? 0x?? 0x?? 0xbb
+                    if (hexbuf[i] == 0xaa)
+                    {
+                        if (i + 5 > hexbuf.Length) break;
+
+                        buf = new byte[6];
+                        for (int j = 0; j < 6; j++)
+                            buf[j] = hexbuf[i + j];
+
+                        data += ByteArrayToString(buf);
+                        data = data.Remove(data.LastIndexOf(' '), 1);
+                        data += "\r";
+                        i = i + 6;
+
+                    }
+                    else if (hexbuf[i] == 0xff)     //ex. 0xff 0xff(UNKNOWN COMMAND)
+                    {                               //    0xff 0xfd(EOC ERROR)
+                        if (i + 2 > hexbuf.Length) break;
+
+                        buf = new byte[2];
+                        for (int j = 0; j < 2; j++)
+                            buf[j] = hexbuf[i + j];
+
+                        data += ByteArrayToString(buf);
+                        data = data.Remove(data.LastIndexOf(' '), 1);
+                        data += "\r";
+                        i = i + 2;
+                    }
+                }
+
+                if(!data.Equals(""))
+                {
+                    tmp = tmp.Replace(data.Replace("\r", " "), "");
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                }
             }
         }
 

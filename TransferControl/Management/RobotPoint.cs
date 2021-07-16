@@ -15,5 +15,7 @@ namespace TransferControl.Management
         public string PositionType { get; set; }
         public string Point { get; set; }
         public int Offset { get; set; }
+
+        public string Point2 { get; set; }
     }
 }

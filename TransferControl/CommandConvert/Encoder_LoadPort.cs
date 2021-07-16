@@ -92,7 +92,8 @@ namespace TransferControl.CommandConvert
         public enum EventType
         {
             Complete,
-            All
+            All,
+            Foup
         }
 
         /// <summary>
@@ -237,6 +238,33 @@ namespace TransferControl.CommandConvert
                             commandStr += " P38=4";
                             break;
                     }
+                    break;
+                case "TDK":
+                    switch(evtType)
+                    {
+                        //reporting all events.
+                        case EventType.All:
+                        case EventType.Complete:
+                            commandStr = "EVT:EVT";
+                            break;
+
+                        //reporting FOUP events.
+                        case EventType.Foup:
+                            commandStr = "EVT:FPE";
+                            break;
+                    }
+
+                    if (state == ParamState.Enable)
+                    {
+                        commandStr += "ON";
+                    }
+                    else if (state == ParamState.Disable)
+                    {
+                        commandStr += "OF";
+                    }
+                    commandStr += ";";
+                    commandStr = TDKAssembly(commandStr);
+
                     break;
                 default:
                     throw new NotSupportedException();

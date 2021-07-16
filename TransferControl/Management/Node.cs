@@ -12,6 +12,7 @@ using TransferControl.Engine;
 
 namespace TransferControl.Management
 {
+    public enum E84_Mode { UNKNOW = -1, MANUAL, AUTO }
     public class Node
     {
 
@@ -112,6 +113,7 @@ namespace TransferControl.Management
         public bool IsWaferHold { get; set; }
 
         public string ErrorMsg { get; set; }
+
         public string MappingResult { get; set; }
 
         public bool R_Presence { get; set; }
@@ -288,15 +290,18 @@ namespace TransferControl.Management
         /// 1 = Present
         /// </summary>
         public bool LiftPresent { get; set; }
+        public string StatusRawData { get; set; }
         public IController GetController()
         {
             return ControllerManagement.Get(Controller);
         }
-
+        public Dictionary<string, bool> E84IOStatus { get; set; }
+        public E84_Mode E84Mode;
+        public string TransReqMode;
         public void InitialObject()
         {
-            R_Vacuum_Solenoid = "";
-            L_Vacuum_Solenoid = "";
+            R_Vacuum_Solenoid = "0";
+            L_Vacuum_Solenoid = "0";
             DataReady = false;
             ArmExtend = "";
             RobotGetState = 0;
@@ -320,6 +325,30 @@ namespace TransferControl.Management
             FoupID = "";
             Status = new Dictionary<string, string>();
             IO = new Dictionary<string, byte[]>();
+            E84IOStatus = new Dictionary<string, bool>
+            {
+                { "GO", false },
+                { "VALID", false },
+                { "CS_0", false },
+                { "CS_1", false },
+                { "AM_AVBL", false },
+                { "TR_REQ", false },
+                { "BUSY", false },
+                { "COMPT", false },
+                { "CONT", false },
+                { "L_REQ", false },
+                { "U_REQ", false },
+                { "VA", false },
+                { "READY", false },
+                { "VS_0", false },
+                { "VS_1", false },
+                { "HO_AVBL", false },
+                { "ES", false }
+            };
+
+            E84Mode = E84_Mode.MANUAL;
+            TransReqMode = "Stop";
+
             State = "UNORG";
 
             Home_Position = false;
@@ -401,6 +430,9 @@ namespace TransferControl.Management
             SlotNumber = 25;
             ElevatorUp = true;
             LiftPresent = true;
+
+            //20210628 Pingchung TDK USE
+            StatusRawData = "";
         }
        
 
@@ -552,6 +584,13 @@ namespace TransferControl.Management
                     else if (txn.Method.Equals(Transaction.Command.RobotType.PreMapping))
                     {
                         txn.Point = point.PreMappingPoint;
+                    }
+                    else if(txn.Method.Equals(Transaction.Command.RobotType.PutByLArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByLArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutWaitByLArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetWaitByLArm))
+                    {
+                        txn.Point = point.Point2;
                     }
                     else
                     {
@@ -1349,6 +1388,15 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapperArmOpen(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
                                 break;
+                            case Transaction.Command.LoadPortType.MapperStopperOn:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapperStopperON(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;
+                            case Transaction.Command.LoadPortType.MapperStopperOff:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapperStopperOFF(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;
+
                             case Transaction.Command.LoadPortType.MappingDown:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingDown(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
@@ -1730,6 +1778,62 @@ namespace TransferControl.Management
                             case Transaction.Command.OCRType.SetConfigEnable:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().OCR.SetConfigEnable(txn.Value);
                                 txn.CommandType = "CMD";
+                                break;
+                        }
+                        break;
+                    case "E84":
+                        switch (txn.Method)
+                        {
+                            case Transaction.Command.E84.Reset:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.Reset();
+                                txn.CommandType = "SET";
+                                break;
+
+                            case Transaction.Command.E84.SetAutoMode:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.AutoMode();
+                                txn.CommandType = "SET";
+                                break;
+
+                            case Transaction.Command.E84.SetManualMode:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.ManualMode();
+                                txn.CommandType = "SET";
+                                break;
+
+                            case Transaction.Command.E84.GetDIStatus:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetDIStatus();
+                                txn.CommandType = "GET";
+                                break;
+                            case Transaction.Command.E84.GetDOStatus:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetDOStatus();
+                                txn.CommandType = "GET";
+                                break;
+                            case Transaction.Command.E84.SetTP1:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP1(txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.E84.SetTP2:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP2(txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.E84.SetTP3:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP3(txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.E84.SetTP4:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP4(txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.E84.SetTP5:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP5(txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.E84.SetTP6:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP6(txn.Value);
+                                txn.CommandType = "SET";
+                                break;
+                            case Transaction.Command.E84.GetOperateStatus:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetOperateStatus();
+                                txn.CommandType = "GET";
                                 break;
                         }
                         break;

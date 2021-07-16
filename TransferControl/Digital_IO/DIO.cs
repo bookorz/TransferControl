@@ -17,8 +17,8 @@ namespace TransferControl.Digital_IO
         private static readonly ILog logger = LogManager.GetLogger(typeof(DIO));
         IDIOTriggerReport _Report;
         ConcurrentDictionary<string, IDIOController> Ctrls;
-        ConcurrentDictionary<string, ParamConfig> Params;
-        ConcurrentDictionary<string, ParamConfig> Controls;
+        public ConcurrentDictionary<string, ParamConfig> Params;
+        public ConcurrentDictionary<string, ParamConfig> Controls;
 
 
         public DIO(IDIOTriggerReport ReportTarget)

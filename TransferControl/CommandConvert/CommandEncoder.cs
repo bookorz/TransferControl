@@ -24,11 +24,9 @@ namespace TransferControl.CommandConvert
         public Encoder_WTSAligner WTSAligner;
         public Encoder_Mitsubishi_PLC PLC;
         public Encoder_RFID RFID;
-
+        public Encoder_E84 E84;
 
         private string Supplier;
-
-
 
         /// <summary>
         /// Encoder
@@ -36,8 +34,6 @@ namespace TransferControl.CommandConvert
         /// <param name="supplier"> Equipment supplier </param>
         public CommandEncoder(string supplier)
         {
-
-
             try
             {
                 Supplier = supplier.ToUpper();
@@ -58,6 +54,8 @@ namespace TransferControl.CommandConvert
                 PLC = new Encoder_Mitsubishi_PLC(Supplier);
                 SmartTag = new Encoder_SmartTag(Supplier);
                 RFID = new Encoder_RFID(Supplier);
+
+                E84 = new Encoder_E84(Supplier);
             }
             catch (Exception ex)
             {

@@ -95,6 +95,9 @@ namespace TransferControl.Management
                 case "CCLINKCONTROLLER_INNOLUX":
                     TaskFlow = new Innolux_CCLinkController(this);
                     break;
+                case "EFEM_SEMICORE":
+                    TaskFlow = new EFEM_SemiCore(this);
+                    break;
 
                 default:
                     throw new NotSupportedException();
@@ -390,12 +393,21 @@ namespace TransferControl.Management
             LOADPORT_READ_LED,
             LOADPORT_READ_STATUS,
             LOADPORT_READ_VERSION,
-            LOADPORT_SET_SPEED, 
+            LOADPORT_SET_SPEED,
+            LOADPORT_SET_OPACCESS_INDICATOR,
+            LOADPORT_SET_LOAD_INDICATOR,
+            LOADPORT_SET_UNLOAD_INDICATOR,
             LOADPORT_SLOT,
             LOADPORT_TWKUP,
             LOADPORT_TWKDN,
             LOADPORT_READ_MAP,
             LOADPORT_OPMOD,
+            LOADPORT_MAPPER_START_POSITION,
+            LOADPORT_MAPPER_WAIT_POSITION,
+            LOADPORT_MAPPER_ARM_STRETCH,
+            LOADPORT_MAPPER_ARM_RETRACTED,
+            LOADPORT_MAPPER_STOPPER_ON,
+            LOADPORT_MAPPER_STOPPER_OFF,
             ALL_INIT,
             ALL_ORGSH,
             DISABLE_OPACCESS,
@@ -511,6 +523,8 @@ namespace TransferControl.Management
             CCLINK_POWER_ON,
             CCLINK_CMD_EXE,
             CCLINK_CMD_PARAM,
+            E84_INIT,
+            E84_SET_ALL_MODE,
         }
     }
 }

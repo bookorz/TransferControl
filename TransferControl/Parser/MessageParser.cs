@@ -40,6 +40,10 @@ namespace TransferControl.Parser
                 case "AIRTECH":
                     P = new AIRTECHParser();
                     break;
+                case "FRANCES":
+                    P = new E84Parser();
+                    break;
+                    
                 case "SMARTTAG8200":
                 case "SMARTTAG8400":
                 case "OMRON_V640":

@@ -65,145 +65,225 @@ namespace TransferControl.Engine
         {
             MessageParser parser = new MessageParser(Node.Vendor);
             Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
+            Node.StatusRawData = Msg.Value;
 
             foreach (KeyValuePair<string, string> each in Node.Status)
             {
-                switch (each.Key)
+                switch(Node.Vendor)
                 {
-                    case "SMIF_ManualMode":
-                        if(each.Value.ToUpper().Equals("TRUE"))
+                    case "TDK":
+                        switch(each.Key)
                         {
-                            Node.ManualMode = 1;
-                        }
-                        else
-                        {
-                            Node.ManualMode = 0;
-                        }
-                        break;
-                    case "SMIF_RDY":
-                        if (each.Value.ToUpper().Equals("TRUE"))
-                        {
-                            Node.Ready = 1;
-                        }
-                        else
-                        {
-                            Node.Ready = 0;
-                        }
-                        break;
-                    case "SMIF_LFUNC":
-                        Node.LFUNC = each.Value;
-                        break;
-                    case "SMIF_POS":
-                        Node.Position = each.Value;
-                        break;
-                    case "SMIF_SNO":
-                        if (Int32.TryParse(each.Value, out int value))
-                        {
-                            Node.SlotNumber = value;
-                        }
-                        break;
-                    case "SMIF_ELUD":
-                        if (each.Value.ToUpper().Equals("TRUE"))
-                        {
-                            Node.ElevatorUp = true;
-                        }
-                        else
-                        {
-                            Node.ElevatorUp = false;
-                        }
-                        break;
-                    case "SMIF_LPS":
-                        if (each.Value.ToUpper().Equals("TRUE"))
-                        {
-                            Node.LiftPresent = true;
-                        }
-                        else
-                        {
-                            Node.LiftPresent = false;
-                        }
-                        break;
-                    case "SLOTPOS":
-                        Node.CurrentSlotPosition = each.Value;
-                        break;
-                    case "PIP":
-                        if (each.Value.Equals("TRUE"))
-                        {
-                            Node.Foup_Placement = true;
-                            Node.Foup_Presence = true;
-                        }
-                        else
-                        {
-                            Node.Foup_Placement = false;
-                            Node.Foup_Presence = false;
-                        }
-                        break;
-                    case "PRTST":
-                        if (each.Value.Equals("UNLK"))
-                        {
-                            Node.Foup_Lock = false;
-                        }
-                        else
-                        {
-                            Node.Foup_Lock = true;
+                            //case "Equipment Status":
+                            //    Node.EquipmentStatus = each.Value;
+                            //    break;
+                            case "Mode": //手動或自動
+                                if (each.Value.ToUpper().Equals("ONLINE"))
+                                {
+                                    Node.ManualMode = 0;
+                                }
+                                else
+                                {
+                                    Node.ManualMode = 1;
+                                }
+                                break;
+                            //case "Initial Position":
+                            //    Node.InitialPosition = each.Value;
+                            //    break;
+                            //case "Operation Status":
+                            //    Node.OperationStatus = each.Value;
+                            //    break;
+                            case "Error Code":
+                                Node.LastError = each.Value;
+                                break;
+                            case "Cassette Presence":
+                                if (each.Value.Equals("None"))
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = false;
+                                }
+                                else if (each.Value.Equals("Normal position"))
+                                {
+                                    Node.Foup_Placement = true;
+                                    Node.Foup_Presence = true;
+                                }
+                                else if (each.Value.Equals("Error load"))
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = true;
+                                }
+                                break;
+                            case "FOUP Clamp Status":
+                                if (each.Value.Equals("Open"))
+                                {
+                                    Node.Foup_Lock = false;
+                                }
+                                else if (each.Value.Equals("Close"))
+                                {
+                                    Node.Foup_Lock = true;
+                                }
+                                break;
+                            case "Latch Key Status":
+                                if (each.Value.Equals("Open"))
+                                {
+                                    Node.Latch_Open = true;
+                                }
+                                else if (each.Value.Equals("Close"))
+                                {
+                                    Node.Latch_Open = false;
+                                }
+                                break;
+                            case "Door Position":
+                                Node.Door_Position = each.Value;
+                                break;
+                            case "Z Axis Position":
+                                Node.Z_Axis_Position = each.Value;
+                                break;
+                            case "Y Axis Position":
+                                Node.Y_Axis_Position = each.Value;
+                                break;
                         }
                         break;
-                    case "Door Position":
-                        Node.Door_Position = each.Value;
-                        break;
-                    case "Y Axis Position":
-                        Node.Y_Axis_Position = each.Value;
-                        break;
-                    case "Z Axis Position":
-                        Node.Z_Axis_Position = each.Value;
-                        break;
-                    case "FOUP Clamp Status":
-                        if (each.Value.Equals("Open"))
+                    default://SANWA_MC
+                        switch (each.Key)
                         {
-                            Node.Foup_Lock = false;
-                        }
-                        else if (each.Value.Equals("Close"))
-                        {
-                            Node.Foup_Lock = true;
-                        }
-                        break;
-                    case "Latch Key Status":
-                        if (each.Value.Equals("Open"))
-                        {
-                            Node.Latch_Open = true;
-                        }
-                        else if (each.Value.Equals("Close"))
-                        {
-                            Node.Latch_Open = false;
-                        }
-                        break;
-                    case "Cassette Presence":
-                        if (each.Value.Equals("None"))
-                        {
-                            Node.Foup_Placement = false;
-                            Node.Foup_Presence = false;
-                        }
-                        else if (each.Value.Equals("Normal position"))
-                        {
-                            Node.Foup_Placement = true;
-                            Node.Foup_Presence = true;
-                        }
-                        else if (each.Value.Equals("Error load"))
-                        {
-                            Node.Foup_Placement = false;
-                            Node.Foup_Presence = false;
-                        }
-                        break;
-                    case "Wafer Protrusion Sensor":
-                        if (each.Value.Equals("Unblocked"))
-                        {
-                            Node.WaferProtrusionSensor = false;
-                        }
-                        else if (each.Value.Equals("Blocked"))
-                        {
-                            Node.WaferProtrusionSensor = true;
+                            case "SMIF_ManualMode":
+                                if (each.Value.ToUpper().Equals("TRUE"))
+                                {
+                                    Node.ManualMode = 1;
+                                }
+                                else
+                                {
+                                    Node.ManualMode = 0;
+                                }
+                                break;
+                            case "SMIF_RDY":
+                                if (each.Value.ToUpper().Equals("TRUE"))
+                                {
+                                    Node.Ready = 1;
+                                }
+                                else
+                                {
+                                    Node.Ready = 0;
+                                }
+                                break;
+                            case "SMIF_LFUNC":
+                                Node.LFUNC = each.Value;
+                                break;
+                            case "SMIF_POS":
+                                Node.Position = each.Value;
+                                break;
+                            case "SMIF_SNO":
+                                if (Int32.TryParse(each.Value, out int value))
+                                {
+                                    Node.SlotNumber = value;
+                                }
+                                break;
+                            case "SMIF_ELUD":
+                                if (each.Value.ToUpper().Equals("TRUE"))
+                                {
+                                    Node.ElevatorUp = true;
+                                }
+                                else
+                                {
+                                    Node.ElevatorUp = false;
+                                }
+                                break;
+                            case "SMIF_LPS":
+                                if (each.Value.ToUpper().Equals("TRUE"))
+                                {
+                                    Node.LiftPresent = true;
+                                }
+                                else
+                                {
+                                    Node.LiftPresent = false;
+                                }
+                                break;
+                            case "SLOTPOS":
+                                Node.CurrentSlotPosition = each.Value;
+                                break;
+                            case "PIP":
+                                if (each.Value.Equals("TRUE"))
+                                {
+                                    Node.Foup_Placement = true;
+                                    Node.Foup_Presence = true;
+                                }
+                                else
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = false;
+                                }
+                                break;
+                            case "PRTST":
+                                if (each.Value.Equals("UNLK"))
+                                {
+                                    Node.Foup_Lock = false;
+                                }
+                                else
+                                {
+                                    Node.Foup_Lock = true;
+                                }
+                                break;
+                            case "Door Position":
+                                Node.Door_Position = each.Value;
+                                break;
+                            case "Y Axis Position":
+                                Node.Y_Axis_Position = each.Value;
+                                break;
+                            case "Z Axis Position":
+                                Node.Z_Axis_Position = each.Value;
+                                break;
+                            case "FOUP Clamp Status":
+                                if (each.Value.Equals("Open"))
+                                {
+                                    Node.Foup_Lock = false;
+                                }
+                                else if (each.Value.Equals("Close"))
+                                {
+                                    Node.Foup_Lock = true;
+                                }
+                                break;
+                            case "Latch Key Status":
+                                if (each.Value.Equals("Open"))
+                                {
+                                    Node.Latch_Open = true;
+                                }
+                                else if (each.Value.Equals("Close"))
+                                {
+                                    Node.Latch_Open = false;
+                                }
+                                break;
+                            case "Cassette Presence":
+                                if (each.Value.Equals("None"))
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = false;
+                                }
+                                else if (each.Value.Equals("Normal position"))
+                                {
+                                    Node.Foup_Placement = true;
+                                    Node.Foup_Presence = true;
+                                }
+                                else if (each.Value.Equals("Error load"))
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = false;
+                                }
+                                break;
+                            case "Wafer Protrusion Sensor":
+                                if (each.Value.Equals("Unblocked"))
+                                {
+                                    Node.WaferProtrusionSensor = false;
+                                }
+                                else if (each.Value.Equals("Blocked"))
+                                {
+                                    Node.WaferProtrusionSensor = true;
+                                }
+                                break;
                         }
                         break;
                 }
+
             }
         }
         /// <summary>
@@ -235,10 +315,6 @@ namespace TransferControl.Engine
                         Node.IsPause = false;
                         break;
                 }
-
-
-
-
 
                 if (Node.Type.Equals("ROBOT") && !Txn.Position.Equals(""))//紀錄Robot最後位置
                 {
@@ -318,99 +394,6 @@ namespace TransferControl.Engine
                             case Transaction.Command.LoadPortType.ReadStatus:
 
                                 Transaction_Command_LoadPortType_ReadStatus(Node, Txn, Msg);
-                                //parser = new MessageParser(Node.Vendor);
-                                //Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
-                                //foreach (KeyValuePair<string, string> each in Node.Status)
-                                //{
-                                //    switch (each.Key)
-                                //    {
-                                //        case "SLOTPOS":
-                                //            Node.CurrentSlotPosition = each.Value;
-
-                                //            break;
-                                //        case "PIP":
-                                //            if (each.Value.Equals("TRUE"))
-                                //            {
-                                //                Node.Foup_Placement = true;
-                                //                Node.Foup_Presence = true;
-                                //            }
-                                //            else
-                                //            {
-                                //                Node.Foup_Placement = false;
-                                //                Node.Foup_Presence = false;
-                                //            }
-                                //            break;
-                                //        case "PRTST":
-                                //            if (each.Value.Equals("UNLK"))
-                                //            {
-                                //                Node.Foup_Lock = false;
-                                //            }
-                                //            else
-                                //            {
-                                //                Node.Foup_Lock = true;
-                                //            }
-                                //            break;
-                                //        case "Door Position":
-                                //            Node.Door_Position = each.Value;
-                                //            break;
-                                //        case "Y Axis Position":
-                                //            Node.Y_Axis_Position = each.Value;
-                                //            break;
-                                //        case "Z Axis Position":
-                                //            Node.Z_Axis_Position = each.Value;
-                                //            break;
-                                //        case "FOUP Clamp Status":
-                                //            if (each.Value.Equals("Open"))
-                                //            {
-                                //                Node.Foup_Lock = false;
-                                //            }
-                                //            else if (each.Value.Equals("Close"))
-                                //            {
-                                //                Node.Foup_Lock = true;
-                                //            }
-                                //            break;
-                                //        case "Latch Key Status":
-                                //            if (each.Value.Equals("Open"))
-                                //            {
-                                //                Node.Latch_Open = true;
-                                //            }
-                                //            else if (each.Value.Equals("Close"))
-                                //            {
-                                //                Node.Latch_Open = false;
-                                //            }
-                                //            break;
-                                //        case "Cassette Presence":
-                                //            if (each.Value.Equals("None"))
-                                //            {
-                                //                Node.Foup_Placement = false;
-                                //                Node.Foup_Presence = false;
-                                //            }
-                                //            else if (each.Value.Equals("Normal position"))
-                                //            {
-                                //                Node.Foup_Placement = true;
-                                //                Node.Foup_Presence = true;
-                                //            }
-                                //            else if (each.Value.Equals("Error load"))
-                                //            {
-                                //                Node.Foup_Placement = false;
-                                //                Node.Foup_Presence = false;
-                                //            }
-                                //            break;
-                                //        case "Wafer Protrusion Sensor":
-                                //            if (each.Value.Equals("Unblocked"))
-                                //            {
-                                //                Node.WaferProtrusionSensor = false;
-                                //            }
-                                //            else if (each.Value.Equals("Blocked"))
-                                //            {
-                                //                Node.WaferProtrusionSensor = true;
-                                //            }
-                                //            break;
-                                //        default:
-                                //            break;
-                                //    }
-                                //}
-
 
                                 break;
                             case Transaction.Command.LoadPortType.GetMapping:
@@ -904,6 +887,71 @@ namespace TransferControl.Engine
                                 break;
                         }
                         break;
+                    case "E84":
+                        logger.Debug("Txn.Method :" + Txn.Method);
+                        logger.Debug("Msg.Value :" + Msg.Value);
+                        switch (Txn.Method)
+                        {
+                            case Transaction.Command.E84.SetAutoMode:
+                                Node.E84Mode = E84_Mode.AUTO;
+                                break;
+                            case Transaction.Command.E84.SetManualMode:
+                                Node.E84Mode = E84_Mode.MANUAL;
+                                break;
+                            case Transaction.Command.E84.GetDIStatus:
+
+                                MessageParser parser = new MessageParser(Node.Vendor);
+                                Dictionary<string, string> DIStatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
+
+                                foreach (KeyValuePair<string, string> each in DIStatusResult)
+                                    Node.E84IOStatus[each.Key] = each.Value.Equals("1") ? true : false;
+
+                                break;
+
+                            case Transaction.Command.E84.GetDOStatus:
+                                parser = new MessageParser(Node.Vendor);
+                                Dictionary<string, string> DOStatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
+
+                                foreach (KeyValuePair<string, string> each in DOStatusResult)
+                                    Node.E84IOStatus[each.Key] = each.Value.Equals("1") ? true : false;
+
+                                break;
+
+                            case Transaction.Command.E84.GetOperateStatus:
+                                parser = new MessageParser(Node.Vendor);
+                                Dictionary<string, string> OperateStatus = parser.ParseMessage(Txn.Method, Msg.Value);
+
+                                bool bAuto = false;
+                                bool bManual = false;
+                                foreach (KeyValuePair<string, string> each in OperateStatus)
+                                {
+                                    switch(each.Key)
+                                    {
+                                        case "Manual":
+                                            bManual = each.Value.Equals("1") ? true : false;
+                                            break;
+                                        case "Auto":
+                                            bAuto = each.Value.Equals("1") ? true : false;
+                                            break;
+                                    }
+                                }
+
+                                if (bAuto && !bManual)
+                                {
+                                    Node.E84Mode = E84_Mode.AUTO;
+                                }
+                                else if(!bAuto && bManual)
+                                {
+                                    Node.E84Mode = E84_Mode.MANUAL;
+                                }
+                                else
+                                    Node.E84Mode = E84_Mode.UNKNOW;
+
+                                //NodeManagement.Get(Node.Associated_Node).E84Mode = Node.E84Mode;
+
+                                break;
+                        }
+                        break;
                 }
 
                 _UIReport.On_Command_Excuted(Node, Txn, Msg);
@@ -1344,100 +1392,6 @@ namespace TransferControl.Engine
                                 break;
                             case Transaction.Command.LoadPortType.ReadStatus:
                                 Transaction_Command_LoadPortType_ReadStatus(Node, Txn, Msg);
-                                //parser = new MessageParser(Node.Vendor);
-                                //Node.Status = parser.ParseMessage(Txn.Method, Msg.Value);
-
-                                //foreach (KeyValuePair<string, string> each in Node.Status)
-                                //{
-                                //    switch (each.Key)
-                                //    {
-                                //        case "SLOTPOS":
-                                //            Node.CurrentSlotPosition = each.Value;
-
-                                //            break;
-                                //        case "PIP":
-                                //            if (each.Value.Equals("TRUE"))
-                                //            {
-                                //                Node.Foup_Placement = true;
-                                //                Node.Foup_Presence = true;
-                                //            }
-                                //            else
-                                //            {
-                                //                Node.Foup_Placement = false;
-                                //                Node.Foup_Presence = false;
-                                //            }
-                                //            break;
-                                //        case "PRTST":
-
-                                //            if (each.Value.Equals("UNLK"))
-                                //            {
-                                //                Node.Foup_Lock = false;
-                                //            }
-                                //            else
-                                //            {
-                                //                Node.Foup_Lock = true;
-                                //            }
-                                //            break;
-                                //        case "Door Position":
-                                //            Node.Door_Position = each.Value;
-                                //            break;
-                                //        case "Y Axis Position":
-                                //            Node.Y_Axis_Position = each.Value;
-                                //            break;
-                                //        case "Z Axis Position":
-                                //            Node.Z_Axis_Position = each.Value;
-                                //            break;
-                                //        case "FOUP Clamp Status":
-                                //            if (each.Value.Equals("Open"))
-                                //            {
-                                //                Node.Foup_Lock = false;
-                                //            }
-                                //            else if (each.Value.Equals("Close"))
-                                //            {
-                                //                Node.Foup_Lock = true;
-                                //            }
-                                //            break;
-                                //        case "Latch Key Status":
-                                //            if (each.Value.Equals("Open"))
-                                //            {
-                                //                Node.Latch_Open = true;
-                                //            }
-                                //            else if (each.Value.Equals("Close"))
-                                //            {
-                                //                Node.Latch_Open = false;
-                                //            }
-                                //            break;
-                                //        case "Cassette Presence":
-                                //            if (each.Value.Equals("None"))
-                                //            {
-                                //                Node.Foup_Placement = false;
-                                //                Node.Foup_Presence = false;
-                                //            }
-                                //            else if (each.Value.Equals("Normal position"))
-                                //            {
-                                //                Node.Foup_Placement = true;
-                                //                Node.Foup_Presence = true;
-                                //            }
-                                //            else if (each.Value.Equals("Error load"))
-                                //            {
-                                //                Node.Foup_Placement = false;
-                                //                Node.Foup_Presence = false;
-                                //            }
-                                //            break;
-                                //        case "Wafer Protrusion Sensor":
-                                //            if (each.Value.Equals("Unblocked"))
-                                //            {
-                                //                Node.WaferProtrusionSensor = false;
-                                //            }
-                                //            else if (each.Value.Equals("Blocked"))
-                                //            {
-                                //                Node.WaferProtrusionSensor = true;
-                                //            }
-                                //            break;
-                                //    }
-                                //}
-
-
                                 break;
                             default:
                                 Node.IsLoad = false;
@@ -1635,35 +1589,44 @@ namespace TransferControl.Engine
                                 //IO_State_Change(Node.Name, "Access_SW", false);
                                 break;
                             case "SMTON":
-                                //IO_State_Change(Node.Name, "Foup_Presence", false);
-                                CarrierManagement.Remove(Node.Carrier);
-                                Node.Foup_Presence = false;
+                                //CarrierManagement.Remove(Node.Carrier);
+                                //Node.Foup_Presence = false;
+                                //Node.Foup_Placement = false;
+                                //Node.IsMapping = false;
+                                //Node.MappingResult = "";
+                                ////刪除所有帳
+                                //foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
+                                //{
+                                //    JobManagement.Remove(eachJob);
+                                //}
+                                //Node.FoupID = "";
+
+                                Node.Foup_Presence = true;
                                 Node.Foup_Placement = false;
-                                //IO_State_Change(Node.Name, "Foup_Presence", true);
-                                //IO_State_Change(Node.Name, "Foup_Placement", false);
-                                Node.IsMapping = false;
-                                Node.MappingResult = "";
-                                //刪除所有帳
-                                foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
-                                {
-                                    JobManagement.Remove(eachJob);
-                                }
-                                Node.FoupID = "";
                                 break;
                             case "PODOF":
-
+                                //CarrierManagement.Remove(Node.Carrier);
+                                Node.Foup_Presence = false;
+                                Node.Foup_Placement = false;
+                                //Node.IsMapping = false;
+                                //Node.MappingResult = "";
+                                ////刪除所有帳
+                                //foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
+                                //{
+                                //    JobManagement.Remove(eachJob);
+                                //}
+                                //Node.FoupID = "";
 
                                 break;
                             case "PODON":
-                                CarrierManagement.Add().SetLocation(Node.Name);
+                                //CarrierManagement.Add().SetLocation(Node.Name);
                                 Node.Foup_Presence = true;
                                 Node.Foup_Placement = true;
-                                //IO_State_Change(Node.Name, "Foup_Presence", false);
-                                //IO_State_Change(Node.Name, "Foup_Placement", true);
 
                                 break;
                             case "ABNST":
-                                //IO_State_Change(Node.Name, "Foup_Placement", false);
+                                Node.Foup_Presence = true;
+                                Node.Foup_Placement = false;
                                 break;
                             case "POD_ARRIVED":
                                 Node.Foup_Presence = true;
@@ -1678,6 +1641,71 @@ namespace TransferControl.Engine
                                 string IO_Name = Msg.Value.Split(',')[0];
                                 string IO_Value = Msg.Value.Split(',')[1];
                                 _UIReport.On_DIO_Data_Chnaged(IO_Name, IO_Value.Equals("1") ? "TRUE" : "FALSE", "DIN");
+                                break;
+                        }
+                        break;
+                    case "E84":
+                        switch (Msg.Command)
+                        {
+                            case "VALID_ON":
+                            case "VALID_OFF":
+                                Node.E84IOStatus["VALID"] = Msg.Command.Contains("ON") ? true :false;
+                                break;
+
+                            case "CS_0_ON":
+                            case "CS_0_OFF":
+                                Node.E84IOStatus["CS_0"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "CS_1_ON":
+                            case "CS_1_OFF":
+                                Node.E84IOStatus["CS_1"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "TR_REQ_ON":
+                            case "TR_REQ_OFF":
+                                Node.E84IOStatus["TR_REQ"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "BUSY_ON":
+                            case "BUSY_OFF":
+                                Node.E84IOStatus["BUSY"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "COMPT_ON":
+                            case "COMPT_OFF":
+                                Node.E84IOStatus["COMPT"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "L_REQ_ON":
+                            case "L_REQ_OFF":
+                                Node.E84IOStatus["L_REQ"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+                            case "U_REQ_ON":
+                            case "U_REQ_OFF":
+                                Node.E84IOStatus["U_REQ"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "READY_ON":
+                            case "READY_OFF":
+                                Node.E84IOStatus["READY"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+                            case "HO_AVBL_ON":
+                            case "HO_AVBL_OFF":
+                                Node.E84IOStatus["HO_AVBL"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "ES_ON":
+                            case "ES_OFF":
+                                Node.E84IOStatus["ES"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "MANUAL_MODE":
+                                Node.E84Mode = E84_Mode.MANUAL;
+                                break;
+
+                            case "AUTO_MODE":
+                                Node.E84Mode = E84_Mode.AUTO;
                                 break;
                         }
                         break;

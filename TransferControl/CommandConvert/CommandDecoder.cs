@@ -72,6 +72,10 @@ namespace TransferControl.CommandConvert
                         result = RFIDOMRONV640CodeAnalysis(Message);
                         break;
 
+                    case "FRANCES":
+                        result = SEMIE84CodeAnalysis(Message);
+                        break;
+
                     default:
                         throw new NotImplementedException();
 
@@ -278,7 +282,247 @@ namespace TransferControl.CommandConvert
 
             return result;
         }
+        private List<CommandReturnMessage> SEMIE84CodeAnalysis(string Message)
+        {
+            List<CommandReturnMessage> result;
+            string[] msgAry;
 
+            try
+            {
+                result = new List<CommandReturnMessage>();
+
+                msgAry = Message.Split('\r');
+
+                foreach (string Msg in msgAry)
+                {
+                    if (Msg.Trim().Equals(""))
+                    {
+                        continue;
+                    }
+
+                    CommandReturnMessage each = new CommandReturnMessage();
+                    each.OrgMsg = Msg;
+
+                    each.NodeAdr = "01";
+                    each.Value = "";
+                    string strRawMsg = Msg.ToUpper().Replace(" ", "");
+                    string strResponseCode = "";
+                    string strFunctionCode = "";
+                    string strErrorCode = "";
+                    string strHeader = strRawMsg.Substring(0, 2).ToUpper();
+                    if (strHeader == "FF")
+                    {
+                        strFunctionCode = "FF";
+                        strResponseCode = strRawMsg.Substring(2, 2);
+                        strErrorCode = strRawMsg.Substring(2, 2);
+                    }
+                    else
+                    {
+                        strFunctionCode = strRawMsg.Substring(2, 2);
+                        strResponseCode = strRawMsg.Substring(4, 2);
+                    }
+
+                    switch(strFunctionCode.ToUpper())
+                    {
+                        case "FF":
+                            each.Type = CommandReturnMessage.ReturnType.Error;
+                            each.Value = strFunctionCode.ToUpper() + strErrorCode.ToUpper();
+                            break;
+                        case "01":  //設定 E84 Controller 到AUTO MODE
+                        case "02":  //設定 E84 Controller 到MANUAL MODE
+                        case "04":  //重啟 E84 Controller
+                            if (strResponseCode.Equals("00"))
+                            {
+                                each.Type = CommandReturnMessage.ReturnType.Excuted;
+                            }
+                            else if (strFunctionCode.ToUpper().Equals("04") && strResponseCode.Equals("00"))
+                            {
+                                each.Type = CommandReturnMessage.ReturnType.Excuted;
+                            }
+                            else
+                            {
+                                each.Type = CommandReturnMessage.ReturnType.Error;
+                                each.Value = strRawMsg.Replace("AA", "").Replace("BB","");
+                            }
+                            break;
+                        case "81":
+                            each.Type = CommandReturnMessage.ReturnType.Excuted;
+                            each.Value = strRawMsg.Substring(4, 4);
+
+                            if(each.Value == "FFFF" || each.Value == "FFFD")
+                            {
+                                each.Type = CommandReturnMessage.ReturnType.Error;
+                            }
+                            break;
+
+                        case "55":  
+                            each.Type = CommandReturnMessage.ReturnType.Event;
+                            switch(strResponseCode.ToUpper())
+                            {
+                                case "12":
+                                    each.Command = "VALID_ON";
+                                    break;
+                                case "1E":
+                                    each.Command = "VALID_OFF";
+                                    break;
+                                case "11":
+                                    each.Command = "CS_0_ON";
+                                    break;
+                                case "20":
+                                    each.Command = "CS_0_OFF";
+                                    break;
+                                case "28":
+                                    each.Command = "CS_1_ON";
+                                    break;
+                                case "29":
+                                    each.Command = "CS_1_OFF";
+                                    break;
+                                case "15":
+                                    each.Command = "TR_REQ_ON";
+                                    break;
+                                case "1B":
+                                    each.Command = "TR_REQ_OFF";
+                                    break;
+                                case "17":
+                                    each.Command = "BUSY_ON";
+                                    break;
+                                case "1A":
+                                    each.Command = "BUSY_OFF";
+                                    break;
+                                case "1C":
+                                    each.Command = "COMPT_ON";
+                                    break;
+                                case "1F":
+                                    each.Command = "COMPT_OFF";
+                                    break;
+
+                                case "13":
+                                    each.Command = "L_REQ_ON";
+                                    break;
+                                case "18":
+                                    each.Command = "L_REQ_OFF";
+                                    break;
+                                case "14":
+                                    each.Command = "U_REQ_ON";
+                                    break;
+                                case "19":
+                                    each.Command = "U_REQ_OFF";
+                                    break;
+
+                                case "16":
+                                    each.Command = "READY_ON";
+                                    break;
+                                case "1D":
+                                    each.Command = "READY_OFF";
+                                    break;
+                                case "F3":
+                                case "F6":
+                                    each.Command = "HO_AVBL_ON";
+                                    break;
+
+                                case "F2":
+                                case "F4":
+                                case "F7":
+                                    each.Command = "HO_AVBL_OFF";
+                                    break;
+
+                                case "F1":
+                                case "FA":
+                                    each.Command = "ES_ON";
+                                    break;
+                                case "FB":
+                                    each.Command = "ES_OFF";
+                                    break;
+
+                                case "FD":
+                                    each.Command = "MANUAL_MODE";
+                                    break;
+
+                                case "FE":
+                                    each.Command = "AUTO_MODE";
+                                    break;
+
+                                case "80":  //CS_0 timeout: GO_ON, wait CS_0 ON timeout
+                                case "81":  //TD0 timeout: CS_0 ON, wait VALID ON timeout
+                                case "82":  //TP1 timeout: (L_REQ or U_REQ) ON wait TR_REQ ON timeout (2 seconds)
+                                case "83":  //TP2 timeout: READY ON wait BUSY ON timeout (2 seconds)
+                                case "84":  //TP3-LOAD timeout: BUSY_ON, LOADING FOUP wait PS ON & PL ON timeout(60 seconds)
+                                case "86":  //TP3-UNLOAD timeout: BUSY_ON, UNLOADING FOUP wait PS OFF & PL OFF timeout (60 seconds)
+                                case "88":  //TP4 timeout: FOUP (LOADED/UNLOADED) wait BUSY OFF, TR_REQ OFF, COMPT ON timeout (60 seconds)
+                                case "8B":  //TP5 timeout: READY OFF wait VALID OFF,COMPT OFF,CS_0 OFF timeout (2 seconds)
+                                case "8C":  //TP6 timeout: In Continue Handoff, VALID OFF to next VALID ON timeout (2 seconds)
+                                case "A0":  //Wait GO ON => CS_0,VALID,TR_REQ,BUSY,COMPT anyone ON
+                                case "A1":  //Wait CS_0 ON => GO OFF
+                                case "A2":  //Wait CS_0 ON => VALID,TR_REQ,BUSY,COMPT anyone ON
+                                case "A3":  //Wait VALID ON => GO, CS_0 anyone OFF
+                                case "A4":  //During TA1(VALID ON - L_REQ or U_REQ ON) => GO,CS0,VALID anyone OFF
+                                case "A5":  //During TA1(VALID ON - L_REQ or U_REQ ON) => TR-REQ,BUSY,COMPT anyone ON
+                                case "A6":  //Wait TR_REQ ON => BUSY,COMPT anyone ON
+                                case "A7":  //Wait BUSY ON => GO,CS_0,VALID,TR_REQ anyone OFF
+                                case "A8":  //During TA2(TR_REQ ON - READY ON) => GO,CS0,VALID,TR-REQ anyone OFF
+                                case "A9":  //Wait BUSY OFF, TR_REQ OFF,COMPT ON => GO,CS_0,VALID anyone OFF
+                                case "AA":  //During TA2(TR_REQ ON - READY ON) => BUSY,COMPT anyone ON
+                                case "AB":  //Wait BUSY ON => GO,CS0,VALID,TR_REQ anyone OFF
+                                case "AC":  //Wait BUSY ON => COMPT ON
+                                case "AD":  //Wait BUSY,TR_REQ OFF,COMPT ON => GOT E84 SIGNAL ERROR
+                                case "AE":  //During TA3(COMPT ON - READY OFF) , E84 handshake signal error
+                                case "AF":  //During TA3(COMPT ON - READY OFF) , E84 handshake signal error
+                                case "B0":  //Wait handshake finish(VALID,COMPT,CS_0 OFF), E84 handshake signal error
+                                case "C0":  //BUSY ON, LOADING process, wait PS ON => GO,VALID,CS_0,TR_REQ,BUSY anyone OFF
+                                case "C1":  //BUSY ON, LOADING process, wait PS ON => COMPT ON
+                                case "C2":  //BUSY ON, LOADING process, wait PL ON => GO,VALID,CS_0,TR_REQ,BUSY anyone OFF
+                                case "C3":  //BUSY ON, LOADING process, wait PL ON => COMPT ON
+                                case "C4":  //BUSY ON, UNLOADING process, wait PL OFF => GO,VALID,CS_0,TR_REQ,BUSY anyone OFF
+                                case "C5":  //BUSY ON, UNLOADING process, wait PL OFF => COMPT ON
+                                case "C6":  //BUSY ON, UNLOADING process, wait PS OFF => GO,VALID,CS_0,TR_REQ,BUSY anyone OFF
+                                case "C7":  //BUSY ON, UNLOADING process, wait PS OFF => COMPT ON
+                                case "C8":  //FOUP SENSOR signal located (L-REQ or U-REQ not OFF) => Got E84 signal error
+                                case "C9":  //FOUP SENSOR signal located (L-REQ or U-REQ not OFF) => Got FOUP SENSOR signal error
+                                case "D0":  //Wait GO ON => Presence Sensor (PS) or Placement Sensor (PL) signal Error
+                                case "D1":  //Wait CS_0 ON => PS or PL signal Error
+                                case "D2":  //Wait VALID ON => PS or PL signal Error
+                                case "D3":  //TA1 period => PS or PL signal Error
+                                case "D4":  //Wait TR_REQ ON => PS or PL signal Error
+                                case "D5":  //TA2 period => PS or PL signal Error
+                                case "D6":  //Wait BUSY ON => PS or PL signal Error
+                                case "DC":  //LOADING process, wait PS ON, detected PL ON
+                                case "DD":  //LOADING process, wait PL ON, detected PS OFF
+                                case "DE":  //UNLOADIND process, wait PL OFF, detected PS OFF
+                                case "DF":  //UNLOADIND process, wait PS OFF, detected PL ON
+                                case "E0":  //Wait BUSY OFF => PS or PL signal Error
+                                case "E1":  //TA3 period => PS or PL signal Error
+                                case "E2":  //Wait TR_REQ OFF => PS or PL signal Error
+                                case "E3":  //Wait COMPT ON => PS or PL signal Error
+                                case "E4":  //Wait VALID OFF => PS or PL signal Error
+                                case "E5":  //Wait COMPT OFF => PS or PL signal Error
+                                case "E6":  //Wait CS_0 OFF => PS or PL signal Error
+                                case "E7":  //Wait GO OFF => PS or PL signal Error
+                                    each.Command = "ERROR";
+                                    each.Value = strFunctionCode.ToUpper() + strResponseCode.ToUpper();
+                                    break;
+
+                                default:
+                                    each.Command = "";
+                                    break;
+
+                            }
+                            break;
+                    }
+
+
+
+
+
+                    result.Add(each);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
+            return result;
+        }
         private List<CommandReturnMessage> SmartTag8200CodeAnalysis(string Message)
         {
             List<CommandReturnMessage> result;
@@ -866,7 +1110,7 @@ namespace TransferControl.CommandConvert
                     each.OrgMsg = Msg;
                     each.NodeAdr = Encoding.Default.GetString(t, 3, 2);
                     string contentStr = Encoding.Default.GetString(t, 5, t.Length - 5 - 3).Replace(";", "").Trim();
-                    contentStr.Replace("/INTER/", "/");
+                    contentStr = contentStr.Replace("/INTER/", "/");
                     string[] content = contentStr.Split(':', '/');
 
                     for (int i = 0; i < content.Length; i++)

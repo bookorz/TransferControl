@@ -183,7 +183,9 @@ namespace TransferControl.Comm
         {
             if (IsconnectSuccess)
             {
-                 SendData(sendMessage);
+                logger.Debug(this.Config.GetDeviceName() + " Send:" + sendMessage);
+
+                SendData(sendMessage);
             }
            
         }
@@ -410,6 +412,8 @@ namespace TransferControl.Comm
 
                             S = S.Substring(S.LastIndexOf(Convert.ToChar(3)) + 1);
                             //logger.Debug("s:" + S);
+
+                            logger.Debug(this.Config.GetDeviceName() + " Received:" + data);
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                             break;
                         }
@@ -427,7 +431,8 @@ namespace TransferControl.Comm
                             //logger.Debug("data:" + data);
 
                             S = S.Substring(S.LastIndexOf("\r") + 1);
-                            //logger.Debug("s:" + S);
+                        //logger.Debug("s:" + S);
+                            logger.Debug(this.Config.GetDeviceName() + " Received:" + data);
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                             break;
                         }
@@ -444,6 +449,7 @@ namespace TransferControl.Comm
                             S = S.Substring(S.IndexOf("1\r\n") + 3);
 
                             //logger.Debug("s:" + S);
+                            logger.Debug(this.Config.GetDeviceName() + " Received:" + data);
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                             //break;
 
@@ -456,6 +462,7 @@ namespace TransferControl.Comm
                             S = S.Substring(S.IndexOf("-2\r\n") + 4);
 
                             //logger.Debug("s:" + S);
+                            logger.Debug(this.Config.GetDeviceName() + " Received:" + data);
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                             //break;
 
@@ -467,6 +474,7 @@ namespace TransferControl.Comm
 
                             S = S.Substring(S.IndexOf("]\r\n") + 3);
                             //logger.Debug("s:" + S);
+                            logger.Debug(this.Config.GetDeviceName() + " Received:" + data);
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                             //break;
 
@@ -497,6 +505,7 @@ namespace TransferControl.Comm
                             S = S.Substring(S.IndexOf("0\r\n") + 3);
 
                             //logger.Debug("s:" + S);
+                            logger.Debug(this.Config.GetDeviceName() + " Received:" + data);
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                             //break;
 

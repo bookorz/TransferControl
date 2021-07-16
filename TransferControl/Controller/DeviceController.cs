@@ -233,6 +233,7 @@ namespace TransferControl.Controller
                         switch (NodeManagement.Get(Txn.NodeName).Type)
                         {
                             case "ROBOT":
+                            case "E84":
                                 cm.Type = CommandReturnMessage.ReturnType.Excuted;
                                 break;
                             case "LOADPORT":
@@ -245,10 +246,12 @@ namespace TransferControl.Controller
                         switch (Txn.Arm)
                         {
                             case "1":
+                                //NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "1";
                                 cm.Value = "01," + NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid;
                                 break;
 
                             case "2":
+                                //NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "1";
                                 cm.Value = "02," + NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid;
                                 break;
                         }
@@ -268,6 +271,30 @@ namespace TransferControl.Controller
                                     Txn.Method == Transaction.Command.RobotType.Get ? "1" : "0";
                                 break;
                         }
+                        break;
+
+                    case Transaction.Command.RobotType.PutByRArm:
+                        cm.Type = CommandReturnMessage.ReturnType.Finished;
+                        NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "0";
+                        NodeManagement.Get(Txn.NodeName).R_Presence = false;
+                        break;
+
+                    case Transaction.Command.RobotType.PutByLArm:
+                        cm.Type = CommandReturnMessage.ReturnType.Finished;
+                        NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "0";
+                        NodeManagement.Get(Txn.NodeName).L_Presence = false;
+                        break;
+
+                    case Transaction.Command.RobotType.GetByRArm:
+                        cm.Type = CommandReturnMessage.ReturnType.Finished;
+                        NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "1";
+                        NodeManagement.Get(Txn.NodeName).R_Presence = true;
+                        break;
+
+                    case Transaction.Command.RobotType.GetByLArm:
+                        cm.Type = CommandReturnMessage.ReturnType.Finished;
+                        NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "1";
+                        NodeManagement.Get(Txn.NodeName).L_Presence = true;
                         break;
 
                     case Transaction.Command.RobotType.WaferHold:
@@ -313,11 +340,12 @@ namespace TransferControl.Controller
                         break;
 
                     case Transaction.Command.RFIDType.GetCarrierID:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                        cm.Type = CommandReturnMessage.ReturnType.Finished;
                         cm.Value = "Offline-FoupID";
                         break;
-
-
+                    case Transaction.Command.RobotType.Servo:
+                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                        break;
                     case Transaction.Command.RobotType.Continue:
                     case Transaction.Command.RobotType.Pause:
                     case Transaction.Command.RobotType.Stop:
@@ -335,9 +363,10 @@ namespace TransferControl.Controller
                     case Transaction.Command.LoadPortType.MoveToSlot:
                     case Transaction.Command.LoadPortType.Unload:
                     case Transaction.Command.LoadPortType.Load:
-
+                    case Transaction.Command.LoadPortType.MappingLoad:
                         cm.Type = CommandReturnMessage.ReturnType.Finished;
                     break;
+
                 }
 
                 NodeManagement.Get(Txn.NodeName).IsExcuting = false;
@@ -387,7 +416,9 @@ namespace TransferControl.Controller
 
                 key = Txn.Seq;
             }
-            if (DeviceType.ToUpper().Equals("SMARTTAG") || DeviceType.ToUpper().Equals("RFID"))
+            if (DeviceType.ToUpper().Equals("SMARTTAG") || 
+                DeviceType.ToUpper().Equals("RFID") || 
+                DeviceType.Equals("E84"))
             {
 
                 key = "00";
@@ -443,6 +474,7 @@ namespace TransferControl.Controller
                 }
             }
 
+            logger.Debug(DeviceName + " AddKey : " + key);
             if (TransactionList.TryAdd(key, Txn) || Txn.Method.Equals("Stop"))
             {
                 Txn.SetTimeOutReport(this);
@@ -471,10 +503,11 @@ namespace TransferControl.Controller
                     {
                         _ReportTarget.On_Message_Log("CMD", DeviceName + " Send:" + Txn.CommandEncodeStr.Replace("\r", ""));
                     }
-                    if (this.Vendor.Equals("SMARTTAG8200") || this.Vendor.Equals("SMARTTAG8400"))
+                    if (this.Vendor.Equals("SMARTTAG8200") || 
+                        this.Vendor.Equals("SMARTTAG8400") ||
+                        this.Vendor.Equals("FRANCES"))
                     {
                         ThreadPool.QueueUserWorkItem(new WaitCallback(conn.SendHexData), Txn.CommandEncodeStr);
-
                     }
                     else
                     {
@@ -532,18 +565,6 @@ namespace TransferControl.Controller
             try
             {
                 string Msg = (string)MsgObj;
-                //if (Vendor.ToUpper().Equals("ACDT"))
-                //{
-                //    byte[] byteAry = Encoding.ASCII.GetBytes(Msg);
-
-
-                //    logger.Debug(DeviceName + " Recieve:" + BitConverter.ToString(byteAry));
-                //}
-                //else
-                //{
-
-                //}
-                //Node Target = null;
 
                 List<CommandReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (CommandReturnMessage ReturnMsg in ReturnMsgList)
@@ -586,11 +607,10 @@ namespace TransferControl.Controller
                                     key = ReturnMsg.Seq;
 
                                 }
-                                else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
+                                else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX") || Vendor.ToUpper().Equals("TDK"))
                                 {
                                     key = "1" + ReturnMsg.Command;
                                 }
-
                                 else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
                                 {
                                     key = ReturnMsg.NodeAdr + ReturnMsg.Command;
@@ -619,13 +639,9 @@ namespace TransferControl.Controller
                                     {
                                         key = ReturnMsg.NodeAdr;
                                     }
-                                    //}
-                                    //else
-                                    //{
-                                    //    key = "0" + ReturnMsg.Command;
-                                    //}
                                 }
-                                else if (DeviceType.Equals("SMARTTAG") || DeviceType.ToUpper().Equals("RFID"))
+                                else if (DeviceType.Equals("SMARTTAG") || DeviceType.ToUpper().Equals("RFID")
+                                     || DeviceType.Equals("E84"))
                                 {
                                     key = "00";
                                 }
@@ -671,7 +687,8 @@ namespace TransferControl.Controller
                                     }
                                     else
                                     {
-                                        Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
+                                        //Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
+                                        Node = NodeManagement.GetByController(DeviceName, "1");
                                     }
                                 }
                                 else
@@ -712,9 +729,22 @@ namespace TransferControl.Controller
                                         continue;
                                     }
                                 }
+
                                 if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Event)
                                 {
-
+                                    if(Node.Vendor.ToUpper().Equals("FRANCES"))
+                                    {
+                                        switch(ReturnMsg.Command)
+                                        {
+                                            case "VALID_OFF":
+                                                if(NodeManagement.Get(Node.Associated_Node).E84Mode == E84_Mode.MANUAL
+                                                    && Node.E84Mode == E84_Mode.AUTO)
+                                                {
+                                                    conn.SendHexData(Node.GetController().GetEncoder().E84.ManualMode());
+                                                }
+                                                break;
+                                        }
+                                    }
                                     //_ReportTarget.On_Event_Trigger(Node, ReturnMsg);
                                 }
                                 else if ((ReturnMsg.Type == CommandReturnMessage.ReturnType.Information && Node.Vendor.ToUpper().Equals("TDK") && !TransactionList.ContainsKey(key)))
@@ -745,27 +775,10 @@ namespace TransferControl.Controller
                                             }
                                             else
                                             {
-                                                //if (Txn.Method.Equals(Transaction.Command.LoadPortType.Reset))
-                                                //{
-                                                //    logger.Debug("Txn timmer stoped.");
-                                                //    Txn.SetTimeOutMonitor(false);
-
-                                                //}
-                                                //else if (Txn.Method.Equals(Transaction.Command.RobotType.OrginSearch))
-                                                //{
-                                                //    logger.Debug("Txn timmer stoped.");
-                                                //    Txn.SetTimeOutMonitor(false);
-                                                //    //Node.IsExcuting = false;
-                                                //    TransactionList.TryAdd(key, Txn);
-                                                //}
-                                                //else
-                                                //{
                                                 Txn.SetTimeOutMonitor(false);
                                                 Txn.SetTimeOut(Txn.MotionTimeOut);
                                                 Txn.SetTimeOutMonitor(true);
                                                 TransactionList.TryAdd(key, Txn);
-
-                                                //}
                                             }
                                             //_ReportTarget.On_Command_Excuted(Node, Txn, ReturnMsg);
                                             break;
@@ -789,7 +802,6 @@ namespace TransferControl.Controller
                                             if (Vendor.ToUpper().Equals("TDK") || DeviceType.ToUpper().Equals("SMARTTAG"))
                                             {
                                                 conn.Send(ReturnMsg.FinCommand);
-                                                logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
                                             }
                                             break;
                                         case CommandReturnMessage.ReturnType.Information:
@@ -813,7 +825,7 @@ namespace TransferControl.Controller
                                             //ThreadPool.QueueUserWorkItem(new WaitCallback(conn.Send), ReturnMsg.FinCommand);
                                             conn.Send(ReturnMsg.FinCommand);
 
-                                            logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
+                                            //logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
 
                                             break;
                                     }
@@ -841,7 +853,7 @@ namespace TransferControl.Controller
                                                 {
                                                     Node.IsExcuting = false;
                                                 }
-                                                //_ReportTarget.On_Command_Error(Node, Txn, ReturnMsg);
+
                                                 if (Vendor.ToUpper().Equals("TDK") || DeviceType.ToUpper().Equals("SMARTTAG"))
                                                 {
                                                     conn.Send(ReturnMsg.FinCommand);
@@ -1054,6 +1066,11 @@ namespace TransferControl.Controller
                 {
                     logger.Debug(DeviceName + "(On_Transaction_TimeOut TryRemove Txn fail.");
                 }
+            }
+            else
+            {
+                if(NodeManagement.Get(DeviceName) != null)
+                    NodeManagement.Get(DeviceName).IsExcuting = false;
             }
             _ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
         }
