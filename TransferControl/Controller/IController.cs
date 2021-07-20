@@ -31,6 +31,10 @@ namespace TransferControl.Controller
         string GetNextSeq();
         void Reconnect();
         CommandEncoder GetEncoder();
-        
+        CommandDecoder GetDecoder();
+
+        string GetDeviceType();
+
+
     }
 }

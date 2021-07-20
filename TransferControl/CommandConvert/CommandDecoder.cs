@@ -8,7 +8,7 @@ namespace TransferControl.CommandConvert
 {
     public class CommandDecoder
     {
-        private string Supplier;
+        public string Supplier;
 
         public CommandDecoder(string supplier)
         {
@@ -606,6 +606,7 @@ namespace TransferControl.CommandConvert
                     r.Type = CommandReturnMessage.ReturnType.Finished;
                     r.Value = Message;
                 }
+
                 result.Add(r);
 
             }

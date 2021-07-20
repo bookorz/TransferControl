@@ -51,6 +51,8 @@ namespace TransferControl.Management
         private System.Timers.Timer timeOutTimer = new System.Timers.Timer();
         ITransactionReport TimeOutReport;
 
+        public int RetryTime = 0;
+
         public class Command
         {
             public class Mitsubishi_PLC

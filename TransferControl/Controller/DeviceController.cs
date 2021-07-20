@@ -21,6 +21,7 @@ namespace TransferControl.Controller
         IConnection conn;
 
         CommandDecoder _Decoder;
+        public CommandDecoder GetDecoder() {return  _Decoder;}
         [JsonIgnore]
         public CommandEncoder Encoder;
         ConcurrentDictionary<string, Transaction> TransactionList = new ConcurrentDictionary<string, Transaction>();
@@ -54,6 +55,10 @@ namespace TransferControl.Controller
         public string GetDeviceName()
         {
             return this.Name;
+        }
+        public string GetDeviceType()
+        {
+            return this.DeviceType;
         }
         public bool GetEnable()
         {
@@ -1017,7 +1022,13 @@ namespace TransferControl.Controller
             {
                 key = "1";
             }
+            else if (DeviceType.ToUpper().Equals("SMARTTAG") ||
+                DeviceType.ToUpper().Equals("RFID") ||
+                DeviceType.Equals("E84"))
+            {
 
+                key = "00";
+            }
             else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Method;
@@ -1053,6 +1064,23 @@ namespace TransferControl.Controller
                         TransactionList.TryAdd(key, Txn);
                         return;
                     }
+
+                    if(Vendor.Equals("SMARTTAG8400") && Txn.RetryTime < 3)
+                    {
+                        Txn.RetryTime++;
+                        Node.IsExcuting = true;
+                        Txn.SetTimeOutMonitor(false);
+                        Txn.SetTimeOut(Txn.MotionTimeOut);
+                        Txn.SetTimeOutMonitor(true);
+                        TransactionList.TryAdd(key, Txn);
+
+                        logger.Debug("Txn timeout,SMARTTAG8400. Retry.");
+
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(conn.SendHexData), Txn.CommandEncodeStr);
+                        return;
+                    }
+
+
                     //if (Node != null)
                     //{
                     //    _ReportTarget.On_Command_TimeOut(Node, Txn);
@@ -1069,8 +1097,7 @@ namespace TransferControl.Controller
             }
             else
             {
-                if(NodeManagement.Get(DeviceName) != null)
-                    NodeManagement.Get(DeviceName).IsExcuting = false;
+
             }
             _ReportTarget.On_Command_TimeOut(NodeManagement.Get(Txn.NodeName), Txn);
         }

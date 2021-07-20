@@ -6,7 +6,7 @@ namespace TransferControl.CommandConvert
 {
     public class Encoder_SmartTag
     {
-        private string Supplier;
+        public string Supplier { get; set; }
 
 
         /// <summary>

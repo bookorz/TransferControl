@@ -22,6 +22,7 @@ namespace TransferControl.TaksFlow
         public Sanwa_EFEM(IUserInterfaceReport TaskReport)
         {
             _TaskReport = TaskReport;
+
         }
 
         public void Excute(object input)
@@ -75,12 +76,14 @@ namespace TransferControl.TaksFlow
                     }
                 }
             }
+
             if (MainControl.Instance.DIO.GetIO("DIN", "SAFETYRELAY").ToUpper().Equals("TRUE"))
             {
 
                 AbortTask(TaskJob, new Node() { Vendor = "SYSTEM" }, "S0300170");
                 return;
             }
+
             try
             {
 
@@ -917,6 +920,8 @@ namespace TransferControl.TaksFlow
 
 
                             default:
+                                MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF1", "TRUE");
+                                MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF2", "TRUE");
                                 FinishTask(TaskJob);
                                 return;
                         }
@@ -1023,6 +1028,9 @@ namespace TransferControl.TaksFlow
 
                             default:
                                 Target.OrgSearchComplete = true;
+
+                                MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF1", "TRUE");
+                                MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF2", "TRUE");
                                 FinishTask(TaskJob);
                                 return;
                         }

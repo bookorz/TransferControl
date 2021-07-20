@@ -20,6 +20,7 @@ namespace TransferControl.Controller
         IModbusMaster conn;
         [JsonIgnore]
         public CommandEncoder Encoder;
+        public CommandDecoder _Decoder;
         public int TrxNo = 1;
         public string Name { get; set; }
         public string Status = "Disconnected";
@@ -37,6 +38,11 @@ namespace TransferControl.Controller
         public CommandEncoder GetEncoder()
         {
             return Encoder;
+        }
+        public CommandDecoder GetDecoder() { return _Decoder; }
+        public string GetDeviceType()
+        {
+            return DeviceType;
         }
         public void DoWork(Transaction Txn, bool WaitForData = false)
         {

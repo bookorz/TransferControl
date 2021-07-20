@@ -79,6 +79,7 @@ namespace TransferControl.Comm
 
 
 
+
             if (_Config.GetVendor().Equals("SMARTTAG8200"))
             {
                 port.Handshake = Handshake.None;
@@ -170,6 +171,18 @@ namespace TransferControl.Comm
         {
             try
             {
+                if (cfg.GetVendor().Equals("SMARTTAG8200"))
+                {
+                    if(port.Parity != Parity.Mark)
+                        port.Parity = Parity.Mark;
+                }
+                else if (cfg.GetVendor().Equals("SMARTTAG8400"))
+                {
+                    if(port.Parity != Parity.None)
+                        port.Parity = Parity.None;
+                }
+
+
                 logger.Debug(this.cfg.GetDeviceName() + " Send:" + Message.ToString());
                 byte[] buf = HexStringToByteArray(Message.ToString());
 
@@ -209,12 +222,17 @@ namespace TransferControl.Comm
                     case "ASYST":
                         port.DataReceived += new SerialDataReceivedEventHandler(ASYST_DataReceived);
                         break;
+                    //case "SMARTTAG8200":
+                    //    port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG8200_DataReceived);
+                    //    break;
+                    //case "SMARTTAG8400":
+                    //    port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG8400_DataReceived);
+                    //    break;
                     case "SMARTTAG8200":
-                        port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG8200_DataReceived);
-                        break;
                     case "SMARTTAG8400":
-                        port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG8400_DataReceived);
+                        port.DataReceived += new SerialDataReceivedEventHandler(SMARTTAG_DataReceived);
                         break;
+
                     case "MITSUBISHI_PLC":
                         port.DataReceived += new SerialDataReceivedEventHandler(MITSUBISHI_PLC_DataReceived); 
                         break;
@@ -310,16 +328,25 @@ namespace TransferControl.Comm
                 ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
+
+        private void SMARTTAG_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            switch (cfg.GetVendor().ToUpper())
+            {
+                case "SMARTTAG8200":
+                    SMARTTAG8200_DataReceived(sender, e);
+                    break;
+                case "SMARTTAG8400":
+                    SMARTTAG8400_DataReceived(sender, e);
+                    break;
+            }
+        }
         private void SMARTTAG8200_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
                 SpinWait.SpinUntil(() => !_WaitForData, 1000);
                 _WaitForData = false;
-                //byte[] buf = new byte[250];
-                //port.Read(buf, 0, buf.Length);
-                //string data = ByteArrayToString(buf);
-                //string data = port.ReadExisting();
                 byte[] buff = new byte[port.BytesToRead];
                 port.Read(buff, 0, buff.Length);
                 string data = ByteArrayToString(buff);
@@ -329,62 +356,70 @@ namespace TransferControl.Comm
             }
             catch (Exception e1)
             {
-                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
                 ConnReport.On_Connection_Error("(ASYST_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
+
+        string tmp8400Data = "";
         private void SMARTTAG8400_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
-                
-                //SpinWait.SpinUntil(() => !_WaitForData, 1000);
                 if ((sender as SerialPort).BytesToRead > 0)
                 {
                     byte[] buf = new byte[(sender as SerialPort).BytesToRead];
                     port.Read(buf, 0, buf.Length);
                     tmp += Encoding.ASCII.GetString(buf);
                     logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
-                    if (tmp[0]==(char)4)
+                    tmp8400Data += ByteArrayToString(buf);
+
+                    if (tmp[0] == (char)4)
                     {
                         string msg = tmp[0].ToString();
-                        
+
                         ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
-                        
-                        //if (tmp.IndexOf((char)5) != -1)
-                        //{
-                            
-                        //    ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "04");
-                        //}
-                        tmp = "";
+
+                        tmp = tmp8400Data = "";
                     }
-                    else if(tmp[0] == (char)6)
+                    else if (tmp[0] == (char)6)
                     {
                         tmp = "";
                     }
-                    else if(tmp[0] == (char)5)
+                    else if (tmp[0] == (char)5)
                     {
                         ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "04");
-                        tmp = "";
+                        tmp = tmp8400Data = "";
                     }
                     else
                     {
-                        if (tmp.Length>= Convert.ToInt16(tmp[0]))
+                        if (tmp.Length >= Convert.ToInt16(tmp[0]))
                         {
+                            byte[] hexbuf = HexStringToByteArray(tmp8400Data.ToString());
+
                             string msg = "";
+
                             if (tmp.Length > 18)
                             {
+
+                                logger.Debug(this.cfg.GetDeviceName() + " hexbuf.Length:" + hexbuf.Length.ToString());
+                                logger.Debug(this.cfg.GetDeviceName() + " Convert.ToInt32(hexbuf[0]):" + (Convert.ToInt32(hexbuf[0]) + 3).ToString());
+                                if (hexbuf.Length != Convert.ToInt32(hexbuf[0]) + 3) return;
+
+                                //logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+
                                 msg = tmp.Substring(18, Convert.ToInt16(tmp[17]));
                             }
                             else
                             {
+                                if (hexbuf[0] != 13) return;
+
                                 msg = tmp.Substring(10);
                             }
-                            //logger.Debug(this.cfg.GetDeviceName() + " Received:" + msg);
+
                             ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
-                            tmp = "";
+                            tmp = tmp8400Data = "";
                             ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "06");
-                            
+
                         }
                     }
 
@@ -392,7 +427,6 @@ namespace TransferControl.Comm
             }
             catch (Exception e1)
             {
-                //logger.Error("(ConnectServer " + RmIp + ":" + SPort + ")" + e.Message + "\n" + e.StackTrace);
                 ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }

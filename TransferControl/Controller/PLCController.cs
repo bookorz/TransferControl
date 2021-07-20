@@ -26,6 +26,7 @@ namespace TransferControl.Controller
         public string Name { get; set; }
         public string DeviceName { get; set; }
         public string DeviceType { get; set; }
+        public string GetDeviceType() { return DeviceType; }
         public string ControllerType { get; set; }
         public string Vendor { get; set; }
         public string IPAdress { get; set; }
@@ -42,6 +43,7 @@ namespace TransferControl.Controller
         [JsonIgnore]
         public int TrxNo = 1;
         CommandDecoder _Decoder;
+        public CommandDecoder GetDecoder() { return _Decoder; }
         private bool _IsConnected { get; set; }
         public void DoWork(Transaction orgTxn, bool WaitForData = false)
         {
