@@ -6,7 +6,6 @@ using System.Text;
 using InControls.Common;
 using InControls.PLC;
 using InControls.PLC.FX;
-using InControls.Common;
 
 
 namespace InControls.PLC.FX

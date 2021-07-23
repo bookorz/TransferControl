@@ -477,11 +477,20 @@ namespace TransferControl.TaksFlow
                             case 0:
                                 AckTask(TaskJob);
                                 if (!Target.IsPause)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
-                                break;
-                            case 1:
-                                if (!Target.IsPause)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                                {
+                                    switch(Value)
+                                    {
+                                        case "1":
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                                            break;
+
+                                        case "2":
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                                            break;
+                                    }
+                                    
+                                }
+                                    
                                 break;
 
                             default:
@@ -1373,6 +1382,11 @@ namespace TransferControl.TaksFlow
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
 
                                 break;
+                            case 1:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                break;
+
                             default:
                                 FinishTask(TaskJob);
                                 return;
@@ -2003,17 +2017,6 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!Target.InitialComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300168");
-                                    return;
-                                }
-
-                                if (!Target.OrgSearchComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300169");
-                                    return;
-                                }
 
                                 AckTask(TaskJob);
 
@@ -2037,17 +2040,6 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!Target.InitialComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300168");
-                                    return;
-                                }
-
-                                if (!Target.OrgSearchComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300169");
-                                    return;
-                                }
 
                                 AckTask(TaskJob);
 
@@ -2069,17 +2061,6 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!Target.InitialComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300168");
-                                    return;
-                                }
-
-                                if (!Target.OrgSearchComplete)
-                                {
-                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300169");
-                                    return;
-                                }
 
                                 AckTask(TaskJob);
 
@@ -2098,23 +2079,32 @@ namespace TransferControl.TaksFlow
                         }
                         break;
 
-                    //////////////////////////////////////////////////////
+                    case TaskFlowManagement.Command.LOADPORT_READ_LED:
+                        Node E84Node = NodeManagement.Get(Target.Name.Replace("LOADPORT","E84"));
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
 
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetLED}));
 
-                    //case TaskFlowManagement.Command.LOADPORT_OPMOD:
-                    //    switch (TaskJob.CurrentIndex)
-                    //    {
-                    //        case 0:
-                    //            AckTask(TaskJob);
-                    //            //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetOPMode }));
-                    //            break;
-                    //        default:
-                    //            FinishTask(TaskJob);
-                    //            return;
-                    //    }
-                    //    break;
+                                //同步化 E84 DI Status
+                                if(E84Node != null)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIStatus }));
+                                break;
 
-#endregion
+                            case 1:
+                                //同步化 E84 DO Status 
+                                if (E84Node != null)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDOStatus }));
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    #endregion
 #region CSTID
                     case TaskFlowManagement.Command.GET_CSTID:
                         if (Target.Type.ToUpper().Equals("SMARTTAG"))

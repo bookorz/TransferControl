@@ -326,26 +326,26 @@ namespace InControls.PLC.FX
 			}
 
 			#region 一次性读取 M1000-1999 ---- 目前不读取这个范围的 M 点
-			if (false) {
-				cmd = FxCommandHelper.Make(FxCommandConst.FxCmdRead, new FxAddress("M1000", ControllerTypeConst.ctPLC_Fx), 32);
-				res = Send(0, cmd);
-				//Debug.Print("M1000--M1127 = {0}", res.ToString());
-				// 根据通道号别名，例如"M1099"等内容更新
-				if (res.ResultCode == ResultCodeConst.rcSuccess) {
-					foreach (AcquireRawValue o in vlist) {
-						if (o.PLCAddr != null && o.PLCAddr.AddressType == FxAddressType.M && o.PLCAddr.TagOffset >= 1000) {
-							int byteIndex = (int)((o.PLCAddr.TagOffset - 1000) / 8);
-							int byteOff = (int)((o.PLCAddr.TagOffset - 1000) % 8);
+			//if (false) {
+			//	cmd = FxCommandHelper.Make(FxCommandConst.FxCmdRead, new FxAddress("M1000", ControllerTypeConst.ctPLC_Fx), 32);
+			//	res = Send(0, cmd);
+			//	//Debug.Print("M1000--M1127 = {0}", res.ToString());
+			//	// 根据通道号别名，例如"M1099"等内容更新
+			//	if (res.ResultCode == ResultCodeConst.rcSuccess) {
+			//		foreach (AcquireRawValue o in vlist) {
+			//			if (o.PLCAddr != null && o.PLCAddr.AddressType == FxAddressType.M && o.PLCAddr.TagOffset >= 1000) {
+			//				int byteIndex = (int)((o.PLCAddr.TagOffset - 1000) / 8);
+			//				int byteOff = (int)((o.PLCAddr.TagOffset - 1000) % 8);
 
-							if (byteIndex >= 0 && byteIndex < res.ResponseValue.Count) {
-								o.Value = new ValueStruct(((res.ResponseValue[byteIndex] >> byteOff) & 0x01) == 0x01);
-							} else {
-								//Debug.Print("M{0} <== {1}", o.PLCAddr.TagOffset, o.Value);
-							}
-						}
-					}
-				}
-			}
+			//				if (byteIndex >= 0 && byteIndex < res.ResponseValue.Count) {
+			//					o.Value = new ValueStruct(((res.ResponseValue[byteIndex] >> byteOff) & 0x01) == 0x01);
+			//				} else {
+			//					//Debug.Print("M{0} <== {1}", o.PLCAddr.TagOffset, o.Value);
+			//				}
+			//			}
+			//		}
+			//	}
+			//}
 			#endregion
 
 			// 读取其他内容：C/D/T

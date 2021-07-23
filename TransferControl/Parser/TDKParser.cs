@@ -31,6 +31,12 @@ namespace TransferControl.Parser
                 string Idx = (i + 1).ToString("00");
                 switch (Idx)
                 {
+                    case "01":
+                        result.Add("PRESENCE", Message[i].ToString());
+                        break;
+                    case "02":
+                        result.Add("PLACEMENT", Message[i].ToString());
+                        break;
                     case "03":
                         result.Add("LOAD", Message[i].ToString());
                         break;

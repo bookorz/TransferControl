@@ -341,7 +341,15 @@ namespace TransferControl.TaksFlow
                                 AckTask(TaskJob);
                                 if (!Target.IsPause)
                                 {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                                    switch(Target.Type.ToUpper())
+                                    {
+                                        case "ROBOT":
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                                            break;
+                                        //case "ALIGNER":
+                                        //    break;
+                                    }
+                                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
                                 }
                                 break;
                             case 1:
@@ -1442,7 +1450,6 @@ namespace TransferControl.TaksFlow
                         }
                         break;
 
-
                     case TaskFlowManagement.Command.LOADPORT_CLOSE:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -1520,6 +1527,17 @@ namespace TransferControl.TaksFlow
                         }
                         break;
 
+                    case TaskFlowManagement.Command.LOADPORT_READ_LED:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.LOADPORT_DOCK:
                     case TaskFlowManagement.Command.LOADPORT_UNDOCK:
                         switch (TaskJob.CurrentIndex)

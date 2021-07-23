@@ -379,11 +379,17 @@ namespace TransferControl.Engine
                                 {
                                     switch (each.Key)
                                     {
+                                        case "PRESENCE":
+                                            Node.Foup_Presence = each.Value.Equals("0") ? false : true;
+                                            break;
+                                        case "PLACEMENT":
+                                            Node.Foup_Placement = each.Value.Equals("0") ? false : true;
+                                            break;
                                         case "LOAD":
-
+                                            Node.Load_LED = each.Value.Equals("0") ? "FALSE" : each.Value.Equals("1") ? "TRUE" : "BLINK";
                                             break;
                                         case "UNLOAD":
-
+                                            Node.UnLoad_LED = each.Value.Equals("0") ? "FALSE" : each.Value.Equals("1") ? "TRUE" : "BLINK";
                                             break;
                                         case "OPACCESS":
                                             Node.OPACCESS = each.Value == "2" ? true : false;
