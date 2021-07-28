@@ -298,6 +298,9 @@ namespace TransferControl.Management
         public Dictionary<string, bool> E84IOStatus { get; set; }
         public E84_Mode E84Mode;
         public string TransReqMode;
+
+        public string AlignDegree { get; set; }
+
         public void InitialObject()
         {
             R_Vacuum_Solenoid = "0";
@@ -433,6 +436,8 @@ namespace TransferControl.Management
 
             //20210628 Pingchung TDK USE
             StatusRawData = "";
+
+            AlignDegree = "000000";
         }
        
 
@@ -590,7 +595,9 @@ namespace TransferControl.Management
                         txn.Method.Equals(Transaction.Command.RobotType.PutWaitByLArm) ||
                         txn.Method.Equals(Transaction.Command.RobotType.GetWaitByLArm))
                     {
-                        txn.Point = point.Point2;
+
+                        //設定POINT2的情況下，L Arm 使用Point2
+                        txn.Point = point.Point2.Equals("") ? point.Point:point.Point2;
                     }
                     else
                     {
