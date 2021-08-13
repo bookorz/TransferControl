@@ -220,6 +220,21 @@ namespace TransferControl.CommandConvert
             return commandStr + EndCode();
         }
 
+        public string GetDIOStatus()
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "FRANCES":
+                    commandStr = "55 90 00 bb";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
+            return commandStr + EndCode();
+        }
+
         public string GetDOStatus()
         {
             string commandStr = "";

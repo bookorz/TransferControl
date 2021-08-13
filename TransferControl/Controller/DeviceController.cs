@@ -362,7 +362,6 @@ namespace TransferControl.Controller
                     case Transaction.Command.RobotType.GetWait:
                     case Transaction.Command.RobotType.Home:
                     case Transaction.Command.RobotType.OrginSearch:
-
                     case Transaction.Command.RobotType.PutWait:
                     case Transaction.Command.LoadPortType.InitialPos:
                     case Transaction.Command.LoadPortType.MoveToSlot:
@@ -432,6 +431,10 @@ namespace TransferControl.Controller
             {
                 key = "1" + Txn.Type;
             }
+            else if(Vendor.ToUpper().Equals("TDK"))
+            {
+                key = Txn.AdrNo + Txn.Type;
+            }
             else if (Vendor.ToUpper().Equals("SANWA") || Vendor.ToUpper().Equals("ATEL_NEW"))
             {
                 key = Txn.AdrNo + Txn.Type;
@@ -453,11 +456,11 @@ namespace TransferControl.Controller
             {
                 if (Vendor.ToUpper().Equals("SANWA_MC"))
                 {
-
                     if (orgTxn.CommandEncodeStr.Contains("MCR:"))
                     {
                         Txn.CommandType = "CMD";
                     }
+
                     if (Txn.Method == Transaction.Command.LoadPortType.Reset)
                     {
                         key = "0";
@@ -466,12 +469,6 @@ namespace TransferControl.Controller
                     {
                         key = Txn.AdrNo;
                     }
-                    //}
-                    //else
-                    //{
-                    //    key = "0" + msgList[0].Command;
-                    //}
-
                 }
                 else
                 {
@@ -570,6 +567,8 @@ namespace TransferControl.Controller
             try
             {
                 string Msg = (string)MsgObj;
+                logger.Debug(DeviceName + ": On_Connection_Message : " + Msg);
+
 
                 List<CommandReturnMessage> ReturnMsgList = _Decoder.GetMessage(Msg);
                 foreach (CommandReturnMessage ReturnMsg in ReturnMsgList)
@@ -634,8 +633,6 @@ namespace TransferControl.Controller
                                 }
                                 else if (Vendor.ToUpper().Equals("SANWA_MC"))
                                 {
-                                    //if (ReturnMsg.Command.Equals("MCR__"))
-                                    //{
                                     if (ReturnMsg.Command.Equals("RESET"))
                                     {
                                         key = "0";
@@ -672,7 +669,6 @@ namespace TransferControl.Controller
                                                 ReturnMsg.Type = CommandReturnMessage.ReturnType.Excuted;
                                             }
                                         }
-
                                     }
                                     else
                                     {

@@ -91,11 +91,15 @@ namespace TransferControl.Management
         }
         public static Job Add()
         {
-            Job result = new Job();
-            result.Uid = GetNewID();
+            //Job result = new Job();
+            //result.Uid = GetNewID();
 
             lock (JobList)
             {
+
+                Job result = new Job();
+                result.Uid = GetNewID();
+
                 if (!JobList.ContainsKey(result.Uid))
                 {
                     JobList.TryAdd(result.Uid, result);

@@ -98,6 +98,9 @@ namespace TransferControl.Management
                 case "EFEM_SEMICORE":
                     TaskFlow = new EFEM_SemiCore(this);
                     break;
+                case "EFEM_MIC_2P":
+                    TaskFlow = new EFEM_MIC_2P(this);
+                    break;
 
                 default:
                     throw new NotSupportedException();
@@ -291,8 +294,6 @@ namespace TransferControl.Management
             _TaskReport.On_TaskJob_Finished(Task);
             TaskRemove(Task);
             logger.Debug("On_TaskJob_Finished");
-
-
         }
 
 
@@ -366,6 +367,7 @@ namespace TransferControl.Management
             ALIGNER_MODE,
             ALIGNER_WAFER_HOLD,
             ALIGNER_WAFER_RELEASE,
+            ALIGNER_SAVE_LOG,
             LOADPORT_INIT,
             LOADPORT_OPEN,
             LOADPORT_OPEN_NOMAP,
@@ -525,6 +527,7 @@ namespace TransferControl.Management
             CCLINK_CMD_PARAM,
             E84_INIT,
             E84_SET_ALL_MODE,
+            E84_TRANSREQ,
         }
     }
 }

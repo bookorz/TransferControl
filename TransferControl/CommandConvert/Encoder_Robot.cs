@@ -1704,6 +1704,23 @@ namespace TransferControl.CommandConvert
             return commandStr;
         }
 
+        
+        public string SaveLog(string Address, string Sequence)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA":
+                case "ATEL_NEW":
+                    commandStr = "${0}{1}SET:LOGSV";
+                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr;
+        }
+
 
         public string KawasakiArm(string Arm)
         {

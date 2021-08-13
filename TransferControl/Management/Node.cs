@@ -331,6 +331,11 @@ namespace TransferControl.Management
             E84IOStatus = new Dictionary<string, bool>
             {
                 { "GO", false },
+                { "SELECT", false },
+                { "MODE", false },
+                { "AUTO", false },
+                { "MANUAL", false },
+                { "ERROR", false },
                 { "VALID", false },
                 { "CS_0", false },
                 { "CS_1", false },
@@ -437,7 +442,7 @@ namespace TransferControl.Management
             //20210628 Pingchung TDK USE
             StatusRawData = "";
 
-            AlignDegree = "000000";
+            AlignDegree = "000";
         }
        
 
@@ -652,6 +657,9 @@ namespace TransferControl.Management
                         //}
                     }
                 }
+
+                txn.AckTimeOut = this.AckTimeOut;
+                txn.MotionTimeOut = this.MotionTimeOut;
 
                 switch (this.Type)
                 {
@@ -1452,7 +1460,6 @@ namespace TransferControl.Management
                                 txn.CommandType = "GET";
                                 break;
 
-
                                 //case Transaction.Command.LoadPortType.SetSlotOffset:
                                 //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
                                 //    break;
@@ -1644,6 +1651,11 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.setSolenoidValve(AdrNo, txn.Seq, txn.Arm, txn.Value);
                                 txn.CommandType = "SET";
                                 break;
+                            case Transaction.Command.RobotType.SaveLog:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.SaveLog(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
+                                txn.AckTimeOut = 180000;
+                                break;
                         }
                         break;
                     case "ALIGNER":
@@ -1687,6 +1699,10 @@ namespace TransferControl.Management
                             case Transaction.Command.AlignerType.GetSV:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SolenoidValve(AdrNo, txn.Seq, txn.Value);
                                 txn.CommandType = "GET";
+                                break;
+                            case Transaction.Command.AlignerType.SetSV:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.setSolenoidValve(AdrNo, txn.Seq, txn.Value, txn.Val2);
+                                txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.AlignerType.GetError:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.ErrorMessage(AdrNo, txn.Seq, txn.Value);
@@ -1754,7 +1770,11 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.setSpeed(AdrNo, txn.Seq, txn.Value);
                                 txn.CommandType = "SET";
                                 break;
-
+                            case Transaction.Command.AlignerType.SaveLog:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SaveLog(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
+                                txn.AckTimeOut = 180000;
+                                break;              
                         }
                         break;
                     case "OCR":
@@ -1814,6 +1834,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetDOStatus();
                                 txn.CommandType = "GET";
                                 break;
+                            case Transaction.Command.E84.GetDIOStatus:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetDIOStatus();
+                                txn.CommandType = "GET";
+                                break;
                             case Transaction.Command.E84.SetTP1:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP1(txn.Value);
                                 txn.CommandType = "SET";
@@ -1855,10 +1879,10 @@ namespace TransferControl.Management
                     IsWaitData = true;
                 }
 
-                txn.AckTimeOut = this.AckTimeOut;
+                //txn.AckTimeOut = this.AckTimeOut;
                 logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
 
-                txn.MotionTimeOut = this.MotionTimeOut;
+                //txn.MotionTimeOut = this.MotionTimeOut;
                 logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
                 Ctrl.DoWork(txn, IsWaitData);
                 result = true;

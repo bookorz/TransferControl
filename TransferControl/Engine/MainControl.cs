@@ -297,7 +297,8 @@ namespace TransferControl.Engine
             //string Message = "";
             try
             {
-                logger.Debug("On_Command_Excuted");
+                //logger.Debug("On_Command_Excuted");
+                logger.Debug("On_Command_Excuted:" + Txn.Method + ":" + Msg.Value);
 
                 //所有裝置
                 switch (Txn.Method)
@@ -802,7 +803,22 @@ namespace TransferControl.Engine
                     case "OCR":
                         switch (Txn.Method)
                         {
-                            case Transaction.Command.RobotType.GetSpeed:
+                            case Transaction.Command.AlignerType.GetStatus:
+                                MessageParser parser = new MessageParser(Node.Vendor);
+                                Dictionary<string, string> Status = parser.ParseMessage(Txn.Method, Msg.Value);
+                                foreach (KeyValuePair<string, string> each in Status)
+                                {
+
+                                    switch (each.Key)
+                                    {
+                                        case "Servo":
+                                            Node.Servo = each.Value;
+
+                                            break;
+                                    }
+                                }
+                                break;
+                            case Transaction.Command.AlignerType.GetSpeed:
                                 if (Msg.Value.Equals("0") && (Node.Vendor.Equals("ATEL_NEW") || Node.Vendor.Equals("SANWA")))
                                 {
                                     Msg.Value = "100";
@@ -810,13 +826,12 @@ namespace TransferControl.Engine
 
                                 Node.Speed = Msg.Value;
                                 break;
-                            case Transaction.Command.RobotType.GetRIO:
-                                MessageParser parser = new MessageParser(Node.Vendor);
+                            case Transaction.Command.AlignerType.GetRIO:
+                                parser = new MessageParser(Node.Vendor);
                                 Dictionary<string, string> RioResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                 foreach (KeyValuePair<string, string> each in RioResult)
                                 {
-                                    //Node.SetIO(each.Key, Msg.Value);
-                                    
+
                                     switch (each.Key)
                                     {
                                         case "R_Present":
@@ -856,7 +871,7 @@ namespace TransferControl.Engine
                                     }
                                 }
                                 break;
-                            case Transaction.Command.RobotType.GetSV:
+                            case Transaction.Command.AlignerType.GetSV:
                                 parser = new MessageParser(Node.Vendor);
                                 Dictionary<string, string> SVResult = parser.ParseMessage(Txn.Method, Msg.Value);
                                 foreach (KeyValuePair<string, string> each in SVResult)
@@ -867,6 +882,19 @@ namespace TransferControl.Engine
                                             Node.R_Vacuum_Solenoid = each.Value;
                                             break;
                                     }
+                                }
+                                break;
+
+                            case Transaction.Command.AlignerType.GetError:
+                                if (Msg.Value.Contains("00000000"))
+                                {
+                                    Node.HasAlarm = false;
+                                    Node.LastError = "";
+                                }
+                                else
+                                {
+                                    Node.HasAlarm = true;
+                                    Node.LastError = Msg.Value;
                                 }
                                 break;
                         }
@@ -904,6 +932,7 @@ namespace TransferControl.Engine
                             case Transaction.Command.E84.SetManualMode:
                                 Node.E84Mode = E84_Mode.MANUAL;
                                 break;
+
                             case Transaction.Command.E84.GetDIStatus:
 
                                 MessageParser parser = new MessageParser(Node.Vendor);
@@ -919,6 +948,15 @@ namespace TransferControl.Engine
                                 Dictionary<string, string> DOStatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
 
                                 foreach (KeyValuePair<string, string> each in DOStatusResult)
+                                    Node.E84IOStatus[each.Key] = each.Value.Equals("1") ? true : false;
+
+                                break;
+
+                            case Transaction.Command.E84.GetDIOStatus:
+                                parser = new MessageParser(Node.Vendor);
+                                Dictionary<string, string> DIOStatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
+
+                                foreach (KeyValuePair<string, string> each in DIOStatusResult)
                                     Node.E84IOStatus[each.Key] = each.Value.Equals("1") ? true : false;
 
                                 break;
@@ -985,7 +1023,7 @@ namespace TransferControl.Engine
                 MessageParser parser = new MessageParser(Node.Vendor);
                 Dictionary<string, string> parseResult = null;
 
-                logger.Debug("On_Command_Finished:" + Txn.Method + ":" + Txn.Method);
+                logger.Debug("On_Command_Finished:" + Txn.Method + ":" + Msg.Value);
                 switch (Node.Type)
                 {
                     case "SHELF":
@@ -1653,6 +1691,10 @@ namespace TransferControl.Engine
                     case "E84":
                         switch (Msg.Command)
                         {
+                            case "GO_ON":
+                            case "GO_OFF":
+                                Node.E84IOStatus["GO"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
                             case "VALID_ON":
                             case "VALID_OFF":
                                 Node.E84IOStatus["VALID"] = Msg.Command.Contains("ON") ? true :false;
@@ -1666,6 +1708,16 @@ namespace TransferControl.Engine
                             case "CS_1_ON":
                             case "CS_1_OFF":
                                 Node.E84IOStatus["CS_1"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "VS_0_ON":
+                            case "VS_0_OFF":
+                                Node.E84IOStatus["VS_0"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "VS_1_ON":
+                            case "VS_1_OFF":
+                                Node.E84IOStatus["VS_1"] = Msg.Command.Contains("ON") ? true : false;
                                 break;
 
                             case "TR_REQ_ON":
@@ -1719,8 +1771,6 @@ namespace TransferControl.Engine
 
                 if (Msg.Command.Equals("ERROR"))
                 {
-                   
-                   
                     //_UIReport.On_Command_Error(Node, new Transaction(), Msg);
                     _UIReport.On_Node_State_Changed(Node, "ALARM");
 

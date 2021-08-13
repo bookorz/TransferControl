@@ -794,7 +794,21 @@ namespace TransferControl.CommandConvert
             return commandStr;
         }
 
-      
+        public string SaveLog(string Address, string Sequence)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA":
+                    commandStr = "${0}{1}SET:LOGSV";
+                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr;
+        }
 
         private string KawasakiCheckSum(string Parameter)
         {

@@ -1373,6 +1373,20 @@ namespace TransferControl.CommandConvert
             return commandStr + EndCode();
         }
 
+        public string SaveLog(CommandType commandType)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    commandStr = "$1MCR:OPMOD:1";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
+
         /// <summary>
         ///  Load Port Undock
         /// </summary>

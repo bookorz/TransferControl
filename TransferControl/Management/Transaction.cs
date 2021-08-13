@@ -266,6 +266,7 @@ namespace TransferControl.Management
                 public const string MapperStopperOn = "MapperStopperOn";
                 public const string MapperStopperOff = "MapperStopperOff";
                 public const string MappingDown = "MappingDown";
+                public const string SaveLog = "SaveLog";
                 public const string SetOpAccess = "SetOpAccess";
                 public const string SetOpAccessBlink = "SetOpAccessBlink";
                 public const string SetLoad = "SetLoad";
@@ -302,7 +303,6 @@ namespace TransferControl.Management
                 public const string HomeA = "HomeA";
                 public const string HomeSafety = "HomeSafety";
                 public const string OrginSearch = "OrginSearch";
-                public const string Servo = "Servo";
                 public const string Mode = "Mode";
                 public const string Speed = "Speed";
                 public const string Reset = "Reset";
@@ -311,6 +311,9 @@ namespace TransferControl.Management
                 public const string GetSpeed = "GetSpeed";
                 public const string GetRIO = "GetRIO";
                 public const string GetError = "GetError";
+                public const string SaveLog = "SaveLog";
+                public const string SetSV = "SetSV";
+                public const string Servo = "Servo";
                 public const string Stop = "Stop";
                 public const string Pause = "Pause";
                 public const string Continue = "Continue";
@@ -319,7 +322,6 @@ namespace TransferControl.Management
                 public const string Mapping = "Mapping";
                 public const string PreMapping = "PreMapping";
                 public const string GetMapping = "GetMapping";
-                public const string SetSV = "SetSV";
                 public const string PutByRArm = "PutByRArm";
                 public const string PutByLArm = "PutByLArm";
                 public const string GetByRArm = "GetByRArm";
@@ -328,6 +330,7 @@ namespace TransferControl.Management
                 public const string PutWaitByLArm = "PutWaitByLArm";
                 public const string GetWaitByRArm = "GetWaitByRArm";
                 public const string GetWaitByLArm = "GetWaitByLArm";
+
             }
             //Aligner
             public class AlignerType
@@ -356,6 +359,8 @@ namespace TransferControl.Management
                 public const string GetError = "GetError";
                 public const string GetMode = "GetMode";
                 public const string GetSV = "GetSV";
+                public const string SetSV = "SetSV";
+                public const string SaveLog = "SaveLog";
             }
             //OCR
             public class OCRType
@@ -387,6 +392,7 @@ namespace TransferControl.Management
                 public const string SetManualMode = "SetManualMode";
                 public const string GetDOStatus = "GetDOStatus";
                 public const string GetDIStatus = "GetDIStatus";
+                public const string GetDIOStatus = "GetDIOStatus";
                 public const string GetOperateStatus = "GetOperateStatus";
                 public const string SetTP1 = "TP1";
                 public const string SetTP2 = "TP2";

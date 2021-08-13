@@ -199,6 +199,8 @@
     <Compile Include="Parser\Sanwa_MCParser.cs" />
     <Compile Include="Parser\TDKParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaksFlow\BaseTaskFlow.cs" />
+    <Compile Include="TaksFlow\EFEM_MIC_2P.cs" />
     <Compile Include="TaksFlow\EFEM_SemiCore.cs" />
     <Compile Include="TaksFlow\Innolux_CCLinkController.cs" />
     <Compile Include="TaksFlow\ITaskFlow.cs" />

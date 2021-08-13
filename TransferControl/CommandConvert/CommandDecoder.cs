@@ -320,6 +320,7 @@ namespace TransferControl.CommandConvert
                     {
                         strFunctionCode = strRawMsg.Substring(2, 2);
                         strResponseCode = strRawMsg.Substring(4, 2);
+                        each.Command = strFunctionCode.ToUpper();
                     }
 
                     switch(strFunctionCode.ToUpper())
@@ -354,22 +355,73 @@ namespace TransferControl.CommandConvert
                                 each.Type = CommandReturnMessage.ReturnType.Error;
                             }
                             break;
+                        case "90":
+                            each.Type = CommandReturnMessage.ReturnType.Excuted;
+                            each.Value = strRawMsg.Substring(4, 4);
+
+                            if (each.Value == "FFFF" || each.Value == "FFFD")
+                            {
+                                each.Type = CommandReturnMessage.ReturnType.Error;
+                            }
+                            break;
 
                         case "55":  
                             each.Type = CommandReturnMessage.ReturnType.Event;
                             switch(strResponseCode.ToUpper())
                             {
-                                case "12":
-                                    each.Command = "VALID_ON";
-                                    break;
-                                case "1E":
-                                    each.Command = "VALID_OFF";
+                                case "10":
+                                    each.Command = "GO_ON";
                                     break;
                                 case "11":
                                     each.Command = "CS_0_ON";
                                     break;
+                                case "12":
+                                    each.Command = "VALID_ON";
+                                    break;
+                                case "13":
+                                    each.Command = "L_REQ_ON";
+                                    break;
+                                case "14":
+                                    each.Command = "U_REQ_ON";
+                                    break;
+                                case "15":
+                                    each.Command = "TR_REQ_ON";
+                                    break;
+                                case "16":
+                                    each.Command = "READY_ON";
+                                    break;
+                                case "17":
+                                    each.Command = "BUSY_ON";
+                                    break;
+                                case "18":
+                                    each.Command = "L_REQ_OFF";
+                                    break;
+                                case "19":
+                                    each.Command = "U_REQ_OFF";
+                                    break;
+                                case "1A":
+                                    each.Command = "BUSY_OFF";
+                                    break;
+                                case "1B":
+                                    each.Command = "TR_REQ_OFF";
+                                    break;
+                                case "1C":
+                                    each.Command = "COMPT_ON";
+                                    break;
+                                case "1D":
+                                    each.Command = "READY_OFF";
+                                    break;
+                                case "1E":
+                                    each.Command = "VALID_OFF";
+                                    break;
+                                case "1F":
+                                    each.Command = "COMPT_OFF";
+                                    break;
                                 case "20":
                                     each.Command = "CS_0_OFF";
+                                    break;
+                                case "21":
+                                    each.Command = "GO_OFF";
                                     break;
                                 case "28":
                                     each.Command = "CS_1_ON";
@@ -377,47 +429,21 @@ namespace TransferControl.CommandConvert
                                 case "29":
                                     each.Command = "CS_1_OFF";
                                     break;
-                                case "15":
-                                    each.Command = "TR_REQ_ON";
+                                case "2A":
+                                    each.Command = "VS_0_ON";
                                     break;
-                                case "1B":
-                                    each.Command = "TR_REQ_OFF";
+                                case "2B":
+                                    each.Command = "VS_0_OFF";
                                     break;
-                                case "17":
-                                    each.Command = "BUSY_ON";
+                                case "2C":
+                                    each.Command = "VS_1_ON";
                                     break;
-                                case "1A":
-                                    each.Command = "BUSY_OFF";
+                                case "2D":
+                                    each.Command = "VS_1_OFF";
                                     break;
-                                case "1C":
-                                    each.Command = "COMPT_ON";
-                                    break;
-                                case "1F":
-                                    each.Command = "COMPT_OFF";
-                                    break;
-
-                                case "13":
-                                    each.Command = "L_REQ_ON";
-                                    break;
-                                case "18":
-                                    each.Command = "L_REQ_OFF";
-                                    break;
-                                case "14":
-                                    each.Command = "U_REQ_ON";
-                                    break;
-                                case "19":
-                                    each.Command = "U_REQ_OFF";
-                                    break;
-
-                                case "16":
-                                    each.Command = "READY_ON";
-                                    break;
-                                case "1D":
-                                    each.Command = "READY_OFF";
-                                    break;
-                                case "F3":
-                                case "F6":
-                                    each.Command = "HO_AVBL_ON";
+                                case "F1":
+                                case "FA":
+                                    each.Command = "ES_ON";
                                     break;
 
                                 case "F2":
@@ -426,10 +452,11 @@ namespace TransferControl.CommandConvert
                                     each.Command = "HO_AVBL_OFF";
                                     break;
 
-                                case "F1":
-                                case "FA":
-                                    each.Command = "ES_ON";
+                                case "F3":
+                                case "F6":
+                                    each.Command = "HO_AVBL_ON";
                                     break;
+
                                 case "FB":
                                     each.Command = "ES_OFF";
                                     break;
@@ -509,11 +536,8 @@ namespace TransferControl.CommandConvert
                             break;
                     }
 
-
-
-
-
-                    result.Add(each);
+                    if(!each.Command.Equals(""))
+                        result.Add(each);
                 }
             }
             catch (Exception ex)
