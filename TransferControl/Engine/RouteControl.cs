@@ -152,6 +152,7 @@ namespace TransferControl.Engine
                                     JobManagement.ClearAssignJobByPort(Node.Name);
                                     Node.FoupID = "";
 
+
                                     break;
 
                                 case Transaction.Command.LoadPortType.ReadStatus:
