@@ -13,7 +13,7 @@ namespace TransferControl.TaksFlow
     class BaseTaskFlow : ITaskFlow
     {
         public IUserInterfaceReport _TaskReport;
-
+        protected int LoadportCount = 4;
         public BaseTaskFlow(IUserInterfaceReport TaskReport)
         {
             _TaskReport = TaskReport;
@@ -229,5 +229,1379 @@ namespace TransferControl.TaksFlow
         {
             _TaskReport.On_TaskJob_Finished(TaskJob);
         }
+
+        public virtual bool GetCSTID(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            if (Target.Type.ToUpper().Equals("SMARTTAG"))
+            {
+                switch (TaskJob.CurrentIndex)
+                {
+                    case 0:
+
+                        AckTask(TaskJob);
+
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
+
+                        break;
+                    case 1:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.SmartTagType.GetLCDData }));
+
+                        break;
+                    default:
+                        FinishTask(TaskJob);
+                        return false;
+                }
+            }
+            else if (Target.Type.ToUpper().Equals("RFID"))
+            {
+                switch (TaskJob.CurrentIndex)
+                {
+                    case 0:
+                        AckTask(TaskJob);
+
+                        if (Target.Vendor.Equals("RFID_HR4136"))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+
+                        break;
+
+                    case 1:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID }));
+                        break;
+
+                    default:
+                        FinishTask(TaskJob);
+                        return false;
+                }
+            }
+
+            return true;
+        }
+        public virtual bool SetCSTID(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            if (Target.Type.ToUpper().Equals("SMARTTAG"))
+            {
+                switch (TaskJob.CurrentIndex)
+                {
+                    case 0:
+                        AckTask(TaskJob);
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
+                        break;
+                    case 1:
+                        if (Target.Vendor.ToUpper().Equals("SMARTTAG8200"))
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SelectLCDData }));
+                        }
+                        break;
+                    case 2:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SetLCDData, Value = Value }));
+
+                        break;
+                    default:
+                        FinishTask(TaskJob);
+                        return false;
+                }
+            }
+            else if (Target.Type.ToUpper().Equals("RFID") && Target.Vendor.Equals("RFID_HR4136"))
+            {
+                switch (TaskJob.CurrentIndex)
+                {
+                    case 0:
+                        AckTask(TaskJob);
+
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                        break;
+
+                    case 1:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "MT" }));
+                        break;
+
+                    case 2:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                        break;
+
+                    case 3:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
+                        break;
+
+                    case 4:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+
+                        break;
+
+                    case 5:
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "OP" }));
+                        break;
+                    default:
+                        FinishTask(TaskJob);
+                        return false;
+                }
+            }
+            else if (Target.Type.ToUpper().Equals("RFID"))
+            {
+                switch (TaskJob.CurrentIndex)
+                {
+                    case 0:
+                        AckTask(TaskJob);
+
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
+
+                        break;
+                    default:
+                        FinishTask(TaskJob);
+                        return false;
+                }
+            }
+
+            return true;
+        }
+#region SANWA_ROBOT
+        public virtual bool Sanwa_RobotAbort(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    if (Target.IsPause)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Stop, Value = "1" }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotReStart(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    if (Target.IsPause)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Continue }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotHold(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    if (!Target.IsPause)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Pause }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotGetClamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    switch (Value)
+                    {
+                        case "1":
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                            break;
+
+                        case "2":
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                            break;
+                    }
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotWait(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, Node Position, string Arm, string Slot)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+
+                    break;
+                case 1:
+
+                    if (TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_PUTWAIT)
+                    {
+                        string MethodName = Transaction.Command.RobotType.PutWait;
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = MethodName, Position = Position.Name, Arm = Arm, Slot = Slot }));
+                    }
+                    else
+                    {
+                        string MethodName = Transaction.Command.RobotType.GetWait;
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = MethodName, Position = Position.Name, Arm = Arm, Slot = Slot }));
+
+                    }
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotWaferVAC(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target,  string Arm)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_WAFER_HOLD)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm }));
+                    else
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferRelease, Arm = Arm }));
+                    break;
+
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = Arm.Equals("1") ? "008" : "009" }));
+                    break;
+
+                case 2:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = Arm.Equals("1") ? "01" : "02" }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotMode(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = Value }));
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotRetract(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.ArmReturn }));
+
+                    break;
+
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotSpeed(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Speed, Value = Value }));
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotServo(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = Value }));
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotHome(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Home }));
+
+                    break;
+
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotORG(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!IsNodeInitialComplete(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.OrginSearch }));
+                    break;
+
+                default:
+                    OrgSearchCompleted(Target.Name);
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotReset(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
+                    break;
+
+                case 1:
+                    //確認R軸 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
+                    break;
+
+                case 2:
+                    //確認L軸 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
+                    break;
+
+                case 3:
+                    //設定模式(Normal or dry)
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (SystemConfig.Get().DummyMappingData)
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "1" }));
+                        }
+                        else
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "0" }));
+                        }
+                    }
+                    break;
+
+                case 4:
+                    //取得R軸電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                    break;
+
+                case 5:
+                    //取得L軸電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                    break;
+
+                case 6:
+                    //取得速度
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+                    break;
+
+                case 7:
+                    //取得模式
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
+                    break;
+
+                case 8:
+                    //取得異常
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
+                    break;
+
+                case 9:
+                    //Servo on
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
+                    break;
+
+                case 10:
+                    //更新Bobot狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotINIT(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    //開啟R軸電磁閥
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "01", Value = "1" }));
+
+                    break;
+
+                case 1:
+                    //開啟L軸電磁閥
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "02", Value = "1" }));
+
+                    break;
+
+                case 2:
+                    //確認R軸 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
+                    break;
+
+                case 3:
+                    //確認L軸 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
+                    break;
+
+                case 4:
+                    //R軸 Presence 不存在,則關閉R軸電磁閥
+                    if (!SystemConfig.Get().OfflineMode && !Target.R_Presence)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "01", Value = "0" }));
+
+                    break;
+
+                case 5:
+                    //L軸 Presence 不存在,則關閉L軸電磁閥
+                    if (!SystemConfig.Get().OfflineMode && !Target.L_Presence)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "02", Value = "0" }));
+
+                    break;
+
+                case 6:
+                    //設定模式(Normal or dry)
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (SystemConfig.Get().DummyMappingData)
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "1" }));
+                        }
+                        else
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "0" }));
+                        }
+                    }
+                    break;
+                case 7:
+                    //取得R軸電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                    break;
+
+                case 8:
+                    //取得L軸電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                    break;
+
+                case 9:
+                    //取得速度
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+
+                    break;
+
+                case 10:
+                    //取得模式
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
+
+                    break;
+
+                case 11:
+                    //取得異常
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
+
+                    break;
+
+                case 12:
+                    //Servo on
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
+
+                    break;
+
+                case 13:
+                    //更新Bobot狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
+
+                    break;
+
+                default:
+                    Target.InitialComplete = true;
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_RobotSaveLog(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SaveLog }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+        #region TDK_LOADPORT
+        public virtual bool TDK_LoadportINIT(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.Mode, Value = "0" }));
+
+                    break;
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.SetAllEvent, Value = "1" }));
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+                default:
+                    Target.InitialComplete = true;
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportORG(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!IsNodeInitialComplete(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    OrgSearchCompleted(Target.Name);
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportReset(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
+
+                    break;
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportForceORG(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!IsNodeInitialComplete(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.ForceInitialPos }));
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    OrgSearchCompleted(Target.Name);
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportReadStatus(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportClamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Clamp }));
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                    break;
+                default:
+                    //Target.Foup_Lock = true;
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportUnclamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnClamp }));
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportDock(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Dock }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportUndock(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnDock }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportVACOn(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.VacuumON }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportVACOff(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.VacuumOFF }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool TDK_LoadportUnlatch(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnLatchDoor }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportLatch(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.LatchDoor }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool TDK_LoadportDoorOpen(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.DoorOpen }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportDoorClose(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.DoorClose }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool TDK_LoadportDoorDown(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.DoorDown }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool TDK_LoadportDoorUp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.DoorUp }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportAllOpen(TaskFlowManagement.CurrentProcessTask TaskJob)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    Node lpNode = null;
+                    for (int i = 0; i < LoadportCount; i++)
+                    {
+                        lpNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                        if (!CheckNodeStatusOnTaskJob(lpNode, TaskJob)) return false;
+                    }
+
+                    AckTask(TaskJob);
+
+                    for (int i = 0; i < LoadportCount; i++)
+                    {
+                        lpNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+
+                        //移除所有Wafer
+                        foreach (Job eachJob in JobManagement.GetByNode(lpNode.Name))
+                            JobManagement.Remove(eachJob);
+
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpNode.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MappingLoad }));
+                    }
+                    break;
+                case 1:
+                    for (int i = 0; i < LoadportCount; i++)
+                    {
+                        lpNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                        if (SystemConfig.Get().DummyMappingData)
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpNode.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                        }
+                        else
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpNode.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                        }
+                    }
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        for (int i = 0; i < LoadportCount; i++)
+                        {
+                            lpNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpNode.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                        }
+                    }
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportOpen(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    //移除所有Wafer
+                    foreach (Job eachJob in JobManagement.GetByNode(Target.Name))
+                        JobManagement.Remove(eachJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MappingLoad }));
+
+                    break;
+
+                case 1:
+                    if (TaskJob.TaskName.Equals(TaskFlowManagement.Command.LOADPORT_OPEN))
+                    {
+                        if (SystemConfig.Get().DummyMappingData)
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                        }
+                        else
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                        }
+                    }
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportAllClose(TaskFlowManagement.CurrentProcessTask TaskJob)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    Node lpNode = null;
+                    for (int i = 0; i < LoadportCount; i++)
+                    {
+                        lpNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                        if (!CheckNodeStatusOnTaskJob(lpNode, TaskJob)) return false;
+                    }
+
+                    AckTask(TaskJob);
+
+                    for (int i = 0; i < LoadportCount; i++)
+                    {
+                        lpNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpNode.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
+                    }
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        for (int i = 0; i < LoadportCount; i++)
+                        {
+                            lpNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpNode.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                        }
+                    }
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportClose(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportGetMapData(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    if (SystemConfig.Get().DummyMappingData)
+                    {
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                    }
+                    else
+                    {
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                    }
+                    break;
+
+                default:
+
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportReMapping(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    //移除所有Wafer
+                    foreach (Job eachJob in JobManagement.GetByNode(Target.Name))
+                        JobManagement.Remove(eachJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.RetryMapping }));
+
+                    break;
+                case 1:
+                    if (SystemConfig.Get().DummyMappingData)
+                    {
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                    }
+                    else
+                    {
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                    }
+
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return false;
+        }
+        public virtual bool TDK_LoadportSetOPAccessIndicator(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.SetOpAccess, Value = Value }));
+
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportSetLoadIndicator(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.SetLoad, Value = Value }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportSetUnloadIndicator(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.SetUnLoad, Value = Value }));
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool TDK_LoadportReadLed(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            Node E84Node = NodeManagement.Get(Target.Name.Replace("LOADPORT", "E84"));
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetLED }));
+
+                    //同步化 E84 Status
+                    if (E84Node != null)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(E84Node.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
+                    break;
+
+                case 1:
+                    //同步化 E84 Status
+                    if (E84Node != null)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(E84Node.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+#endregion
     }
 }

@@ -80,6 +80,22 @@ namespace TransferControl.Management
 
             return result;
         }
+        public static List<Node> GetE84List()
+        {
+            List<Node> result = new List<Node>();
+
+            var findPort = from port in NodeList.Values.ToList()
+                           where port.Type.Equals("E84")
+                           select port;
+
+            if (findPort.Count() != 0)
+            {
+                result = findPort.ToList();
+                result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });
+            }
+
+            return result;
+        }
 
         public static List<Node> GetAlignerList()
         {
@@ -178,7 +194,8 @@ namespace TransferControl.Management
             public int AckTimeOut { get; set; }
             public int MotionTimeOut { get; set; }
             public bool ByPassCheck { get; set; }
-           
+            public string AlignDegree { get; set; }
+
         }
         public static void Save()
         {

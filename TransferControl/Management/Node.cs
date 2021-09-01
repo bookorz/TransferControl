@@ -299,7 +299,7 @@ namespace TransferControl.Management
         public E84_Mode E84Mode;
         public string TransReqMode;
 
-        public string AlignDegree { get; set; }
+        public string AlignDegree{ get; set; }
 
         public void InitialObject()
         {
@@ -351,7 +351,11 @@ namespace TransferControl.Management
                 { "VS_0", false },
                 { "VS_1", false },
                 { "HO_AVBL", false },
-                { "ES", false }
+                { "ES", false },
+                { "CLAMP", false },
+                { "EMO", false },
+                { "ALARM", false },
+                { "LC", false },
             };
 
             E84Mode = E84_Mode.MANUAL;
@@ -441,8 +445,6 @@ namespace TransferControl.Management
 
             //20210628 Pingchung TDK USE
             StatusRawData = "";
-
-            AlignDegree = "000";
         }
        
 
@@ -1140,6 +1142,14 @@ namespace TransferControl.Management
                     case "RFID":
                         switch (txn.Method)
                         {
+                            case Transaction.Command.RFIDType.Hello:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.Hello();
+                                break;
+
+                            case Transaction.Command.RFIDType.Mode:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.Mode(txn.Value);
+                                break;
+
                             case Transaction.Command.RFIDType.GetCarrierID:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.ReadCarrierID();
 
@@ -1826,18 +1836,16 @@ namespace TransferControl.Management
                                 txn.CommandType = "SET";
                                 break;
 
-                            case Transaction.Command.E84.GetDIStatus:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetDIStatus();
+                            case Transaction.Command.E84.GetE84IOStatus:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetE84IOStatus();
                                 txn.CommandType = "GET";
                                 break;
-                            case Transaction.Command.E84.GetDOStatus:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetDOStatus();
-                                txn.CommandType = "GET";
-                                break;
+
                             case Transaction.Command.E84.GetDIOStatus:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetDIOStatus();
                                 txn.CommandType = "GET";
                                 break;
+
                             case Transaction.Command.E84.SetTP1:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP1(txn.Value);
                                 txn.CommandType = "SET";
@@ -1862,15 +1870,9 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().E84.SetTP6(txn.Value);
                                 txn.CommandType = "SET";
                                 break;
-                            case Transaction.Command.E84.GetOperateStatus:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().E84.GetOperateStatus();
-                                txn.CommandType = "GET";
-                                break;
                         }
                         break;
                 }
-
-
 
                 bool IsWaitData = false;
                 if (txn.Method.Equals(Transaction.Command.SmartTagType.GetLCDData) ||

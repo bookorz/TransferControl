@@ -202,8 +202,10 @@ namespace TransferControl.Management
 
             public class RFIDType
             {
+                public const string Hello = "Hello";
                 public const string GetCarrierID = "GetCarrierID";
                 public const string SetCarrierID = "SetCarrierID";
+                public const string Mode = "Mode";
             }
 
             //LoadPort
@@ -390,10 +392,8 @@ namespace TransferControl.Management
                 public const string Reset = "Reset";
                 public const string SetAutoMode = "SetAutoMode";
                 public const string SetManualMode = "SetManualMode";
-                public const string GetDOStatus = "GetDOStatus";
-                public const string GetDIStatus = "GetDIStatus";
+                public const string GetE84IOStatus = "GetE84IOStatus";
                 public const string GetDIOStatus = "GetDIOStatus";
-                public const string GetOperateStatus = "GetOperateStatus";
                 public const string SetTP1 = "TP1";
                 public const string SetTP2 = "TP2";
                 public const string SetTP3 = "TP3";

@@ -220,7 +220,7 @@ namespace TransferControl.CommandConvert
             return commandStr + EndCode();
         }
 
-        public string GetDIOStatus()
+        public string GetE84IOStatus()
         {
             string commandStr = "";
             switch (Supplier)
@@ -235,27 +235,13 @@ namespace TransferControl.CommandConvert
             return commandStr + EndCode();
         }
 
-        public string GetDOStatus()
+        public string GetDIOStatus()
         {
             string commandStr = "";
             switch (Supplier)
             {
                 case "FRANCES":
-                    commandStr = "55 81 02 bb";
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
-            return commandStr + EndCode();
-        }
-        public string GetDIStatus()
-        {
-            string commandStr = "";
-            switch (Supplier)
-            {
-                case "FRANCES":
-                    commandStr = "55 81 01 bb";
+                    commandStr = "55 91 00 bb";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -264,19 +250,5 @@ namespace TransferControl.CommandConvert
             return commandStr + EndCode();
         }
 
-        public string GetOperateStatus()
-        {
-            string commandStr = "";
-            switch (Supplier)
-            {
-                case "FRANCES":
-                    commandStr = "55 81 05 bb";
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
-            return commandStr + EndCode();
-        }
     }
 }

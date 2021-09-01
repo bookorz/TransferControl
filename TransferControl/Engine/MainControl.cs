@@ -933,22 +933,25 @@ namespace TransferControl.Engine
                                 Node.E84Mode = E84_Mode.MANUAL;
                                 break;
 
-                            case Transaction.Command.E84.GetDIStatus:
-
+                            case Transaction.Command.E84.GetE84IOStatus:
                                 MessageParser parser = new MessageParser(Node.Vendor);
-                                Dictionary<string, string> DIStatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                Dictionary<string, string> E84IOStatus = parser.ParseMessage(Txn.Method, Msg.Value);
 
-                                foreach (KeyValuePair<string, string> each in DIStatusResult)
+                                foreach (KeyValuePair<string, string> each in E84IOStatus)
+                                {
                                     Node.E84IOStatus[each.Key] = each.Value.Equals("1") ? true : false;
 
-                                break;
+                                    if(each.Key.Equals("MANUAL"))
+                                    {
+                                        if(each.Value.Equals("1")) Node.E84Mode = E84_Mode.MANUAL;
+                                    }
 
-                            case Transaction.Command.E84.GetDOStatus:
-                                parser = new MessageParser(Node.Vendor);
-                                Dictionary<string, string> DOStatusResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    if (each.Key.Equals("AUTO"))
+                                    {
+                                        if (each.Value.Equals("1")) Node.E84Mode = E84_Mode.AUTO;
+                                    }
 
-                                foreach (KeyValuePair<string, string> each in DOStatusResult)
-                                    Node.E84IOStatus[each.Key] = each.Value.Equals("1") ? true : false;
+                                }
 
                                 break;
 
@@ -958,40 +961,6 @@ namespace TransferControl.Engine
 
                                 foreach (KeyValuePair<string, string> each in DIOStatusResult)
                                     Node.E84IOStatus[each.Key] = each.Value.Equals("1") ? true : false;
-
-                                break;
-
-                            case Transaction.Command.E84.GetOperateStatus:
-                                parser = new MessageParser(Node.Vendor);
-                                Dictionary<string, string> OperateStatus = parser.ParseMessage(Txn.Method, Msg.Value);
-
-                                bool bAuto = false;
-                                bool bManual = false;
-                                foreach (KeyValuePair<string, string> each in OperateStatus)
-                                {
-                                    switch(each.Key)
-                                    {
-                                        case "Manual":
-                                            bManual = each.Value.Equals("1") ? true : false;
-                                            break;
-                                        case "Auto":
-                                            bAuto = each.Value.Equals("1") ? true : false;
-                                            break;
-                                    }
-                                }
-
-                                if (bAuto && !bManual)
-                                {
-                                    Node.E84Mode = E84_Mode.AUTO;
-                                }
-                                else if(!bAuto && bManual)
-                                {
-                                    Node.E84Mode = E84_Mode.MANUAL;
-                                }
-                                else
-                                    Node.E84Mode = E84_Mode.UNKNOW;
-
-                                //NodeManagement.Get(Node.Associated_Node).E84Mode = Node.E84Mode;
 
                                 break;
                         }
@@ -1756,6 +1725,22 @@ namespace TransferControl.Engine
                             case "ES_ON":
                             case "ES_OFF":
                                 Node.E84IOStatus["ES"] = Msg.Command.Contains("ON") ? true : false;
+                                Node.E84IOStatus["EMO"] = Msg.Command.Contains("ON") ? false : true;
+                                break;
+
+                            case "CLAMP_ON":
+                            case "CLAMP_OFF":
+                                Node.E84IOStatus["CLAMP"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "LC_ON":
+                            case "LC_OFF":
+                                Node.E84IOStatus["LC"] = Msg.Command.Contains("ON") ? true : false;
+                                break;
+
+                            case "ALARM_ON":
+                            case "ALARM_OFF":
+                                Node.E84IOStatus["ALARM"] = Msg.Command.Contains("ON") ? true : false;
                                 break;
 
                             case "MANUAL_MODE":

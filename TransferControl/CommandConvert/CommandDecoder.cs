@@ -72,6 +72,10 @@ namespace TransferControl.CommandConvert
                         result = RFIDOMRONV640CodeAnalysis(Message);
                         break;
 
+                    case "RFID_HR4136":
+                        result = RFIDHR4136CodeAnalysis(Message);
+                        break;
+
                     case "FRANCES":
                         result = SEMIE84CodeAnalysis(Message);
                         break;
@@ -187,6 +191,53 @@ namespace TransferControl.CommandConvert
             return result;
         }
 
+        private byte[] HexStringToByteArray(string s)
+        {
+            s = s.Replace(" ", "");
+            byte[] buffer = new byte[s.Length / 2];
+            for (int i = 0; i < s.Length; i += 2)
+                buffer[i / 2] = (byte)Convert.ToByte(s.Substring(i, 2), 16);
+            return buffer;
+        }
+
+        private List<CommandReturnMessage> RFIDHR4136CodeAnalysis(string Message)
+        {
+            List<CommandReturnMessage> result;
+
+            try
+            {
+                result = new List<CommandReturnMessage>();
+
+                CommandReturnMessage r = new CommandReturnMessage();
+                if (Message[0] == (char)4)
+                {
+                    r.Type = CommandReturnMessage.ReturnType.Excuted;
+                }
+                else if (Message[0] == (char)6 || Message[0] == (char)5)
+                {
+                    r.Type = CommandReturnMessage.ReturnType.Information;
+                }
+                else
+                {
+                    r.Type = CommandReturnMessage.ReturnType.Finished;
+                    r.Value = Message;
+
+                    if(Message.Contains("SSACK_"))
+                    {
+                        r.Type = CommandReturnMessage.ReturnType.Error;
+                        r.Value = r.Value.Replace("SSACK_","");
+                    }
+                }
+
+                result.Add(r);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
+            return result;
+        }
         private List<CommandReturnMessage> RFIDOMRONV640CodeAnalysis(string Message)
         {
             List<CommandReturnMessage> result;
@@ -309,6 +360,12 @@ namespace TransferControl.CommandConvert
                     string strResponseCode = "";
                     string strFunctionCode = "";
                     string strErrorCode = "";
+
+                    if (strRawMsg.Length == 8)
+                    {
+                        continue;
+                    }
+
                     string strHeader = strRawMsg.Substring(0, 2).ToUpper();
                     if (strHeader == "FF")
                     {
@@ -356,8 +413,9 @@ namespace TransferControl.CommandConvert
                             }
                             break;
                         case "90":
+                        case "91":
                             each.Type = CommandReturnMessage.ReturnType.Excuted;
-                            each.Value = strRawMsg.Substring(4, 4);
+                            each.Value = strRawMsg.Substring(4, 6);
 
                             if (each.Value == "FFFF" || each.Value == "FFFD")
                             {
@@ -423,6 +481,12 @@ namespace TransferControl.CommandConvert
                                 case "21":
                                     each.Command = "GO_OFF";
                                     break;
+                                case "26":
+                                    each.Command = "HO_AVBL_ON";
+                                    break;
+                                case "27":
+                                    each.Command = "HO_AVBL_OFF";
+                                    break;
                                 case "28":
                                     each.Command = "CS_1_ON";
                                     break;
@@ -448,15 +512,26 @@ namespace TransferControl.CommandConvert
 
                                 case "F2":
                                 case "F4":
-                                case "F7":
-                                    each.Command = "HO_AVBL_OFF";
+                                    each.Command = "CLAMP_ON";
                                     break;
-
                                 case "F3":
-                                case "F6":
-                                    each.Command = "HO_AVBL_ON";
+                                    each.Command = "CLAMP_OFF";
                                     break;
 
+                                case "F5":
+                                case "F7":
+                                    each.Command = "LC_ON";
+                                    break;
+
+                                case "F6":
+                                    each.Command = "LC_OFF";
+                                    break;
+                                case "F8":
+                                    each.Command = "ALARM_ON";
+                                    break;
+                                case "F9":
+                                    each.Command = "ALARM_OFF";
+                                    break;
                                 case "FB":
                                     each.Command = "ES_OFF";
                                     break;

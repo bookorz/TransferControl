@@ -18,6 +18,8 @@ namespace TransferControl.Digital_IO.Controller
         ConcurrentDictionary<int, ushort> AOUT = new ConcurrentDictionary<int, ushort>();
         ConcurrentDictionary<int, bool> DIN = new ConcurrentDictionary<int, bool>();
         ConcurrentDictionary<int, bool> DOUT = new ConcurrentDictionary<int, bool>();
+
+        Object OutputLock = new Object();
         public ICPconDigitalController(CtrlConfig Config, IDIOReport TriggerReport)
         {
             _Cfg = Config;
@@ -31,8 +33,14 @@ namespace TransferControl.Digital_IO.Controller
         {
             try
             {
-                tt.Close();
-                Master.Dispose();
+
+                //20210830 Pingchung Lock start ++
+                lock (OutputLock)
+                {
+                    tt.Close();
+                    Master.Dispose();
+                }
+                //20210830 Pingchung Lock end ++
             }
             catch
             {
@@ -192,75 +200,115 @@ namespace TransferControl.Digital_IO.Controller
         {
             try
             {
-                
-                ushort adr = Convert.ToUInt16(Address);
-                bool boolVal = false;
-                if (bool.TryParse(Value, out boolVal))
+                logger.Debug(string.Format("{0}:SetOut({1},{2})", this._Cfg.DeviceName, Address, Value));
+                //20210830 Pingchung Lock start ++
+                lock (OutputLock)
                 {
-                    bool[] Response;
-                    try
+                    ushort adr = Convert.ToUInt16(Address);
+                    if (bool.TryParse(Value, out bool boolVal))
                     {
-                        lock (Master)
+                        //bool[] Response;
+                        try
                         {
-                            Master.WriteSingleCoil(_Cfg.slaveID, adr, boolVal);
+                            if (Master != null)
+                            {
+                                lock (Master)
+                                {
+                                    logger.Debug(string.Format("{0}:WriteSingleCoil({1},{2},{3})", this._Cfg.DeviceName, _Cfg.slaveID, adr, boolVal));
+                                    SpinWait.SpinUntil(() => false, 20);
+                                    Master.WriteSingleCoil(_Cfg.slaveID, adr, boolVal);
+                                }
+                            }
                         }
-                    }
-                    catch
-                    {
-                        throw new Exception(this._Cfg.DeviceName + " connection error!");
-                    }
-                    lock (Master)
-                    {
-                        Response = Master.ReadCoils(_Cfg.slaveID, adr, 1);
-                    }
-                    bool org;
-                    if (DOUT.TryGetValue(adr, out org))
-                    {
-                        if (!org.Equals(Response[0]))
+                        catch
                         {
-                            DOUT.TryUpdate(adr, Response[0], org);
-                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), org.ToString(), Response[0].ToString());
+                            throw new Exception(this._Cfg.DeviceName + " connection error!");
+                        }
+
+                        // 沒有意義 Mark by Pingchung
+                        // 當兩個Command太接近時，第二個Command的動作會被忽略
+                        // 但是讀回來的值會和之前輸出的Command是一樣的
+                        // 應該為硬體的異常(待釐清)
+                        //lock (Master)
+                        //{
+                        //    Response = Master.ReadCoils(_Cfg.slaveID, adr, 1);
+                        //    logger.Debug(string.Format("{0}:ReadCoils({1},{2},1), Return : {3}", this._Cfg.DeviceName, _Cfg.slaveID, adr, Response[0]));
+                        //}
+
+
+                        //bool org;
+                        //if (DOUT.TryGetValue(adr, out org))
+                        //{
+                        //    if (!org.Equals(Response[0]))
+                        //    {
+                        //        DOUT.TryUpdate(adr, Response[0], org);
+                        //        _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), org.ToString(), Response[0].ToString());
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    DOUT.TryAdd(adr, Response[0]);
+                        //    _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), "N/A", Response[0].ToString());
+                        //}
+
+                        if (DOUT.TryGetValue(adr, out bool org))
+                        {
+                            if (!org.Equals(boolVal))
+                            {
+                                DOUT.TryUpdate(adr, boolVal, org);
+                                _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), org.ToString(), boolVal.ToString());
+                            }
+                        }
+                        else
+                        {
+                            DOUT.TryAdd(adr, boolVal);
+                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), "N/A", boolVal.ToString());
                         }
                     }
                     else
                     {
-                        DOUT.TryAdd(adr, Response[0]);
-                        _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), "N/A", Response[0].ToString());
-                    }
-                }
-                else
-                {
-                    ushort[] Response2;
-                    try
-                    {
-                        lock (Master)
+                        ushort[] Response2 = null;
+                        try
                         {
-                            Master.WriteSingleRegister(_Cfg.slaveID, adr, Convert.ToUInt16(Value));
+                            if (Master != null)
+                            {
+                                lock (Master)
+                                {
+                                    SpinWait.SpinUntil(() => false, 10);
+                                    Master.WriteSingleRegister(_Cfg.slaveID, adr, Convert.ToUInt16(Value));
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            throw new Exception(this._Cfg.DeviceName + " connection error!");
+                        }
+
+                        if (Master != null)
+                        {
+                            lock (Master)
+                            {
+                                SpinWait.SpinUntil(() => false, 10);
+                                Response2 = Master.ReadHoldingRegisters(_Cfg.slaveID, adr, 1);
+                            }
+                        }
+
+                        if (AOUT.TryGetValue(adr, out ushort org))
+                        {
+                            if (!org.Equals(Response2[0]))
+                            {
+                                AOUT.TryUpdate(adr, Response2[0], org);
+                                _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), org.ToString(), Response2[0].ToString());
+                            }
+                        }
+                        else
+                        {
+                            AOUT.TryAdd(adr, Response2[0]);
+                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), "N/A", Response2[0].ToString());
                         }
                     }
-                    catch
-                    {
-                        throw new Exception(this._Cfg.DeviceName + " connection error!");
-                    }
-                    lock (Master)
-                    {
-                        Response2 = Master.ReadHoldingRegisters(_Cfg.slaveID, adr, 1);
-                    }
-                    ushort org;
-                    if (AOUT.TryGetValue(adr, out org))
-                    {
-                        if (!org.Equals(Response2[0]))
-                        {
-                            AOUT.TryUpdate(adr, Response2[0], org);
-                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), org.ToString(), Response2[0].ToString());
-                        }
-                    }
-                    else
-                    {
-                        AOUT.TryAdd(adr, Response2[0]);
-                        _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), "N/A", Response2[0].ToString());
-                    }
                 }
+                //20210830 Pingchung Lock end ++
             }
             catch (Exception e)
             {
@@ -272,42 +320,46 @@ namespace TransferControl.Digital_IO.Controller
         {
             try
             {
-                ushort adr = Convert.ToUInt16(Address);
-                bool boolVal = false;
-                if (bool.TryParse(Value, out boolVal))
+                //20210830 Pingchung Lock start ++
+                //logger.Debug(string.Format("{0}:SetOutWithoutUpdate({1},{2})", this._Cfg.DeviceName, Address, Value));
+                lock (OutputLock)
                 {
-                    bool org;
-                    if (DOUT.TryGetValue(adr, out org))
+                    ushort adr = Convert.ToUInt16(Address);
+                    if (bool.TryParse(Value, out bool boolVal))
                     {
-                        if (org != bool.Parse(Value))
+                        if (DOUT.TryGetValue(adr, out bool org))
                         {
-                            DOUT.TryUpdate(adr, bool.Parse(Value), org);
-                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), org.ToString(), bool.Parse(Value).ToString());
+                            if (org != bool.Parse(Value))
+                            {
+                                DOUT.TryUpdate(adr, bool.Parse(Value), org);
+                                _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), org.ToString(), bool.Parse(Value).ToString());
+                            }
+                        }
+                        else
+                        {
+                            DOUT.TryAdd(adr, bool.Parse(Value));
+                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), "N/A", bool.Parse(Value).ToString());
                         }
                     }
                     else
                     {
-                        DOUT.TryAdd(adr, bool.Parse(Value));
-                        _Report.On_Data_Chnaged(_Cfg.DeviceName, "DOUT", adr.ToString(), "N/A", bool.Parse(Value).ToString());
-                    }
-                }
-                else
-                {
-                    ushort org;
-                    if (AOUT.TryGetValue(adr, out org))
-                    {
-                        if (org != Convert.ToUInt16(Value))
+                        if (AOUT.TryGetValue(adr, out ushort org))
                         {
-                            AOUT.TryUpdate(adr, Convert.ToUInt16(Value), org);
-                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "AOUT", adr.ToString(), org.ToString(), Value);
+                            if (org != Convert.ToUInt16(Value))
+                            {
+                                AOUT.TryUpdate(adr, Convert.ToUInt16(Value), org);
+                                _Report.On_Data_Chnaged(_Cfg.DeviceName, "AOUT", adr.ToString(), org.ToString(), Value);
+                            }
+                        }
+                        else
+                        {
+                            AOUT.TryAdd(adr, Convert.ToUInt16(Value));
+                            _Report.On_Data_Chnaged(_Cfg.DeviceName, "AOUT", adr.ToString(), "N/A", Value);
                         }
                     }
-                    else
-                    {
-                        AOUT.TryAdd(adr, Convert.ToUInt16(Value));
-                        _Report.On_Data_Chnaged(_Cfg.DeviceName, "AOUT", adr.ToString(), "N/A", Value);
-                    }
                 }
+                //20210830 Pingchung Lock end ++
+
             }
             catch (Exception e)
             {
@@ -319,41 +371,52 @@ namespace TransferControl.Digital_IO.Controller
         {
             try
             {
-                bool[] data = new bool[_Cfg.DigitalInputQuantity];
-                for (int i = 0; i < _Cfg.DigitalInputQuantity; i++)
+                //20210830 Pingchung Lock start ++
+                //logger.Debug(string.Format("{0}:UpdateOut()", this._Cfg.DeviceName));
+                lock (OutputLock)
                 {
-                    bool val;
-                    if (DOUT.TryGetValue(i, out val))
+                    bool[] data = new bool[_Cfg.DigitalInputQuantity];
+                    for (int i = 0; i < _Cfg.DigitalInputQuantity; i++)
                     {
-                        data[i] = val;
+                        if (DOUT.TryGetValue(i, out bool val))
+                        {
+                            data[i] = val;
+                        }
+                        else
+                        {
+                            data[i] = false;
+                        }
                     }
-                    else
+                    if(Master != null)
                     {
-                        data[i] = false;
+                        lock (Master)
+                        {
+                            Master.WriteMultipleCoils(_Cfg.slaveID, 0, data);
+                        }
                     }
-                }
-                lock (Master)
-                {
-                    Master.WriteMultipleCoils(_Cfg.slaveID, 0, data);
-                }
 
-                ushort[] data2 = new ushort[_Cfg.DigitalInputQuantity];
-                for (int i = 0; i < _Cfg.DigitalInputQuantity; i++)
-                {
-                    ushort val;
-                    if (AOUT.TryGetValue(i, out val))
+
+                    ushort[] data2 = new ushort[_Cfg.DigitalInputQuantity];
+                    for (int i = 0; i < _Cfg.DigitalInputQuantity; i++)
                     {
-                        data2[i] = Convert.ToUInt16(Convert.ToDouble(val)*32767.0/10.0);
+                        if (AOUT.TryGetValue(i, out ushort val))
+                        {
+                            data2[i] = Convert.ToUInt16(Convert.ToDouble(val) * 32767.0 / 10.0);
+                        }
+                        else
+                        {
+                            data2[i] = 0;
+                        }
                     }
-                    else
+                    if (Master != null)
                     {
-                        data2[i] = 0;
+                        lock (Master)
+                        {
+                            Master.WriteMultipleRegisters(_Cfg.slaveID, 0, data2);
+                        }
                     }
                 }
-                lock (Master)
-                {
-                    Master.WriteMultipleRegisters(_Cfg.slaveID, 0, data2);
-                }
+                //20210830 Pingchung Lock end ++
             }
             catch (Exception e)
             {
@@ -396,8 +459,10 @@ namespace TransferControl.Digital_IO.Controller
                 {
                     return "";
                 }
+
                 lock (Master)
                 {
+                    SpinWait.SpinUntil(() => false, 10);
                     result = Master.ReadCoils(_Cfg.slaveID, Convert.ToUInt16(Address), 1)[0];
                 }
             }

@@ -1449,7 +1449,45 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
+                    case TaskFlowManagement.Command.LOADPORT_ALL_CLOSE:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                Node ipNode = null;
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    ipNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                                    if (ipNode != null ? ipNode.Enable : false)
+                                    {
+                                        if (!ipNode.InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300168");
+                                            return;
+                                        }
 
+                                        if (!ipNode.OrgSearchComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300169");
+                                            return;
+                                        }
+                                    }
+                                }
+
+                                AckTask(TaskJob);
+
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    ipNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                                    if (ipNode != null ? ipNode.Enable : false)
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(ipNode.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
+                                }
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.LOADPORT_CLOSE:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -1476,7 +1514,63 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
+                    case TaskFlowManagement.Command.LOADPORT_ALL_OPEN:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                Node ipNode = null;
+                                for (int i = 0; i<4; i++)
+                                {
+                                    ipNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                                    if (ipNode!= null ? ipNode.Enable : false)
+                                    {
+                                        if (!ipNode.InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300168");
+                                            return;
+                                        }
 
+                                        if (!ipNode.OrgSearchComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300169");
+                                            return;
+                                        }
+                                    }
+                                }
+
+                                AckTask(TaskJob);
+
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    ipNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                                    if (ipNode != null ? ipNode.Enable : false)
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(ipNode.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Load }));
+                                }
+                                break;
+
+                            case 1:
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    ipNode = NodeManagement.Get(string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0')));
+                                    if (ipNode != null ? ipNode.Enable : false)
+                                    {
+                                        if (SystemConfig.Get().DummyMappingData)
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(ipNode.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                                        }
+                                        else
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(ipNode.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                                        }
+                                    }
+                                }
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.LOADPORT_OPEN:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -1578,8 +1672,15 @@ namespace TransferControl.TaksFlow
                                 case 0:
                                     AckTask(TaskJob);
 
+                                    if (Target.Vendor.Equals("RFID_HR4136"))
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+
+                                    break;
+
+                                case 1:
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID }));
                                     break;
+
                                 default:
                                     FinishTask(TaskJob);
                                     return;
@@ -1589,7 +1690,7 @@ namespace TransferControl.TaksFlow
                         break;
                     case TaskFlowManagement.Command.SET_CSTID:
                         if (Target.Type.ToUpper().Equals("SMARTTAG"))
-                        { 
+                        {
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
@@ -1611,13 +1712,50 @@ namespace TransferControl.TaksFlow
                                     return;
                             }
                         }
+                        else if (Target.Type.ToUpper().Equals("RFID") && Target.Vendor.Equals("RFID_HR4136"))
+                        {
+                            switch (TaskJob.CurrentIndex)
+                            {
+                                case 0:
+                                    AckTask(TaskJob);
+
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                                    break;
+
+                                case 1:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "MT" }));
+                                    break;
+
+                                case 2:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                                    break;
+
+                                case 3:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
+                                    break;
+
+                                case 4:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+
+                                    break;
+
+                                case 5:
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "OP" }));
+                                    break;
+                                default:
+                                    FinishTask(TaskJob);
+                                    return;
+                            }
+                        }
                         else if (Target.Type.ToUpper().Equals("RFID"))
                         {
                             switch (TaskJob.CurrentIndex)
                             {
                                 case 0:
                                     AckTask(TaskJob);
+
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
+
                                     break;
                                 default:
                                     FinishTask(TaskJob);
@@ -1676,7 +1814,8 @@ namespace TransferControl.TaksFlow
                         }
                         if (eachCmd.Txn.Method == Transaction.Command.LoadPortType.GetMappingDummy)
                         {
-                            break;
+                            if (!SystemConfig.Get().OfflineMode)
+                                break;
                         }
                     }
                 }

@@ -211,6 +211,7 @@ namespace TransferControl.Digital_IO
                         logger.Debug("SetIO:DeviceName is not exist.");
                     }
                 }
+
                 foreach (IDIOController eachDIO in DIOList.Values)
                 {
                     eachDIO.UpdateOut();
@@ -246,6 +247,7 @@ namespace TransferControl.Digital_IO
                         try
                         {
                             ctrl.SetOutWithoutUpdate(each.Address, Current);
+
                             if (!DIOList.ContainsKey(each.DeviceName))
                             {
                                 DIOList.Add(each.DeviceName, ctrl);
@@ -305,6 +307,7 @@ namespace TransferControl.Digital_IO
                     {
                         //ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, Value, ctrlCfg.Status);
                         ctrlCfg.Status = Value;
+                        logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                         ctrl.SetOut(ctrlCfg.Address, Value);
                         new Thread(() =>
                         {
@@ -329,7 +332,6 @@ namespace TransferControl.Digital_IO
             }
 
         }
-
         public void SetIO(Dictionary<string, string> Params)
         {
             Dictionary<string, IDIOController> DIOList = new Dictionary<string, IDIOController>();
@@ -348,6 +350,7 @@ namespace TransferControl.Digital_IO
                             ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, Value, ctrlCfg.Status);
                         }
                         ctrlCfg.Status = Value;
+                        logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                         ctrl.SetOutWithoutUpdate(ctrlCfg.Address, Value);
                         new Thread(() =>
                         {
@@ -385,10 +388,12 @@ namespace TransferControl.Digital_IO
                     if (Value.ToUpper().Equals("TRUE"))
                     {
                         ctrlCfg.Status = "BlinkStop";
+                        logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                     }
                     else
                     {
                         ctrlCfg.Status = "Blink";
+                        logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                     }
                 }
                 else
@@ -418,6 +423,7 @@ namespace TransferControl.Digital_IO
                                 ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "Blink", ctrlCfg.Status);
                             //}
                             ctrlCfg.Status = "Blink";
+                            logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                             new Thread(() =>
                             {
                                 Thread.CurrentThread.IsBackground = true;
@@ -433,6 +439,7 @@ namespace TransferControl.Digital_IO
                             ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "False", ctrlCfg.Status);
                         }
                         ctrlCfg.Status = "False";
+                        logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                         new Thread(() =>
                         {
                             Thread.CurrentThread.IsBackground = true;
@@ -471,6 +478,7 @@ namespace TransferControl.Digital_IO
                                 ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "ShortBlink", ctrlCfg.Status);
                             //}
                             ctrlCfg.Status = "ShortBlink";
+                            logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                             new Thread(() =>
                             {
                                 Thread.CurrentThread.IsBackground = true;
@@ -485,6 +493,7 @@ namespace TransferControl.Digital_IO
                             ChangeHisRecord.New(ctrlCfg.DeviceName, ctrlCfg.Type, ctrlCfg.Address, ctrlCfg.Parameter, "False", ctrlCfg.Status);
                         }
                         ctrlCfg.Status = "False";
+                        logger.Debug(string.Format("{0} : status {1}", ctrlCfg.DeviceName, ctrlCfg.Status));
                         new Thread(() =>
                         {
                             Thread.CurrentThread.IsBackground = true;

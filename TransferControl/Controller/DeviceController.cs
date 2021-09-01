@@ -205,33 +205,15 @@ namespace TransferControl.Controller
 
             return mappingData;
         }
-
-        public void DoWork(Transaction orgTxn, bool WaitForData = false)
+        public void OfflineModeExcute(object obj)
         {
-            Transaction Txn = null;
+            Transaction Txn = (Transaction)obj;
 
-            Txn = orgTxn;
+            CommandReturnMessage cm = new CommandReturnMessage();
 
-            if (Txn.CommandEncodeStr.Equals("GetMappingDummy") && !SystemConfig.Get().OfflineMode)
-            {
-                string mappingData = "";
-                mappingData = GetMappingDummyData(orgTxn);
+            NodeManagement.Get(Txn.NodeName).IsExcuting = false;
 
-
-                CommandReturnMessage cm = new CommandReturnMessage();
-                //cm.CommandType = Transaction.Command.LoadPortType.GetMapping;
-                cm.Value = mappingData;
-                //Txn.Method= Transaction.Command.LoadPortType.GetMapping;
-                _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
-
-            }
-
-            //離線情況下所進行流程
-            if(SystemConfig.Get().OfflineMode)
-            {
-                CommandReturnMessage cm = new CommandReturnMessage();
-
-                switch (Txn.Method)
+            switch (Txn.Method)
                 {
                     case Transaction.Command.RobotType.Reset:
                         //case Transaction.Command.LoadPortType.Reset:
@@ -268,14 +250,23 @@ namespace TransferControl.Controller
                         switch (Txn.Arm)
                         {
                             case "1":
-                                NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = 
+                                NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
                                     Txn.Method == Transaction.Command.RobotType.Get ? "1" : "0";
                                 break;
                             case "2":
-                                NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = 
+                                NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
                                     Txn.Method == Transaction.Command.RobotType.Get ? "1" : "0";
                                 break;
                         }
+                        break;
+                    case Transaction.Command.RobotType.DoubleGet:
+                    case Transaction.Command.RobotType.DoublePut:
+
+                        cm.Type = CommandReturnMessage.ReturnType.Finished;
+
+                        NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
+                        NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
+                         Txn.Method == Transaction.Command.RobotType.DoubleGet ? "1" : "0";
                         break;
 
                     case Transaction.Command.RobotType.PutByRArm:
@@ -305,7 +296,7 @@ namespace TransferControl.Controller
                     case Transaction.Command.RobotType.WaferHold:
                     case Transaction.Command.RobotType.WaferRelease:
                         cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        switch(Txn.Arm)
+                        switch (Txn.Arm)
                         {
                             case "1":
                                 NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
@@ -336,7 +327,7 @@ namespace TransferControl.Controller
 
                     case Transaction.Command.RobotType.GetSpeed:
                         cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        cm.Value = NodeManagement.Get(Txn.NodeName).Speed.Equals("100") ? "0": NodeManagement.Get(Txn.NodeName).Speed;
+                        cm.Value = NodeManagement.Get(Txn.NodeName).Speed.Equals("100") ? "0" : NodeManagement.Get(Txn.NodeName).Speed;
                         break;
 
                     case Transaction.Command.SmartTagType.GetLCDData:
@@ -351,6 +342,16 @@ namespace TransferControl.Controller
                     case Transaction.Command.RobotType.Servo:
                         cm.Type = CommandReturnMessage.ReturnType.Excuted;
                         break;
+
+                    case Transaction.Command.E84.SetAutoMode:
+                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                        NodeManagement.Get(Txn.NodeName).E84Mode = E84_Mode.AUTO;
+                        break;
+                    case Transaction.Command.E84.SetManualMode:
+                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                        NodeManagement.Get(Txn.NodeName).E84Mode = E84_Mode.MANUAL;
+                        break;
+
                     case Transaction.Command.RobotType.Continue:
                     case Transaction.Command.RobotType.Pause:
                     case Transaction.Command.RobotType.Stop:
@@ -369,31 +370,75 @@ namespace TransferControl.Controller
                     case Transaction.Command.LoadPortType.Load:
                     case Transaction.Command.LoadPortType.MappingLoad:
                         cm.Type = CommandReturnMessage.ReturnType.Finished;
+                        break;
+
+            }
+
+
+
+            switch (cm.Type)
+            {
+                case CommandReturnMessage.ReturnType.Excuted:
+
+                    _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
+                    if (Txn.CommandType.Equals("CMD") && !NodeManagement.Get(Txn.NodeName).Type.Equals("LOADPORT"))
+                    {
+                        _ReportTarget.On_Node_State_Changed(NodeManagement.Get(Txn.NodeName), "Busy");
+                    }
+
                     break;
 
-                }
+                case CommandReturnMessage.ReturnType.Finished:
 
-                NodeManagement.Get(Txn.NodeName).IsExcuting = false;
+                    switch (NodeManagement.Get(Txn.NodeName).Type)
+                    {
+                        case "LOADPORT":
+                        case "SMIF":
+                            switch (Txn.Method)
+                            {
+                                case Transaction.Command.LoadPortType.Unload:
+                                    _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
+                                    break;
+                            }
+                            break;
+                    }
 
-                switch (cm.Type)
-                {
-                    case CommandReturnMessage.ReturnType.Excuted:
+                    _ReportTarget.On_Command_Finished(NodeManagement.Get(Txn.NodeName), Txn, cm);
+                    if (!NodeManagement.Get(Txn.NodeName).Type.Equals("LOADPORT"))
+                        _ReportTarget.On_Node_State_Changed(NodeManagement.Get(Txn.NodeName), "StandBy");
+                    break;
+            }
 
-                        _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
-                        if (Txn.CommandType.Equals("CMD") && !NodeManagement.Get(Txn.NodeName).Type.Equals("LOADPORT"))
-                        {
-                            _ReportTarget.On_Node_State_Changed(NodeManagement.Get(Txn.NodeName), "Busy");
-                        }
-                        break;
+            
 
-                    case CommandReturnMessage.ReturnType.Finished:
-                        _ReportTarget.On_Command_Finished(NodeManagement.Get(Txn.NodeName), Txn, cm);
-                        if (!NodeManagement.Get(Txn.NodeName).Type.Equals("LOADPORT"))
-                            _ReportTarget.On_Node_State_Changed(NodeManagement.Get(Txn.NodeName), "StandBy");
-                        break;
-                }
+            SpinWait.SpinUntil(() => false, 1);
 
-                SpinWait.SpinUntil(() => false, 1);
+
+        }
+        public void DoWork(Transaction orgTxn, bool WaitForData = false)
+        {
+            Transaction Txn = null;
+
+            Txn = orgTxn;
+
+            if (Txn.CommandEncodeStr.Equals("GetMappingDummy") && !SystemConfig.Get().OfflineMode)
+            {
+                string mappingData = "";
+                mappingData = GetMappingDummyData(orgTxn);
+
+
+                CommandReturnMessage cm = new CommandReturnMessage();
+                //cm.CommandType = Transaction.Command.LoadPortType.GetMapping;
+                cm.Value = mappingData;
+                //Txn.Method= Transaction.Command.LoadPortType.GetMapping;
+                _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
+
+            }
+
+            //離線情況下所進行流程
+            if (SystemConfig.Get().OfflineMode)
+            {
+                ThreadPool.QueueUserWorkItem(OfflineModeExcute, (object)Txn);
                 return;
             }
 
@@ -507,7 +552,8 @@ namespace TransferControl.Controller
                     }
                     if (this.Vendor.Equals("SMARTTAG8200") || 
                         this.Vendor.Equals("SMARTTAG8400") ||
-                        this.Vendor.Equals("FRANCES"))
+                        this.Vendor.Equals("FRANCES") ||
+                        this.Vendor.Equals("RFID_HR4136"))
                     {
                         ThreadPool.QueueUserWorkItem(new WaitCallback(conn.SendHexData), Txn.CommandEncodeStr);
                     }
@@ -737,6 +783,8 @@ namespace TransferControl.Controller
                                     {
                                         switch(ReturnMsg.Command)
                                         {
+                                            //上位在 Manual mode 的情況下, 呼叫天車(E84切為Auto mode)
+                                            //交握完成後，再將E84切為Manual mode
                                             case "VALID_OFF":
                                                 if(NodeManagement.Get(Node.Associated_Node).E84Mode == E84_Mode.MANUAL
                                                     && Node.E84Mode == E84_Mode.AUTO)
@@ -992,11 +1040,7 @@ namespace TransferControl.Controller
         public void On_Connection_Error(string Msg)
         {
             this._IsConnected = false;
-            //foreach (Transaction txn in TransactionList.Values.ToList())
-            //{
-            //    txn.SetTimeOutMonitor(false);
-            //}
-            //TransactionList.Clear();
+
             ChangeNodeConnectionStatus("Connection_Error");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connection_Error");
             
@@ -1075,16 +1119,6 @@ namespace TransferControl.Controller
                         ThreadPool.QueueUserWorkItem(new WaitCallback(conn.SendHexData), Txn.CommandEncodeStr);
                         return;
                     }
-
-
-                    //if (Node != null)
-                    //{
-                    //    _ReportTarget.On_Command_TimeOut(Node, Txn);
-                    //}
-                    //else
-                    //{
-                    //    logger.Debug(DeviceName + "(On_Transaction_TimeOut Get Node fail.");
-                    //}
                 }
                 else
                 {

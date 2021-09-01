@@ -36,49 +36,10 @@ namespace TransferControl.Comm
             {
                 p = Parity.None;
             }
-            //switch (_Config.ParityBit)
-            //{
-            //    case "Even":
-            //        p = Parity.Even;
-            //        break;
-            //    case "Mark":
-            //        p = Parity.Mark;
-            //        break;
-            //    case "None":
-            //        p = Parity.None;
-            //        break;
-            //    case "Odd":
-            //        p = Parity.Odd;
-            //        break;
-            //    case "Space":
-            //        p = Parity.Space;
-            //        break;
-            //}
-            StopBits s = StopBits.One;
-            //switch (_Config.StopBit)
-            //{
-            //    case "None":
-            //        s = StopBits.None;
-            //        break;
-            //    case "One":
-            //        s = StopBits.One;
-            //        break;
-            //    case "OnePointFive":
-            //        s = StopBits.OnePointFive;
-            //        break;
-            //    case "Two":
-            //        s = StopBits.Two;
-            //        break;
-            //}
 
+            StopBits s = StopBits.One;
 
             port = new SerialPort(_Config.GetPortName(), _Config.GetBaudRate(), p, 8, s);
-
-
-
-
-
-
 
             if (_Config.GetVendor().Equals("SMARTTAG8200"))
             {
@@ -89,6 +50,10 @@ namespace TransferControl.Comm
                 port.Handshake = Handshake.None;
             }
             else if (_Config.GetVendor().Equals("OMRON_V640"))
+            {
+                port.Handshake = Handshake.None;
+            }
+            else if(_Config.GetVendor().Equals("RFID_HR4136"))
             {
                 port.Handshake = Handshake.None;
             }
@@ -216,7 +181,7 @@ namespace TransferControl.Comm
                     case "ATEL_NEW":
                     case "SANWA":
                     case "SANWA_MC":
-                    case "OMRON_V640":
+                    //case "OMRON_V640":
                         port.DataReceived += new SerialDataReceivedEventHandler(Sanwa_DataReceived);
                         break;
                     case "ASYST":
@@ -238,6 +203,11 @@ namespace TransferControl.Comm
                         break;
                     case "FRANCES":
                         port.DataReceived += new SerialDataReceivedEventHandler(FRANCES_DataReceived);
+                        break;
+                    case "RFID_HR4136":
+                    case "OMRON_V640":
+                        port.DataReceived += new SerialDataReceivedEventHandler(RFID_DataReceived);
+                        //port.DataReceived += new SerialDataReceivedEventHandler(RFIDHR4136_DataReceived);
                         break;
                 }
             }
@@ -328,7 +298,18 @@ namespace TransferControl.Comm
                 ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
-
+        private void RFID_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            switch (cfg.GetVendor().ToUpper())
+            {
+                case "RFID_HR4136":
+                    RFIDHR4136_DataReceived(sender, e);
+                    break;
+                case "OMRON_V640":
+                    Sanwa_DataReceived(sender, e);
+                    break;
+            }
+        }
         private void SMARTTAG_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             switch (cfg.GetVendor().ToUpper())
@@ -383,7 +364,10 @@ namespace TransferControl.Comm
                     }
                     else if (tmp[0] == (char)6)
                     {
-                        tmp = "";
+                        if (tmp.Length == 2 && tmp[1] == (char)5)
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "04");
+
+                        tmp = tmp8400Data = "";
                     }
                     else if (tmp[0] == (char)5)
                     {
@@ -430,7 +414,79 @@ namespace TransferControl.Comm
                 ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
-        
+        string tmpHR4136Data = "";
+        private void RFIDHR4136_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                if ((sender as SerialPort).BytesToRead > 0)
+                {
+                    byte[] buf = new byte[(sender as SerialPort).BytesToRead];
+                    port.Read(buf, 0, buf.Length);
+                    
+                    logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+
+                    tmp += Encoding.ASCII.GetString(buf);
+
+                    tmpHR4136Data += ByteArrayToString(buf);
+
+                    if (tmp[0] == (char)4)
+                    {
+                        string msg = tmp[0].ToString();
+
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), tmp);
+
+                        tmp = tmpHR4136Data = "";
+                    }
+                    else if (tmp[0] == (char)6)
+                    {
+                        if(tmp.Length == 2 && tmp[1] == (char)5)
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "04");
+
+                        tmp = tmpHR4136Data = "";
+                    }
+                    else if (tmp[0] == (char)5)
+                    {
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "04");
+                        tmp = tmpHR4136Data =  "";
+                    }
+                    else
+                    {
+                        if(tmpHR4136Data != "")
+                        {
+                            byte[] hexbuf = HexStringToByteArray(tmpHR4136Data.ToString());
+
+                            if (hexbuf.Length >= Convert.ToInt32(hexbuf[0]) + 3)
+                            {
+                                string msg = "";
+                                if (hexbuf[19] != 0x4E || hexbuf[20] != 0x4F)
+                                {
+                                    msg = "SSACK_" + char.ConvertFromUtf32(hexbuf[19]) + char.ConvertFromUtf32(hexbuf[20]);
+                                }
+                                else
+                                {
+                                    for (int i = 0; i < Convert.ToInt32(hexbuf[22]); i++)
+                                    {
+                                        msg += char.ConvertFromUtf32(hexbuf[22 + i + 1]);
+                                    }
+                                }
+
+                                ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), msg);
+                                tmp = tmpHR4136Data = "";
+                                ThreadPool.QueueUserWorkItem(new WaitCallback(SendHexData), "06");
+                            }
+                        }
+
+
+                    }
+
+                }
+            }
+            catch (Exception e1)
+            {
+                ConnReport.On_Connection_Error("(RFIDHR4136_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+            }
+        }
         private void TDK_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try

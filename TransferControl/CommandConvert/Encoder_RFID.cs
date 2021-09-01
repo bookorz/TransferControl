@@ -27,6 +27,46 @@ namespace TransferControl.CommandConvert
             }
         }
 
+        public string Hello()
+        {
+            string result = "";
+            switch (Supplier)
+            {
+                case "RFID_HR4136":
+                    result = "05";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return result;
+        }
+        public string Mode(string mode)
+        {
+            string result = "";
+            switch (Supplier)
+            {
+                case "RFID_HR4136":
+
+                    string tmp = "";
+                    if (mode.Equals("MT"))
+                    {
+                        tmp = "00 00 92 0D 80 01 00 00 00 00 01 03 41 02 30 30 41 0B 43 68 61 6E 67 65 53 74 61 74 65 01 01 41 02 4D 54";
+                    }
+                    else
+                    {
+                        tmp = "00 00 92 0D 80 01 00 00 00 00 01 03 41 02 30 30 41 0B 43 68 61 6E 67 65 53 74 61 74 65 01 01 41 02 4F 50";
+                    }
+                    string CheckSum = CalculateWriteChecksum(tmp);
+                    string Length = ((byte)tmp.Split(' ').Length).ToString("X2");
+                    result = Length + " " + tmp + " " + CheckSum;
+
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return result;
+        }
+
         public string ReadCarrierID()
         {
             string result = "";
@@ -34,6 +74,12 @@ namespace TransferControl.CommandConvert
             {
                 case "OMRON_V640":
                     result = ReadCarrierIDByV640();
+                    break;
+                case "RFID_HR4136":
+                    string tmp = "00 00 92 09 80 01 00 00 00 00 41 02 30 30";
+                    string CheckSum = CalculateWriteChecksum(tmp);
+                    string Length = ((byte)tmp.Split(' ').Length).ToString("X2");
+                    result = Length + " " + tmp + " " + CheckSum;
                     break;
                 default:
                     throw new NotSupportedException();
@@ -48,6 +94,13 @@ namespace TransferControl.CommandConvert
             {
                 case "OMRON_V640":
                     result = WriteCarrierIDByV640(id);
+                    break;
+
+                case "RFID_HR4136":
+                    string tmp = "00 00 92 0B 80 01 00 00 00 00 01 02 41 02 30 30 " + parseWriteData(id);
+                    string CheckSum = CalculateWriteChecksum(tmp);
+                    string Length = ((byte)tmp.Split(' ').Length).ToString("X2");
+                    result = Length + " " + tmp + " " + CheckSum;
                     break;
                 default:
                     throw new NotSupportedException();
@@ -137,7 +190,42 @@ namespace TransferControl.CommandConvert
             //**（//**返回的结果为一个两个ASCII码的异或值）
             return Convert.ToString(xorResult, 16).PadLeft(2, '0').ToUpper();
 
-        } 
+        }
 
+        private string CalculateWriteChecksum(string dataToCalculate)
+        {
+            string result = "";
+            int checksum = 0;
+            switch (Supplier)
+            {
+                case "RFID_HR4136":
+                    string[] ary = dataToCalculate.Trim().Split(' ');
+
+                    foreach (string chData in ary)
+                        checksum += Convert.ToInt32(chData, 16);
+
+                    result = checksum.ToString("X4").Substring(0, 2) + " " + checksum.ToString("X4").Substring(2, 2);
+                break;
+            }
+            return result;
+        }
+        private string parseWriteData(string text)
+        {
+            string Result = "";
+            StringBuilder tmpResult = new StringBuilder();
+            switch (Supplier)
+            {
+                case "RFID_HR4136":
+                    byte[] temp = Encoding.ASCII.GetBytes(text);
+                    for (int i = 0; i < temp.Length; i++)
+                    {
+                        tmpResult.Append(temp[i].ToString("X2") + " ");
+                    }
+                    Result = ((byte)temp.Length).ToString("X2") + " " + tmpResult.ToString().Trim();
+                    Result = "41 " + Result;
+                    break;
+            }
+            return Result;
+        }
     }
 }

@@ -13,20 +13,17 @@ namespace TransferControl.Parser
         {
             switch (Command)
             {
-                case Transaction.Command.E84.GetDIStatus:
-                    return ParseDIStatus(Message);
-                case Transaction.Command.E84.GetDOStatus:
-                    return GetDOStatus(Message);
-                case Transaction.Command.E84.GetOperateStatus:
-                    return GetOperateStatus(Message);
+                case Transaction.Command.E84.GetE84IOStatus:
+                    return GetParseE84IOStatus(Message);
                 case Transaction.Command.E84.GetDIOStatus:
                     return GetParseDIOStatus(Message);
+
                 default:
                     throw new Exception(Command + " Not support");
             }
 
         }
-        private Dictionary<string, string> GetParseDIOStatus(string Message)
+        private Dictionary<string, string> GetParseE84IOStatus(string Message)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
             byte E84IN = Convert.ToByte(Message.Substring(0, 2), 16);
@@ -38,206 +35,137 @@ namespace TransferControl.Parser
             sb.Append(Convert.ToString(E84OUT, 2).PadLeft(8, '0'));
             sb.Append(Convert.ToString(MISC, 2).PadLeft(8, '0'));
 
-            for (int i = sb.ToString().Length - 1; i >= 0; i--)
+            for (int i = 0; i < sb.ToString().Length; i++)
             {
                 string BitName = "";
                 switch (i)
                 {
                     case 0:
-                        BitName = "VALID";
-                        break;
-                    case 1:
-                        BitName = "CS_0";
-                        break;
-                    case 2:
-                        BitName = "CS_1";
-                        break;
-                    case 3:
-                        BitName = "AM_AVBL";
-                        break;
-                    case 4:
-                        BitName = "TR_REQ";
-                        break;
-                    case 5:
-                        BitName = "BUSY";
-                        break;
-                    case 6:
-                        BitName = "COMPT";
-                        break;
-                    case 7:
                         BitName = "CONT";
                         break;
+                    case 1:
+                        BitName = "COMPT";
+                        break;
+                    case 2:
+                        BitName = "BUSY";
+                        break;
+                    case 3:
+                        BitName = "TR_REQ";
+                        break;
+                    case 4:
+                        BitName = "AM_AVBL";
+                        break;
+                    case 5:
+                        BitName = "CS_1";
+                        break;
+                    case 6:
+                        BitName = "CS_0";
+                        break;
+                    case 7:
+                        BitName = "VALID";
+                        break;
                     case 8:
-                        BitName = "L_REQ";
+                        BitName = "ES";
                         break;
                     case 9:
-                        BitName = "U_REQ";
+                        BitName = "HO_AVBL";
                         break;
                     case 10:
-                        BitName = "VA";
+                        BitName = "VS_1";
                         break;
                     case 11:
-                        BitName = "READY";
+                        BitName = "VS_0";
                         break;
                     case 12:
-                        BitName = "VS_0";
-                        break;
-                    case 13:
-                        BitName = "VS_1";
-                        break;
-                    case 14:
-                        BitName = "HO_AVBL";
-                        break;
-                    case 15:
-                        BitName = "ES";
-                        break;
-                    case 16:
-                        BitName = "GO";
-                        break;
-                    case 17:
-                        BitName = "SELECT";
-                        break;
-                    case 18:
-                        BitName = "MODE";
-                        break;
-                    case 20:
-                        BitName = "AUTO";
-                        break;
-                    case 21:
-                        BitName = "MANUAL";
-                        break;
-                    case 22:
-                        BitName = "ERROR";
-                        break;
-                }
-                if (!BitName.Equals(""))
-                    result.Add(BitName, sb.ToString()[sb.ToString().Length - 1 - i].ToString());
-            }
-
-            return result;
-        }
-        private Dictionary<string, string> ParseDIStatus(string Message)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-
-            byte NN = Convert.ToByte(Message.Substring(0, 2), 16);
-            byte MM = Convert.ToByte(Message.Substring(2, 2), 16);
-
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Convert.ToString(MM, 2).PadLeft(8, '0'));
-            sb.Append(Convert.ToString(NN, 2).PadLeft(8, '0'));
-
-            for (int i = sb.ToString().Length - 1; i >= 0; i--)
-            {
-                string BitName = "";
-                switch (i)
-                {
-                    case 0:
-                        BitName = "VALID";
-                        break;
-                    case 1:
-                        BitName = "CS_0";
-                        break;
-                    case 2:
-                        BitName = "CS_1";
-                        break;
-                    case 3:
-                        BitName = "AM_AVBL";
-                        break;
-                    case 4:
-                        BitName = "TR_REQ";
-                        break;
-                    case 5:
-                        BitName = "BUSY";
-                        break;
-                    case 6:
-                        BitName = "COMPT";
-                        break;
-                    case 7:
-                        BitName = "CONT";
-                        break;
-                    case 8:
-                        BitName = "GO";
-                        break;
-                }
-                if (!BitName.Equals(""))
-                    result.Add(BitName, sb.ToString()[sb.ToString().Length - 1 - i].ToString());
-            }
-
-            return result;
-        }
-        private Dictionary<string, string> GetDOStatus(string Message)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-
-            byte NN = Convert.ToByte(Message.Substring(2, 2), 16);
-
-            StringBuilder sb = new StringBuilder();
-            //將每個Byte內容轉換為2進位字串後前補0
-            sb.Append(Convert.ToString(NN, 2).PadLeft(8, '0'));
-
-            for (int i = sb.ToString().Length - 1; i >= 0; i--)
-            {
-                string BitName = "";
-                switch (i)
-                {
-                    case 0:
-                        BitName = "L_REQ";
-                        break;
-                    case 1:
-                        BitName = "U_REQ";
-                        break;
-                    case 2:
-                        BitName = "VA";
-                        break;
-                    case 3:
                         BitName = "READY";
                         break;
-                    case 4:
-                        BitName = "VS_0";
+                    case 13:
+                        BitName = "VA";
                         break;
-                    case 5:
-                        BitName = "VS_1";
+                    case 14:
+                        BitName = "U_REQ";
                         break;
-                    case 6:
-                        BitName = "HO_AVBL";
+                    case 15:
+                        BitName = "L_REQ";
                         break;
-                    case 7:
-                        BitName = "ES";
+                    //case 16:
+                    //    BitName = "N/A";
+                    //    break;
+                    case 17:
+                        BitName = "ERROR";
+                        break;
+                    case 18:
+                        BitName = "MANUAL";
+                        break;
+                    case 19:
+                        BitName = "AUTO";
+                        break;
+                    //case 21:
+                    //    BitName = "N/A";
+                    //    break;
+                    case 21:
+                        BitName = "MODE";
+                        break;
+                    case 22:
+                        BitName = "SELECT";
+                        break;
+                    case 23:
+                        BitName = "GO";
                         break;
                 }
                 if (!BitName.Equals(""))
-                    result.Add(BitName, sb.ToString()[sb.ToString().Length - 1 - i].ToString());
+                    result.Add(BitName, sb.ToString()[i].ToString());
             }
 
             return result;
         }
-        private Dictionary<string, string> GetOperateStatus(string Message)
+
+        private Dictionary<string, string> GetParseDIOStatus(string Message)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
+            byte DIN = Convert.ToByte(Message.Substring(0, 2), 16);
 
-            byte MM = Convert.ToByte(Message.Substring(0, 2), 16);
 
             StringBuilder sb = new StringBuilder();
-            sb.Append(Convert.ToString(MM, 2).PadLeft(8, '0'));
+            sb.Append(Convert.ToString(DIN, 2).PadLeft(8, '0'));
 
-            for (int i = sb.ToString().Length - 1; i >= 0; i--)
+            for (int i = 0; i < sb.ToString().Length; i++)
             {
                 string BitName = "";
                 switch (i)
                 {
+                    //case 0:
+                    //    BitName = "RESERVED";
+                    //    break;
                     case 1:
-                        BitName = "Manual";
+                        BitName = "CLAMP";
                         break;
                     case 2:
-                        BitName = "Auto";
+                        BitName = "EMO";
                         break;
+                    case 3:
+                        BitName = "ALARM";
+                        break;
+                    case 4:
+                        BitName = "LC";
+                        break;
+                    //case 5:
+                    //    BitName = "AUTOMODE";
+                    //    break;
+                    //case 6:
+                    //    BitName = "MANUALMODE";
+                    //    break;
+                    //case 7:
+                    //    BitName = "RESET";
+                    //    break;
+
                 }
                 if (!BitName.Equals(""))
-                    result.Add(BitName, sb.ToString()[sb.ToString().Length - 1 - i].ToString());
+                    result.Add(BitName, sb.ToString()[i].ToString());
             }
 
             return result;
         }
+
     }
 }

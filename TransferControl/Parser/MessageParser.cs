@@ -47,6 +47,7 @@ namespace TransferControl.Parser
                 case "SMARTTAG8200":
                 case "SMARTTAG8400":
                 case "OMRON_V640":
+                case "RFID_HR4136":
                     break;
                 default:
                     throw new Exception(Supplier + " 不存在");
