@@ -437,10 +437,9 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
-                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
-
                     AckTask(TaskJob);
 
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
                     break;
                 case 1:
@@ -471,9 +470,10 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
+                    AckTask(TaskJob);
+
                     if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
-                    AckTask(TaskJob);
 
                     if (TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_WAFER_HOLD)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm }));
@@ -503,6 +503,7 @@ namespace TransferControl.TaksFlow
                 case 0:
 
                     AckTask(TaskJob);
+
                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = Value }));
 
                     break;
@@ -523,9 +524,10 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
+                    AckTask(TaskJob);
+
                     if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
-                    AckTask(TaskJob);
 
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.ArmReturn }));
@@ -590,9 +592,10 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
+                    AckTask(TaskJob);
+
                     if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
-                    AckTask(TaskJob);
                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Home }));
 
                     break;
@@ -610,9 +613,9 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
-                    if (!IsNodeInitialComplete(Target, TaskJob)) return false;
-
                     AckTask(TaskJob);
+
+                    if (!IsNodeInitialComplete(Target, TaskJob)) return false;
 
                     break;
                 case 1:
@@ -1028,7 +1031,7 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
-                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
                     AckTask(TaskJob);
 
@@ -1053,7 +1056,7 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
-                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
                     AckTask(TaskJob);
 
@@ -1103,7 +1106,7 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
-                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
                     AckTask(TaskJob);
 
@@ -1225,7 +1228,7 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
-                    if (CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
                     AckTask(TaskJob);
 
@@ -1473,7 +1476,8 @@ namespace TransferControl.TaksFlow
                     foreach (Job eachJob in JobManagement.GetByNode(Target.Name))
                         JobManagement.Remove(eachJob);
 
-                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.RetryMapping }));
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.RetryMapping }));
 
                     break;
                 case 1:
@@ -1498,7 +1502,7 @@ namespace TransferControl.TaksFlow
                     return false;
             }
 
-            return false;
+            return true;
         }
         public virtual bool TDK_LoadportSetOPAccessIndicator(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {

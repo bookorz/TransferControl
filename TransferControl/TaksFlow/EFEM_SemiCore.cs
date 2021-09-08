@@ -259,6 +259,9 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+
+                                AckTask(TaskJob);
+
                                 string Name = "ROBOT01";
                                 if (IsNodeEnabledOrNull(Name))
                                     if (!IsNodeInitialComplete(NodeManagement.Get(Name), TaskJob)) return;
@@ -271,7 +274,7 @@ namespace TransferControl.TaksFlow
                                 }
 
  
-                                AckTask(TaskJob);
+                                
                                 Name = "ROBOT01";
                                 if (IsNodeEnabledOrNull(Name))
                                 {
@@ -344,6 +347,11 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+
+                                if (TaskJob.Params.ContainsKey("@IsTransCommand"))
+                                    if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
+                                        AckTask(TaskJob);
+
                                 //目標位置是否初始化歸原點完成
                                 if (!CheckNodeStatusOnTaskJob(Position, TaskJob)) return;
 
@@ -354,15 +362,17 @@ namespace TransferControl.TaksFlow
                                 //是否需要重新Mapping
                                 if (Position.Type.ToUpper().Equals("LOADPORT") && !Position.IsMapping)
                                 {
-                                    AckTask(TaskJob);
-                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_RE_MAPPING, new Dictionary<string, string>() { { "@Target", Position.Name } }, "", TaskJob.MainTaskId).Promise())
-                                    {
-                                        //中止Task
-                                        TaskJob.State = TaskFlowManagement.CurrentProcessTask.TaskState.Abort;
-                                        AbortTask(TaskJob, null, "S0300001");//LOAD_PORT_NOT_READY
+                                    ////AckTask(TaskJob);
+                                    //if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_RE_MAPPING, new Dictionary<string, string>() { { "@Target", Position.Name } }, "", TaskJob.MainTaskId).Promise())
+                                    //{
+                                    //    //中止Task
+                                    //    TaskJob.State = TaskFlowManagement.CurrentProcessTask.TaskState.Abort;
+                                    //    AbortTask(TaskJob, null, "S0300001");//LOAD_PORT_NOT_READY
 
-                                        break;
-                                    }
+                                    //    break;
+                                    //}
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
+
                                 }
                                 break;
                             case 1:
@@ -386,9 +396,7 @@ namespace TransferControl.TaksFlow
 
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
-                                    if (TaskJob.Params.ContainsKey("@IsTransCommand"))
-                                        if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
-                                        AckTask(TaskJob);
+
                                 }
                                 else
                                 {
@@ -403,11 +411,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
 
-                                    if (Wafer == null)
-                                    {
-                                        AckTask(TaskJob);
-                                    }
-                                    else
+                                    if (Wafer != null)
                                     {
                                         AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300171");
                                         return;
@@ -464,6 +468,11 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+
+                                if (TaskJob.Params.ContainsKey("@IsTransCommand"))
+                                    if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
+                                        AckTask(TaskJob);
+
                                 //目標位置是否初始化歸原點完成
                                 if (!CheckNodeStatusOnTaskJob(Position, TaskJob)) return;
 
@@ -472,14 +481,15 @@ namespace TransferControl.TaksFlow
 
                                 if (Position.Type.Equals("LOADPORT") && !Position.IsMapping)
                                 {
-                                    AckTask(TaskJob);
-                                    if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_RE_MAPPING, new Dictionary<string, string>() { { "@Target", Position.Name } }, "", TaskJob.MainTaskId).Promise())
-                                    {
-                                        //中止Task
-                                        AbortTask(TaskJob, null, "TASK_ABORT");
+                                    //if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_RE_MAPPING, new Dictionary<string, string>() { { "@Target", Position.Name } }, "", TaskJob.MainTaskId).Promise())
+                                    //{
+                                    //    //中止Task
+                                    //    AbortTask(TaskJob, null, "TASK_ABORT");
 
-                                        break;
-                                    }
+                                    //    break;
+                                    //}
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
+
                                 }
                                 break;
                             case 1:
@@ -503,9 +513,7 @@ namespace TransferControl.TaksFlow
 
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
 
-                                    if(TaskJob.Params.ContainsKey("@IsTransCommand"))
-                                        if (!TaskJob.Params["@IsTransCommand"].Equals("TRUE"))
-                                            AckTask(TaskJob);
+
                                 }
                                 else
                                 {
@@ -528,7 +536,6 @@ namespace TransferControl.TaksFlow
 
                                         if (Arm.Equals("2")) break;
                                     }
-                                    AckTask(TaskJob);
                                 }
                                 break;
                             case 2:
@@ -586,6 +593,9 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+
+                                AckTask(TaskJob);
+
                                 if (FromPosition != null)
                                 {
                                     if (!FromPosition.Type.ToUpper().Equals("LOADLOCK"))
@@ -694,7 +704,7 @@ namespace TransferControl.TaksFlow
                                 if (ToPosition.Type.ToUpper().Equals("LoadLock"))
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + ToPosition.Name, "FALSE");
 
-                                AckTask(TaskJob);
+
 
                                 break;
                             case 1:
@@ -727,26 +737,26 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return;
-
                                 AckTask(TaskJob);
 
+                                if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return;
 
                                 break;
                             case 1:
 
-                                if(TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_PUTWAIT)
-                                {
-                                    //需在Config檔中，新增Point2
-                                    string MethodName = Arm.Equals("1") ? Transaction.Command.RobotType.PutWaitByRArm : Transaction.Command.RobotType.PutWaitByLArm;
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = MethodName, Position = Position.Name, Arm = Arm, Slot = Slot }));
-                                }
-                                else
-                                {
-                                    //需在Config檔中，新增Point2
-                                    string MethodName = Arm.Equals("1") ? Transaction.Command.RobotType.GetWaitByRArm : Transaction.Command.RobotType.GetWaitByLArm;
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = MethodName, Position = Position.Name, Arm = Arm, Slot = Slot }));
-                                }
+                                if(!SystemConfig.Get().OfflineMode)
+                                    if (TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_PUTWAIT)
+                                    {
+                                        //需在Config檔中，新增Point2
+                                        string MethodName = Arm.Equals("1") ? Transaction.Command.RobotType.PutWaitByRArm : Transaction.Command.RobotType.PutWaitByLArm;
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = MethodName, Position = Position.Name, Arm = Arm, Slot = Slot }));
+                                    }
+                                    else
+                                    {
+                                        //需在Config檔中，新增Point2
+                                        string MethodName = Arm.Equals("1") ? Transaction.Command.RobotType.GetWaitByRArm : Transaction.Command.RobotType.GetWaitByLArm;
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = MethodName, Position = Position.Name, Arm = Arm, Slot = Slot }));
+                                    }
 
                                 break;
 
@@ -989,14 +999,15 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
-                                if(!SystemConfig.Get().OfflineMode)
+                                if (!SystemConfig.Get().OfflineMode)
                                 {
                                     if (Target.E84IOStatus["VALID"])
                                     {
-                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, string.Format("S04000{0}", Target.Name.Substring(3, 2)));
+                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, string.Format("S04000{0}", Target.Name.Substring(3, 2)));
                                         return;
                                     }
                                 }
+
                                 break;
                             case 1:
 
@@ -1144,6 +1155,8 @@ namespace TransferControl.TaksFlow
                                     ///通訊傳送失敗
                                     logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" +
                                         TaskJob.CurrentIndex.ToString() + "SendCommand Return false(2)");
+
+                                    CtrlNode.IsExcuting = false;
                                 }
                             }
                         }

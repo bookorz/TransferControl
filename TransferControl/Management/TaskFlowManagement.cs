@@ -198,6 +198,24 @@ namespace TransferControl.Management
             return result;
         }
 
+        public static bool IsResetNow()
+        {
+            bool bRet = false;
+            lock (CurrentProcessTasks)
+            {
+                var findExcuted = from each in CurrentProcessTasks.Values.ToList()
+                                  where each.TaskName.Equals(TaskFlowManagement.Command.RESET_ALL)
+                                  select each;
+
+                if(findExcuted.Count() > 0)
+                {
+                    bRet = true;
+                }
+            }
+
+            return bRet;
+        }
+
         public void On_Command_Excuted(Node Node, Transaction Txn, CommandReturnMessage Msg)
         {
             Next(Node, Txn, "Excuted");

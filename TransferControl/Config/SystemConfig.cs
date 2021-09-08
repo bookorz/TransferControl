@@ -33,6 +33,8 @@ namespace TransferControl.Config
 
         public bool OfflineMode { get; set; } = false;
 
+        public bool E84StartAutoMode { get; set; } = false;
+
         public string User { get; set; } = "Sanwa";
 
 

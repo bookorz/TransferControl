@@ -576,10 +576,12 @@ namespace TransferControl.Controller
             }
             else
             {
-                Transaction workingTxn;
-                TransactionList.TryRemove(key, out workingTxn);
-                logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
-                _ReportTarget.On_Message_Log("CMD", DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
+                //Transaction workingTxn;
+                //TransactionList.TryRemove(key, out workingTxn);
+                //logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
+                //_ReportTarget.On_Message_Log("CMD", DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
+                logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command is already excuting.");
+                _ReportTarget.On_Message_Log("CMD", DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command is already excuting.");
                 Txn.SetTimeOutMonitor(false);
                 CommandReturnMessage rm = new CommandReturnMessage();
                 rm.Value = "AlreadyExcuting";
@@ -1015,7 +1017,6 @@ namespace TransferControl.Controller
             ChangeNodeConnectionStatus("Connected");
             _ReportTarget.On_Controller_State_Changed(DeviceName, "Connected");
             _ReportTarget.On_Message_Log("CMD", DeviceName + " " + "Connected");
-
         }
 
         public void On_Connection_Connecting(string Msg)

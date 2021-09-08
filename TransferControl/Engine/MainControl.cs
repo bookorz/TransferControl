@@ -405,6 +405,11 @@ namespace TransferControl.Engine
                                 break;
                             case Transaction.Command.LoadPortType.GetMapping:
                             case Transaction.Command.LoadPortType.GetMappingDummy:
+
+                                //新增之前移除所有的帳籍
+                                foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
+                                    JobManagement.Remove(eachJob);
+
                                 //產生Mapping資料
                                 Node.LoadTime = DateTime.Now;
                                 string Mapping = Msg.Value;
@@ -1291,6 +1296,11 @@ namespace TransferControl.Engine
                                 break;
                             case Transaction.Command.LoadPortType.GetMapping:
                             case Transaction.Command.LoadPortType.GetMappingDummy:
+
+                                //新增之前移除所有的帳籍
+                                foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
+                                    JobManagement.Remove(eachJob);
+
                                 //產生Mapping資料.
                                 Node.IsMapping = true;
                                 Node.LoadTime = DateTime.Now;
