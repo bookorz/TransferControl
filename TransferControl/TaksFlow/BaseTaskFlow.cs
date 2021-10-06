@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using TransferControl.Config;
@@ -230,7 +231,7 @@ namespace TransferControl.TaksFlow
             _TaskReport.On_TaskJob_Finished(TaskJob);
         }
 
-        public virtual bool GetCSTID(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        public virtual bool GetCSTID(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target , string Value = "")
         {
             if (Target.Type.ToUpper().Equals("SMARTTAG"))
             {
@@ -265,7 +266,15 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case 1:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID }));
+                        if(Value == "")
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID }));
+                        }
+                        else
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID , Value = Value }));
+                        }
+
                         break;
 
                     default:
@@ -363,6 +372,9 @@ namespace TransferControl.TaksFlow
                     AckTask(TaskJob);
                     if (Target.IsPause)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Stop, Value = "1" }));
+
+
+                    Target.IsPause = false;
                     break;
 
                 default:
@@ -378,8 +390,9 @@ namespace TransferControl.TaksFlow
             {
                 case 0:
                     AckTask(TaskJob);
-                    if (Target.IsPause)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Continue }));
+                    Target.IsPause = false; 
+                    //if (Target.IsPause)
+                    //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Continue }));
                     break;
 
                 default:
@@ -395,8 +408,9 @@ namespace TransferControl.TaksFlow
             {
                 case 0:
                     AckTask(TaskJob);
-                    if (!Target.IsPause)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Pause }));
+                    Target.IsPause = true;
+                    //if (!Target.IsPause)
+                    //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Pause }));
                     break;
 
                 default:
@@ -412,17 +426,42 @@ namespace TransferControl.TaksFlow
             {
                 case 0:
                     AckTask(TaskJob);
-                    switch (Value)
-                    {
-                        case "1":
-                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
-                            break;
+                    //switch (Value)
+                    //{
+                    //    case "1":
+                    //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                    //        break;
 
-                        case "2":
-                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
-                            break;
-                    }
+                    //    case "2":
+                    //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                    //        break;
 
+                    //}
+
+                    break;
+
+                case 1:
+                    //取得R軸電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                    break;
+
+                case 2:
+                    //取得L軸電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                    break;
+
+                case 3:
+                    //確認R軸 Presence                   
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
+                    break;
+
+                case 4:
+                    //確認L軸 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
                     break;
 
                 default:
@@ -475,18 +514,31 @@ namespace TransferControl.TaksFlow
                     if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
 
 
+                    //if (TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_WAFER_HOLD)
+                    //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm }));
+                    //else
+                    //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferRelease, Arm = Arm }));
+                    //break;
+
                     if (TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_WAFER_HOLD)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm }));
+                    {
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = Arm.Equals("1") ? "01" : "02", Value = "1" }));
+                    }
                     else
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferRelease, Arm = Arm }));
+                    {
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = Arm.Equals("1") ? "01" : "02", Value = "0" }));
+                    }
                     break;
-
+                    
                 case 1:
-                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = Arm.Equals("1") ? "008" : "009" }));
+                    SpinWait.SpinUntil(() => false, 500);
+                    break;
+                case 2:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = Arm.Equals("1") ? "008" : "009" }));
                     break;
 
-                case 2:
-                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = Arm.Equals("1") ? "01" : "02" }));
+                case 3:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = Arm.Equals("1") ? "01" : "02" }));
                     break;
 
                 default:
@@ -736,32 +788,36 @@ namespace TransferControl.TaksFlow
                     break;
 
                 case 2:
-                    //確認R軸 Presence
+                    SpinWait.SpinUntil(() => false, 100);
+                    break;
+
+                case 3:
+                    //確認R軸 Presence                   
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
                     break;
 
-                case 3:
+                case 4:
                     //確認L軸 Presence
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
                     break;
 
-                case 4:
+                case 5:
                     //R軸 Presence 不存在,則關閉R軸電磁閥
                     if (!SystemConfig.Get().OfflineMode && !Target.R_Presence)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "01", Value = "0" }));
 
                     break;
 
-                case 5:
+                case 6:
                     //L軸 Presence 不存在,則關閉L軸電磁閥
                     if (!SystemConfig.Get().OfflineMode && !Target.L_Presence)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "02", Value = "0" }));
 
                     break;
 
-                case 6:
+                case 7:
                     //設定模式(Normal or dry)
                     if (!SystemConfig.Get().OfflineMode)
                     {
@@ -775,51 +831,63 @@ namespace TransferControl.TaksFlow
                         }
                     }
                     break;
-                case 7:
+                case 8:
                     //取得R軸電磁閥最後狀態
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
                     break;
 
-                case 8:
+                case 9:
                     //取得L軸電磁閥最後狀態
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
                     break;
 
-                case 9:
+
+
+                case 12:
                     //取得速度
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
 
                     break;
 
-                case 10:
+                case 13:
                     //取得模式
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
 
                     break;
 
-                case 11:
+                case 14:
                     //取得異常
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
 
                     break;
 
-                case 12:
+                case 15:
                     //Servo on
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
 
                     break;
 
-                case 13:
+                case 16:
                     //更新Bobot狀態
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
 
+                    break;                case 10:
+                    //確認R軸 Presence                   
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
+                    break;
+
+                case 11:
+                    //確認L軸 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
                     break;
 
                 default:
@@ -1586,17 +1654,20 @@ namespace TransferControl.TaksFlow
                 case 0:
                     AckTask(TaskJob);
 
-                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetLED }));
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetLED }));
 
                     //同步化 E84 Status
-                    if (E84Node != null)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(E84Node.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
+                    if (!SystemConfig.Get().OfflineMode)
+                        if (E84Node != null)
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(E84Node.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
                     break;
 
                 case 1:
                     //同步化 E84 Status
-                    if (E84Node != null)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(E84Node.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
+                    if (!SystemConfig.Get().OfflineMode)
+                        if (E84Node != null)
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(E84Node.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
                     break;
 
                 default:

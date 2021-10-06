@@ -701,7 +701,7 @@ namespace TransferControl.TaksFlow
                                 if (FromPosition.Type.ToUpper().Equals("LOADLOCK"))
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + FromPosition.Name, "FALSE");
 
-                                if (ToPosition.Type.ToUpper().Equals("LoadLock"))
+                                if (ToPosition.Type.ToUpper().Equals("LOADLOCK"))
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + ToPosition.Name, "FALSE");
 
 
@@ -709,7 +709,7 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
 
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Arm", TaskJob.Params["@FromArm"] },{ "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -718,7 +718,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Arm", TaskJob.Params["@ToArm"] }, { "@Slot", TaskJob.Params["@ToSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -959,10 +959,11 @@ namespace TransferControl.TaksFlow
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
                                 break;
 
-                            default:
+                            case 1:
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
-
+                                break;        
+                            default:
                                 FinishTask(TaskJob);
                                 return;
                         }

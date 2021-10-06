@@ -28,10 +28,10 @@ namespace TransferControl.Parser
             foreach (string each in MsgAry)
             {
                 string[] Kv = each.Split('=');
-                if (Kv[0].Equals("SLOTPOS"))
-                {
-                    Kv[1] = Convert.ToInt32(Kv[1]).ToString("00");
-                }
+                //if (Kv[0].Equals("SLOTPOS"))
+                //{
+                //    Kv[1] = Convert.ToInt32(Kv[1]).ToString("00");
+                //}
                 result.Add(Kv[0], Kv[1]);
                 //switch (Kv[0])
                 //{

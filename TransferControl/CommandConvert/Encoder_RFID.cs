@@ -8,7 +8,7 @@ namespace TransferControl.CommandConvert
 {
     public class Encoder_RFID
     {
-        private string Supplier;
+        public string Supplier;
         /// <summary>
         /// Aligner Encoder
         /// </summary>
@@ -77,6 +77,23 @@ namespace TransferControl.CommandConvert
                     break;
                 case "RFID_HR4136":
                     string tmp = "00 00 92 09 80 01 00 00 00 00 41 02 30 30";
+                    string CheckSum = CalculateWriteChecksum(tmp);
+                    string Length = ((byte)tmp.Split(' ').Length).ToString("X2");
+                    result = Length + " " + tmp + " " + CheckSum;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return result;
+        }
+
+        public string ReadCarrierID(string id)
+        {
+            string result = "";
+            switch (Supplier)
+            {
+                case "RFID_HR4136":
+                    string tmp = "00 00 92 09 80 01 00 00 00 00 "+ parseWriteData(id);
                     string CheckSum = CalculateWriteChecksum(tmp);
                     string Length = ((byte)tmp.Split(' ').Length).ToString("X2");
                     result = Length + " " + tmp + " " + CheckSum;

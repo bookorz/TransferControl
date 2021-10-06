@@ -460,17 +460,16 @@ namespace TransferControl.Controller
                 Txn.Type = "";
             }
             string key = "";
-            if (Vendor.ToUpper().Equals("KAWASAKI"))
-            {
 
-                key = Txn.Seq;
-            }
+
+
+            
+
             if (DeviceType.ToUpper().Equals("SMARTTAG") || 
                 DeviceType.ToUpper().Equals("RFID") || 
                 DeviceType.Equals("E84"))
             {
-
-                key = "00";
+                key = "00"; 
             }
             else if (Vendor.ToUpper().Equals("HST") || Vendor.ToUpper().Equals("COGNEX"))
             {
@@ -499,26 +498,55 @@ namespace TransferControl.Controller
             }
             else
             {
-                if (Vendor.ToUpper().Equals("SANWA_MC"))
+                switch (Vendor.ToUpper())
                 {
-                    if (orgTxn.CommandEncodeStr.Contains("MCR:"))
-                    {
-                        Txn.CommandType = "CMD";
-                    }
+                    case "SANWA_MC":
+                        if (orgTxn.CommandEncodeStr.Contains("MCR:"))
+                        {
+                            Txn.CommandType = "CMD";
+                        }
 
-                    if (Txn.Method == Transaction.Command.LoadPortType.Reset)
-                    {
-                        key = "0";
-                    }
-                    else
-                    {
-                        key = Txn.AdrNo;
-                    }
+                        if (Txn.Method == Transaction.Command.LoadPortType.Reset)
+                        {
+                            key = "0";
+                        }
+                        else
+                        {
+                            key = Txn.AdrNo;
+                        }
+                        break;
+                    case "KAWASAKI":
+                        key = Txn.Seq;
+                        break;
+
+                    case "ASYST":
+                        key = "00";
+                        break;
+                    default:
+                        key = Txn.AdrNo + Txn.Type;
+                        break;
                 }
-                else
-                {
-                    key = Txn.AdrNo + Txn.Type;
-                }
+
+                //if (Vendor.ToUpper().Equals("SANWA_MC"))
+                //{
+                //    if (orgTxn.CommandEncodeStr.Contains("MCR:"))
+                //    {
+                //        Txn.CommandType = "CMD";
+                //    }
+
+                //    if (Txn.Method == Transaction.Command.LoadPortType.Reset)
+                //    {
+                //        key = "0";
+                //    }
+                //    else
+                //    {
+                //        key = Txn.AdrNo;
+                //    }
+                //}
+                //else
+                //{
+                //    key = Txn.AdrNo + Txn.Type;
+                //}
             }
 
             logger.Debug(DeviceName + " AddKey : " + key);
@@ -742,14 +770,6 @@ namespace TransferControl.Controller
                                 }
                                 else
                                 {
-                                    //if (ReturnMsg.NodeAdr.Equals("") || ReturnMsg.Command.Equals("RESET") || ReturnMsg.Command.Equals("SP___") || ReturnMsg.Command.Equals("PAUSE") || ReturnMsg.Command.Equals("CONT_") || ReturnMsg.Command.Equals("STOP_") || ReturnMsg.Command.Equals("TGEVT"))
-                                    //{
-                                    //    Node = NodeManagement.GetFirstByController(DeviceName);
-                                    //}
-                                    //else
-                                    //{
-                                    //    Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr);
-                                    //}
                                     Node = NodeManagement.GetByController(DeviceName, ReturnMsg.NodeAdr.Equals("") ? "0" : ReturnMsg.NodeAdr);
                                     if (Node == null)
                                     {
@@ -822,7 +842,6 @@ namespace TransferControl.Controller
                                                 {
                                                     Node.IsExcuting = false;
                                                 }
-
                                             }
                                             else
                                             {

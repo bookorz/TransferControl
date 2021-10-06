@@ -198,10 +198,7 @@ namespace TransferControl.Management
 
         }
         public static void Save()
-        {
-            
-
-
+        {           
             List<Node> result = NodeList.Values.ToList();
 
             result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });

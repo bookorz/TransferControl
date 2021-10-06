@@ -144,6 +144,61 @@ namespace TransferControl.Engine
                                 break;
                         }
                         break;
+                    case "ASYST":
+                        switch (each.Key)
+                        {
+                            case "MODE":
+                                if (each.Value.ToUpper().Equals("AUTO"))
+                                {
+                                    Node.ManualMode = 0;
+                                }
+                                else
+                                {
+                                    Node.ManualMode = 1;
+                                }
+                                break;
+                            case "READY":
+                                if (each.Value.ToUpper().Equals("TRUE"))
+                                {
+                                    Node.Ready = 1;
+                                }
+                                else
+                                {
+                                    Node.Ready = 0;
+                                }
+                                break;
+                            case "SLOTPOS":
+                                if (Int32.TryParse(each.Value, out int value))
+                                {
+                                    Node.SlotNumber = value;
+                                }
+                                break;
+                            case "PIP":
+                                if (each.Value.ToUpper().Equals("TRUE"))
+                                {
+                                    Node.Foup_Placement = true;
+                                    Node.Foup_Presence = true;
+                                }
+                                else
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = false;
+                                }
+                                break;
+                            case "PRTST":
+                                if (each.Value.ToUpper().Equals("LOCK"))
+                                {
+                                    Node.Foup_Lock = true;
+                                }
+                                else
+                                {
+                                    Node.Foup_Lock = false;
+                                }
+                                break;
+
+
+                        }
+                        break;
                     default://SANWA_MC
                         switch (each.Key)
                         {

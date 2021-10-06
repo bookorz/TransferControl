@@ -1140,7 +1140,15 @@ namespace TransferControl.Management
                                 break;
 
                             case Transaction.Command.RFIDType.GetCarrierID:
-                                txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.ReadCarrierID();
+                                if(txn.Value.Equals(""))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.ReadCarrierID();
+                                }
+                                else
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.ReadCarrierID(txn.Value);
+                                }
+
 
                                 break;
                             case Transaction.Command.RFIDType.SetCarrierID:
@@ -1218,6 +1226,10 @@ namespace TransferControl.Management
                                 else if (txn.Value.Equals("0"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Online);
+                                }
+                                else if(txn.Value.Equals("2"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Auto);
                                 }
                                 txn.CommandType = "SET";
                                 break;
@@ -1317,6 +1329,9 @@ namespace TransferControl.Management
                             case Transaction.Command.LoadPortType.Reset:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Reset(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
+
+                                if(Vendor.ToUpper().Equals("ASYST"))
+                                    txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.LoadPortType.Unload:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Unload(EncoderLoadPort.CommandType.Normal);
@@ -1541,6 +1556,8 @@ namespace TransferControl.Management
                                 txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.RobotType.Get:
+                            case Transaction.Command.RobotType.GetByRArm:
+                            case Transaction.Command.RobotType.GetByLArm:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWafer(AdrNo, txn.Seq, txn.Arm, txn.Point, "0", txn.Slot);
                                 if (txn.Arm.Equals("3"))
                                 {
@@ -1550,6 +1567,8 @@ namespace TransferControl.Management
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.Put:
+                            case Transaction.Command.RobotType.PutByRArm:
+                            case Transaction.Command.RobotType.PutByLArm:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWafer(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 if (txn.Arm.Equals("3"))
                                 {
@@ -1599,10 +1618,14 @@ namespace TransferControl.Management
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.GetWait:
+                            case Transaction.Command.RobotType.GetWaitByRArm:
+                            case Transaction.Command.RobotType.GetWaitByLArm:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.GetWaferToReady(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.PutWait:
+                            case Transaction.Command.RobotType.PutWaitByRArm:
+                            case Transaction.Command.RobotType.PutWaitByLArm:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.PutWaferToReady(AdrNo, txn.Seq, txn.Arm, txn.Point, txn.Slot);
                                 txn.CommandType = "CMD";
                                 break;

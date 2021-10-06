@@ -1447,6 +1447,7 @@ namespace TransferControl.CommandConvert
                                                 case "FAILED_SELF-TEST":
                                                     each.Type = CommandReturnMessage.ReturnType.Error;
                                                     each.Command = content[i];
+                                                    each.Value = content[i];
                                                     break;
 
                                                 case "BUSY":
@@ -1454,7 +1455,8 @@ namespace TransferControl.CommandConvert
                                                 case "INVALID_ARG":
                                                 case "NO_POD":
                                                 case "NOT_READY":
-                                                    each.Type = CommandReturnMessage.ReturnType.Abnormal;
+                                                    each.Type = CommandReturnMessage.ReturnType.Error;
+                                                    each.Value = content[i];
                                                     break;
 
                                                 case "OK":

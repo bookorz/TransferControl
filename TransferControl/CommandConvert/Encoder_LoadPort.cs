@@ -201,7 +201,7 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "ASYST":
-                    commandStr = "HCS SLOT";
+                    commandStr = "HCS SLOT " + Slot;
                     break;
                 case "SANWA_MC":
                     commandStr = "$1MCR:SLOT_:1," + Slot+","+ Adw;

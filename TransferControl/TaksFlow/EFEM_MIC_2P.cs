@@ -16,7 +16,7 @@ namespace TransferControl.TaksFlow
     {
         ILog logger = LogManager.GetLogger(typeof(EFEM_MIC_2P));
         //IUserInterfaceReport _TaskReport;
-        private int ArmCount;
+        private readonly int ArmCount;
         public EFEM_MIC_2P(IUserInterfaceReport TaskReport) : base(TaskReport)
         {
             _TaskReport = TaskReport;
@@ -207,13 +207,14 @@ namespace TransferControl.TaksFlow
 
                                 AckTask(TaskJob);
 
-                                string Name = "";
+                                string Name = "ROBOT01";
 
-                                if (IsNodeEnabledOrNull("ROBOT01"))
-                                    if (!IsNodeInitialComplete(NodeManagement.Get("ROBOT01"), TaskJob)) return;
+                                if (IsNodeEnabledOrNull(Name))
+                                    if (!IsNodeInitialComplete(NodeManagement.Get(Name), TaskJob)) return;
 
-                                if(IsNodeEnabledOrNull("ALIGNER01"))
-                                    if (!IsNodeInitialComplete(NodeManagement.Get("ALIGNER01"), TaskJob)) return;
+                                Name = "ALIGNER01";
+                                if (IsNodeEnabledOrNull(Name))
+                                    if (!IsNodeInitialComplete(NodeManagement.Get(Name), TaskJob)) return;
 
 
                                 for (int i = 0; i < LoadportCount; i++)
@@ -638,8 +639,8 @@ namespace TransferControl.TaksFlow
                                             Wafer = JobManagement.Add();
                                             Wafer.MapFlag = true;
                                         }
-                                        Wafer.LastNode = Wafer.Position != null ? Wafer.Position : Position.Name;
-                                        Wafer.LastSlot = Wafer.Slot != null ? Wafer.Slot : "1";
+                                        Wafer.LastNode = Wafer.Position ?? Position.Name;
+                                        Wafer.LastSlot = Wafer.Slot ?? "1";
                                         Wafer.Position = Arm.Equals("1") ? Target.Name + "_R" : Target.Name + "_L";
                                         Wafer.Slot = "1";
 
@@ -833,7 +834,7 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 1:
 
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@FromPosition"] }, { "@Arm", TaskJob.Params["@FromArm"] }, { "@Slot", TaskJob.Params["@FromSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@From_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -842,7 +843,7 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
                             case 2:
-                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Slot", TaskJob.Params["@ToSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
+                                if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, new Dictionary<string, string>() { { "@Target", Target.Name }, { "@Position", TaskJob.Params["@ToPosition"] }, { "@Arm", TaskJob.Params["@ToArm"] }, { "@Slot", TaskJob.Params["@ToSlot"] }, { "@BYPASS_CHECK", TaskJob.Params["@To_BYPASS_CHECK"] }, { "@IsTransCommand", "TRUE" } }, "", TaskJob.MainTaskId).Promise())
                                 {
                                     //中止Task
                                     AbortTask(TaskJob, null, "TASK_ABORT");
@@ -1387,7 +1388,8 @@ namespace TransferControl.TaksFlow
 #endregion
 #region CSTID
                     case TaskFlowManagement.Command.GET_CSTID:
-                        if(!GetCSTID(TaskJob, Target))  return;
+                        if (!GetCSTID(TaskJob, Target, Value)) return;
+
                         break;
                     case TaskFlowManagement.Command.SET_CSTID:
                         if(!SetCSTID(TaskJob, Target, Value))   return;
@@ -1431,6 +1433,8 @@ namespace TransferControl.TaksFlow
                                     ///通訊傳送失敗
                                     logger.Debug("ITaskFlow:" + TaskJob.TaskName.ToString() + " Index:" +
                                         TaskJob.CurrentIndex.ToString() + "SendCommand Return false(2)");
+
+                                    CtrlNode.IsExcuting = false;
                                 }
                             }
                         }
