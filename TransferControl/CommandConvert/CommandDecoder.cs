@@ -1359,7 +1359,6 @@ namespace TransferControl.CommandConvert
                     {
                         switch (each.CommandType)
                         {
-
                             case "FSD2":
                                 switch (content[i].Substring(content[i].IndexOf("=") + 1))
                                 {
@@ -1386,6 +1385,16 @@ namespace TransferControl.CommandConvert
                                 }
                                 each.Value += content[i];
                                 //each.CommandType = "GET";
+                                each.Type = CommandReturnMessage.ReturnType.Excuted;
+                                break;
+                            case "HCD":
+                                if (content[i].Trim().Equals(""))
+                                    continue;
+
+                                if (!each.Value.Equals(""))
+                                    each.Value += ",";
+
+                                each.Value += content[i].Substring(content[i].IndexOf("=") + 1);
                                 each.Type = CommandReturnMessage.ReturnType.Excuted;
                                 break;
                             default:
@@ -1481,6 +1490,7 @@ namespace TransferControl.CommandConvert
 
                                                 case "POD_ARRIVED":
                                                 case "POD_REMOVED":
+                                                case "POD_UNKNOWN":
                                                 case "EXIT_HOME":
                                                     each.Type = CommandReturnMessage.ReturnType.Event;
                                                     each.Command = content[i];

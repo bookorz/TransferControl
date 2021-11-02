@@ -406,6 +406,16 @@ namespace TransferControl.Engine
                     case "LOADPORT":
                         switch (Txn.Method)
                         {
+                            case Transaction.Command.LoadPortType.GetOPMode:
+                                //0.HW: Hardware Type(0 = Standard、1 = Extend)
+                                //1.PUSH: Pusher Support(0 = Not Support、1 = Support Pusher Function)
+                                //2.WORK: Workpiece(0 = None、1 = Pod、2 = Open Cassette、9 = Unknow)
+                                string[] OPMode = Msg.Value.Split(',');
+                                Node.HardwareType = Convert.ToInt32(OPMode[0]);
+                                Node.PusherSupport = Convert.ToInt32(OPMode[1]);
+                                Node.Workpiece = Convert.ToInt32(OPMode[2]);
+
+                                break;
                             case Transaction.Command.LoadPortType.Unload:
                             case Transaction.Command.LoadPortType.MappingUnload:
                             case Transaction.Command.LoadPortType.DoorUp:
@@ -1706,15 +1716,38 @@ namespace TransferControl.Engine
                                 Node.Foup_Presence = true;
                                 Node.Foup_Placement = false;
                                 break;
-                            case "POD_ARRIVED":
-                                Node.Foup_Presence = true;
-                                Node.Foup_Placement = true;
-                                break;
 
+                            case "POD_ARRIVED":
                             case "POD_REMOVED":
-                                Node.Foup_Presence = false;
-                                Node.Foup_Placement = false;
+                            case "POD_UNKNOWN":
+                                FakePlacementSensor(Node, Msg);
+                                if (Msg.Command.Equals("POD_ARRIVED"))
+                                {
+                                    Node.Foup_Presence = true;
+                                    Node.Foup_Placement = true;
+                                }
+                                else if (Msg.Command.Equals("POD_REMOVED"))
+                                {
+                                    Node.Foup_Presence = false;
+                                    Node.Foup_Placement = false;
+                                }
                                 break;
+                            
+                            //case "POD_ARRIVED":
+                            //    Node.Foup_Presence = true;
+                            //    Node.Foup_Placement = true;
+                            //    break;
+
+                            //case "POD_REMOVED":
+                            //    Node.Foup_Presence = false;
+                            //    Node.Foup_Placement = false;
+                            //    break;
+
+                            //case "POD_UNKNOWN":
+                            //    Node.Foup_Presence = true;
+                            //    Node.Foup_Placement = false;
+                            //    break;
+
                             case "INPUT":
                                 string IO_Name = Msg.Value.Split(',')[0];
                                 string IO_Value = Msg.Value.Split(',')[1];

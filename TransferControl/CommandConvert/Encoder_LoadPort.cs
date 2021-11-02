@@ -1367,6 +1367,11 @@ namespace TransferControl.CommandConvert
                 case "SANWA_MC":
                     commandStr = "$1MCR:OPMOD:1";
                     break;
+
+                case "ASYST":
+                    commandStr = "HCS OPMOD";
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }

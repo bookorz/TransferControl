@@ -1740,6 +1740,19 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 AckTask(TaskJob);
+
+                                string excuteType = "FINISHED";
+                                switch (Target.Vendor.ToUpper())
+                                {
+                                    case "SANWA_MC":
+                                        excuteType = "FINISHED";
+                                        break;
+
+                                    case "ASYST":
+                                        excuteType = "EXCUTED";
+                                        break;
+                                }
+
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetOPMode }));
                                 break;
                             default:

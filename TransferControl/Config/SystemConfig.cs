@@ -37,6 +37,8 @@ namespace TransferControl.Config
 
         public string User { get; set; } = "Sanwa";
 
+        public string ConfigVer { get; set; } = "Undefined";
+
 
         public static SystemConfig Get()
         {
