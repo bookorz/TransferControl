@@ -1294,6 +1294,9 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:REMAP;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+                case "ASYST":
+                    commandStr = "HCS MAP";
+                    break;
                 case "SANWA_MC":
                     commandStr = "$1MCR:MAP__:1";
                     break;
@@ -1369,7 +1372,7 @@ namespace TransferControl.CommandConvert
                     break;
 
                 case "ASYST":
-                    commandStr = "HCS OPMOD";
+                    commandStr = "ECR P70";
                     break;
 
                 default:

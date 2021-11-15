@@ -93,6 +93,8 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+                                string excuteType = "FINISHED";
+
                                 if (NodeManagement.Get("ROBOT01")!= null)
                                     if (NodeManagement.Get("ROBOT01").Enable)
                                 {
@@ -102,25 +104,70 @@ namespace TransferControl.TaksFlow
                                 if (NodeManagement.Get("LOADPORT01") != null)
                                     if (NodeManagement.Get("LOADPORT01").Enable)
                                 {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT01", "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
+  
+                                        switch (NodeManagement.Get("LOADPORT01").Vendor.ToUpper())
+                                        {
+                                            case "SANWA_MC":
+                                                excuteType = "FINISHED";
+                                                break;
+
+                                            case "ASYST":
+                                                excuteType = "EXCUTED";
+                                                break;
+                                        }
+
+
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT01", excuteType, new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
                                 }
 
                                 if(NodeManagement.Get("LOADPORT02") != null)
                                     if (NodeManagement.Get("LOADPORT02").Enable)
                                 {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT02", "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
+                                        switch (NodeManagement.Get("LOADPORT02").Vendor.ToUpper())
+                                        {
+                                            case "SANWA_MC":
+                                                excuteType = "FINISHED";
+                                                break;
+
+                                            case "ASYST":
+                                                excuteType = "EXCUTED";
+                                                break;
+                                        }
+
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT02", excuteType, new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
                                 }
 
                                 if(NodeManagement.Get("LOADPORT03") != null)
                                     if (NodeManagement.Get("LOADPORT03").Enable)
                                 {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT03", "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
+                                        switch (NodeManagement.Get("LOADPORT03").Vendor.ToUpper())
+                                        {
+                                            case "SANWA_MC":
+                                                excuteType = "FINISHED";
+                                                break;
+
+                                            case "ASYST":
+                                                excuteType = "EXCUTED";
+                                                break;
+                                        }
+
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT03", excuteType, new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
                                 }
 
                                 if (NodeManagement.Get("LOADPORT04") != null)
                                     if (NodeManagement.Get("LOADPORT04").Enable)
                                 {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT04", "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
+                                        switch (NodeManagement.Get("LOADPORT04").Vendor.ToUpper())
+                                        {
+                                            case "SANWA_MC":
+                                                excuteType = "FINISHED";
+                                                break;
+
+                                            case "ASYST":
+                                                excuteType = "EXCUTED";
+                                                break;
+                                        }
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("LOADPORT04", excuteType, new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
                                 }
 
                                 break;
@@ -1419,23 +1466,36 @@ namespace TransferControl.TaksFlow
                                         break;
 
                                     case "ASYST":
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
+                                        if (!SystemConfig.Get().OfflineMode)
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.RetryMapping }));
                                         break;
                                 }
 
                                 break;
 
                             case 1:
-                                switch (Target.Vendor.ToUpper())
-                                {
-                                    case "ASYST":
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Load }));
-                                        break;
-                                }
+                                //switch (Target.Vendor.ToUpper())
+                                //{
+                                //    case "ASYST":
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Load }));
+                                //        break;
+                                //}
 
                                 break;
                             case 2:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                                string excuteType = "FINISHED";
+                                switch (Target.Vendor.ToUpper())
+                                {
+                                    case "SANWA_MC":
+                                        excuteType = "FINISHED";
+                                        break;
+
+                                    case "ASYST":
+                                        excuteType = "EXCUTED";
+                                        break;
+                                }
+
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
 
                                 break;
                             default:
@@ -1753,7 +1813,7 @@ namespace TransferControl.TaksFlow
                                         break;
                                 }
 
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetOPMode }));
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetOPMode }));
                                 break;
                             default:
                                 FinishTask(TaskJob);

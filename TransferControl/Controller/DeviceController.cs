@@ -604,8 +604,9 @@ namespace TransferControl.Controller
             }
             else
             {
-                //Transaction workingTxn;
-                //TransactionList.TryRemove(key, out workingTxn);
+                Transaction workingTxn;
+                TransactionList.TryRemove(key, out workingTxn);
+                workingTxn.SetTimeOutMonitor(false);
                 //logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
                 //_ReportTarget.On_Message_Log("CMD", DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command " + workingTxn.CommandEncodeStr + " is already excuting.");
                 logger.Debug(DeviceName + "(DoWork " + IPAdress + ":" + Port.ToString() + ":" + Txn.CommandEncodeStr + ") Same type command is already excuting.");
@@ -915,22 +916,25 @@ namespace TransferControl.Controller
                                         {
                                             if (ReturnMsg.Type == CommandReturnMessage.ReturnType.Error)
                                             {
-                                                Txn = TransactionList.First().Value;
-
-                                                logger.Debug("Txn timmer stoped.");
-                                                Txn.SetTimeOutMonitor(false);
-                                                lock (Node.ExcuteLock)
+                                                if(TransactionList.Count > 0)
                                                 {
-                                                    Node.IsExcuting = false;
-                                                }
+                                                    Txn = TransactionList.First().Value;
 
-                                                if (Vendor.ToUpper().Equals("TDK") || DeviceType.ToUpper().Equals("SMARTTAG"))
-                                                {
-                                                    conn.Send(ReturnMsg.FinCommand);
-                                                    logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
-                                                }
+                                                    logger.Debug("Txn timmer stoped.");
+                                                    Txn.SetTimeOutMonitor(false);
+                                                    lock (Node.ExcuteLock)
+                                                    {
+                                                        Node.IsExcuting = false;
+                                                    }
 
-                                                TransactionList.TryRemove(TransactionList.First().Key, out Txn);
+                                                    if (Vendor.ToUpper().Equals("TDK") || DeviceType.ToUpper().Equals("SMARTTAG"))
+                                                    {
+                                                        conn.Send(ReturnMsg.FinCommand);
+                                                        logger.Debug(DeviceName + " Send:" + ReturnMsg.FinCommand);
+                                                    }
+
+                                                    TransactionList.TryRemove(TransactionList.First().Key, out Txn);
+                                                }
                                             }
                                             else
                                             {

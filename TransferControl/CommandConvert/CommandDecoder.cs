@@ -1372,7 +1372,7 @@ namespace TransferControl.CommandConvert
                                         each.Value += "0";
                                         break;
                                     case "U":
-                                        each.Value += "?";
+                                        each.Value += "2";
                                         break;
                                 }
                                 each.Type = CommandReturnMessage.ReturnType.Excuted;
@@ -1387,7 +1387,7 @@ namespace TransferControl.CommandConvert
                                 //each.CommandType = "GET";
                                 each.Type = CommandReturnMessage.ReturnType.Excuted;
                                 break;
-                            case "HCD":
+                            case "ECD":
                                 if (content[i].Trim().Equals(""))
                                     continue;
 

@@ -403,29 +403,27 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 4:
-                                if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                {
-                                    if (!SystemConfig.Get().OfflineMode)
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferHold }));
-                                    }
-                                }
+                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                //{
+                                //    if (!SystemConfig.Get().OfflineMode)
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferHold }));
+                                //}
                                 break;
 
                             case 5:
-                                if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                {
-                                    if (!SystemConfig.Get().OfflineMode)
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));                                    
-                                }
+                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                //{
+                                //    if (!SystemConfig.Get().OfflineMode)
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));                                    
+                                //}
                                 break;
 
                             case 6:
-                                if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                {
-                                    if (!SystemConfig.Get().OfflineMode)
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
-                                }
+                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                //{
+                                //    if (!SystemConfig.Get().OfflineMode)
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                                //}
                                 break;
 
                             case 7:
@@ -593,15 +591,15 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 2:
-                                if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                {
-                                    if (!SystemConfig.Get().OfflineMode)
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
+                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                //{
+                                //    if (!SystemConfig.Get().OfflineMode)
+                                //    {
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
 
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = Arm, Slot = Slot }));
-                                    }
-                                }
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = Arm, Slot = Slot }));
+                                //    }
+                                //}
                                 break;
 
 
@@ -613,19 +611,19 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 4:
-                                if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                {
-                                    if (!SystemConfig.Get().OfflineMode)
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
-                                }
+                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                //{
+                                //    if (!SystemConfig.Get().OfflineMode)
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                                //}
                                 break;
 
                             case 5:
-                                if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                {
-                                    if (!SystemConfig.Get().OfflineMode)
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
-                                }
+                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                //{
+                                //    if (!SystemConfig.Get().OfflineMode)
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                                //}
                                 break;
 
                             case 6:
@@ -1244,26 +1242,33 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Align, Value = Value }));
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferHold }));
                                 break;
 
                             case 2:
-                                //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Align, Value = Value }));
                                 break;
 
                             case 3:
-                                //確認 Presence
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
                                 break;
 
                             case 4:
-                                //取得電磁閥最後狀態
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                                //確認 Presence
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
                                 break;
 
                             case 5:
+                                //取得電磁閥最後狀態
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                                break;
+
+                            case 6:
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
                                 break;
@@ -1273,7 +1278,6 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-
 #endregion
 #region LOADPORT
                     case TaskFlowManagement.Command.LOADPORT_INIT:

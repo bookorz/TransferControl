@@ -477,6 +477,9 @@ namespace TransferControl.Engine
 
                                 //產生Mapping資料
                                 Node.LoadTime = DateTime.Now;
+                                //if (Node.Vendor.ToUpper().Equals("ASYST"))
+                                //    Msg.Value = Msg.Value.Replace("2", "3").Replace("E", "3").Replace("W", "7").Replace("?", "9");
+
                                 string Mapping = Msg.Value;
         
                                 Node.MappingResult = Mapping;
@@ -501,7 +504,7 @@ namespace TransferControl.Engine
                                     }
                                     Job wafer = JobManagement.Add();
                                     wafer.Slot = (i + 1).ToString();
-                                    
+
                                     wafer.Position = Node.Name;
                                     wafer.AlignerFlag = false;
                                     wafer.MappingValue = Mapping[i].ToString();
@@ -515,7 +518,6 @@ namespace TransferControl.Engine
 
                                             //wafer.MapFlag = false;
                                             //wafer.ErrPosition = false;
-
                                             JobManagement.Remove(wafer);
                                             break;
                                         case '1':
@@ -531,10 +533,7 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
-                                            //20201202 Pingchung 
-                                            Node.IsMapping = false;
-                                            //Node.IsMapping = true;
-                                            IsError = true;
+                                            //Node.IsMapping = false;
                                             break;
                                         default:
                                         case '?':
@@ -543,11 +542,7 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
-                                            //20201202 Pingchung 
-                                            Node.IsMapping = false;
-                                            //Node.IsMapping = true;
-
-                                            IsError = true;
+                                            //Node.IsMapping = false;
                                             break;
                                         case 'W':
                                             wafer.Status = Job.MapStatus.Double;
@@ -555,20 +550,13 @@ namespace TransferControl.Engine
                                             wafer.MapFlag = true;
                                             wafer.ErrPosition = true;
 
-                                            //20201202 Pingchung 
-                                            Node.IsMapping = false;
-                                            //Node.IsMapping = true;
-
-                                            IsError = true;
+                                            //Node.IsMapping = false;
                                             break;
                                     }
 
 
                                 }
-
-                                //20201202 Pingchung 
                                 if (!Node.IsMapping)
-                                //if (IsError)
                                 {
                                     CommandReturnMessage rem = new CommandReturnMessage();
                                     rem.Value = "MAPERR";
@@ -1369,6 +1357,9 @@ namespace TransferControl.Engine
                                 //產生Mapping資料.
                                 Node.IsMapping = true;
                                 Node.LoadTime = DateTime.Now;
+                                //if (Node.Vendor.ToUpper().Equals("ASYST"))
+                                //    Msg.Value = Msg.Value.Replace("2", "3").Replace("E", "3").Replace("W", "7").Replace("?", "9");
+
                                 string Mapping = Msg.Value;
 
                                 if (Node.Vendor.Equals("SANWA_MC"))
