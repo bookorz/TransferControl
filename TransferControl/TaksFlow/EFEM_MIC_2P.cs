@@ -74,11 +74,14 @@ namespace TransferControl.TaksFlow
                     }
                 }
             }
-            if (MainControl.Instance.DIO.GetIO("DIN", "SAFETYRELAY").ToUpper().Equals("TRUE"))
-            {
-                AbortTask(TaskJob, new Node() { Vendor = "SYSTEM" }, "S0300170");
-                return;
-            }
+
+            if(!SystemConfig.Get().OfflineMode)
+                if (MainControl.Instance.DIO.GetIO("DIN", "SAFETYRELAY").ToUpper().Equals("TRUE"))
+                {
+                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM" }, "S0300170");
+                    return;
+                }
+
             try
             {
                 switch (TaskJob.TaskName)
@@ -371,7 +374,7 @@ namespace TransferControl.TaksFlow
                                     {
                                         for(int i = 0; i<ArmCount; i++)
                                         {
-                                            Wafer = JobManagement.Get(Position.Name, (Convert.ToInt32(Slot) + i).ToString() );
+                                            Wafer = JobManagement.Get(Position.Name, (Convert.ToInt32(Slot) - i).ToString() );
                                             if (Wafer != null) break;
                                         }
                                     }
@@ -389,7 +392,7 @@ namespace TransferControl.TaksFlow
                                 {
                                     if (!SystemConfig.Get().OfflineMode)
                                     {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Home }));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ALIGNER01", "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Home }));
 
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = Arm, Slot = Slot }));
                                     }
@@ -466,7 +469,7 @@ namespace TransferControl.TaksFlow
                                             Wafer.LastNode = Wafer.Position;
                                             Wafer.LastSlot = Wafer.Slot;
                                             Wafer.Position = Position.Name;
-                                            Wafer.Slot = (Convert.ToInt32(Slot) + (ArmCount-1- i)).ToString();
+                                            Wafer.Slot = (Convert.ToInt32(Slot) - i ).ToString();
 
                                             _TaskReport.On_Job_Location_Changed(Wafer);
 
@@ -570,7 +573,7 @@ namespace TransferControl.TaksFlow
                                         case "3":
                                             for(int i = 0; i< ArmCount; i++)
                                             {
-                                                Wafer = JobManagement.Get(Position.Name, (Convert.ToInt32(Slot) + i).ToString());
+                                                Wafer = JobManagement.Get(Position.Name, (Convert.ToInt32(Slot) - i).ToString());
 
                                                 if (Wafer == null)
                                                 {
@@ -591,15 +594,15 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 2:
-                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                //{
-                                //    if (!SystemConfig.Get().OfflineMode)
-                                //    {
-                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
+                                if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                {
+                                    if (!SystemConfig.Get().OfflineMode)
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ALIGNER01", "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
 
-                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = Arm, Slot = Slot }));
-                                //    }
-                                //}
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = Arm, Slot = Slot }));
+                                    }
+                                }
                                 break;
 
 
@@ -611,19 +614,19 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 4:
-                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                //{
-                                //    if (!SystemConfig.Get().OfflineMode)
-                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
-                                //}
+                                if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                {
+                                    if (!SystemConfig.Get().OfflineMode)
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                                }
                                 break;
 
                             case 5:
-                                //if (Position.Type.ToUpper().Equals("ALIGNER"))
-                                //{
-                                //    if (!SystemConfig.Get().OfflineMode)
-                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
-                                //}
+                                if (Position.Type.ToUpper().Equals("ALIGNER"))
+                                {
+                                    if (!SystemConfig.Get().OfflineMode)
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                                }
                                 break;
 
                             case 6:
@@ -647,7 +650,7 @@ namespace TransferControl.TaksFlow
                                     case "3":
                                         for (int i = 0; i < ArmCount; i++)
                                         {
-                                            Wafer = JobManagement.Get(Position.Name, (Convert.ToInt32(Slot) + i).ToString());
+                                            Wafer = JobManagement.Get(Position.Name, (Convert.ToInt32(Slot) - i).ToString());
                                             if (Wafer == null)
                                             {
                                                 Wafer = JobManagement.Add();
@@ -777,7 +780,7 @@ namespace TransferControl.TaksFlow
                                     {
                                         for(int i = 0; i< ArmCount; i++)
                                         {
-                                            Wafer = JobManagement.Get(TaskJob.Params["@FromPosition"], (Convert.ToInt32(TaskJob.Params["@FromSlot"]) + i).ToString());
+                                            Wafer = JobManagement.Get(TaskJob.Params["@FromPosition"], (Convert.ToInt32(TaskJob.Params["@FromSlot"]) - i).ToString());
                                             if (Wafer == null)
                                             {
                                                 AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300162");
@@ -807,7 +810,7 @@ namespace TransferControl.TaksFlow
                                     {
                                         for (int i = 0; i < ArmCount; i++)
                                         {
-                                            Wafer = JobManagement.Get(TaskJob.Params["@ToPosition"], (Convert.ToInt32(TaskJob.Params["@ToSlot"]) + i).ToString());
+                                            Wafer = JobManagement.Get(TaskJob.Params["@ToPosition"], (Convert.ToInt32(TaskJob.Params["@ToSlot"]) - i).ToString());
                                             if (Wafer != null) break;
                                         }
 
@@ -896,7 +899,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.OrginSearch }));
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Home }));
                                 break;
 
 
@@ -970,17 +973,17 @@ namespace TransferControl.TaksFlow
 
                             case 3:
                                 //設定模式(Normal or dry)
-                                if (!SystemConfig.Get().OfflineMode)
-                                {
-                                    if (SystemConfig.Get().DummyMappingData)
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Mode, Value = "1" }));
-                                    }
-                                    else
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Mode, Value = "0" }));
-                                    }
-                                }
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //{
+                                //    if (SystemConfig.Get().DummyMappingData)
+                                //    {
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Mode, Value = "1" }));
+                                //    }
+                                //    else
+                                //    {
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Mode, Value = "0" }));
+                                //    }
+                                //}
                                 break;
                             case 4:
                                 //取得電磁閥最後狀態
@@ -989,42 +992,41 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 5:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Speed, Value = "100" }));
+
+                                break;
+
+                            case 6:
                                 //取得速度
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSpeed }));
                                 break;
 
-                            case 6:
+                            case 7:
                                 //取得模式
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetMode }));
                                 break;
 
-                            case 7:
+                            case 8:
                                 //取得異常
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetError, Value = "00" }));
                                 break;
 
-                            case 8:
+                            case 9:
                                 //Servo on
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Servo, Value = "1" }));
-
-                                break;
-
-                            case 9:
-                                if (Target.WaferSize.Equals("200"))
-                                {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetAlign, Value = "100000" }));
-                                }
-                                else if (Target.WaferSize.Equals("300"))
-                                {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetAlign, Value = "150000" }));
-                                }
                                 break;
 
                             case 10:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetAlign, Value = "150000" }));
+                                break;
+
+                            case 11:
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
 
@@ -1135,6 +1137,8 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+                                AckTask(TaskJob);
+
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Speed, Value = Value }));
                                 break;
@@ -1467,7 +1471,6 @@ namespace TransferControl.TaksFlow
                         this.Excute(TaskJob);
 
                         return;
-
                     }
                 }
             }

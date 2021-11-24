@@ -163,7 +163,6 @@ namespace TransferControl.Management
                 CurrentTask.CurrentIndex++;
                 CurrentTask.CheckList.Clear();
                 TaskFlow.Excute(CurrentTask);
-
             }
 
 
@@ -299,18 +298,18 @@ namespace TransferControl.Management
             Task.HasError = true;
             Task.Finished = true;
             _TaskReport.On_TaskJob_Aborted(Task);
-
-
-
             TaskRemove(Task);
+
             logger.Debug("On_TaskJob_Aborted");
         }
 
         public void On_TaskJob_Finished(CurrentProcessTask Task)
         {
             Task.Finished = true;
+
             _TaskReport.On_TaskJob_Finished(Task);
             TaskRemove(Task);
+
             logger.Debug("On_TaskJob_Finished");
         }
 

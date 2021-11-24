@@ -842,49 +842,53 @@ namespace TransferControl.TaksFlow
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
                     break;
+                case 10:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Speed, Value = "100" }));
 
+                    break;
 
-
-                case 12:
+                case 11:
                     //取得速度
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
 
                     break;
 
-                case 13:
+                case 12:
                     //取得模式
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
 
                     break;
 
-                case 14:
+                case 13:
                     //取得異常
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
 
                     break;
 
-                case 15:
+                case 14:
                     //Servo on
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
 
                     break;
 
-                case 16:
+                case 15:
                     //更新Bobot狀態
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
 
-                    break;                case 10:
+                    break;
+                case 16:
                     //確認R軸 Presence                   
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
                     break;
 
-                case 11:
+                case 17:
                     //確認L軸 Presence
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));

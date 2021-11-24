@@ -380,11 +380,13 @@ namespace TransferControl.Controller
             {
                 case CommandReturnMessage.ReturnType.Excuted:
 
-                    _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
+
                     if (Txn.CommandType.Equals("CMD") && !NodeManagement.Get(Txn.NodeName).Type.Equals("LOADPORT"))
                     {
                         _ReportTarget.On_Node_State_Changed(NodeManagement.Get(Txn.NodeName), "Busy");
                     }
+
+                    _ReportTarget.On_Command_Excuted(NodeManagement.Get(Txn.NodeName), Txn, cm);
 
                     break;
 
@@ -403,15 +405,17 @@ namespace TransferControl.Controller
                             break;
                     }
 
-                    _ReportTarget.On_Command_Finished(NodeManagement.Get(Txn.NodeName), Txn, cm);
                     if (!NodeManagement.Get(Txn.NodeName).Type.Equals("LOADPORT"))
                         _ReportTarget.On_Node_State_Changed(NodeManagement.Get(Txn.NodeName), "StandBy");
+
+                    _ReportTarget.On_Command_Finished(NodeManagement.Get(Txn.NodeName), Txn, cm);
+
                     break;
             }
 
             
 
-            SpinWait.SpinUntil(() => false, 1);
+            SpinWait.SpinUntil(() => false, 200);
 
 
         }
