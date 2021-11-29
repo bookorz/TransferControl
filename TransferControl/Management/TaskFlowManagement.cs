@@ -385,6 +385,7 @@ namespace TransferControl.Management
             ALIGNER_WAFER_HOLD,
             ALIGNER_WAFER_RELEASE,
             ALIGNER_SAVE_LOG,
+            ALIGNER_GET_CLAMP,
             LOADPORT_INIT,
             LOADPORT_ALL_OPEN,
             LOADPORT_OPEN,

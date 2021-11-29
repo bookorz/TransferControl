@@ -771,8 +771,16 @@ namespace TransferControl.TaksFlow
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
-
                     AckTask(TaskJob);
+                    //Servo on
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
+
+                    break;
+
+                case 1:
+
+                    //AckTask(TaskJob);
 
                     //開啟R軸電磁閥
                     if (!SystemConfig.Get().OfflineMode)
@@ -780,44 +788,44 @@ namespace TransferControl.TaksFlow
 
                     break;
 
-                case 1:
+                case 2:
                     //開啟L軸電磁閥
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "02", Value = "1" }));
 
                     break;
 
-                case 2:
+                case 3:
                     SpinWait.SpinUntil(() => false, 100);
                     break;
 
-                case 3:
+                case 4:
                     //確認R軸 Presence                   
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
                     break;
 
-                case 4:
+                case 5:
                     //確認L軸 Presence
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
                     break;
 
-                case 5:
+                case 6:
                     //R軸 Presence 不存在,則關閉R軸電磁閥
                     if (!SystemConfig.Get().OfflineMode && !Target.R_Presence)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "01", Value = "0" }));
 
                     break;
 
-                case 6:
+                case 7:
                     //L軸 Presence 不存在,則關閉L軸電磁閥
                     if (!SystemConfig.Get().OfflineMode && !Target.L_Presence)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "02", Value = "0" }));
 
                     break;
 
-                case 7:
+                case 8:
                     //設定模式(Normal or dry)
                     if (!SystemConfig.Get().OfflineMode)
                     {
@@ -831,50 +839,50 @@ namespace TransferControl.TaksFlow
                         }
                     }
                     break;
-                case 8:
+                case 9:
                     //取得R軸電磁閥最後狀態
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
                     break;
 
-                case 9:
+                case 10:
                     //取得L軸電磁閥最後狀態
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
                     break;
-                case 10:
+                case 11:
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Speed, Value = "100" }));
 
                     break;
 
-                case 11:
+                case 12:
                     //取得速度
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
 
                     break;
 
-                case 12:
+                case 13:
                     //取得模式
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
 
                     break;
 
-                case 13:
+                case 14:
                     //取得異常
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
 
                     break;
 
-                case 14:
-                    //Servo on
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
+                //case 14:
+                //    //Servo on
+                //    if (!SystemConfig.Get().OfflineMode)
+                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
 
-                    break;
+                //    break;
 
                 case 15:
                     //更新Bobot狀態
@@ -959,8 +967,7 @@ namespace TransferControl.TaksFlow
 
                     AckTask(TaskJob);
 
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
 
                     break;
 

@@ -1237,6 +1237,28 @@ namespace TransferControl.Engine
                                 Node.State = "READY";
                                 Node.ArmExtend = "";
                                 Node.CurrentPosition = "";
+
+                                if(!SystemConfig.Get().TaskFlow.ToUpper().Equals("SANWA_EFEM"))
+                                {
+                                    List<Job> joblist = JobManagement.GetJobList();
+                                    foreach(Job wafer in joblist)
+                                    {
+                                        if(wafer.Position.Contains(Node.Name))
+                                        {
+                                            if ((!Node.R_Presence && wafer.Position.Contains("R")) ||
+                                                (!Node.L_Presence && wafer.Position.Contains("L")))
+                                            {
+                                                wafer.LastNode = wafer.Position;
+                                                wafer.LastSlot = wafer.Slot;
+                                                wafer.Position = "";
+
+                                                On_Job_Position_Changed(wafer);
+                                                JobManagement.Remove(wafer);
+                                            }
+                                        }
+                                    }
+                                }
+
                                 break;
                             case Transaction.Command.RobotType.PutBack:
                             case Transaction.Command.RobotType.GetAfterWait:
@@ -1258,16 +1280,35 @@ namespace TransferControl.Engine
                         }
                         switch (Txn.Method)
                         {
-                            case Transaction.Command.RobotType.Home:
-                                Node.State = "READY";
-                                Node.Home_Position = true;
+                            //case Transaction.Command.RobotType.Home:
+                            //    Node.State = "READY";
+                            //    Node.Home_Position = true;
 
-                                break;
+                            //    break;
+                            //case Transaction.Command.RobotType.OrginSearch:
+                            //    Node.State = "READY";                                
+                            //    Node.Home_Position = false;
+                            //    break;
+
+                            case Transaction.Command.RobotType.Home:
                             case Transaction.Command.RobotType.OrginSearch:
                                 Node.State = "READY";
-                                
-                                Node.Home_Position = false;
+                                Node.Home_Position = Txn.Method.Equals(Transaction.Command.RobotType.Home);
+
+                                if(!Node.R_Presence)
+                                {
+                                    foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
+                                    {
+                                        eachJob.LastNode = eachJob.Position;
+                                        eachJob.LastSlot = eachJob.Slot;
+                                        eachJob.Position = "";
+
+                                        On_Job_Position_Changed(eachJob);
+                                        JobManagement.Remove(eachJob);
+                                    }
+                                }
                                 break;
+
                         }
                         break;
                     case "OCR":
@@ -1346,6 +1387,20 @@ namespace TransferControl.Engine
                                 Node.IsLoad = false;
                                 _UIReport.On_Node_State_Changed(Node, "Ready To Load");
                                 Node.State = "READY";
+
+                                //新增之前移除所有的帳籍
+                                foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
+                                {
+                                    eachJob.LastNode = eachJob.Position;
+                                    eachJob.LastSlot = eachJob.Slot;
+                                    eachJob.Position = "";
+
+                                    On_Job_Position_Changed(eachJob);
+
+                                    JobManagement.Remove(eachJob);
+                                }
+
+
                                 break;
                             case Transaction.Command.LoadPortType.GetMapping:
                             case Transaction.Command.LoadPortType.GetMappingDummy:

@@ -959,74 +959,69 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
+                                SpinWait.SpinUntil(() => false, 300);
+                                break;
+
+                            case 2:
                                 //確認 Presence
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
                                 break;
 
-                            case 2:
+                            case 3:
                                 //Presence 不存在,則關閉R軸電磁閥
                                 if (!SystemConfig.Get().OfflineMode && !Target.R_Presence)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetSV, Value = "01", Val2 = "0" }));
 
                                 break;
 
-                            case 3:
-                                //設定模式(Normal or dry)
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //{
-                                //    if (SystemConfig.Get().DummyMappingData)
-                                //    {
-                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Mode, Value = "1" }));
-                                //    }
-                                //    else
-                                //    {
-                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Mode, Value = "0" }));
-                                //    }
-                                //}
-                                break;
                             case 4:
-                                //取得電磁閥最後狀態
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                                SpinWait.SpinUntil(() => false, 300);
                                 break;
 
                             case 5:
+                                //取得電磁閥最後狀態
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+
+                                break;
+
+                            case 6:
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Speed, Value = "100" }));
 
                                 break;
 
-                            case 6:
+                            case 7:
                                 //取得速度
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSpeed }));
                                 break;
 
-                            case 7:
+                            case 8:
                                 //取得模式
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetMode }));
                                 break;
 
-                            case 8:
+                            case 9:
                                 //取得異常
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetError, Value = "00" }));
                                 break;
 
-                            case 9:
+                            case 10:
                                 //Servo on
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Servo, Value = "1" }));
                                 break;
 
-                            case 10:
+                            case 11:
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetAlign, Value = "150000" }));
                                 break;
 
-                            case 11:
+                            case 12:
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
 
@@ -1046,12 +1041,10 @@ namespace TransferControl.TaksFlow
 
                                 AckTask(TaskJob);
 
-                                if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.OrginSearch }));
                                 break;
 
                             case 1:
-                                if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Home }));
                                 break;
 
@@ -1175,6 +1168,8 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+                                AckTask(TaskJob);
+
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferHold }));
                                 break;
 
@@ -1200,6 +1195,8 @@ namespace TransferControl.TaksFlow
                         switch (TaskJob.CurrentIndex)
                         {
                             case 0:
+                                AckTask(TaskJob);
+
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
                                 break;
 
@@ -1282,7 +1279,33 @@ namespace TransferControl.TaksFlow
                                 return;
                         }
                         break;
-#endregion
+
+                    case TaskFlowManagement.Command.ALIGNER_GET_CLAMP:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                break;
+
+                            case 1:
+                                //確認 Presence
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                                break;
+
+                            case 2:
+                                //取得電磁閥最後狀態
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    #endregion
 #region LOADPORT
                     case TaskFlowManagement.Command.LOADPORT_INIT:
                         if(!TDK_LoadportINIT(TaskJob, Target))  return;

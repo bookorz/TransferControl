@@ -369,6 +369,8 @@ namespace TransferControl.Controller
                     case Transaction.Command.LoadPortType.Unload:
                     case Transaction.Command.LoadPortType.Load:
                     case Transaction.Command.LoadPortType.MappingLoad:
+                    //case Transaction.Command.AlignerType.OrginSearch:
+                    //case Transaction.Command.AlignerType.Home:
                         cm.Type = CommandReturnMessage.ReturnType.Finished;
                         break;
 
