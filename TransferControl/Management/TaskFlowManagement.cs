@@ -99,6 +99,7 @@ namespace TransferControl.Management
                     TaskFlow = new EFEM_SemiCore(this);
                     break;
                 case "EFEM_MIC_2P":
+                case "EFEM_HWATSING_2P":
                     TaskFlow = new EFEM_MIC_2P(this);
                     break;
 
@@ -381,6 +382,7 @@ namespace TransferControl.Management
             ALIGNER_RESET,
             ALIGNER_SERVO,
             ALIGNER_SPEED,
+            ALIGNER_GET_SPEED,
             ALIGNER_MODE,
             ALIGNER_WAFER_HOLD,
             ALIGNER_WAFER_RELEASE,

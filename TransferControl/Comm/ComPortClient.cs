@@ -145,6 +145,8 @@ namespace TransferControl.Comm
                 {
                     if(port.Parity != Parity.None)
                         port.Parity = Parity.None;
+
+                    tmp = tmp8400Data = "";
                 }
 
 

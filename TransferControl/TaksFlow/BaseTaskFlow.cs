@@ -617,6 +617,24 @@ namespace TransferControl.TaksFlow
 
             return true;
         }
+        public virtual bool Sanwa_RobotGetSpeed(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
         public virtual bool Sanwa_RobotServo(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)

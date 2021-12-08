@@ -880,6 +880,10 @@ namespace TransferControl.TaksFlow
                         if(!Sanwa_RobotSpeed(TaskJob, Target, Value))   return;
                         break;
 
+                    case TaskFlowManagement.Command.ROBOT_GET_SPEED:
+                        if (!Sanwa_RobotGetSpeed(TaskJob, Target)) return;
+                        break;
+
                     case TaskFlowManagement.Command.ROBOT_SERVO:
                         if(!Sanwa_RobotServo(TaskJob, Target, Value))   return;
                         break;
@@ -1134,6 +1138,26 @@ namespace TransferControl.TaksFlow
 
                                 if (!SystemConfig.Get().OfflineMode)
                                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Speed, Value = Value }));
+                                break;
+
+                            case 1:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ALIGNER_GET_SPEED:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSpeed }));
                                 break;
 
                             case 1:
