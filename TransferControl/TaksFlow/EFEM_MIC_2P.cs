@@ -365,6 +365,7 @@ namespace TransferControl.TaksFlow
                                 {
                                     //目的地不能有片子
                                     Wafer = null;
+                                    bool ErrorSlot = false; 
                                     
                                     if (Arm.Equals("1") || Arm.Equals("2"))
                                     {
@@ -379,7 +380,7 @@ namespace TransferControl.TaksFlow
                                         }
                                     }
 
-                                    if (Wafer != null)
+                                    if (Wafer != null || ErrorSlot)
                                     {
                                         AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300171");
                                         return;

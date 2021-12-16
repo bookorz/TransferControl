@@ -1366,13 +1366,13 @@ namespace TransferControl.CommandConvert
                                         each.Value += "1";
                                         break;
                                     case "C":
-                                        each.Value += "2";
+                                        each.Value += "3";
                                         break;
                                     case "E":
                                         each.Value += "0";
                                         break;
                                     case "U":
-                                        each.Value += "2";
+                                        each.Value += "9";
                                         break;
                                 }
                                 each.Type = CommandReturnMessage.ReturnType.Excuted;

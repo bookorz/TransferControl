@@ -458,6 +458,31 @@ namespace TransferControl.TaksFlow
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "true");
 
                                 break;
+
+                            case 4:
+                                //取得R軸電磁閥最後狀態
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                                break;
+
+                            case 5:
+                                //取得L軸電磁閥最後狀態
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                                break;
+
+                            case 6:
+                                //確認R軸 Presence                   
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
+                                break;
+
+                            case 7:
+                                //確認L軸 Presence
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
+                                break;
+
                             default:
                                 FinishTask(TaskJob);
                                 return;
@@ -582,6 +607,30 @@ namespace TransferControl.TaksFlow
                                     if (Arm.Equals("2")) break;
                                 }
 
+                                break;
+
+                            case 4:
+                                //取得R軸電磁閥最後狀態
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
+                                break;
+
+                            case 5:
+                                //取得L軸電磁閥最後狀態
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
+                                break;
+
+                            case 6:
+                                //確認R軸 Presence                   
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
+                                break;
+
+                            case 7:
+                                //確認L軸 Presence
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -854,7 +903,8 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_UNCLAMP:
-                        if(!TDK_LoadportUnclamp(TaskJob, Target))   return;
+                        //if(!TDK_LoadportUnclamp(TaskJob, Target))   return;
+                        if(!TDK_LoadportClose(TaskJob, Target))     return;
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_DOCK:
@@ -862,7 +912,26 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_UNDOCK:
-                        if(!TDK_LoadportUndock(TaskJob, Target))    return;
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return;
+
+                                AckTask(TaskJob);
+
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UntilUnDock }));
+
+                                break;
+
+                            case 1:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_VAC_ON:
@@ -912,9 +981,30 @@ namespace TransferControl.TaksFlow
 
                     case TaskFlowManagement.Command.LOADPORT_CLOSE:
                     case TaskFlowManagement.Command.LOADPORT_CLOSE_NOMAP:
-                        if(!TDK_LoadportClose(TaskJob, Target)) return;
-                        break;
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return;
 
+                                //避免尚未關完門就把Robot伸過來
+                                NodeManagement.Get(Target.Name).IsMapping = false;
+
+                                AckTask(TaskJob);
+
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UntilDoorCloseVacOFF }));
+
+                                break;
+
+                            case 1:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.LOADPORT_GET_MAPDT:
                         if(!TDK_LoadportGetMapData(TaskJob, Target))    return;
                         break;
@@ -1198,11 +1288,29 @@ namespace TransferControl.TaksFlow
             }
             return;
         }
+        public override bool Sanwa_RobotGetClamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
 
         private void ResetRobotInterLock()
         {
             MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF1", "TRUE");
             MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF2", "TRUE");
+
+            MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF1S", "TRUE");
+            MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF2S", "TRUE");
         }
     }
 }

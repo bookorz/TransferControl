@@ -421,11 +421,12 @@ namespace TransferControl.Engine
                             case Transaction.Command.LoadPortType.DoorUp:
                             case Transaction.Command.LoadPortType.InitialPos:
                             case Transaction.Command.LoadPortType.ForceInitialPos:
-
+                            case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
 
                                 //LoadPort卸載時打開安全鎖
                                 // Node.InterLock = true;
                                 //標記尚未Mapping
+                                Node.IsLoad = false;
                                 Node.IsMapping = false;
                                 Node.MappingResult = "";
                                 //刪除所有帳
@@ -433,8 +434,6 @@ namespace TransferControl.Engine
                                 {
                                     JobManagement.Remove(eachJob);
                                 }
-
-
 
                                 Node.FoupID = "";
 
@@ -480,82 +479,100 @@ namespace TransferControl.Engine
                                 //if (Node.Vendor.ToUpper().Equals("ASYST"))
                                 //    Msg.Value = Msg.Value.Replace("2", "3").Replace("E", "3").Replace("W", "7").Replace("?", "9");
 
+                                //除了中科信與帆宣
+                                //其餘Mapping Result通訊統一輸出
+                                if (Node.Vendor.ToUpper().Equals("TDK"))
+                                {
+                                    if (!SystemConfig.Get().TaskFlow.ToUpper().Equals("EFEM_SEMICORE") &&
+                                        !SystemConfig.Get().TaskFlow.ToUpper().Equals("EFEM_MIC_2P"))
+                                    {
+                                        Msg.Value = Msg.Value.Replace("W", "7").Replace("?", "9").Replace("2", "3");
+                                    }
+                                }
+
+                                if (Node.Vendor.Equals("SANWA_MC") && Node.Type.ToUpper().Equals("LOADPORT"))
+                                {
+                                    Msg.Value = Msg.Value.Replace("E", "3").Replace("W", "2");
+                                }
+
                                 string Mapping = Msg.Value;
         
                                 Node.MappingResult = Mapping;
 
                                 Node.IsMapping = true;
-                                bool IsError = false;
 
-                                int currentIdx = 1;
-                                for (int i = 0; i < Mapping.Length; i++)
-                                {
-                                    if (Node.CarrierType != null)
-                                    {
-                                        if (Node.CarrierType.Equals("OPEN"))
-                                        {
+                                MappingResultAnalysis(Node, Mapping);
+                                //bool IsError = false;
+                                //int currentIdx = 1;
+                                //for (int i = 0; i < Mapping.Length; i++)
+                                //{
+                                //    if (Node.CarrierType != null)
+                                //    {
+                                //        if (Node.CarrierType.Equals("OPEN"))
+                                //        {
 
-                                            if ((i + 1) > 13)
-                                            {
-                                                continue;
-                                            }
+                                //            if ((i + 1) > 13)
+                                //            {
+                                //                continue;
+                                //            }
 
-                                        }
-                                    }
-                                    Job wafer = JobManagement.Add();
-                                    wafer.Slot = (i + 1).ToString();
+                                //        }
+                                //    }
+                                //    Job wafer = JobManagement.Add();
+                                //    wafer.Slot = (i + 1).ToString();
 
-                                    wafer.Position = Node.Name;
-                                    wafer.AlignerFlag = false;
-                                    wafer.MappingValue = Mapping[i].ToString();
-                                    string Slot = (i + 1).ToString("00");
-
-
-                                    switch (Mapping[i])
-                                    {
-                                        case '0':
-                                            //wafer.Status = Job.MapStatus.Empty;
-
-                                            //wafer.MapFlag = false;
-                                            //wafer.ErrPosition = false;
-                                            JobManagement.Remove(wafer);
-                                            break;
-                                        case '1':
-                                            wafer.Status = Job.MapStatus.Normal;
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = false;
-
-                                            break;
-                                        case '2':
-                                        case 'E':
-                                            wafer.Status = Job.MapStatus.Crossed;
-
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = true;
-
-                                            //Node.IsMapping = false;
-                                            break;
-                                        default:
-                                        case '?':
-                                            wafer.Status = Job.MapStatus.Undefined;
-
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = true;
-
-                                            //Node.IsMapping = false;
-                                            break;
-                                        case 'W':
-                                            wafer.Status = Job.MapStatus.Double;
-
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = true;
-
-                                            //Node.IsMapping = false;
-                                            break;
-                                    }
+                                //    wafer.Position = Node.Name;
+                                //    wafer.AlignerFlag = false;
+                                //    wafer.MappingValue = Mapping[i].ToString();
+                                //    string Slot = (i + 1).ToString("00");
 
 
-                                }
+                                //    switch (Mapping[i])
+                                //    {
+                                //        case '0':
+                                //            //wafer.Status = Job.MapStatus.Empty;
+
+                                //            //wafer.MapFlag = false;
+                                //            //wafer.ErrPosition = false;
+                                //            JobManagement.Remove(wafer);
+                                //            break;
+                                //        case '1':
+                                //            wafer.Status = Job.MapStatus.Normal;
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = false;
+
+                                //            break;
+                                //        case '2':
+                                //        case 'E':
+                                //            wafer.Status = Job.MapStatus.Crossed;
+
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = true;
+
+                                //            //Node.IsMapping = false;
+                                //            break;
+                                //        default:
+                                //        case '?':
+                                //            wafer.Status = Job.MapStatus.Undefined;
+
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = true;
+
+                                //            //Node.IsMapping = false;
+                                //            break;
+                                //        case 'W':
+                                //            wafer.Status = Job.MapStatus.Double;
+
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = true;
+
+                                //            //Node.IsMapping = false;
+                                //            break;
+                                //    }
+
+
+                                //}
+
                                 if (!Node.IsMapping)
                                 {
                                     CommandReturnMessage rem = new CommandReturnMessage();
@@ -1376,15 +1393,27 @@ namespace TransferControl.Engine
                             case Transaction.Command.LoadPortType.Load:
 
                                 break;
-                            case Transaction.Command.LoadPortType.Unload:
-                            case Transaction.Command.LoadPortType.MappingUnload:
+                            case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
                             case Transaction.Command.LoadPortType.UnDock:
                                 Node.IsLoad = false;
+                                Node.IsMapping = false;
+                                foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
+                                {
+                                    JobManagement.Remove(eachJob);
+                                }
+                                break;
+
+                            case Transaction.Command.LoadPortType.Unload:
+                            case Transaction.Command.LoadPortType.MappingUnload:
+                                Node.IsLoad = false;
+                                Node.IsMapping = false;
                                 _UIReport.On_Node_State_Changed(Node, "UnLoad Complete");
                                 break;
+
                             case Transaction.Command.LoadPortType.InitialPos:
                             case Transaction.Command.LoadPortType.ForceInitialPos:
                                 Node.IsLoad = false;
+                                Node.IsMapping = false;
                                 _UIReport.On_Node_State_Changed(Node, "Ready To Load");
                                 Node.State = "READY";
 
@@ -1414,6 +1443,10 @@ namespace TransferControl.Engine
                                 Node.LoadTime = DateTime.Now;
                                 //if (Node.Vendor.ToUpper().Equals("ASYST"))
                                 //    Msg.Value = Msg.Value.Replace("2", "3").Replace("E", "3").Replace("W", "7").Replace("?", "9");
+                                if (Node.Vendor.Equals("SANWA_MC") && Node.Type.ToUpper().Equals("LOADPORT"))
+                                {
+                                    Msg.Value = Msg.Value.Replace("E", "3").Replace("W", "2");
+                                }
 
                                 string Mapping = Msg.Value;
 
@@ -1425,6 +1458,8 @@ namespace TransferControl.Engine
                                         Node.IsMapping = false;
                                     }
                                 }
+
+
 
 
                                 if (SystemConfig.Get().DummyMappingData)
@@ -1445,78 +1480,75 @@ namespace TransferControl.Engine
 
                                 Node.MappingResult = Mapping;
 
-                                
+                                MappingResultAnalysis(Node, Mapping);
 
+                                //int currentIdx = 1;
+                                //for (int i = 0; i < Mapping.Length; i++)
+                                //{
+                                //    if (Node.CarrierType != null)
+                                //    {
+                                //        if (Node.CarrierType.Equals("OPEN"))
+                                //        {
 
-                                int currentIdx = 1;
-                                for (int i = 0; i < Mapping.Length; i++)
-                                {
-                                    if (Node.CarrierType != null)
-                                    {
-                                        if (Node.CarrierType.Equals("OPEN"))
-                                        {
+                                //            if ((i + 1) > 13)
+                                //            {
+                                //                continue;
+                                //            }
 
-                                            if ((i + 1) > 13)
-                                            {
-                                                continue;
-                                            }
-
-                                        }
-                                    }
-                                    Job wafer = JobManagement.Add();
-                                    wafer.Slot = (i + 1).ToString();
+                                //        }
+                                //    }
+                                //    Job wafer = JobManagement.Add();
+                                //    wafer.Slot = (i + 1).ToString();
                                    
-                                    wafer.Position = Node.Name;
-                                    wafer.AlignerFlag = false;
-                                    wafer.MappingValue = Mapping[i].ToString();
-                                    string Slot = (i + 1).ToString("00");
+                                //    wafer.Position = Node.Name;
+                                //    wafer.AlignerFlag = false;
+                                //    wafer.MappingValue = Mapping[i].ToString();
+                                //    string Slot = (i + 1).ToString("00");
 
 
-                                    switch (Mapping[i])
-                                    {
-                                        case '0':
-                                            //wafer.Status = Job.MapStatus.Empty;
+                                //    switch (Mapping[i])
+                                //    {
+                                //        case '0':
+                                //            //wafer.Status = Job.MapStatus.Empty;
 
-                                            //wafer.MapFlag = false;
-                                            //wafer.ErrPosition = false;
-                                            JobManagement.Remove(wafer);
-                                            break;
-                                        case '1':
-                                            wafer.Status = Job.MapStatus.Normal;
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = false;
+                                //            //wafer.MapFlag = false;
+                                //            //wafer.ErrPosition = false;
+                                //            JobManagement.Remove(wafer);
+                                //            break;
+                                //        case '1':
+                                //            wafer.Status = Job.MapStatus.Normal;
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = false;
 
-                                            break;
-                                        case '2':
-                                        case 'E':
-                                            wafer.Status = Job.MapStatus.Crossed;
+                                //            break;
+                                //        case '2':
+                                //        case 'E':
+                                //            wafer.Status = Job.MapStatus.Crossed;
 
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = true;
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = true;
 
-                                            //Node.IsMapping = false;
-                                            break;
-                                        default:
-                                        case '?':
-                                            wafer.Status = Job.MapStatus.Undefined;
+                                //            //Node.IsMapping = false;
+                                //            break;
+                                //        default:
+                                //        case '?':
+                                //            wafer.Status = Job.MapStatus.Undefined;
 
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = true;
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = true;
 
-                                            //Node.IsMapping = false;
-                                            break;
-                                        case 'W':
-                                            wafer.Status = Job.MapStatus.Double;
+                                //            //Node.IsMapping = false;
+                                //            break;
+                                //        case 'W':
+                                //            wafer.Status = Job.MapStatus.Double;
 
-                                            wafer.MapFlag = true;
-                                            wafer.ErrPosition = true;
-
-                                            //Node.IsMapping = false;
-                                            break;
-                                    }
+                                //            wafer.MapFlag = true;
+                                //            wafer.ErrPosition = true;
+                                //            break;
+                                //    }
 
 
-                                }
+                                //}
                                 if (!Node.IsMapping)
                                 {
                                     CommandReturnMessage rem = new CommandReturnMessage();
@@ -2038,6 +2070,97 @@ namespace TransferControl.Engine
             _UIReport.On_Message_Log(Type, Message);
         }
 
-        
+        private void MappingResultAnalysis(Node Node, string Mapping)
+        {
+            for (int i = 0; i < Mapping.Length; i++)
+            {
+                Job wafer = JobManagement.Add();
+                wafer.Slot = (i + 1).ToString();
+
+                wafer.Position = Node.Name;
+                wafer.AlignerFlag = false;
+                wafer.MappingValue = Mapping[i].ToString();
+                string Slot = (i + 1).ToString("00");
+
+                //除了中科信與帆宣
+                //其餘Mapping Result通訊統一輸出
+                if (SystemConfig.Get().TaskFlow.ToUpper().Equals("EFEM_SEMICORE") ||
+                    SystemConfig.Get().TaskFlow.ToUpper().Equals("EFEM_MIC_2P"))
+                {
+                    switch (Mapping[i])
+                    {
+                        case '0':
+                            JobManagement.Remove(wafer);
+                            break;
+                        case '1':
+                            wafer.Status = Job.MapStatus.Normal;
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = false;
+
+                            break;
+                        case '2':
+                        case 'E':
+                            wafer.Status = Job.MapStatus.Crossed;
+
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = true;
+
+                            break;
+                        case 'W':
+                            wafer.Status = Job.MapStatus.Double;
+
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = true;
+                            break;
+                        case '?':
+                        default:
+                            wafer.Status = Job.MapStatus.Undefined;
+
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = true;
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (Mapping[i])
+                    {
+                        case '0':
+                            JobManagement.Remove(wafer);
+                            break;
+
+                        case '1':
+                            wafer.Status = Job.MapStatus.Normal;
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = false;
+                            break;
+
+                        case '3':
+                            wafer.Status = Job.MapStatus.Crossed;
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = true;
+                            break;
+
+                        case '7':
+                        case '2':
+                            wafer.Status = Job.MapStatus.Double;
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = true;
+                            break;
+
+                        case '8':
+                        case '9':
+                        default:
+                            wafer.Status = Job.MapStatus.Undefined;
+
+                            wafer.MapFlag = true;
+                            wafer.ErrPosition = true;
+                            break;
+                    }
+                }
+            }
+        }
+
+
     }
 }

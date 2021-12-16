@@ -275,6 +275,7 @@ namespace TransferControl.Management
                 public const string SetUnLoad = "SetUnLoad";
                 public const string UntilUnDock = "UntilUnDock";
                 public const string DockingPositionNoVac = "DockingPositionNoVac";
+                public const string UntilDoorCloseVacOFF = "UntilDoorCloseVacOFF";
                 //取得CST模式
                 public const string GetOPMode = "GetOPMode";                        
             }

@@ -157,9 +157,7 @@ namespace TransferControl.Management
 
         public bool IsExcuting { get; set; }
         public bool IsMoving { get; set; }
-
         public bool IsPause { get; set; }
-
         public string R_Flip_Degree { get; set; }
 
         public string L_Flip_Degree { get; set; }
@@ -484,12 +482,10 @@ namespace TransferControl.Management
         /// <returns></returns>
         public bool SendCommand(Transaction txn)
         {
-
             lock (ExcuteLock)
             {
                 if (IsExcuting)
                 {
-
                     logger.Debug("SendCommand(Transaction txn)" + "if (IsExcuting)");
                     return false;
                 }
@@ -536,28 +532,6 @@ namespace TransferControl.Management
                 txn.AdrNo = AdrNo;
                 txn.NodeName = this.Name;
                 txn.NodeType = Type;
-                //if (txn.Value != null)
-                //{
-                //    if (!txn.Value.Equals(""))
-                //    {
-                //        CmdParamManagement.ParamMapping Mapping = CmdParamManagement.FindMapping(this.Brand.ToUpper(), txn.Method, "Value", txn.Value);
-                //        if (Mapping != null)
-                //        {
-                //            txn.Value = Mapping.MappingCode;
-                //        }
-                //    }
-                //}
-                //if (txn.Arm != null)
-                //{
-                //    if (!txn.Arm.Equals(""))
-                //    {
-                //        CmdParamManagement.ParamMapping Mapping = CmdParamManagement.FindMapping(this.Brand.ToUpper(), txn.Method, "Arm", txn.Arm);
-                //        if (Mapping != null)
-                //        {
-                //            txn.Arm = Mapping.MappingCode;
-                //        }
-                //    }
-                //}
 
                 if (!txn.Position.Equals(""))
                 {
@@ -1140,7 +1114,7 @@ namespace TransferControl.Management
                                 break;
 
                             case Transaction.Command.RFIDType.GetCarrierID:
-                                if(txn.Value.Equals(""))
+                                if (txn.Value.Equals(""))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().RFID.ReadCarrierID();
                                 }
@@ -1227,7 +1201,7 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Online);
                                 }
-                                else if(txn.Value.Equals("2"))
+                                else if (txn.Value.Equals("2"))
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Auto);
                                 }
@@ -1330,7 +1304,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Reset(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
 
-                                if(Vendor.ToUpper().Equals("ASYST"))
+                                if (Vendor.ToUpper().Equals("ASYST"))
                                     txn.CommandType = "SET";
                                 break;
                             case Transaction.Command.LoadPortType.Unload:
@@ -1436,6 +1410,10 @@ namespace TransferControl.Management
                                 break;
                             case Transaction.Command.LoadPortType.DockingPositionNoVac:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.DockingPositionNoVac(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;
+                            case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.UntilDoorCloseVacOFF(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.LoadPortType.MoveToSlot:
@@ -1796,7 +1774,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Aligner.SaveLog(AdrNo, txn.Seq);
                                 txn.CommandType = "SET";
                                 txn.AckTimeOut = 180000;
-                                break;              
+                                break;
                         }
                         break;
                     case "OCR":
