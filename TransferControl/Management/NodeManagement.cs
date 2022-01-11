@@ -219,7 +219,8 @@ namespace TransferControl.Management
             }
             if (result == null)
             {
-                logger.Error("Node not exist, Name:" + Name);
+                //logger.Error("Node not exist, Name:" + Name);
+                logger.Debug("Node not exist, Name:" + Name);
             }
             return result;
         }  

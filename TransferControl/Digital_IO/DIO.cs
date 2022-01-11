@@ -580,7 +580,12 @@ namespace TransferControl.Digital_IO
             }
             return result;
         }
-
+        /// <summary>
+        /// 未考慮 abnormal 情況
+        /// </summary>
+        /// <param name="Type"></param>
+        /// <param name="Parameter"></param>
+        /// <returns></returns>
         public string GetIO(string Type, string Parameter)
         {
 
@@ -594,9 +599,7 @@ namespace TransferControl.Digital_IO
                     {
                         IDIOController ctrl;
                         if (Ctrls.TryGetValue(outCfg.DeviceName, out ctrl))
-                        {
                             result = ctrl.GetOut(outCfg.Address);
-                        }
                     }
                 }
                 else
@@ -613,9 +616,7 @@ namespace TransferControl.Digital_IO
                         inCfg = find.First();
                         IDIOController ctrl;
                         if (Ctrls.TryGetValue(inCfg.DeviceName, out ctrl))
-                        {
                             result = ctrl.GetIn(inCfg.Address);
-                        }
                     }
                 }
             }

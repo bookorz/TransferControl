@@ -488,6 +488,10 @@ namespace TransferControl.Engine
                                     {
                                         Msg.Value = Msg.Value.Replace("W", "7").Replace("?", "9").Replace("2", "3");
                                     }
+                                    else
+                                    {
+                                        Msg.Value = Msg.Value.Replace("2", "3").Replace("?", "9").Replace("W","7");
+                                    }
                                 }
 
                                 if (Node.Vendor.Equals("SANWA_MC") && Node.Type.ToUpper().Equals("LOADPORT"))
@@ -502,76 +506,6 @@ namespace TransferControl.Engine
                                 Node.IsMapping = true;
 
                                 MappingResultAnalysis(Node, Mapping);
-                                //bool IsError = false;
-                                //int currentIdx = 1;
-                                //for (int i = 0; i < Mapping.Length; i++)
-                                //{
-                                //    if (Node.CarrierType != null)
-                                //    {
-                                //        if (Node.CarrierType.Equals("OPEN"))
-                                //        {
-
-                                //            if ((i + 1) > 13)
-                                //            {
-                                //                continue;
-                                //            }
-
-                                //        }
-                                //    }
-                                //    Job wafer = JobManagement.Add();
-                                //    wafer.Slot = (i + 1).ToString();
-
-                                //    wafer.Position = Node.Name;
-                                //    wafer.AlignerFlag = false;
-                                //    wafer.MappingValue = Mapping[i].ToString();
-                                //    string Slot = (i + 1).ToString("00");
-
-
-                                //    switch (Mapping[i])
-                                //    {
-                                //        case '0':
-                                //            //wafer.Status = Job.MapStatus.Empty;
-
-                                //            //wafer.MapFlag = false;
-                                //            //wafer.ErrPosition = false;
-                                //            JobManagement.Remove(wafer);
-                                //            break;
-                                //        case '1':
-                                //            wafer.Status = Job.MapStatus.Normal;
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = false;
-
-                                //            break;
-                                //        case '2':
-                                //        case 'E':
-                                //            wafer.Status = Job.MapStatus.Crossed;
-
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = true;
-
-                                //            //Node.IsMapping = false;
-                                //            break;
-                                //        default:
-                                //        case '?':
-                                //            wafer.Status = Job.MapStatus.Undefined;
-
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = true;
-
-                                //            //Node.IsMapping = false;
-                                //            break;
-                                //        case 'W':
-                                //            wafer.Status = Job.MapStatus.Double;
-
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = true;
-
-                                //            //Node.IsMapping = false;
-                                //            break;
-                                //    }
-
-
-                                //}
 
                                 if (!Node.IsMapping)
                                 {

@@ -420,48 +420,19 @@ namespace TransferControl.TaksFlow
 
             return true;
         }
+        /// <summary>
+        /// 不直接讀取Robot狀態，而是動作結束(PUT\GET)後，更新Robot狀態
+        /// </summary>
+        /// <param name="TaskJob"></param>
+        /// <param name="Target"></param>
+        /// <param name="Value"></param>
+        /// <returns></returns>
         public virtual bool Sanwa_RobotGetClamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
                 case 0:
                     AckTask(TaskJob);
-                    //switch (Value)
-                    //{
-                    //    case "1":
-                    //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
-                    //        break;
-
-                    //    case "2":
-                    //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
-                    //        break;
-
-                    //}
-
-                    break;
-
-                case 1:
-                    //取得R軸電磁閥最後狀態
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "01" }));
-                    break;
-
-                case 2:
-                    //取得L軸電磁閥最後狀態
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
-                    break;
-
-                case 3:
-                    //確認R軸 Presence                   
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "008" }));
-                    break;
-
-                case 4:
-                    //確認L軸 Presence
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetRIO, Value = "009" }));
                     break;
 
                 default:
@@ -797,9 +768,6 @@ namespace TransferControl.TaksFlow
                     break;
 
                 case 1:
-
-                    //AckTask(TaskJob);
-
                     //開啟R軸電磁閥
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.SetSV, Arm = "01", Value = "1" }));
@@ -894,13 +862,6 @@ namespace TransferControl.TaksFlow
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
 
                     break;
-
-                //case 14:
-                //    //Servo on
-                //    if (!SystemConfig.Get().OfflineMode)
-                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
-
-                //    break;
 
                 case 15:
                     //更新Bobot狀態
@@ -1157,15 +1118,15 @@ namespace TransferControl.TaksFlow
 
                     AckTask(TaskJob);
 
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnDock }));
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UntilUnDock }));
+
                     break;
 
                 case 1:
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
-                    break;
 
+                    break;
                 default:
                     FinishTask(TaskJob);
                     return false;
@@ -1518,7 +1479,7 @@ namespace TransferControl.TaksFlow
 
                     AckTask(TaskJob);
 
-                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UntilDoorCloseVacOFF }));
 
                     break;
 
@@ -1706,6 +1667,153 @@ namespace TransferControl.TaksFlow
 
             return true;
         }
-#endregion
+        #endregion
+        #region SANWA_E84
+        public virtual bool Sawan_E84INIT(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
+
+                    break;
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sawan_E84Reset(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
+                    }
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
+                    }
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (IsNodeEnabledOrNull(Target.Name))
+                        {
+                            if (NodeManagement.Get(Target.Name).E84Mode == E84_Mode.AUTO)
+                            {
+                                //確認天車完全移走
+                                if (!NodeManagement.Get(Target.Name).E84IOStatus["VALID"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["CS_0"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["CS_1"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["AM_AVBL"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["TR_REQ"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["BUSY"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["COMPT"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["CONT"] &&
+                                    !NodeManagement.Get(Target.Name).E84IOStatus["HO_AVBL"])
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.Reset }));
+                                }
+                            }
+                        }
+                    }
+                    break;
+
+                case 3:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
+                    }
+                    break;
+
+                case 4:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
+                    }
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sawan_E84Mode(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (Target.E84IOStatus["VALID"])
+                        {
+                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, string.Format("S04000{0}", Target.Name.Substring(3, 2)));
+                            return false;
+                        }
+                    }
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (Value.Equals("1")) //set auto
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetAutoMode }));
+                        }
+                        else //set manual
+                        {
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetManualMode }));
+                        }
+                    }
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetE84IOStatus }));
+                    }
+                    break;
+
+                case 3:
+                    if (!SystemConfig.Get().OfflineMode)
+                    {
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.GetDIOStatus }));
+                    }
+                    break;
+
+                default:
+
+                    if (TaskJob.TaskName == TaskFlowManagement.Command.E84_MODE)
+                        NodeManagement.Get(Target.Associated_Node).E84Mode = Value.Equals("1") ? E84_Mode.AUTO : E84_Mode.MANUAL;
+
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        #endregion
     }
 }

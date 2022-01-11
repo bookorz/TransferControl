@@ -67,6 +67,22 @@ namespace TransferControl.Management
             return result;
         }
 
+        public static void Save()
+        {
+            List<RobotPoint> result = new List<RobotPoint>();
+            foreach(Dictionary<string, RobotPoint> list in PointList.Values)
+            {
+                foreach(RobotPoint each in list.Values)
+                {
+                    result.Add(each);
+                }
+            }
+
+            result.Sort((x, y) => { return x.Position.CompareTo(y.Position); });
+
+            new ConfigTool<List<RobotPoint>>().WriteFile("config/Point.json", result);
+        }
+
         //public static RobotPoint GetMapPoint(string RobotName,string Position, string RecipeID)
         //{
         //    RobotPoint result = null;

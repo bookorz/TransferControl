@@ -99,10 +99,11 @@ namespace TransferControl.Management
                     TaskFlow = new EFEM_SemiCore(this);
                     break;
                 case "EFEM_MIC_2P":
-                case "EFEM_HWATSING_2P":
                     TaskFlow = new EFEM_MIC_2P(this);
                     break;
-
+                case "EFEM_HWATSING_2P":
+                    TaskFlow = new EFEM_HWATSING_2P(this);
+                    break;
                 default:
                     throw new NotSupportedException();
             }

@@ -39,6 +39,8 @@ namespace TransferControl.Config
 
         public string ConfigVer { get; set; } = "Undefined";
 
+        public int LogKeepDays { get; set; } = 30;
+
 
         public static SystemConfig Get()
         {

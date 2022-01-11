@@ -565,9 +565,56 @@ namespace TransferControl.Management
                         txn.Method.Equals(Transaction.Command.RobotType.PutWaitByLArm) ||
                         txn.Method.Equals(Transaction.Command.RobotType.GetWaitByLArm))
                     {
-
                         //設定POINT2的情況下，L Arm 使用Point2
                         txn.Point = point.Point2.Equals("") ? point.Point:point.Point2;
+                    }
+                    else if (txn.Method.Equals(Transaction.Command.RobotType.PutByUpClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutByUpVacuumArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownVacuumArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpVacuumArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownVacuumArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutByUpClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutByUpVacuumArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownVacuumArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownClampArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpVacuumArm) ||
+                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownVacuumArm))
+                    {
+                        switch(txn.Method)
+                        {
+                            case Transaction.Command.RobotType.PutByUpClampArm:
+                            case Transaction.Command.RobotType.PutWaitByUpClampArm:
+                            case Transaction.Command.RobotType.GetByUpClampArm:
+                            case Transaction.Command.RobotType.GetWaitByUpClampArm:
+                                txn.Point = point.UpClampPoint;
+                                break;
+
+                            case Transaction.Command.RobotType.PutByDownClampArm:
+                            case Transaction.Command.RobotType.PutWaitByDownClampArm:
+                            case Transaction.Command.RobotType.GetByDownClampArm:
+                            case Transaction.Command.RobotType.GetWaitByDownClampArm:
+                                txn.Point = point.DownClampPoint;
+                                break;
+
+                            case Transaction.Command.RobotType.PutByUpVacuumArm:
+                            case Transaction.Command.RobotType.PutWaitByUpVacuumArm:
+                            case Transaction.Command.RobotType.GetByUpVacuumArm:
+                            case Transaction.Command.RobotType.GetWaitByUpVacuumArm:
+                                txn.Point = point.UpVacuumPoint;
+                                break;
+
+                            case Transaction.Command.RobotType.PutByDownVacuumArm:
+                            case Transaction.Command.RobotType.PutWaitByDownVacuumArm:
+                            case Transaction.Command.RobotType.GetByDownVacuumArm:
+                            case Transaction.Command.RobotType.GetWaitByDownVacuumArm:
+                                txn.Point = point.DownVacuumPoint;
+                                break;
+                        }
                     }
                     else
                     {
