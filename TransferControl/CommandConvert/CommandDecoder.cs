@@ -1451,6 +1451,7 @@ namespace TransferControl.CommandConvert
                                                 case "ABORT_TWEEKUP":
                                                 case "ABORT_UNLOCK":
                                                 case "ABORT_WAFER":
+                                                case "CANNOT_PERFORM":
                                                 case "WARNING":
                                                 case "FATAL":
                                                 case "FAILED_SELF-TEST":
