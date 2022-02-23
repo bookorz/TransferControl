@@ -26,6 +26,11 @@ namespace TransferControl.CommandConvert
                     case "SANWA_MC":
                         result = SANWA_MCCodeAnalysis(Message);
                         break;
+
+                    case "SANWA_HWATSING_MC":
+                        result = SANWA_HWATSING_MCCodeAnalysis(Message);
+                        break;
+
                     case "SANWA":
                     case "ATEL_NEW":
                         result = SANWACodeAnalysis(Message);
@@ -900,6 +905,131 @@ namespace TransferControl.CommandConvert
 
             return result;
         }
+        private List<CommandReturnMessage> SANWA_HWATSING_MCCodeAnalysis(string Message)
+        {
+            List<CommandReturnMessage> result;
+            string[] msgAry;
+
+            try
+            {
+                result = new List<CommandReturnMessage>();
+                msgAry = Message.Split('\r');
+
+                foreach (string Msg in msgAry)
+                {
+                    if (Msg.Trim().Equals(""))
+                    {
+                        continue;
+                    }
+                    CommandReturnMessage each = new CommandReturnMessage
+                    {
+                        OrgMsg = Msg.Substring(Msg.IndexOf("$")),
+                        CommandType = "CMD"
+                    };
+
+                    each.NodeAdr = each.OrgMsg[1].ToString();
+
+                    string[] content = each.OrgMsg.Replace("\r", "").Replace("\n", "").Substring(2).Split(':');
+                    for (int i = 0; i < content.Length; i++)
+                    {
+                        switch (i)
+                        {
+                            case 0:
+                                switch (content[i])
+                                {
+                                    case "ACK":
+                                        each.Type = CommandReturnMessage.ReturnType.Excuted;
+                                        break;
+                                    case "NAK":
+                                        each.Type = CommandReturnMessage.ReturnType.Error;
+                                        break;
+                                    case "FIN":
+                                        each.Type = CommandReturnMessage.ReturnType.Finished;
+                                        break;
+                                    case "MCR":
+                                    case "SET":
+                                        each.Command = content[i];
+
+                                        each.Type = CommandReturnMessage.ReturnType.Sending;
+                                        break;
+                                    case "EVT":
+                                        each.Type = CommandReturnMessage.ReturnType.Event;
+                                        break;
+                                }
+                                break;
+                            case 1:
+                                if (each.Command == null)
+                                {
+                                    each.Command = content[i];
+                                }
+                                else if (!each.Command.Equals("MCR__"))
+                                {
+                                    each.Command = content[i];
+                                }
+                                break;
+                            case 2:
+                                if (each.Type.Equals(CommandReturnMessage.ReturnType.Event))
+                                {
+                                    each.Value = content[i];
+                                    each.NodeAdr = "";
+                                }
+                                else
+                                {
+                                    if (!each.Type.Equals(CommandReturnMessage.ReturnType.Sending))
+                                    {
+                                        if (content[i].IndexOf(",") != -1)
+                                        {
+
+                                            if (each.Type.Equals(CommandReturnMessage.ReturnType.Finished))
+                                            {
+                                                each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8);
+
+                                                if (!each.Value.Equals("00000000"))
+                                                {
+                                                    each.Type = CommandReturnMessage.ReturnType.Error;
+                                                }
+                                                else
+                                                {
+                                                    if (content[i].IndexOf(",", 2) != -1)
+                                                    {
+                                                        each.Value = content[i].Substring(content[i].IndexOf(",", 2) + 1);
+                                                    }
+                                                }
+                                            }
+                                            else if (each.Type.Equals(CommandReturnMessage.ReturnType.Error))
+                                            {
+                                                each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8);
+                                            }
+                                            else if (each.Type.Equals(CommandReturnMessage.ReturnType.Excuted) && each.Command.Equals("E84__"))
+                                            {
+                                                each.Value = content[i].Substring(content[i].IndexOf(",") + 1, 8).Substring(4);
+                                                if (!each.Value.Equals("000000BB"))
+                                                {
+                                                    each.Type = CommandReturnMessage.ReturnType.Error;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            each.NodeAdr = content[i];
+                                        }
+                                    }
+                                }
+                                break;
+
+                        }
+                    }
+
+                    result.Add(each);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
+            return result;
+        }
         private List<CommandReturnMessage> SANWA_MCCodeAnalysis(string Message)
         {
             List<CommandReturnMessage> result;
@@ -1455,6 +1585,7 @@ namespace TransferControl.CommandConvert
                                                 case "WARNING":
                                                 case "FATAL":
                                                 case "FAILED_SELF-TEST":
+                                                case "FAILED_LOG_SAVE":
                                                     each.Type = CommandReturnMessage.ReturnType.Error;
                                                     each.Command = content[i];
                                                     each.Value = content[i];
@@ -1475,6 +1606,7 @@ namespace TransferControl.CommandConvert
 
                                                 case "CMPL_CAL":
                                                 case "CMPL_LOCK":
+                                                case "CMPL_LOG_SAVE":
                                                 case "CMPL_MAP":
                                                 case "CMPL_SELF-TEST":
                                                 case "CMPL_TWEEKDN":
@@ -1493,6 +1625,7 @@ namespace TransferControl.CommandConvert
                                                 case "POD_REMOVED":
                                                 case "POD_UNKNOWN":
                                                 case "EXIT_HOME":
+                                                case "START_LOG_SAVE":
                                                     each.Type = CommandReturnMessage.ReturnType.Event;
                                                     each.Command = content[i];
                                                     break;

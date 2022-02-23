@@ -39,6 +39,7 @@ namespace TransferControl.CommandConvert
                 case "SANWA":
                 case "ATEL":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     result = "\r";
                     break;
 
@@ -48,7 +49,21 @@ namespace TransferControl.CommandConvert
             }
             return result;
         }
+        public string Initialize(string Address, string Sequence)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:INIT_:0";
+                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
 
+            return commandStr;
+        }
         /// <summary>
         /// Abssolute Encoder Offset
         /// </summary>
@@ -112,6 +127,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}GET:POS__:{2},{3}";
                     commandStr = string.Format(commandStr, Address, Sequence, Type, Unit) + EndCode();
                     break;
@@ -158,6 +174,7 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
+                case "SANWA_HWATSING_MC":
                 case "ATEL_NEW":
                     commandStr = "${0}{1}SET:CONT_";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
@@ -182,6 +199,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:PAUSE";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
@@ -205,6 +223,7 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:STOP_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence,m1) + EndCode();
                     break;
@@ -233,6 +252,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}GET:ERR__:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, Convert.ToInt16(no).ToString("00")) + EndCode();
                     break;
@@ -260,6 +280,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:RESET";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
@@ -311,6 +332,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:SERVO:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, sv) + EndCode();
                     break;
@@ -363,6 +385,12 @@ namespace TransferControl.CommandConvert
                     commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot);
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
+
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:GET__:0,{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -429,6 +457,10 @@ namespace TransferControl.CommandConvert
                     commandStr = "{0},MOVP,{1},{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot,"GBH");
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:GETW_:0,{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -512,6 +544,10 @@ namespace TransferControl.CommandConvert
                     commandStr = "{0},SENS,{1},{2}";
                     commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm));
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
+                    break;
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:GETPS:0";
+                    commandStr = string.Format(commandStr, Sequence, Address) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -602,6 +638,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:LOGSV";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
@@ -673,6 +710,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:MODE_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, vl) + EndCode();
                     break;
@@ -709,6 +747,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}GET:MODE_";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
@@ -831,6 +870,12 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:ORG__";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
+
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:SHOME:0";
+                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1037,11 +1082,18 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:PUT__:{2},{3},{4},{5}";
                     commandStr = string.Format(commandStr, Address, Sequence, Point.PadLeft(4, '0'), Slot.PadLeft(2, '0'), Arm, "0") + EndCode();
                     break;
+
                 case "KAWASAKI":
                     commandStr = "{0},PUTS,{1},{2},{3},{4}";
                     commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot);
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
+
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:PUT__:0,{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1144,6 +1196,10 @@ namespace TransferControl.CommandConvert
                     commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(Arm), Point, Slot, "PBH");
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:PUTW_:0,{2},{3},{4}";
+                    commandStr = string.Format(commandStr, Address, Sequence, Point, Slot, Arm) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1198,6 +1254,10 @@ namespace TransferControl.CommandConvert
                 case "SANWA":
                 case "ATEL_NEW":
                     commandStr = "${0}{1}CMD:RET__";
+                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
+                    break;
+                case "SANWA_HWATSING_MC":
+                    commandStr += "${0}{1}MCR:RET__:0";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
                 case "KAWASAKI":
@@ -1320,6 +1380,7 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
+                case "SANWA_HWATSING_MC":
                     vl = Convert.ToInt16(vl).ToString();
                     if (vl.Equals("0"))
                     {
@@ -1370,6 +1431,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:SP___:{2},{3}";
                     commandStr = string.Format(commandStr, Address, Sequence, axis, vl) + EndCode();
                     break;
@@ -1513,6 +1575,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}GET:SP___";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
@@ -1542,6 +1605,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}GET:STS__";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
@@ -1646,6 +1710,10 @@ namespace TransferControl.CommandConvert
                     commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(arm));
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:HOLD_:0,{2},1";
+                    commandStr = string.Format(commandStr, Address, Sequence, arm) + EndCode();
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1669,16 +1737,24 @@ namespace TransferControl.CommandConvert
                     commandStr = "${0}{1}CMD:WRLS_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, arm) + EndCode();
                     break;
+
                 case "KAWASAKI":
                     commandStr = "{0},RELS,{1},{2}";
                     commandStr = string.Format(commandStr, Sequence, Address, KawasakiArm(arm));
                     commandStr = "<" + commandStr + ">" + KawasakiCheckSum(commandStr) + EndCode();
                     break;
+
+                case "SANWA_HWATSING_MC":
+                    commandStr = "${0}{1}MCR:HOLD_:0,{2},0";
+                    commandStr = string.Format(commandStr, Address, Sequence, arm) + EndCode();
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }
             return commandStr;
         }
+
 
         /// <summary>
         /// 取得  Panel(Wafer)  的狀態 
@@ -1712,6 +1788,7 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
+                case "SANWA_HWATSING_MC":
                     commandStr = "${0}{1}SET:LOGSV";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;

@@ -41,7 +41,11 @@ namespace TransferControl.Management
         public bool ErrPosition { get; set; }
         public bool MapFlag { get; set; }
         public int Offset { get; set; }
-       
+
+        public string Destination { get; set; }
+        public string DestinationSlot { get; set; }
+        public bool IsAssigned { get; set; }
+
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string WaferSize { get; set; }
@@ -80,7 +84,10 @@ namespace TransferControl.Management
            
             WaferSize = "";
             MappingValue = "";
-        }
+
+            Destination = "";
+            IsAssigned = false;
+    }
 
        
     }

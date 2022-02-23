@@ -508,6 +508,7 @@ namespace TransferControl.Controller
                 switch (Vendor.ToUpper())
                 {
                     case "SANWA_MC":
+                    case "SANWA_HWATSING_MC":
                         if (orgTxn.CommandEncodeStr.Contains("MCR:"))
                         {
                             Txn.CommandType = "CMD";
@@ -515,7 +516,8 @@ namespace TransferControl.Controller
 
                         if (Txn.Method == Transaction.Command.LoadPortType.Reset)
                         {
-                            key = "0";
+                            //key = "0";
+                            key = Vendor.ToUpper().Equals("SANWA_MC") ? "0" : Txn.AdrNo;
                         }
                         else
                         {

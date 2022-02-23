@@ -418,6 +418,7 @@ namespace TransferControl.Management
             LOADPORT_READ_LED,
             LOADPORT_READ_STATUS,
             LOADPORT_READ_VERSION,
+            LOADPORT_SAVE_LOG,
             LOADPORT_SET_SPEED,
             LOADPORT_SET_OPACCESS_INDICATOR,
             LOADPORT_SET_LOAD_INDICATOR,
@@ -551,6 +552,7 @@ namespace TransferControl.Management
             E84_INIT,
             E84_SET_ALL_MODE,
             E84_TRANSREQ,
+            EFEM_INIT
         }
     }
 }

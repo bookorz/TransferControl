@@ -1815,5 +1815,18 @@ namespace TransferControl.TaksFlow
             return true;
         }
         #endregion
+
+        public virtual void GetRobotPresence(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+
+        }
+        public virtual void GetRobotPosition(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            if (!SystemConfig.Get().OfflineMode)
+            {
+                if (Target.Enable)
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetPosition, Value = "2" }));
+            }
+        }
     }
 }

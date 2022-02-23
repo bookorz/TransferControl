@@ -13,10 +13,36 @@ using TransferControl.Engine;
 namespace TransferControl.Management
 {
     public enum E84_Mode { UNKNOW = -1, MANUAL, AUTO }
+    public enum Robot_ArmType { UNKNOW = -1,USE_RARM, USE_LARM, USE_RLARM}
     public class Node
     {
-
         ILog logger = LogManager.GetLogger(typeof(Node));
+
+        public class ProcedureStatus
+        {
+            public const string Idle = "Idle";
+            public const string Stop = "Stop";
+            public const string ErrorStop = "ErrorStop";
+            public const string CheckPresence = "CheckPresence";
+            public const string GetPresence = "GetPresence";
+            public const string LoadAndMapping = "LoadAndMapping";
+            public const string TransferWafer = "TransferWafer";
+            public const string CheckType = "CheckType";
+            public const string AssignWafer = "AssignWafer";
+            public const string IsLoaderEmpty = "IsLoaderEmpty";
+            public const string IsUnloaderFull = "IsUnloaderFull";
+            public const string Unload = "Unload";
+            public const string WaitUnloadCompleted = "WaitUnloadCompleted";
+            public const string OnlyOneWaferOnRArm = "OnlyOneWaferOnRArm";
+            public const string OnlyOneWaferOnLArm = "OnlyOneWaferOnLArm";
+            public const string NoWaferOnRLArm = "NoWaferOnRLArm";
+            public const string FullWaferOnRLArm = "FullWaferOnRLArm";
+            public const string Get = "Get";
+            public const string Put = "Put";
+        }
+
+        public bool AssignWaferFinished { get; set; } 
+
         public int AckTimeOut { get; set; }
         public int MotionTimeOut { get; set; }
         public string ConnectionStatus { get; set; }
@@ -90,8 +116,10 @@ namespace TransferControl.Management
         /// LoadPort專用，Foup Load的時間
         /// </summary>
         public DateTime LoadTime { get; set; }
-
-
+        /// <summary>
+        /// LoadPort專用，Foup 存放 Wafer 容量
+        /// </summary>
+        public int Foup_Capacity { get; set; }
 
         public string CarrierType { get; set; }
 
@@ -100,8 +128,6 @@ namespace TransferControl.Management
         public bool OPACCESS { get; set; }
 
         public string LastFinMethod { get; set; }
-
-
 
         public string WaferSize { get; set; }
 
@@ -289,15 +315,20 @@ namespace TransferControl.Management
         /// </summary>
         public bool LiftPresent { get; set; }
         public string StatusRawData { get; set; }
+        public string NickName { get; set; }
+        public bool NeedReadFoupID { get; set; }
         public IController GetController()
         {
             return ControllerManagement.Get(Controller);
         }
         public Dictionary<string, bool> E84IOStatus { get; set; }
         public E84_Mode E84Mode;
+        public Robot_ArmType RobotArmType;
         public string TransReqMode;
 
         public string AlignDegree{ get; set; }
+
+        public string ProcStatus { get; set; }
 
         public void InitialObject()
         {
@@ -318,6 +349,8 @@ namespace TransferControl.Management
 
             CurrentStatus = "";
             MappingDataSnapshot = "";
+
+            NeedReadFoupID = false;
 
             R_Flip_Degree = "0";
             L_Flip_Degree = "0";
@@ -443,6 +476,12 @@ namespace TransferControl.Management
 
             //20210628 Pingchung TDK USE
             StatusRawData = "";
+
+            ProcStatus = ProcedureStatus.Idle;
+
+            Foup_Capacity = 25;
+
+            RobotArmType = Robot_ArmType.USE_RARM;
         }
        
 
@@ -536,15 +575,8 @@ namespace TransferControl.Management
                 if (!txn.Position.Equals(""))
                 {
 
-                    RobotPoint point;
-                    //if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
-                    //{
-                    //    point = PointManagement.GetMapPoint(this.Name,txn.Position, txn.RecipeID);
-                    //}
-                    //else
-                    //{
-                    point = PointManagement.GetPoint(Name, txn.Position);
-                    //}
+                    RobotPoint point = PointManagement.GetPoint(Name, txn.Position);
+                    
                     if (point == null)
                     {
                         logger.Error("point " + txn.Position + " not found!");
@@ -567,54 +599,6 @@ namespace TransferControl.Management
                     {
                         //設定POINT2的情況下，L Arm 使用Point2
                         txn.Point = point.Point2.Equals("") ? point.Point:point.Point2;
-                    }
-                    else if (txn.Method.Equals(Transaction.Command.RobotType.PutByUpClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.PutByUpVacuumArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownVacuumArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpVacuumArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownVacuumArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.PutByUpClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.PutByUpVacuumArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.PutByDownVacuumArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownClampArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByUpVacuumArm) ||
-                        txn.Method.Equals(Transaction.Command.RobotType.GetByDownVacuumArm))
-                    {
-                        switch(txn.Method)
-                        {
-                            case Transaction.Command.RobotType.PutByUpClampArm:
-                            case Transaction.Command.RobotType.PutWaitByUpClampArm:
-                            case Transaction.Command.RobotType.GetByUpClampArm:
-                            case Transaction.Command.RobotType.GetWaitByUpClampArm:
-                                txn.Point = point.UpClampPoint;
-                                break;
-
-                            case Transaction.Command.RobotType.PutByDownClampArm:
-                            case Transaction.Command.RobotType.PutWaitByDownClampArm:
-                            case Transaction.Command.RobotType.GetByDownClampArm:
-                            case Transaction.Command.RobotType.GetWaitByDownClampArm:
-                                txn.Point = point.DownClampPoint;
-                                break;
-
-                            case Transaction.Command.RobotType.PutByUpVacuumArm:
-                            case Transaction.Command.RobotType.PutWaitByUpVacuumArm:
-                            case Transaction.Command.RobotType.GetByUpVacuumArm:
-                            case Transaction.Command.RobotType.GetWaitByUpVacuumArm:
-                                txn.Point = point.UpVacuumPoint;
-                                break;
-
-                            case Transaction.Command.RobotType.PutByDownVacuumArm:
-                            case Transaction.Command.RobotType.PutWaitByDownVacuumArm:
-                            case Transaction.Command.RobotType.GetByDownVacuumArm:
-                            case Transaction.Command.RobotType.GetWaitByDownVacuumArm:
-                                txn.Point = point.DownVacuumPoint;
-                                break;
-                        }
                     }
                     else
                     {
@@ -1498,6 +1482,14 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetOPMode(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "GET";
                                 break;
+                            case Transaction.Command.LoadPortType.SaveLog:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SaveLog(AdrNo, txn.Seq);
+                                txn.CommandType = "SET";
+                                txn.AckTimeOut = 180000;
+
+                                if (Vendor.ToUpper().Equals("ASYST"))
+                                    txn.CommandType = "CMD";
+                                break;
 
                                 //case Transaction.Command.LoadPortType.SetSlotOffset:
                                 //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
@@ -1523,6 +1515,10 @@ namespace TransferControl.Management
                             case Transaction.Command.RobotType.GetPosition:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.ArmLocation(AdrNo, txn.Seq, txn.Value, "1");
                                 txn.CommandType = "GET";
+                                break;
+                            case Transaction.Command.RobotType.Initialize:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Initialize(AdrNo, txn.Seq);
+                                txn.CommandType = "CMD";
                                 break;
                             case Transaction.Command.RobotType.ArmReturn:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Retract(AdrNo, txn.Seq);

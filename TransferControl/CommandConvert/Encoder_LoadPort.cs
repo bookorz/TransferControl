@@ -1380,6 +1380,19 @@ namespace TransferControl.CommandConvert
             }
             return commandStr + EndCode();
         }
+        public string SaveLog(string Address, string Sequence)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "ASYST":
+                    commandStr = "HCS LOGSV";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
 
         public string SaveLog(CommandType commandType)
         {

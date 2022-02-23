@@ -183,7 +183,8 @@ namespace TransferControl.Comm
                     case "ATEL_NEW":
                     case "SANWA":
                     case "SANWA_MC":
-                    //case "OMRON_V640":
+                    case "SANWA_HWATSING_MC":
+                        //case "OMRON_V640":
                         port.DataReceived += new SerialDataReceivedEventHandler(Sanwa_DataReceived);
                         break;
                     case "ASYST":

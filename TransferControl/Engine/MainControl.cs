@@ -534,7 +534,9 @@ namespace TransferControl.Engine
                                 break;
 
                             case Transaction.Command.RobotType.GetSpeed:
-                                if ((Node.Vendor.Equals("ATEL_NEW") || Node.Vendor.Equals("SANWA")))
+                                if (Node.Vendor.Equals("ATEL_NEW") || 
+                                    Node.Vendor.Equals("SANWA") ||
+                                    Node.Vendor.Equals("SANWA_HWATSING_MC"))
                                 {
                                     if (Convert.ToInt16(Msg.Value) == 0)
                                     {
@@ -543,6 +545,7 @@ namespace TransferControl.Engine
                                 }
 
                                 Node.Speed = Msg.Value;
+
                                 break;
                             case Transaction.Command.RobotType.GetError:
                                 if (Msg.Value.Contains("00000000"))
@@ -1211,6 +1214,23 @@ namespace TransferControl.Engine
                                 }
 
                                 break;
+                            case Transaction.Command.RobotType.GetPresence:
+                                parser = new MessageParser(Node.Vendor);
+                                Dictionary<string, string> PresenceResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                foreach (KeyValuePair<string, string> each in PresenceResult)
+                                {
+                                    switch (each.Key)
+                                    {
+                                        case "Clamp_Presence":
+                                            Node.R_Presence = each.Value.Equals("1") ? true : false;
+                                            break;
+                                        case "Vacuum_Status":
+                                            Node.L_Presence = each.Value.Equals("1") ? true : false;
+                                            break;
+                                    }
+                                }
+                                break;
+
                             case Transaction.Command.RobotType.PutBack:
                             case Transaction.Command.RobotType.GetAfterWait:
                             case Transaction.Command.RobotType.Get:
@@ -1393,9 +1413,6 @@ namespace TransferControl.Engine
                                     }
                                 }
 
-
-
-
                                 if (SystemConfig.Get().DummyMappingData)
                                 {
                                     if (Node.Name.Equals("LOADPORT01"))
@@ -1416,73 +1433,6 @@ namespace TransferControl.Engine
 
                                 MappingResultAnalysis(Node, Mapping);
 
-                                //int currentIdx = 1;
-                                //for (int i = 0; i < Mapping.Length; i++)
-                                //{
-                                //    if (Node.CarrierType != null)
-                                //    {
-                                //        if (Node.CarrierType.Equals("OPEN"))
-                                //        {
-
-                                //            if ((i + 1) > 13)
-                                //            {
-                                //                continue;
-                                //            }
-
-                                //        }
-                                //    }
-                                //    Job wafer = JobManagement.Add();
-                                //    wafer.Slot = (i + 1).ToString();
-                                   
-                                //    wafer.Position = Node.Name;
-                                //    wafer.AlignerFlag = false;
-                                //    wafer.MappingValue = Mapping[i].ToString();
-                                //    string Slot = (i + 1).ToString("00");
-
-
-                                //    switch (Mapping[i])
-                                //    {
-                                //        case '0':
-                                //            //wafer.Status = Job.MapStatus.Empty;
-
-                                //            //wafer.MapFlag = false;
-                                //            //wafer.ErrPosition = false;
-                                //            JobManagement.Remove(wafer);
-                                //            break;
-                                //        case '1':
-                                //            wafer.Status = Job.MapStatus.Normal;
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = false;
-
-                                //            break;
-                                //        case '2':
-                                //        case 'E':
-                                //            wafer.Status = Job.MapStatus.Crossed;
-
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = true;
-
-                                //            //Node.IsMapping = false;
-                                //            break;
-                                //        default:
-                                //        case '?':
-                                //            wafer.Status = Job.MapStatus.Undefined;
-
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = true;
-
-                                //            //Node.IsMapping = false;
-                                //            break;
-                                //        case 'W':
-                                //            wafer.Status = Job.MapStatus.Double;
-
-                                //            wafer.MapFlag = true;
-                                //            wafer.ErrPosition = true;
-                                //            break;
-                                //    }
-
-
-                                //}
                                 if (!Node.IsMapping)
                                 {
                                     CommandReturnMessage rem = new CommandReturnMessage();
@@ -2006,6 +1956,7 @@ namespace TransferControl.Engine
 
         private void MappingResultAnalysis(Node Node, string Mapping)
         {
+            Node.Foup_Capacity = Mapping.Length;
             for (int i = 0; i < Mapping.Length; i++)
             {
                 Job wafer = JobManagement.Add();

@@ -20,6 +20,7 @@ namespace TransferControl.Parser
                     P = new SanwaParser();
                     break;
                 case "SANWA_MC":
+                case "SANWA_HWATSING_MC":
                     P = new Sanwa_MCParser();
                     break;
                 case "ATEL_NEW":

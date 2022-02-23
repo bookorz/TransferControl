@@ -12,8 +12,10 @@ using TransferControl.Management;
 /// <summary>
 /// 華海清科 12吋 1 Robot 2 Loadport 2 Loadlock
 /// Robot : 1 Arm 同時包含 Clamp & Vacumm
-/// 取放片流程 : Clamp => LP(下方取片)->BF(高工位下方放片)
-///              Vacuum => BF(低公位下方取片) -> 翻轉 -> LP 上方放片 
+/// 取放片流程 : 
+/// Vacuum => LP(上方取片) -> 翻轉Wafer -> BF 下方放片 
+/// Clamp => BF 下方取片 -> LP 下方放片
+///               
 /// </summary>
 
 namespace TransferControl.TaksFlow
@@ -341,14 +343,18 @@ namespace TransferControl.TaksFlow
                         if (!Sanwa_RobotHold(TaskJob, Target)) return;
                         break;
 
-                    //需修改 待Sunny修改與發布
                     case TaskFlowManagement.Command.GET_CLAMP:
-                        if (!Sanwa_RobotGetClamp(TaskJob, Target, Value)) return;
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
                         break;
 
-                    //MCR 需修改
-                    //Wafer presence 狀態讀取需追加
-                    //待Sunny修改與發布   
                     case TaskFlowManagement.Command.ROBOT_GET:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -368,6 +374,14 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            case 2:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            case 3:
                                 //Check presence
                                 if (Position.Type.ToUpper().Equals("LOADLOCK"))
                                 {
@@ -387,8 +401,6 @@ namespace TransferControl.TaksFlow
                                     }
 
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
-
-
                                 }
                                 else
                                 {
@@ -409,40 +421,30 @@ namespace TransferControl.TaksFlow
                                 break;
 
 
-                            case 2:
+                            case 4:
                                 //移動Wafer
-                                switch (Position.Type.ToUpper())
-                                {
-                                    case "LOADPORT":
-                                        if(Arm.Equals("1"))
-                                        {
-                                            //Clamp 下方取片
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetByDownClampArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
-                                        else
-                                        {
-                                            //Vacuum 下方取片(動作為翻轉動作)
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetByDownVacuumArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
-                                        break;
+                                //Wafer in loadport by Vacuum
+                                //Wafer in loadlock by Clamp
+                                string arm = "1";
 
-                                    case "LOADLOCK":
-                                        if (Arm.Equals("1"))
-                                        {
-                                            //Clamp 下方取片
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetByDownClampArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
-                                        else
-                                        {
-                                            //測試功能(實際生產流程不應該有此項目)
-                                            //Vacuum 下方取片(動作為翻轉動作)
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetByDownVacuumArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
-                                        break;
+                                RobotPoint point = PointManagement.GetPoint(Target.Name, Position.Name );
+
+                                if (Position.Type.ToUpper().Equals("LOADPORT"))
+                                {
+                                    arm = "1";
+                                    point.Point = point.VacuumPoint;
                                 }
+
+                                if (Position.Type.ToUpper().Equals("LOADLOCK"))
+                                {
+                                    arm = "0";
+                                    point.Point = point.ClampPoint;
+                                }
+
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Get, Position = Position.Name, Arm = arm, Slot = "1" }));
                                 break;
 
-                            case 3:
+                            case 5:
                                 Wafer = JobManagement.Get(Position.Name, Slot);
                                 if (Wafer == null)
                                 {
@@ -451,15 +453,35 @@ namespace TransferControl.TaksFlow
                                 }
                                 Wafer.LastNode = Wafer.Position ?? Position.Name;
                                 Wafer.LastSlot = Wafer.Slot ?? "1";
-                                Wafer.Position = Arm.Equals("1") ? Target.Name + "_R" : Target.Name + "_L";
+
+                                Wafer.Position = Position.Type.ToUpper().Equals("LOADPORT") ? Target.Name + "_L" : Target.Name + "_R";
                                 Wafer.Slot = "1";
 
                                 _TaskReport.On_Job_Location_Changed(Wafer);
 
                                 if (Position.Type.ToUpper().Equals("LOADLOCK"))
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "TRUE");
+
+                                if(SystemConfig.Get().OfflineMode)
+                                {
+                                    if(Position.Type.ToUpper().Equals("LOADPORT"))
+                                    {
+                                        Target.L_Presence = true;
+                                    }
+                                    else if(Position.Type.ToUpper().Equals("LOADLOCK"))
+                                    {
+                                        Target.R_Presence = true;
+                                    }
+                                }
                                 break;
 
+                            case 6:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            case 7:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
 
                             default:
                                 FinishTask(TaskJob);
@@ -467,9 +489,6 @@ namespace TransferControl.TaksFlow
                         }
                         break;
 
-                    //MCR 需修改
-                    //Wafer presence 狀態讀取需追加
-                    //待Sunny修改與發布                    
                     case TaskFlowManagement.Command.ROBOT_PUT:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -488,19 +507,19 @@ namespace TransferControl.TaksFlow
                                 //是否需要重新Mapping
                                 if (Position.Type.ToUpper().Equals("LOADPORT") && !Position.IsMapping)
                                 {
-
-                                    //if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_RE_MAPPING, new Dictionary<string, string>() { { "@Target", Position.Name } }, "", TaskJob.MainTaskId).Promise())
-                                    //{
-                                    //    //中止Task
-                                    //    TaskJob.State = TaskFlowManagement.CurrentProcessTask.TaskState.Abort;
-                                    //    AbortTask(TaskJob, null, "S0300001");//LOAD_PORT_NOT_READY
-
-                                    //    break;
-                                    //}
                                     AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300001");
                                 }
                                 break;
+
                             case 1:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            case 2:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            case 3:
                                 //Check presence
                                 if (Position.Type.ToUpper().Equals("LOADLOCK"))
                                 {
@@ -520,8 +539,6 @@ namespace TransferControl.TaksFlow
                                     }
 
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "false");
-
-
                                 }
                                 else
                                 {
@@ -537,43 +554,30 @@ namespace TransferControl.TaksFlow
                                 }
                                 break;
 
-                            case 2:
+                            case 4:
                                 //移動Wafer
-                                switch (Position.Type.ToUpper())
-                                {
-                                    case "LOADPORT":
-                                        if(Arm.Equals("1"))
-                                        {
-                                            //測試預留使用
-                                            //Clamp 下方放片
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutByDownClampArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
-                                        else
-                                        {
-                                            //Vacuum 下方放片
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutByDownVacuumArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
+                                string arm = "0";
 
-                                        break;
-                                    case "LOADLOCK"://Loadlock 上方放片
-                                        if (Arm.Equals("1"))
-                                        {
-                                            //測試預留使用
-                                            //Clamp 下方放片
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutByDownClampArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
-                                        else
-                                        {
-                                            //Vacuum 上方放片
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutByUpVacuumArm, Position = Position.Name, Arm = "1", Slot = Slot }));
-                                        }
-                                        break;
+                                RobotPoint point = PointManagement.GetPoint(Target.Name, Position.Name);
+                                //Put to loadport by clamp arm & put to loadlock by vacuum arm
+                                if (Position.Type.ToUpper().Equals("LOADPORT"))
+                                {
+                                    arm = "0";
+                                    point.Point = point.ClampPoint;
                                 }
+
+                                if(Position.Type.ToUpper().Equals("LOADLOCK"))
+                                {
+                                    arm = "1";
+                                    point.Point = point.VacuumPoint;
+                                }
+
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Put, Position = Position.Name, Arm = arm, Slot = "1" }));
 
                                 break;
 
-                            case 3:
-                                Wafer = JobManagement.Get(Arm.Equals("1") ? Target.Name + "_R" : Target.Name + "_L", "1");
+                            case 5:
+                                Wafer = JobManagement.Get(Position.Type.ToUpper().Equals("LOADPORT") ? Target.Name + "_R" : Target.Name + "_L", "1");
                                 if (Wafer == null)
                                 {
                                     Wafer = JobManagement.Add();
@@ -587,8 +591,33 @@ namespace TransferControl.TaksFlow
                                 _TaskReport.On_Job_Location_Changed(Wafer);
 
                                 if (Position.Type.ToUpper().Equals("LOADLOCK"))
+                                {
+                                    JobManagement.Remove(Wafer);
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "true");
+                                }
+
+
+                                if (SystemConfig.Get().OfflineMode)
+                                {
+                                    if (Position.Type.ToUpper().Equals("LOADPORT"))
+                                    {
+                                        Target.R_Presence = false;
+                                    }
+                                    else if (Position.Type.ToUpper().Equals("LOADLOCK"))
+                                    {
+                                        Target.L_Presence = false;
+                                    }
+                                }
                                 break;
+
+                            case 6:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            case 7:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
                             default:
                                 FinishTask(TaskJob);
                                 return;
@@ -663,7 +692,6 @@ namespace TransferControl.TaksFlow
                                             }
                                         }
 
-                                        //MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + ToPosition.Name, "FALSE");
                                     }
                                 }
 
@@ -731,16 +759,150 @@ namespace TransferControl.TaksFlow
                         }
                         break;
 
-                    //MCR 需修改 待Sunny修改與發布   
+
                     case TaskFlowManagement.Command.ROBOT_PUTWAIT:
-                    case TaskFlowManagement.Command.ROBOT_GETWAIT:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                if (!Target.InitialComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
+                                    return;
+                                }
+
+                                if (!Target.OrgSearchComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
+                                    return;
+                                }
+
+                                AckTask(TaskJob);
+                                break;
+
+                            case 1:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            case 2:
+                                string arm = Position.Type.ToUpper().Equals("LOADPORT") ? "0" : "1";
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = arm, Slot = "1" }));
+                                break;
+
+                            case 3:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            case 4:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
 
                         break;
 
-                    //MCR 需修改 待Sunny修改與發布  
-                    case TaskFlowManagement.Command.ROBOT_WAFER_RELEASE:
-                    case TaskFlowManagement.Command.ROBOT_WAFER_HOLD:
+                    case TaskFlowManagement.Command.ROBOT_GETWAIT:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                if (!Target.InitialComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
+                                    return;
+                                }
 
+                                if (!Target.OrgSearchComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
+                                    return;
+                                }
+
+                                AckTask(TaskJob);
+
+                                break;
+                            case 1:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            case 2:
+                                string arm = Position.Type.ToUpper().Equals("LOADPORT") ? "1" : "0";
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = arm, Slot = "1" }));
+                                break;
+
+                            case 3:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            case 4:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_WAFER_RELEASE:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                if (!Target.InitialComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
+                                    return;
+                                }
+
+                                if (!Target.OrgSearchComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
+                                    return;
+                                }
+
+                                AckTask(TaskJob);
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferRelease, Arm = Arm }));
+
+                                break;
+                            case 1:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.ROBOT_WAFER_HOLD:
+                        switch(TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                if (!Target.InitialComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
+                                    return;
+                                }
+
+                                if (!Target.OrgSearchComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
+                                    return;
+                                }
+
+                                AckTask(TaskJob);
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm }));
+                                break;
+
+                            case 1:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
                         break;
 
                     case TaskFlowManagement.Command.ROBOT_MODE:
@@ -748,7 +910,35 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.ROBOT_RETRACT:
-                        if (!Sanwa_RobotRetract(TaskJob, Target)) return;
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                if (!Target.InitialComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300015");
+                                    return;
+                                }
+
+                                if (!Target.OrgSearchComplete)
+                                {
+                                    AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Target.Name }, "S0300041");
+                                    return;
+                                }
+
+                                AckTask(TaskJob);
+
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.ArmReturn }));
+
+                                break;
+
+
+                            default:
+                                MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF1", "TRUE");
+                                MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF2", "TRUE");
+                                FinishTask(TaskJob);
+                                return;
+                        }
                         break;
 
                     case TaskFlowManagement.Command.ROBOT_SPEED:
@@ -764,9 +954,6 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.ROBOT_HOME:
-                        if (!Sanwa_RobotHome(TaskJob, Target)) return;
-                        break;
-
                     case TaskFlowManagement.Command.ROBOT_ORGSH:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -776,17 +963,44 @@ namespace TransferControl.TaksFlow
                                 AckTask(TaskJob);
 
                                 break;
-
                             case 1:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+                            case 2:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+                            case 3:
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.OrginSearch }));
                                 break;
+                            case 4:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+                            case 5:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+                            case 6:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
+                                break;
+                            case 7:
 
+                                //砍掉不必要的帳
+                                if(JobManagement.Get("ROBOT01_R") != null && !Target.R_Presence)
+                                {
+                                    JobManagement.Remove(JobManagement.Get("ROBOT01_R"));
+                                }
+
+                                //砍掉不必要的帳
+                                if (JobManagement.Get("ROBOT01_L") != null && !Target.L_Presence)
+                                {
+                                    JobManagement.Remove(JobManagement.Get("ROBOT01_L"));
+                                }
+
+                                break;
 
                             default:
                                 OrgSearchCompleted(Target.Name);
-
-                                if (Target.OrgSearchComplete)
-                                    ResetRobotInterLock();
+                                ResetRobotInterLock();
 
                                 FinishTask(TaskJob);
                                 return;
@@ -794,12 +1008,103 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.ROBOT_RESET:
-                        if (!Sanwa_RobotReset(TaskJob, Target)) return;
+                        switch(TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                break;
+
+                            case 1:
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
+                                break;
+
+                            case 2:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+
+                            case 3:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            case 4:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
                         break;
 
-                    //MCR 需修改 待Sunny修改與發布  
                     case TaskFlowManagement.Command.ROBOT_INIT:
-                        //if (!Sanwa_RobotINIT(TaskJob, Target)) return;
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                break;
+                            case 1:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
+                                break;
+
+                            case 2:
+                                if (!SystemConfig.Get().OfflineMode)
+                                {
+                                    if (SystemConfig.Get().DummyMappingData)
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "1" }));
+                                    }
+                                    else
+                                    {
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "0" }));
+                                    }
+                                }
+                                break;
+
+                            case 3:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+                                break;
+
+                            case 4:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
+                                break;
+
+                            case 5:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
+                                break;
+
+                            case 6:
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
+                                break;
+
+                            case 7:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Initialize }));
+                                break;
+                            case 8:
+                                GetRobotPresence(TaskJob, Target);
+                                break;
+
+                            case 9:
+                                GetRobotPosition(TaskJob, Target);
+                                break;
+
+                            case 10:
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
+                                break;
+
+                            default:
+                                Target.InitialComplete = true;
+                                FinishTask(TaskJob);
+                                return;
+                        }
                         break;
 
                     case TaskFlowManagement.Command.ROBOT_SAVE_LOG:
@@ -1100,5 +1405,35 @@ namespace TransferControl.TaksFlow
             MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF1", "TRUE");
             MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_BF2", "TRUE");
         }
+
+        public override void GetRobotPresence(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            if (!SystemConfig.Get().OfflineMode)
+            {
+                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetPresence }));
+            }
+        }
+        public override void AbortTask(TaskFlowManagement.CurrentProcessTask TaskJob, Node node, string Message)
+        {
+            if (node != null)
+            {
+                if(node.Vendor.Equals("SANWA_HWATSING_MC"))
+                {
+                    Node tempNode = new Node
+                    {
+                        Name = node.Name,
+                        Vendor = "SANWA_MC"
+                    };
+
+                    _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(tempNode, Message, TaskJob.MainTaskId));
+                }
+                else
+                {
+                    _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(node, Message, TaskJob.MainTaskId));
+                }
+            }
+            _TaskReport.On_TaskJob_Aborted(TaskJob);
+        }
+
     }
 }

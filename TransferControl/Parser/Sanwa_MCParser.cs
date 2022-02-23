@@ -21,6 +21,8 @@ namespace TransferControl.Parser
                     return ParsePresent(Message);
                 case Transaction.Command.LoadPortType.ReadStatus:
                     return ParseStatus(Message);
+                case Transaction.Command.RobotType.GetPresence:
+                    return ParsePresence(Message);
                 default:
                     throw new Exception(Command + " Not support");
             }
@@ -149,6 +151,29 @@ namespace TransferControl.Parser
             }
             
             
+
+            return result;
+        }
+        private Dictionary<string, string> ParsePresence(string Message)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            string[] tmp = Message.Split(',');
+
+            for (int i = 0; i < tmp.Length; i++)
+            {
+                int idx = i + 1;
+                switch (idx)
+                {
+                    case 2:
+                        result.Add("Clamp_Presence", tmp[i]);
+                        break;
+                    case 3:
+                        result.Add("Vacuum_Status", tmp[i]);
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             return result;
         }

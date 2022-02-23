@@ -86,6 +86,86 @@ namespace TransferControl.TaksFlow
             {
                 switch (TaskJob.TaskName)
                 {
+                    case TaskFlowManagement.Command.EFEM_INIT:
+                        switch (TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                string excuteType = "FINISHED";
+
+                                if (NodeManagement.Get("ROBOT01") != null)
+                                    if (NodeManagement.Get("ROBOT01").Enable)
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ROBOT01", "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
+
+                                //Loadport Reset
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    string nodename = string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0'));
+                                    if (IsNodeEnabledOrNull(nodename))
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(nodename, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
+                                }
+                                break;
+
+                            case 1:
+                                if (NodeManagement.Get("ROBOT01") != null)
+                                    if (NodeManagement.Get("ROBOT01").Enable)
+                                    {
+                                        if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_INIT, new Dictionary<string, string>() { { "@Target", "ROBOT01" } }, "", TaskJob.MainTaskId).Promise())
+                                        {
+                                            //中止Task
+                                            AbortTask(TaskJob, null, "TASK_ABORT");
+                                            break;
+                                        }
+                                    }
+
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    string nodename = string.Format("LOADPORT0{0}", i + 1);
+                                    if (NodeManagement.Get(nodename) != null)
+                                        if (NodeManagement.Get(nodename).Enable)
+                                        {
+                                            if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_INIT, new Dictionary<string, string>() { { "@Target", nodename } }, "", TaskJob.MainTaskId).Promise())
+                                            {
+                                                //中止Task
+                                                AbortTask(TaskJob, null, "TASK_ABORT");
+                                                break;
+                                            }
+                                        }
+                                }
+                                break;
+
+                            case 2:
+                                if (NodeManagement.Get("ROBOT01") != null)
+                                    if (NodeManagement.Get("ROBOT01").Enable)
+                                    {
+                                        if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_ORGSH, new Dictionary<string, string>() { { "@Target", "ROBOT01" } }, "", TaskJob.MainTaskId).Promise())
+                                        {
+                                            //中止Task
+                                            AbortTask(TaskJob, null, "TASK_ABORT");
+
+                                            break;
+                                        }
+                                    }
+                                break;
+
+                            case 3:
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    string lpName = "LOADPORT0" + (i + 1).ToString();
+                                    if (NodeManagement.Get(lpName) != null)
+                                        if (NodeManagement.Get(lpName).Enable)
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpName, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
+
+                                            NodeManagement.Get(lpName).OrgSearchComplete = true;
+                                        }
+                                }
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.RESET_ALL:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -484,6 +564,23 @@ namespace TransferControl.TaksFlow
 
                                 if (Position.Type.ToUpper().Equals("LOADLOCK"))
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "true");
+
+                                if(SystemConfig.Get().OfflineMode)
+                                {
+                                    switch(Arm)
+                                    {
+                                        case "1":
+                                            Target.R_Presence = false;
+                                            break;
+                                        case "2":
+                                            Target.L_Presence = false;
+                                            break;
+                                        case "3":
+                                            Target.R_Presence = false;
+                                            Target.L_Presence = false;
+                                            break;
+                                    }
+                                }
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -682,6 +779,23 @@ namespace TransferControl.TaksFlow
 
                                 if (Position.Type.ToUpper().Equals("LOADLOCK"))
                                     MainControl.Instance.DIO.SetIO("ARM_NOT_EXTEND_" + Position.Name, "TRUE");
+
+                                if (SystemConfig.Get().OfflineMode)
+                                {
+                                    switch (Arm)
+                                    {
+                                        case "1":
+                                            Target.R_Presence = true;
+                                            break;
+                                        case "2":
+                                            Target.L_Presence = true;
+                                            break;
+                                        case "3":
+                                            Target.R_Presence = true;
+                                            Target.L_Presence = true;
+                                            break;
+                                    }
+                                }
                                 break;
 
 

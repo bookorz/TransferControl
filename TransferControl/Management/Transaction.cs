@@ -289,6 +289,7 @@ namespace TransferControl.Management
                 public const string ArmReturn = "ArmReturn";
                 public const string Exchange = "Exchange";
                 public const string Get = "Get";
+                public const string Initialize = "Initialize";
                 public const string DoubleGet = "DoubleGet";
                 public const string WaitBeforeGet = "WaitBeforeGet";
                 public const string WaitBeforePut = "WaitBeforePut";
@@ -333,26 +334,6 @@ namespace TransferControl.Management
                 public const string PutWaitByLArm = "PutWaitByLArm";
                 public const string GetWaitByRArm = "GetWaitByRArm";
                 public const string GetWaitByLArm = "GetWaitByLArm";
-
-                public const string PutByUpClampArm = "PutByUpClampArm";
-                public const string PutByDownClampArm = "PutByDownClampArm";
-                public const string PutByUpVacuumArm = "PutByUpVacuumArm";
-                public const string PutByDownVacuumArm = "PutByDownVacuumArm";
-
-                public const string GetByUpClampArm = "GetByUpClampArm";
-                public const string GetByDownClampArm = "GetByDownClampArm";
-                public const string GetByUpVacuumArm = "GetByUpVacuumArm";
-                public const string GetByDownVacuumArm = "GetByDownVacuumArm";
-
-                public const string PutWaitByUpClampArm = "PutWaitByUpClampArm";
-                public const string PutWaitByDownClampArm = "PutWaitByDownClampArm";
-                public const string PutWaitByUpVacuumArm = "PutWaitByUpVacuumArm";
-                public const string PutWaitByDownVacuumArm = "PutWaitByDownVacuumArm";
-
-                public const string GetWaitByUpClampArm = "GetWaitByUpClampArm";
-                public const string GetWaitByDownClampArm = "GetWaitByDownClampArm";
-                public const string GetWaitByUpVacuumArm = "GetWaitByUpVacuumArm";
-                public const string GetWaitByDownVacuumArm = "GetWaitByDownVacuumArm";
             }
             //Aligner
             public class AlignerType

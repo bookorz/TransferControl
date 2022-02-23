@@ -86,9 +86,100 @@ namespace TransferControl.TaksFlow
 
             try
             {
-
                 switch (TaskJob.TaskName)
                 {
+                    case TaskFlowManagement.Command.EFEM_INIT:
+                        switch(TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                string excuteType = "FINISHED";
+
+                                if (NodeManagement.Get("ROBOT01") != null)
+                                    if (NodeManagement.Get("ROBOT01").Enable)
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd("ROBOT01", "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Reset }));
+
+                                for(int i = 0; i<4; i++)
+                                {
+                                    string nodename = string.Format("LOADPORT0", i + 1);
+                                    if (NodeManagement.Get(nodename) != null)
+                                        if (NodeManagement.Get(nodename).Enable)
+                                        {
+                                            switch (NodeManagement.Get(nodename).Vendor.ToUpper())
+                                            {
+                                                case "SANWA_MC":
+                                                    excuteType = "FINISHED";
+                                                    break;
+
+                                                case "ASYST":
+                                                    excuteType = "EXCUTED";
+                                                    break;
+                                            }
+
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(nodename, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.Reset }));
+                                        }
+                                }
+                                break;
+                            case 1:
+                                if (NodeManagement.Get("ROBOT01") != null)
+                                    if (NodeManagement.Get("ROBOT01").Enable)
+                                    {
+                                        if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_INIT, new Dictionary<string, string>() { { "@Target", "ROBOT01" } }, "", TaskJob.MainTaskId).Promise())
+                                        {
+                                            //中止Task
+                                            AbortTask(TaskJob, null, "TASK_ABORT");
+                                            break;
+                                        }
+                                    }
+
+                                for(int i = 0; i<4; i++)
+                                {
+                                    string nodename = string.Format("LOADPORT0{0}", i + 1);
+                                    if (NodeManagement.Get(nodename) != null)
+                                        if (NodeManagement.Get(nodename).Enable)
+                                        {
+                                            if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.LOADPORT_INIT, new Dictionary<string, string>() { { "@Target", nodename } }, "", TaskJob.MainTaskId).Promise())
+                                            {
+                                                //中止Task
+                                                AbortTask(TaskJob, null, "TASK_ABORT");
+                                                break;
+                                            }
+                                        }
+                                }
+                                break;
+
+                            case 2:
+                                if (NodeManagement.Get("ROBOT01") != null)
+                                    if (NodeManagement.Get("ROBOT01").Enable)
+                                    {
+                                        if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_ORGSH, new Dictionary<string, string>() { { "@Target", "ROBOT01" } }, "", TaskJob.MainTaskId).Promise())
+                                        {
+                                            //中止Task
+                                            AbortTask(TaskJob, null, "TASK_ABORT");
+
+                                            break;
+                                        }
+                                    }
+                                break;
+
+                            case 3:
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    string lpName = "LOADPORT0" + (i + 1).ToString();
+                                    if (NodeManagement.Get(lpName) != null)
+                                        if (NodeManagement.Get(lpName).Enable)
+                                        {
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(lpName, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.InitialPos }));
+
+                                            NodeManagement.Get(lpName).OrgSearchComplete = true;
+                                        }
+                                }
+                                break;
+
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
+                        break;
                     case TaskFlowManagement.Command.RESET_ALL:
                         switch (TaskJob.CurrentIndex)
                         {
@@ -520,8 +611,8 @@ namespace TransferControl.TaksFlow
                                     if (Wafer == null)
                                     {
                                         AckTask(TaskJob);
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = "1", Slot = "1" }));
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Slot, Val2 = "0" }));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = "1", Slot = "1" }));
                                     }
                                     else
                                     {
@@ -696,8 +787,8 @@ namespace TransferControl.TaksFlow
                                     else
                                     {
                                         AckTask(TaskJob);
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = "1", Slot = "1" }));
                                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Position.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MoveToSlot, Value = Slot, Val2 = "0" }));
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = "1", Slot = "1" }));
                                     }
                                 }
                                 break;
@@ -2194,6 +2285,19 @@ namespace TransferControl.TaksFlow
                                     FinishTask(TaskJob);
                                     return;
                             }
+                        }
+                        break;
+
+                    case TaskFlowManagement.Command.LOADPORT_SAVE_LOG:
+                        switch(TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.SaveLog}));
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
                         }
                         break;
                     default:
