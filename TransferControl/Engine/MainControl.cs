@@ -468,6 +468,7 @@ namespace TransferControl.Engine
 
                                 break;
                             case Transaction.Command.LoadPortType.GetMapping:
+                            case Transaction.Command.LoadPortType.GetMappingData:
                             case Transaction.Command.LoadPortType.GetMappingDummy:
 
                                 //新增之前移除所有的帳籍

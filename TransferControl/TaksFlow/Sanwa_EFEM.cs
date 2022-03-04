@@ -1565,14 +1565,16 @@ namespace TransferControl.TaksFlow
                                     {
                                         case "SANWA_MC":
                                             excuteType = "FINISHED";
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
                                             break;
 
                                         case "ASYST":
                                             excuteType = "EXCUTED";
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMappingData }));
                                             break;
                                     }
 
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+
                                 }
                                 break;
 

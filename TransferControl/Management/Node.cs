@@ -1298,7 +1298,7 @@ namespace TransferControl.Management
                                 txn.CommandType = "GET";
                                 break;
                             case Transaction.Command.LoadPortType.GetMapping:
-
+                            case Transaction.Command.LoadPortType.GetMappingData:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.WaferSorting(EncoderLoadPort.MappingSortingType.Asc);
                                 txn.CommandType = "GET";
                                 break;
