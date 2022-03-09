@@ -1236,7 +1236,13 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Auto);
                                 }
+
                                 txn.CommandType = "SET";
+
+                                if (Vendor.ToUpper().Equals("ASYST"))
+                                    txn.CommandType = "CMD";
+
+
                                 break;
                             case Transaction.Command.LoadPortType.SetOpAccessBlink:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.Flashes);

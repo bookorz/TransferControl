@@ -1532,7 +1532,8 @@ namespace TransferControl.TaksFlow
                                     switch (Target.Vendor.ToUpper())
                                     {
                                         case "ASYST":
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.Mode, Value = "2" }));
+                                            //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.Mode, Value = "2" }));
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Mode, Value = "2" }));
                                             break;
                                     }
                                 }

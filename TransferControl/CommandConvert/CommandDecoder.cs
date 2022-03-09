@@ -1618,6 +1618,7 @@ namespace TransferControl.CommandConvert
                                                 case "REACH_SLOT":
                                                 case "REACH_STAGE":
                                                 case "REACH_WAFER":
+                                                case "AUTO_MODE":
                                                     each.Type = CommandReturnMessage.ReturnType.Finished;
                                                     break;
 
