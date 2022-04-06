@@ -1137,7 +1137,7 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_UNCLAMP:
-                        if (!TDK_LoadportClose(TaskJob, Target)) return;
+                        if (!TDK_LoadportUnclamp(TaskJob, Target)) return;
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_DOCK:
@@ -1319,6 +1319,24 @@ namespace TransferControl.TaksFlow
                                 FinishTask(TaskJob);
                                 return;
                         }
+                        break;
+                    case TaskFlowManagement.Command.E84_SETTP1:
+                        if (!Sawan_E84SetTP1(TaskJob, Target, Value)) return;
+                        break;
+                    case TaskFlowManagement.Command.E84_SETTP2:
+                        if (!Sawan_E84SetTP2(TaskJob, Target, Value)) return;
+                        break;
+                    case TaskFlowManagement.Command.E84_SETTP3:
+                        if (!Sawan_E84SetTP3(TaskJob, Target, Value)) return;
+                        break;
+                    case TaskFlowManagement.Command.E84_SETTP4:
+                        if (!Sawan_E84SetTP4(TaskJob, Target, Value)) return;
+                        break;
+                    case TaskFlowManagement.Command.E84_SETTP5:
+                        if (!Sawan_E84SetTP5(TaskJob, Target, Value)) return;
+                        break;
+                    case TaskFlowManagement.Command.E84_SETTP6:
+                        if (!Sawan_E84SetTP6(TaskJob, Target, Value)) return;
                         break;
 
                     #endregion

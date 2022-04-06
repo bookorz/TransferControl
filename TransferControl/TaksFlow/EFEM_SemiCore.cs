@@ -903,8 +903,8 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_UNCLAMP:
-                        //if(!TDK_LoadportUnclamp(TaskJob, Target))   return;
-                        if(!TDK_LoadportClose(TaskJob, Target))     return;
+                        if(!TDK_LoadportUnclamp(TaskJob, Target))   return;
+                        //if(!TDK_LoadportClose(TaskJob, Target))     return;
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_DOCK:
@@ -1288,6 +1288,7 @@ namespace TransferControl.TaksFlow
             }
             return;
         }
+
         //public override bool Sanwa_RobotGetClamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         //{
         //    switch (TaskJob.CurrentIndex)

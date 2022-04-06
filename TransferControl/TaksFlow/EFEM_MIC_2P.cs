@@ -1740,6 +1740,33 @@ namespace TransferControl.TaksFlow
 
             return true;
         }
+
+        public override bool TDK_LoadportUnclamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnClamp }));
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
     }
 }
 

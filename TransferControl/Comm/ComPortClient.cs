@@ -220,18 +220,40 @@ namespace TransferControl.Comm
                 ConnReport.On_Connection_Error("(ConnectServer )" + e.Message + "\n" + e.StackTrace);
             }
         }
-
+        string S = "";
         private void ASYST_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
 
+                //string data = "";
+
+                //data = port.ReadTo("\r\n");
+                //logger.Debug(this.cfg.GetDeviceName() + "Received:" + data);
+
+                //ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
                 string data = "";
+                if ((sender as SerialPort).BytesToRead > 0)
+                {
+                    byte[] buf = new byte[(sender as SerialPort).BytesToRead];
+                    port.Read(buf, 0, buf.Length);
 
-                data = port.ReadTo("\r\n");
-                logger.Debug(this.cfg.GetDeviceName() + "Received:" + data);
+                    logger.Debug(this.cfg.GetDeviceName() + " Rawdata Received:" + ByteArrayToString(buf));
 
-                ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                    S += Encoding.ASCII.GetString(buf);
+                    if (S.LastIndexOf("\r\n") != -1)
+                    {
+                        //logger.Debug("s:" + S);
+                        data = S.Substring(0, S.LastIndexOf("\r\n"));
+                        //logger.Debug("data:" + data);
+
+                        S = S.Substring(S.LastIndexOf("\r\n") + 1);
+                        //logger.Debug("s:" + S);
+                        logger.Debug(this.cfg.GetDeviceName() + " Received:" + data);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(ConnReport.On_Connection_Message), data);
+                    }
+
+                }
             }
             catch (Exception e1)
             {

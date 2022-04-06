@@ -199,13 +199,16 @@
     <Compile Include="Parser\Sanwa_MCParser.cs" />
     <Compile Include="Parser\TDKParser.cs" />
     <Compile Include="Procedure\MainProcedure\DemoEFEMMainProc.cs" />
+    <Compile Include="Procedure\MainProcedure\IMainProcCallback.cs" />
     <Compile Include="Procedure\MainProcedure\MainProc.cs" />
+    <Compile Include="Procedure\SubProcedure\AlignerProc.cs" />
     <Compile Include="Procedure\SubProcedure\Demo1ArmRobot.cs" />
     <Compile Include="Procedure\SubProcedure\Demo2ArmRobot.cs" />
     <Compile Include="Procedure\SubProcedure\DemoLPProc.cs" />
     <Compile Include="Procedure\SubProcedure\SubProc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaksFlow\BaseTaskFlow.cs" />
+    <Compile Include="TaksFlow\EFEM_Demo_2P.cs" />
     <Compile Include="TaksFlow\EFEM_HWATSING_2P.cs" />
     <Compile Include="TaksFlow\EFEM_MIC_2P.cs" />
     <Compile Include="TaksFlow\EFEM_SemiCore.cs" />

@@ -25,6 +25,7 @@ namespace TransferControl.Management
             public const string ErrorStop = "ErrorStop";
             public const string CheckPresence = "CheckPresence";
             public const string GetPresence = "GetPresence";
+            public const string ReadCarrierID = "ReadCarrierID";
             public const string LoadAndMapping = "LoadAndMapping";
             public const string TransferWafer = "TransferWafer";
             public const string CheckType = "CheckType";
@@ -39,6 +40,8 @@ namespace TransferControl.Management
             public const string FullWaferOnRLArm = "FullWaferOnRLArm";
             public const string Get = "Get";
             public const string Put = "Put";
+            public const string Align = "Align";
+            public const string OCR = "OCR";
         }
 
         public bool AssignWaferFinished { get; set; } 
@@ -158,9 +161,14 @@ namespace TransferControl.Management
         public bool Foup_Placement { get; set; }
 
         public bool Foup_Presence { get; set; }
+        public bool LoadPort_InfoPadA { get; set; } = false;
+        public bool LoadPort_InfoPadB { get; set; } = false;
+        public bool LoadPort_InfoPadC { get; set; } = false;
+        public bool LoadPort_InfoPadD { get; set; } = false;
         public bool Latch_Open { get; set; }
 
         public bool Access_SW { get; set; }
+        public bool Access_SW2 { get; set; }
 
         public bool Foup_Lock { get; set; }
 
@@ -242,6 +250,9 @@ namespace TransferControl.Management
         public bool WaferProtrusionSensor { get; set; }
         public object ExcuteLock = new object();
 
+        public string ExeFilePath { get; set; }
+        public string ProcessName { get; set; }
+        public string ImgSourcePath { get; set; }
         /// <summary>
         /// SMIF 硬體總類
         /// -1 = Unknow
@@ -329,6 +340,7 @@ namespace TransferControl.Management
         public string AlignDegree{ get; set; }
 
         public string ProcStatus { get; set; }
+        public string FoupIDReader { get; set; }
 
         public void InitialObject()
         {
@@ -487,9 +499,7 @@ namespace TransferControl.Management
 
         public byte[] GetIO(string Area)
         {
-
             return this.IO[Area];
-
         }
         public void SetIO(string Area, byte[] Val)
         {
@@ -508,10 +518,7 @@ namespace TransferControl.Management
         }
         public void SetIO(string Area, int Pos, byte Val)
         {
-
             this.GetIO(Area)[Pos] = Val;
-
-
         }
         /// <summary>
         /// 傳送命令
@@ -1236,18 +1243,20 @@ namespace TransferControl.Management
                                 {
                                     txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.Auto);
                                 }
+                                else if(txn.Value.Equals("3"))
+                                {
+                                    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Mode(EncoderLoadPort.ModeType.dry);
+                                }
 
                                 txn.CommandType = "SET";
 
-                                if (Vendor.ToUpper().Equals("ASYST"))
-                                    txn.CommandType = "CMD";
-
-
                                 break;
+
                             case Transaction.Command.LoadPortType.SetOpAccessBlink:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Indicator(EncoderLoadPort.CommandType.Normal, EncoderLoadPort.IndicatorType.OpAccess, EncoderLoadPort.IndicatorStatus.Flashes);
                                 txn.CommandType = "CMD";
                                 break;
+
                             case Transaction.Command.LoadPortType.SetOpAccess:
                                 if (txn.Value.Equals("1"))
                                 {
@@ -1333,6 +1342,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingLoad(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
                                 break;
+
                             case Transaction.Command.LoadPortType.MappingUnload:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MapAndUnload(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
@@ -1348,6 +1358,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Unload(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
                                 break;
+                            case Transaction.Command.LoadPortType.HomePos:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.HomePosition(EncoderLoadPort.CommandType.Normal);
+                                txn.CommandType = "CMD";
+                                break;                               
                             case Transaction.Command.LoadPortType.Mapping:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.MappingInLoad(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";

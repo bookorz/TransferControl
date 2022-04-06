@@ -40,10 +40,32 @@ namespace TransferControl.Procedure.SubProcedure
 
                     if ((procNode.Foup_Presence && procNode.Foup_Placement) || SystemConfig.Get().OfflineMode)
                     {
-                        procNode.ProcStatus = Node.ProcedureStatus.LoadAndMapping;
+                        procNode.ProcStatus = Node.ProcedureStatus.ReadCarrierID;
                         logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
                     }
 
+                    break;
+
+                case Node.ProcedureStatus.ReadCarrierID:
+
+                    if(procNode.FoupIDReader.Equals(""))
+                    {
+                        procNode.ProcStatus = Node.ProcedureStatus.Stop;
+                    }
+                    else
+                    {
+                        param.Add("@Target", procNode.FoupIDReader);
+                        if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.GET_CSTID, param).Promise())
+                        {
+                            procNode.ProcStatus = Node.ProcedureStatus.Stop;
+                        }
+                        else
+                        {
+                            procNode.ProcStatus = Node.ProcedureStatus.LoadAndMapping;
+                        }
+                    }
+
+                    logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
                     break;
 
                 case Node.ProcedureStatus.LoadAndMapping:

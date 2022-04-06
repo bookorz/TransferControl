@@ -114,7 +114,7 @@ namespace TransferControl.Controller
             }
             _Decoder = new CommandConvert.CommandDecoder(Vendor);
 
-            Encoder = new CommandEncoder(Vendor);
+            Encoder = new CommandEncoder(Vendor, SystemConfig.Get().TaskFlow);
 
 
             this.Name = DeviceName;
@@ -214,166 +214,171 @@ namespace TransferControl.Controller
             NodeManagement.Get(Txn.NodeName).IsExcuting = false;
 
             switch (Txn.Method)
-                {
-                    case Transaction.Command.RobotType.Reset:
-                        //case Transaction.Command.LoadPortType.Reset:
-                        switch (NodeManagement.Get(Txn.NodeName).Type)
-                        {
-                            case "ROBOT":
-                            case "E84":
-                                cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                                break;
-                            case "LOADPORT":
-                                cm.Type = CommandReturnMessage.ReturnType.Finished;
-                                break;
-                        }
-                        break;
-                    case Transaction.Command.RobotType.GetSV:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        switch (Txn.Arm)
-                        {
-                            case "1":
-                                //NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "1";
-                                cm.Value = "01," + NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid;
-                                break;
+            {
+                case Transaction.Command.RobotType.Reset:
+                    //case Transaction.Command.LoadPortType.Reset:
+                    switch (NodeManagement.Get(Txn.NodeName).Type)
+                    {
+                        case "ROBOT":
+                        case "E84":
+                            cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                            break;
+                        case "LOADPORT":
+                            cm.Type = CommandReturnMessage.ReturnType.Finished;
+                            break;
+                    }
+                    break;
+                case Transaction.Command.RobotType.GetSV:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    switch (Txn.Arm)
+                    {
+                        case "1":
+                            //NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "1";
+                            cm.Value = "01," + NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid;
+                            break;
 
-                            case "2":
-                                //NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "1";
-                                cm.Value = "02," + NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid;
-                                break;
-                        }
-                        break;
+                        case "2":
+                            //NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "1";
+                            cm.Value = "02," + NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid;
+                            break;
+                    }
+                    break;
 
-                    case Transaction.Command.RobotType.Get:
-                    case Transaction.Command.RobotType.Put:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        switch (Txn.Arm)
-                        {
-                            case "1":
-                                NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
-                                    Txn.Method == Transaction.Command.RobotType.Get ? "1" : "0";
-                                break;
-                            case "2":
-                                NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
-                                    Txn.Method == Transaction.Command.RobotType.Get ? "1" : "0";
-                                break;
-                        }
-                        break;
-                    case Transaction.Command.RobotType.DoubleGet:
-                    case Transaction.Command.RobotType.DoublePut:
+                case Transaction.Command.RobotType.Get:
+                case Transaction.Command.RobotType.Put:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    switch (Txn.Arm)
+                    {
+                        case "1":
+                            NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
+                                Txn.Method == Transaction.Command.RobotType.Get ? "1" : "0";
+                            break;
+                        case "2":
+                            NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
+                                Txn.Method == Transaction.Command.RobotType.Get ? "1" : "0";
+                            break;
+                    }
+                    break;
+                case Transaction.Command.RobotType.DoubleGet:
+                case Transaction.Command.RobotType.DoublePut:
 
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
 
-                        NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
-                        NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
-                         Txn.Method == Transaction.Command.RobotType.DoubleGet ? "1" : "0";
-                        break;
+                    NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
+                    NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
+                        Txn.Method == Transaction.Command.RobotType.DoubleGet ? "1" : "0";
+                    break;
 
-                    case Transaction.Command.RobotType.PutByRArm:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "0";
-                        NodeManagement.Get(Txn.NodeName).R_Presence = false;
-                        break;
+                case Transaction.Command.RobotType.PutByRArm:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "0";
+                    NodeManagement.Get(Txn.NodeName).R_Presence = false;
+                    break;
 
-                    case Transaction.Command.RobotType.PutByLArm:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "0";
-                        NodeManagement.Get(Txn.NodeName).L_Presence = false;
-                        break;
+                case Transaction.Command.RobotType.PutByLArm:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "0";
+                    NodeManagement.Get(Txn.NodeName).L_Presence = false;
+                    break;
 
-                    case Transaction.Command.RobotType.GetByRArm:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "1";
-                        NodeManagement.Get(Txn.NodeName).R_Presence = true;
-                        break;
+                case Transaction.Command.RobotType.GetByRArm:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid = "1";
+                    NodeManagement.Get(Txn.NodeName).R_Presence = true;
+                    break;
 
-                    case Transaction.Command.RobotType.GetByLArm:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "1";
-                        NodeManagement.Get(Txn.NodeName).L_Presence = true;
-                        break;
+                case Transaction.Command.RobotType.GetByLArm:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid = "1";
+                    NodeManagement.Get(Txn.NodeName).L_Presence = true;
+                    break;
 
-                    case Transaction.Command.RobotType.WaferHold:
-                    case Transaction.Command.RobotType.WaferRelease:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        switch (Txn.Arm)
-                        {
-                            case "1":
-                                NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
-                                    Txn.Method == Transaction.Command.RobotType.WaferHold ? "1" : "0";
-                                break;
-                            case "2":
-                                NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
-                                    Txn.Method == Transaction.Command.RobotType.WaferHold ? "1" : "0";
-                                break;
-                        }
+                case Transaction.Command.RobotType.WaferHold:
+                case Transaction.Command.RobotType.WaferRelease:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    switch (Txn.Arm)
+                    {
+                        case "1":
+                            NodeManagement.Get(Txn.NodeName).R_Vacuum_Solenoid =
+                                Txn.Method == Transaction.Command.RobotType.WaferHold ? "1" : "0";
+                            break;
+                        case "2":
+                            NodeManagement.Get(Txn.NodeName).L_Vacuum_Solenoid =
+                                Txn.Method == Transaction.Command.RobotType.WaferHold ? "1" : "0";
+                            break;
+                    }
 
-                        break;
+                    break;
 
-                    case Transaction.Command.LoadPortType.GetMapping:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        cm.Value = "00000000," + GetMappingDummyData(Txn);
-                        break;
+                case Transaction.Command.LoadPortType.GetMapping:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    cm.Value = "00000000," + GetMappingDummyData(Txn);
+                    break;
 
-                    case Transaction.Command.LoadPortType.GetMappingDummy:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        cm.Value = GetMappingDummyData(Txn);
-                        break;
+                case Transaction.Command.LoadPortType.GetMappingDummy:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    cm.Value = GetMappingDummyData(Txn);
+                    break;
 
-                    case Transaction.Command.RobotType.Speed:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        NodeManagement.Get(Txn.NodeName).Speed = Txn.Value;
-                        break;
+                case Transaction.Command.RobotType.Speed:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    NodeManagement.Get(Txn.NodeName).Speed = Txn.Value;
+                    break;
 
-                    case Transaction.Command.RobotType.GetSpeed:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        cm.Value = NodeManagement.Get(Txn.NodeName).Speed.Equals("100") ? "0" : NodeManagement.Get(Txn.NodeName).Speed;
-                        break;
+                case Transaction.Command.RobotType.GetSpeed:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    cm.Value = NodeManagement.Get(Txn.NodeName).Speed.Equals("100") ? "0" : NodeManagement.Get(Txn.NodeName).Speed;
+                    break;
 
-                    case Transaction.Command.SmartTagType.GetLCDData:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        cm.Value = "Offline-FoupID";
-                        break;
+                case Transaction.Command.SmartTagType.GetLCDData:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    cm.Value = "Offline-FoupID";
+                    break;
 
-                    case Transaction.Command.RFIDType.GetCarrierID:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        cm.Value = "Offline-FoupID";
-                        break;
-                    case Transaction.Command.RobotType.Servo:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        break;
+                case Transaction.Command.RFIDType.GetCarrierID:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    cm.Value = "Offline-FoupID";
+                    break;
+                case Transaction.Command.OCRType.Read:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    cm.Value = "[TTTTTTTTTTTT,395.000,1.000]";
+                    break;
+                case Transaction.Command.RobotType.Servo:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    break;
 
-                    case Transaction.Command.E84.SetAutoMode:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        NodeManagement.Get(Txn.NodeName).E84Mode = E84_Mode.AUTO;
-                        break;
-                    case Transaction.Command.E84.SetManualMode:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        NodeManagement.Get(Txn.NodeName).E84Mode = E84_Mode.MANUAL;
-                        break;
+                case Transaction.Command.E84.SetAutoMode:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    NodeManagement.Get(Txn.NodeName).E84Mode = E84_Mode.AUTO;
+                    break;
+                case Transaction.Command.E84.SetManualMode:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    NodeManagement.Get(Txn.NodeName).E84Mode = E84_Mode.MANUAL;
+                    break;
 
-                    case Transaction.Command.RobotType.Continue:
-                    case Transaction.Command.RobotType.Pause:
-                    case Transaction.Command.RobotType.Stop:
-                    case Transaction.Command.SmartTagType.Hello:
-                    case Transaction.Command.RFIDType.SetCarrierID:
-                        cm.Type = CommandReturnMessage.ReturnType.Excuted;
-                        break;
+                case Transaction.Command.RobotType.Continue:
+                case Transaction.Command.RobotType.Pause:
+                case Transaction.Command.RobotType.Stop:
+                case Transaction.Command.SmartTagType.Hello:
+                case Transaction.Command.RFIDType.SetCarrierID:
+                    cm.Type = CommandReturnMessage.ReturnType.Excuted;
+                    break;
 
-                    case Transaction.Command.RobotType.GetWait:
-                    case Transaction.Command.RobotType.Home:
-                    case Transaction.Command.RobotType.OrginSearch:
-                    case Transaction.Command.RobotType.PutWait:
-                    case Transaction.Command.LoadPortType.InitialPos:
-                    case Transaction.Command.LoadPortType.MoveToSlot:
-                    case Transaction.Command.LoadPortType.Unload:
-                    case Transaction.Command.LoadPortType.Load:
-                    case Transaction.Command.LoadPortType.MappingLoad:
-                    case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
-                    //case Transaction.Command.AlignerType.OrginSearch:
-                    //case Transaction.Command.AlignerType.Home:
-                        cm.Type = CommandReturnMessage.ReturnType.Finished;
-                        break;
+                case Transaction.Command.RobotType.GetWait:
+                case Transaction.Command.RobotType.Home:
+                case Transaction.Command.RobotType.OrginSearch:
+                case Transaction.Command.RobotType.PutWait:
+                case Transaction.Command.LoadPortType.InitialPos:
+                case Transaction.Command.LoadPortType.ForceInitialPos:
+                case Transaction.Command.LoadPortType.MoveToSlot:
+                case Transaction.Command.LoadPortType.Unload:
+                case Transaction.Command.LoadPortType.Load:
+                case Transaction.Command.LoadPortType.MappingLoad:
+                case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
+                //case Transaction.Command.AlignerType.OrginSearch:
+                //case Transaction.Command.AlignerType.Home:
+                    cm.Type = CommandReturnMessage.ReturnType.Finished;
+                    break;
 
             }
 

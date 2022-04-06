@@ -32,7 +32,7 @@ namespace TransferControl.CommandConvert
         /// Encoder
         /// </summary>
         /// <param name="supplier"> Equipment supplier </param>
-        public CommandEncoder(string supplier)
+        public CommandEncoder(string supplier, string TaskFlow = "")
         {
             try
             {
@@ -41,7 +41,23 @@ namespace TransferControl.CommandConvert
                 Aligner = new EncoderAligner(Supplier);
                 Robot = new EncoderRobot(Supplier);
                 OCR = new EncoderOCR(Supplier);
-                LoadPort = new EncoderLoadPort(Supplier, EncoderLoadPort.CommandMode.TDK_A);
+
+                if(Supplier.ToUpper().Equals("SANWA_MC"))
+                {
+                    switch(TaskFlow.ToUpper())
+                    {
+                        case "EFEM_DEMO_2P":
+                            LoadPort = new EncoderLoadPort(Supplier, EncoderLoadPort.CommandMode.SANWA_B);
+                            break;
+                        default:
+                            LoadPort = new EncoderLoadPort(Supplier, EncoderLoadPort.CommandMode.SANWA_A);
+                            break;
+                    }
+                }
+                else
+                {
+                    LoadPort = new EncoderLoadPort(Supplier, EncoderLoadPort.CommandMode.TDK_A);
+                }
                 FFU = new EncoderFFU(Supplier);
                 CTU = new Encoder_CTU(Supplier);
                 ELPT = new Encoder_ELPT(Supplier);

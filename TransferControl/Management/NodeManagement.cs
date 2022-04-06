@@ -97,6 +97,23 @@ namespace TransferControl.Management
             return result;
         }
 
+        public static List<Node> GetOCRList()
+        {
+            List<Node> result = new List<Node>();
+
+            var findPort = from port in NodeList.Values.ToList()
+                           where port.Type.Equals("OCR")
+                           select port;
+
+            if (findPort.Count() != 0)
+            {
+                result = findPort.ToList();
+                result.Sort((x, y) => { return x.Name.CompareTo(y.Name); });
+            }
+
+            return result;
+        }
+
         public static List<Node> GetAlignerList()
         {
             List<Node> result = new List<Node>();
@@ -195,6 +212,11 @@ namespace TransferControl.Management
             public int MotionTimeOut { get; set; }
             public bool ByPassCheck { get; set; }
             public string AlignDegree { get; set; }
+
+            public string ExeFilePath { get; set; }
+            public string ProcessName { get; set; }
+            public string ImgSourcePath { get; set; }
+            public string FoupIDReader { get; set; }
 
         }
         public static void Save()

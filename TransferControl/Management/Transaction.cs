@@ -238,6 +238,7 @@ namespace TransferControl.Management
                 public const string RetryMapping = "RetryMapping";
                 public const string MappingLoad = "MappingLoad";
                 public const string Unload = "Unload";
+                public const string HomePos = "HomePos";
                 public const string MappingUnload = "MappingUnload";
                 public const string GetMapping = "GetMapping";
                 public const string GetMappingDummy = "GetMappingDummy";

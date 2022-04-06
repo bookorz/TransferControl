@@ -1591,8 +1591,9 @@ namespace TransferControl.Engine
 
                         if (IO_State.ContainsKey(IO_Name))
                         {
-                            IO_State.Remove(IO_Name);
-                            IO_State.Add(IO_Name, IO_Value);
+                            //IO_State.Remove(IO_Name);
+                            //IO_State.Add(IO_Name, IO_Value);
+                            IO_State[IO_Name] = IO_Value;
                         }
                         else
                         {
@@ -1635,9 +1636,11 @@ namespace TransferControl.Engine
                                 break;
                             case "MANSW":
                                 //IO_State_Change(Node.Name, "Access_SW", true);
+                                Node.Access_SW = true;
                                 break;
                             case "MANOF":
                                 //IO_State_Change(Node.Name, "Access_SW", false);
+                                Node.Access_SW = false;
                                 break;
                             case "SMTON":
                                 //CarrierManagement.Remove(Node.Carrier);
@@ -1696,25 +1699,92 @@ namespace TransferControl.Engine
                                 }
                                 break;
                             
-                            //case "POD_ARRIVED":
-                            //    Node.Foup_Presence = true;
-                            //    Node.Foup_Placement = true;
-                            //    break;
-
-                            //case "POD_REMOVED":
-                            //    Node.Foup_Presence = false;
-                            //    Node.Foup_Placement = false;
-                            //    break;
-
-                            //case "POD_UNKNOWN":
-                            //    Node.Foup_Presence = true;
-                            //    Node.Foup_Placement = false;
-                            //    break;
-
                             case "INPUT":
                                 string IO_Name = Msg.Value.Split(',')[0];
                                 string IO_Value = Msg.Value.Split(',')[1];
-                                _UIReport.On_DIO_Data_Chnaged(IO_Name, IO_Value.Equals("1") ? "TRUE" : "FALSE", "DIN");
+                                
+                                switch(IO_Name)
+                                {
+                                    case "IN-FOUP-Present-1":
+                                    case "IN-FOUP-Present-2":
+                                    case "IN-FOUP-Present-3":
+                                    case "IN-FOUP-Present-4":
+
+                                        if(IO_State.ContainsKey("IN-FOUP-Present-1") && 
+                                            IO_State.ContainsKey("IN-FOUP-Present-2") &&
+                                            IO_State.ContainsKey("IN-FOUP-Present-3") &&
+                                            IO_State.ContainsKey("IN-FOUP-Present-4"))
+                                        {
+                                            if(IO_State["IN-FOUP-Present-1"].Equals("1") &&
+                                                IO_State["IN-FOUP-Present-2"].Equals("1") &&
+                                                IO_State["IN-FOUP-Present-3"].Equals("1") &&
+                                                IO_State["IN-FOUP-Present-4"].Equals("1"))
+                                            {
+                                                Node.Foup_Presence = true;
+                                                Node.Foup_Placement = true;
+                                            }
+                                            else if(IO_State["IN-FOUP-Present-1"].Equals("0") &&
+                                                IO_State["IN-FOUP-Present-2"].Equals("0") &&
+                                                IO_State["IN-FOUP-Present-3"].Equals("0") &&
+                                                IO_State["IN-FOUP-Present-4"].Equals("0"))
+                                            {
+                                                Node.Foup_Presence = false;
+                                                Node.Foup_Placement = false;
+                                            }
+                                            else
+                                            {
+                                                Node.Foup_Presence = false;
+                                                Node.Foup_Placement = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Node.Foup_Presence = false;
+
+                                            if(IO_State.ContainsKey("IN-FOUP-Present-1"))
+                                                if(IO_State["IN-FOUP-Present-1"].Equals("1"))
+                                                    Node.Foup_Presence = true;
+
+                                            if (IO_State.ContainsKey("IN-FOUP-Present-2"))
+                                                if (IO_State["IN-FOUP-Present-2"].Equals("1"))
+                                                    Node.Foup_Presence = true;
+
+                                            if (IO_State.ContainsKey("IN-FOUP-Present-3"))
+                                                if (IO_State["IN-FOUP-Present-3"].Equals("1"))
+                                                    Node.Foup_Presence = true;
+
+                                            if (IO_State.ContainsKey("IN-FOUP-Present-4"))
+                                                if (IO_State["IN-FOUP-Present-4"].Equals("1"))
+                                                    Node.Foup_Presence = true;
+
+                                            Node.Foup_Placement = false;
+                                        }
+                                        break;
+                                    case "IN-PAD-A":
+                                        Node.LoadPort_InfoPadA = IO_State["IN-PAD-A"].Equals("1") ? true : false;
+                                        break;
+                                    case "IN-PAD-B":
+                                        Node.LoadPort_InfoPadB = IO_State["IN-PAD-B"].Equals("1") ? true : false;
+                                        break;
+                                    case "IN-PAD-C":
+                                        Node.LoadPort_InfoPadC = IO_State["IN-PAD-C"].Equals("1") ? true : false;
+                                        break;
+                                    case "IN-PAD-D":
+                                        Node.LoadPort_InfoPadD = IO_State["IN-PAD-D"].Equals("1") ? true : false;
+                                        break;
+                                    case "IN-Button-1":
+                                        Node.Access_SW = IO_State["IN-Button-1"].Equals("1") ? true : false;
+                                        break;
+                                    case "IN-Button-2":
+                                        Node.Access_SW2 = IO_State["IN-Button-2"].Equals("1") ? true : false;
+                                        break;
+                                    case "CTU-Present":
+                                    case "PTZ-Present":
+                                        _UIReport.On_DIO_Data_Chnaged(IO_Name, IO_Value.Equals("1") ? "TRUE" : "FALSE", "DIN");
+                                        break;
+
+                                }
+
                                 break;
                         }
                         break;

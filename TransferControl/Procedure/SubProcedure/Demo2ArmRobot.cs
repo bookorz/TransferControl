@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TransferControl.Config;
 using TransferControl.Management;
 
 namespace TransferControl.Procedure.SubProcedure
@@ -15,6 +16,7 @@ namespace TransferControl.Procedure.SubProcedure
         private string Arm;
         private string Slot;
         private string Position;
+        private bool StartToStop = false;
 
         public Demo2ArmRobot(Node node) : base(node)
         {
@@ -83,10 +85,13 @@ namespace TransferControl.Procedure.SubProcedure
 
                 case Node.ProcedureStatus.NoWaferOnRLArm:
                     WaferOnAligner = JobManagement.Get("ALIGNER01", "1");
+                    logger.Debug("1");
                     if (WaferOnAligner != null)
                     {
-                        if(WaferOnAligner.OCRFlag)  //OCR Finish, get wafer from aligner
-                        {                            
+                        logger.Debug("2");
+                        if (WaferOnAligner.OCRFlag)  //OCR Finish, get wafer from aligner
+                        {
+                            logger.Debug("3");
                             switch (procNode.RobotArmType)
                             {
                                 case Robot_ArmType.USE_RARM:
@@ -106,8 +111,10 @@ namespace TransferControl.Procedure.SubProcedure
                         }
                         else
                         {
-                            if(procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM))
+                            logger.Debug("4");
+                            if (procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM) && !StartToStop)
                             {
+                                logger.Debug("5");
                                 List<Node> LD = new List<Node>();
                                 foreach (Node loader in NodeManagement.GetLoadPortList())
                                 {
@@ -125,7 +132,7 @@ namespace TransferControl.Procedure.SubProcedure
                                     var WaferList = from wafer in JobManagement.GetJobList()
                                                     where wafer.IsAssigned &&
                                                         !wafer.Destination.Equals("") &&
-                                                        !wafer.Position.ToUpper().Equals(wafer.Destination.ToUpper())
+                                                        wafer.Position.ToUpper().Equals(LDnode.Name.ToUpper())
                                                     select wafer;
 
                                     if (WaferList.Count() != 0)
@@ -157,75 +164,85 @@ namespace TransferControl.Procedure.SubProcedure
                     }
                     else
                     {
-                        List<Node> LD = new List<Node>();
-                        foreach (Node loader in NodeManagement.GetLoadPortList())
+                        //預備停止流逞
+                        if (StartToStop)
                         {
-                            if (loader.Mode != null)
-                                if (loader.Mode.Equals("LD") && loader.IsMapping && loader.AssignWaferFinished)
-                                {
-                                    LD.Add(loader);
-                                }
+                            //強制停機
+                            procNode.ProcStatus = Node.ProcedureStatus.Stop;
                         }
-
-                        if (LD.Count() != 0)
+                        else
                         {
-                            Node LDnode = LD.First();
-
-                            var WaferList = from wafer in JobManagement.GetJobList()
-                                            where wafer.IsAssigned &&
-                                                !wafer.Destination.Equals("") &&
-                                                !wafer.Position.ToUpper().Equals(wafer.Destination.ToUpper())
-                                            select wafer;
-
-                            if (WaferList.Count() != 0)
+                            List<Node> LD = new List<Node>();
+                            foreach (Node loader in NodeManagement.GetLoadPortList())
                             {
-                                WaferList = WaferList.OrderBy(x => Convert.ToInt16(x.Slot));
+                                if (loader.Mode != null)
+                                    if (loader.Mode.Equals("LD") && loader.IsMapping && loader.AssignWaferFinished)
+                                    {
+                                        LD.Add(loader);
+                                    }
+                            }
 
-                                Job wafer = WaferList.First();
+                            if (LD.Count() != 0)
+                            {
+                                Node LDnode = LD.First();
 
-                                bool UseDoubleArm = false;
-                                Job wafer2 = JobManagement.Get(wafer.Position, (Convert.ToInt16(wafer.Slot)+1).ToString());
+                                var WaferList = from wafer in JobManagement.GetJobList()
+                                                where wafer.IsAssigned &&
+                                                    !wafer.Destination.Equals("") &&
+                                                    !wafer.Position.ToUpper().Equals(wafer.Destination.ToUpper())
+                                                select wafer;
 
-                                if(procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM) && wafer2 != null)
+                                if (WaferList.Count() != 0)
                                 {
-                                    if (wafer2.IsAssigned && !wafer2.Destination.Equals("") &&
-                                        !wafer2.Position.ToUpper().Equals(wafer2.Destination.ToUpper()))
-                                        UseDoubleArm = true;
-                                }
+                                    WaferList = WaferList.OrderBy(x => Convert.ToInt16(x.Slot));
 
-                                Position = LDnode.Name;
-                                if (UseDoubleArm)
-                                {
-                                    Arm = "3";
-                                    Slot = wafer2.Slot;
+                                    Job wafer = WaferList.First();
+
+                                    bool UseDoubleArm = false;
+                                    Job wafer2 = JobManagement.Get(wafer.Position, (Convert.ToInt16(wafer.Slot) + 1).ToString());
+
+                                    if (procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM) && wafer2 != null)
+                                    {
+                                        if (wafer2.IsAssigned && !wafer2.Destination.Equals("") &&
+                                            !wafer2.Position.ToUpper().Equals(wafer2.Destination.ToUpper()))
+                                            UseDoubleArm = true;
+                                    }
+
+                                    Position = LDnode.Name;
+                                    if (UseDoubleArm)
+                                    {
+                                        Arm = "3";
+                                        Slot = wafer2.Slot;
+                                    }
+                                    else
+                                    {
+                                        switch (procNode.RobotArmType)
+                                        {
+                                            case Robot_ArmType.USE_RARM:
+                                            case Robot_ArmType.USE_RLARM:
+                                                Arm = "1";
+                                                break;
+
+                                            case Robot_ArmType.USE_LARM:
+                                                Arm = "2";
+                                                break;
+                                        }
+                                        Slot = wafer.Slot;
+                                    }
+
+                                    procNode.ProcStatus = Node.ProcedureStatus.Get;
                                 }
                                 else
                                 {
-                                    switch (procNode.RobotArmType)
-                                    {
-                                        case Robot_ArmType.USE_RARM:
-                                        case Robot_ArmType.USE_RLARM:
-                                            Arm = "1";
-                                            break;
-
-                                        case Robot_ArmType.USE_LARM:
-                                            Arm = "2";
-                                            break;
-                                    }
-                                    Slot = wafer.Slot;
+                                    procNode.ProcStatus = Node.ProcedureStatus.GetPresence;
                                 }
-
-                                procNode.ProcStatus = Node.ProcedureStatus.Get;
                             }
                             else
                             {
                                 procNode.ProcStatus = Node.ProcedureStatus.GetPresence;
                             }
                         }
-                        else
-                        {
-                            procNode.ProcStatus = Node.ProcedureStatus.GetPresence;
-                        }
+
                     }
                     logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
                     break;
@@ -306,23 +323,30 @@ namespace TransferControl.Procedure.SubProcedure
                     }
                     else
                     {
+                        logger.Debug("a1");
                         WaferOnRArm = JobManagement.Get(procNode.Name + "_R", "1");
                         WaferOnLArm = JobManagement.Get(procNode.Name + "_L", "1");
-                        if (WaferOnRArm == null ? false : !IsNodeEnabled("ALIGNER01") ? false : !WaferOnRArm.OCRFlag)
+
+                        if(!IsNodeEnabled("ALIGNER01") || !(WaferOnRArm.OCRFlag && WaferOnLArm.OCRFlag))
                         {
+                            logger.Debug("a2");
                             Position = "ALIGNER01";
                             Slot = "1";
-                            Arm = "1";
-                        }
-                        else if(WaferOnLArm == null ? false : !IsNodeEnabled("ALIGNER01") ? false : !WaferOnLArm.OCRFlag)
-                        {
-                            Position = "ALIGNER01";
-                            Slot = "1";
-                            Arm = "2";
+                            if (!WaferOnRArm.OCRFlag && !WaferOnLArm.OCRFlag)
+                            {
+                                logger.Debug("a3");
+                                Arm = Convert.ToInt16(WaferOnRArm.DestinationSlot) > Convert.ToInt16(WaferOnLArm.DestinationSlot) ? "1" : "2";
+                            }
+                            else
+                            {
+                                logger.Debug("a4");
+                                Arm = !WaferOnRArm.OCRFlag ? "1" : "2";
+                            }
+                            logger.Debug(Arm);
                         }
                         else
                         {
-                            if(WaferOnRArm.Destination.Equals(WaferOnLArm.Destination) &&
+                            if (WaferOnRArm.Destination.Equals(WaferOnLArm.Destination) &&
                                 Convert.ToInt16(WaferOnRArm.DestinationSlot) == Convert.ToInt16(WaferOnLArm.DestinationSlot) + 1)
                             {
                                 Arm = "3";
@@ -331,7 +355,7 @@ namespace TransferControl.Procedure.SubProcedure
                             }
                             else
                             {
-                                if(Convert.ToInt16(WaferOnRArm.DestinationSlot) > Convert.ToInt16(WaferOnLArm.DestinationSlot))
+                                if (Convert.ToInt16(WaferOnRArm.DestinationSlot) > Convert.ToInt16(WaferOnLArm.DestinationSlot))
                                 {
                                     Arm = "1";
                                     Slot = WaferOnRArm.DestinationSlot;
@@ -345,7 +369,6 @@ namespace TransferControl.Procedure.SubProcedure
                                 }
                             }
                         }
-
                         procNode.ProcStatus = Node.ProcedureStatus.Put;
                     }
 
@@ -369,6 +392,34 @@ namespace TransferControl.Procedure.SubProcedure
                     }
                     else
                     {
+                        if(SystemConfig.Get().OfflineMode)
+                        {
+                            if(Position.ToUpper().Equals("ALIGNER01"))
+                            {
+                                Node al = NodeManagement.Get("ALIGNER01");
+                                al.R_Presence = false;
+                                al.R_Vacuum_Solenoid = "0";
+                            }
+
+                            switch (Arm)
+                            {
+                                case "1":
+                                    procNode.R_Presence = true;
+                                    procNode.R_Vacuum_Solenoid = "1";
+                                    break;
+                                case "2":
+                                    procNode.L_Presence = true;
+                                    procNode.L_Vacuum_Solenoid = "1";
+                                    break;
+                                case "3":
+                                    procNode.R_Presence = true;
+                                    procNode.L_Presence = true;
+                                    procNode.R_Vacuum_Solenoid = "1";
+                                    procNode.L_Vacuum_Solenoid = "1";
+                                    break;
+                            }
+                        }
+
                         procNode.ProcStatus = Node.ProcedureStatus.CheckPresence;
                     }
 
@@ -393,6 +444,33 @@ namespace TransferControl.Procedure.SubProcedure
                     }
                     else
                     {
+                        if (SystemConfig.Get().OfflineMode)
+                        {
+                            if (Position.ToUpper().Equals("ALIGNER01"))
+                            {
+                                Node al = NodeManagement.Get("ALIGNER01");
+                                al.R_Presence = true;
+                                al.R_Vacuum_Solenoid = "1";
+                            }
+
+                            switch (Arm)
+                            {
+                                case "1":
+                                    procNode.R_Presence = false;
+                                    procNode.R_Vacuum_Solenoid = "0";
+                                    break;
+                                case "2":
+                                    procNode.L_Presence = false;
+                                    procNode.L_Vacuum_Solenoid = "0";
+                                    break;
+                                case "3":
+                                    procNode.R_Presence = false;
+                                    procNode.L_Presence = false;
+                                    procNode.R_Vacuum_Solenoid = "0";
+                                    procNode.L_Vacuum_Solenoid = "0";
+                                    break;
+                            }
+                        }
                         procNode.ProcStatus = Node.ProcedureStatus.CheckPresence;
                     }
 
@@ -403,6 +481,7 @@ namespace TransferControl.Procedure.SubProcedure
                 case Node.ProcedureStatus.Stop:
                     logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
                     IsProcStop = true;
+                    StartToStop = false;
                     break;
                 default:
                     throw new NotSupportedException();
@@ -410,6 +489,13 @@ namespace TransferControl.Procedure.SubProcedure
             }
 
             SpinWait.SpinUntil(() => false, 50);
+        }
+        public override void Stop()
+        {
+            //IsProcStop = true;
+            IsProcPause = false;
+
+            StartToStop = true;
         }
     }
 }

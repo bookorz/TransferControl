@@ -241,11 +241,13 @@ namespace TransferControl.TaksFlow
 
                         AckTask(TaskJob);
 
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
+                        if(IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
 
                         break;
                     case 1:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.SmartTagType.GetLCDData }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.SmartTagType.GetLCDData }));
 
                         break;
                     default:
@@ -260,19 +262,22 @@ namespace TransferControl.TaksFlow
                     case 0:
                         AckTask(TaskJob);
 
-                        if (Target.Vendor.Equals("RFID_HR4136"))
-                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            if (Target.Vendor.Equals("RFID_HR4136"))
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
 
                         break;
 
                     case 1:
                         if(Value == "")
                         {
-                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID }));
+                            if (IsNodeEnabledOrNull(Target.Name))
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID }));
                         }
                         else
                         {
-                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID , Value = Value }));
+                            if (IsNodeEnabledOrNull(Target.Name))
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.GetCarrierID , Value = Value }));
                         }
 
                         break;
@@ -293,16 +298,18 @@ namespace TransferControl.TaksFlow
                 {
                     case 0:
                         AckTask(TaskJob);
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.Hello }));
                         break;
                     case 1:
-                        if (Target.Vendor.ToUpper().Equals("SMARTTAG8200"))
-                        {
-                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SelectLCDData }));
-                        }
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            if (Target.Vendor.ToUpper().Equals("SMARTTAG8200"))
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SelectLCDData }));
+                        
                         break;
                     case 2:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SetLCDData, Value = Value }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.SmartTagType.SetLCDData, Value = Value }));
 
                         break;
                     default:
@@ -316,29 +323,34 @@ namespace TransferControl.TaksFlow
                 {
                     case 0:
                         AckTask(TaskJob);
-
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
                         break;
 
                     case 1:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "MT" }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "MT" }));
                         break;
 
                     case 2:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
                         break;
 
                     case 3:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
                         break;
 
                     case 4:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.Hello }));
 
                         break;
 
                     case 5:
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "OP" }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RFIDType.Mode, Value = "OP" }));
                         break;
                     default:
                         FinishTask(TaskJob);
@@ -352,7 +364,8 @@ namespace TransferControl.TaksFlow
                     case 0:
                         AckTask(TaskJob);
 
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
+                        if (IsNodeEnabledOrNull(Target.Name))
+                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RFIDType.SetCarrierID, Value = Value }));
 
                         break;
                     default:
@@ -453,6 +466,9 @@ namespace TransferControl.TaksFlow
 
                     break;
                 case 1:
+                    GetRobotPosition(TaskJob, Target);
+                    break;
+                case 2:
 
                     if (TaskJob.TaskName == TaskFlowManagement.Command.ROBOT_PUTWAIT)
                     {
@@ -466,6 +482,10 @@ namespace TransferControl.TaksFlow
 
                     }
 
+                    break;
+
+                case 3:
+                    GetRobotPosition(TaskJob, Target);
                     break;
 
                 default:
@@ -782,7 +802,7 @@ namespace TransferControl.TaksFlow
                     break;
 
                 case 3:
-                    SpinWait.SpinUntil(() => false, 100);
+                    SpinWait.SpinUntil(() => false, 500);
                     break;
 
                 case 4:
@@ -825,6 +845,7 @@ namespace TransferControl.TaksFlow
                         }
                     }
                     break;
+
                 case 9:
                     //取得R軸電磁閥最後狀態
                     if (!SystemConfig.Get().OfflineMode)
@@ -836,10 +857,10 @@ namespace TransferControl.TaksFlow
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSV, Value = "02" }));
                     break;
+
                 case 11:
                     if (!SystemConfig.Get().OfflineMode)
                         TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Speed, Value = "100" }));
-
                     break;
 
                 case 12:
@@ -1068,7 +1089,8 @@ namespace TransferControl.TaksFlow
                     AckTask(TaskJob);
 
                     if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnClamp }));
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload }));
+                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.UnClamp }));
 
                     break;
 
@@ -1812,6 +1834,515 @@ namespace TransferControl.TaksFlow
                     return false;
             }
 
+            return true;
+        }
+        public virtual bool Sawan_E84SetTP1(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetTP1, Value = Value }));
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool Sawan_E84SetTP2(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetTP2, Value = Value }));
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool Sawan_E84SetTP3(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetTP3, Value = Value }));
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool Sawan_E84SetTP4(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetTP4, Value = Value }));
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool Sawan_E84SetTP5(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetTP5, Value = Value }));
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool Sawan_E84SetTP6(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.E84.SetTP6, Value = Value }));
+                    break;
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        #endregion
+        #region SANWA_ALIGNER
+        public virtual bool Sanwa_AlignerReset(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    break;
+
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Reset }));
+                    break;
+
+                case 2:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetError, Value = "00" }));
+                    break;
+
+                case 3:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerINIT(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    break;
+
+                case 1:
+                    //開啟電磁閥
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetSV, Value = "01", Val2 = "1" }));
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                        SpinWait.SpinUntil(() => false, 500);
+                    break;
+
+                case 3:
+                    //確認 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                    break;
+
+                case 4:
+                    //Presence 不存在,則關閉R軸電磁閥
+                    if (!SystemConfig.Get().OfflineMode && !Target.R_Presence)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetSV, Value = "01", Val2 = "0" }));
+                    break;
+
+                case 5:
+                    //確認 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        SpinWait.SpinUntil(() => false, 500);
+                    break;
+
+                case 6:
+                    //取得電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                    break;
+
+                case 7:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Speed, Value = "100" }));
+
+                    break;
+
+                case 8:
+                    //取得速度
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSpeed }));
+                    break;
+                case 9:
+                    //取得模式
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetMode }));
+                    break;
+
+                case 10:
+                    //取得異常
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetError, Value = "00" }));
+                    break;
+
+                case 11:
+                    //Servo on
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Servo, Value = "1" }));
+                    break;
+
+                case 12:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SetAlign, Value = "150000" }));
+                    break;
+
+                case 13:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
+                    break;
+
+                default:
+                    Target.InitialComplete = true;
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerORG(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+
+                    if (!IsNodeInitialComplete(Target, TaskJob)) return false;
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.OrginSearch }));
+                    break;
+
+                case 2:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Home }));
+                    break;
+
+                case 3:
+                    //確認 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                    break;
+
+                case 4:
+                    //取得電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                    break;
+
+                case 5:
+                    //取得速度
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSpeed }));
+                    break;
+
+                case 6:
+                    //取得模式
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetMode }));
+                    break;
+
+                default:
+                    OrgSearchCompleted(Target.Name);
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerHome(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Home }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerServo(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Servo, Value = Value }));
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerSpeed(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Speed, Value = Value }));
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSpeed }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerGetSpeed(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSpeed }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerMode(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.Mode, Value = Value }));
+
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetMode }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerWaferHold(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    break;
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferHold }));
+                    break;
+
+                case 2:
+                    //確認 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+
+                    break;
+
+                case 3:
+                    //取得電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerWaferRelease(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    break;
+                case 1:
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
+                    break;
+
+                case 2:
+                    //確認 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                    break;
+
+                case 3:
+                    //取得電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerSaveLog(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.SaveLog }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public virtual bool Sanwa_AlignerAlign(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    if (!CheckNodeStatusOnTaskJob(Target, TaskJob)) return false;
+
+                    AckTask(TaskJob);
+
+                    break;
+
+                case 1:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferHold }));
+                    break;
+
+                case 2:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.Align, Value = Value }));
+                    break;
+
+                case 3:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.AlignerType.WaferRelease }));
+                    break;
+
+                case 4:
+                    //確認 Presence
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetRIO, Value = "008" }));
+                    break;
+
+                case 5:
+                    //取得電磁閥最後狀態
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetSV, Value = "01" }));
+                    break;
+
+                case 6:
+                    if (!SystemConfig.Get().OfflineMode)
+                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.AlignerType.GetStatus }));
+                    break;
+                case 7:
+                    Job Wafer = JobManagement.Get(Target.Name, "1");
+                    if(Wafer != null)
+                        Wafer.AlignerFlag = true;
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+            return true;
+        }
+        public virtual bool Sanwa_AlignerGetClamp(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+                    AckTask(TaskJob);
+                    break;
+
+                //case 1:
+                //    break;
+
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
             return true;
         }
         #endregion

@@ -1059,7 +1059,11 @@ namespace TransferControl.CommandConvert
                                 {
                                     case "ACK":
                                         each.Type = CommandReturnMessage.ReturnType.Excuted;
+                                        if(content.Length == 2)
+                                            each.NodeAdr = "1";
+
                                         break;
+
                                     case "NAK":
                                         each.Type = CommandReturnMessage.ReturnType.Error;
                                         break;
@@ -1618,7 +1622,7 @@ namespace TransferControl.CommandConvert
                                                 case "REACH_SLOT":
                                                 case "REACH_STAGE":
                                                 case "REACH_WAFER":
-                                                case "AUTO_MODE":
+                                                //case "AUTO_MODE":
                                                     each.Type = CommandReturnMessage.ReturnType.Finished;
                                                     break;
 

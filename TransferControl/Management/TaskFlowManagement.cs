@@ -104,6 +104,9 @@ namespace TransferControl.Management
                 case "EFEM_HWATSING_2P":
                     TaskFlow = new EFEM_HWATSING_2P(this);
                     break;
+                case "EFEM_DEMO_2P":
+                    TaskFlow = new EFEM_Demo_2P(this);
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -486,6 +489,12 @@ namespace TransferControl.Management
             PORT_ACCESS_MODE,
             RESET_E84,
             E84_MODE,
+            E84_SETTP1,
+            E84_SETTP2,
+            E84_SETTP3,
+            E84_SETTP4,
+            E84_SETTP5,
+            E84_SETTP6,
             BLOCK_ALIGNER,
             RELEASE_ALIGNER,
             //WTS Manual
@@ -552,7 +561,10 @@ namespace TransferControl.Management
             E84_INIT,
             E84_SET_ALL_MODE,
             E84_TRANSREQ,
-            EFEM_INIT
+            EFEM_INIT,
+            OCR_ONLINE,
+            OCR_OFFLINE,
+            OCR_READ
         }
     }
 }

@@ -46,7 +46,8 @@ namespace TransferControl.CommandConvert
             Online,
             Maintenance,
             Auto,
-            Manual
+            Manual,
+            dry
         }
 
         /// <summary>
@@ -102,7 +103,9 @@ namespace TransferControl.CommandConvert
         public enum CommandMode
         {
             TDK_A,
-            TDK_B
+            TDK_B,
+            SANWA_A,    //SIMF G1 使用
+            SANWA_B     //自製 Loadport使用
         }
         private string EndCode()
         {
@@ -699,6 +702,110 @@ namespace TransferControl.CommandConvert
                     }
                     commandStr = TDKAssembly(commandStr);
                     break;
+                case "SANWA_MC":
+                    switch (indicatorType)
+                    {
+                        case IndicatorType.Load:
+                            switch (indicatorStatus)
+                            {
+                                case IndicatorStatus.ON:
+                                    commandStr = "$1MCR:STLED:1,1,1";
+                                    break;
+                                case IndicatorStatus.OFF:
+                                    commandStr = "$1MCR:STLED:1,1,0";
+                                    break;
+                                case IndicatorStatus.Flashes:
+                                    commandStr = "$1MCR:STLED:1,1,2";
+                                    break;
+                            }
+                            break;
+                        case IndicatorType.Unload:
+                            switch (indicatorStatus)
+                            {
+                                case IndicatorStatus.ON:
+                                    commandStr = "$1MCR:STLED:1,2,1";
+                                    break;
+                                case IndicatorStatus.OFF:
+                                    commandStr = "$1MCR:STLED:1,2,0";
+                                    break;
+                                case IndicatorStatus.Flashes:
+                                    commandStr = "$1MCR:STLED:1,2,2";
+                                    break;
+                            }
+                            break;
+                        case IndicatorType.OpAccess:
+                            switch (indicatorStatus)
+                            {
+                                case IndicatorStatus.ON:
+                                    commandStr = "$1MCR:STLED:1,3,1";
+                                    break;
+                                case IndicatorStatus.OFF:
+                                    commandStr = "$1MCR:STLED:1,3,0";
+                                    break;
+                                case IndicatorStatus.Flashes:
+                                    commandStr = "$1MCR:STLED:1,3,2";
+                                    break;
+                            }
+                            break;
+                        case IndicatorType.Presence:
+                            switch (indicatorStatus)
+                            {
+                                case IndicatorStatus.ON:
+                                    commandStr = "$1MCR:STLED:1,4,1";
+                                    break;
+                                case IndicatorStatus.OFF:
+                                    commandStr = "$1MCR:STLED:1,4,0";
+                                    break;
+                                case IndicatorStatus.Flashes:
+                                    commandStr = "$1MCR:STLED:1,4,2";
+                                    break;
+                            }
+                            break;
+                        case IndicatorType.Placement:
+                            switch (indicatorStatus)
+                            {
+                                case IndicatorStatus.ON:
+                                    commandStr = "$1MCR:STLED:1,5,1";
+                                    break;
+                                case IndicatorStatus.OFF:
+                                    commandStr = "$1MCR:STLED:1,5,0";
+                                    break;
+                                case IndicatorStatus.Flashes:
+                                    commandStr = "$1MCR:STLED:1,5,2";
+                                    break;
+                            }
+                            break;
+                        case IndicatorType.Status01:
+                            switch (indicatorStatus)
+                            {
+                                case IndicatorStatus.ON:
+                                    commandStr = "$1MCR:STLED:1,7,1";
+                                    break;
+                                case IndicatorStatus.OFF:
+                                    commandStr = "$1MCR:STLED:1,7,0";
+                                    break;
+                                case IndicatorStatus.Flashes:
+                                    commandStr = "$1MCR:STLED:1,7,2";
+                                    break;
+                            }
+                            break;
+                        case IndicatorType.Status02:
+                            switch (indicatorStatus)
+                            {
+                                case IndicatorStatus.ON:
+                                    commandStr = "$1MCR:STLED:1,8,1";
+                                    break;
+                                case IndicatorStatus.OFF:
+                                    commandStr = "$1MCR:STLED:1,8,0";
+                                    break;
+                                case IndicatorStatus.Flashes:
+                                    commandStr = "$1MCR:STLED:1,8,2";
+                                    break;
+                            }
+                            break;
+                    }
+
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -742,15 +849,36 @@ namespace TransferControl.CommandConvert
                     }
                     break;
                 case "SANWA_MC":
-                    switch (modeType)
+                    switch(cmdMode)
                     {
-                        case ModeType.Online:
-                            commandStr = "$1MCR:MODE_:1,0";
+                        case CommandMode.SANWA_A:
+                            switch (modeType)
+                            {
+                                case ModeType.Online:
+                                    commandStr = "$1MCR:MODE_:1,0";
 
+                                    break;
+                                case ModeType.Maintenance:
+                                    commandStr = "$1MCR:MODE_:1,1";
+                                    break;
+                            }
                             break;
-                        case ModeType.Maintenance:
-                            commandStr = "$1MCR:MODE_:1,1";
+
+                        case CommandMode.SANWA_B:
+                            switch (modeType)
+                            {
+                                case ModeType.Online:
+                                    commandStr = "$1SET:MODE_:0,1";
+
+                                    break;
+                                case ModeType.dry:
+                                    commandStr = "$1SET:MODE_:1,1";
+                                    break;
+                            }
                             break;
+
+                        default:
+                            throw new NotSupportedException();
                     }
               
                     break;
@@ -759,7 +887,6 @@ namespace TransferControl.CommandConvert
             }
             return commandStr + EndCode();
         }
-
         /// <summary>
         /// Status [TDK, ASYST,SANWA_MC]
         /// </summary>
@@ -943,14 +1070,24 @@ namespace TransferControl.CommandConvert
                     commandStr = "HCS STAGE";
                     break;
                 case "SANWA_MC":
-                    commandStr = "$1MCR:STAGE:1,0";
+                    switch (cmdMode)
+                    {
+                        case CommandMode.SANWA_A:
+                            commandStr = "$1MCR:STAGE:1,0";
+                            break;
+                        case CommandMode.SANWA_B:
+                            commandStr = "$1MCR:OPEN_:1,0";
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
             return commandStr + EndCode();
         }
-
         public string LoadWithLift(CommandType commandType)
         {
             string commandStr = "";
@@ -1047,6 +1184,37 @@ namespace TransferControl.CommandConvert
         }
 
         /// <summary>
+        /// 200mm Loadport only 
+        /// return to home position
+        /// </summary>
+        /// <param name="commandType"></param>
+        /// <returns></returns>
+        public string HomePosition(CommandType commandType)
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                //SANWA 仿 ASYST 通訊適用
+                case "ASYST":
+                    commandStr = "HCS HOME 1";
+                    break;
+                case "SANWA_MC":
+                    switch (cmdMode)
+                    {
+                        case CommandMode.SANWA_A:
+                            commandStr = "$1MCR:HOME_:1,0,1";
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
+        /// <summary>
         /// Unload FOUP [TDK, ASYST]
         /// </summary>
         /// <param name="commandType"> Command Type </param>
@@ -1064,8 +1232,19 @@ namespace TransferControl.CommandConvert
                     commandStr = "HCS HOME";
                     break;
                 case "SANWA_MC":
-                    commandStr = "$1MCR:HOME_:1,0";
+                    switch (cmdMode)
+                    {
+                        case CommandMode.SANWA_A:
+                            commandStr = "$1MCR:HOME_:1,0";
+                            break;
+                        case CommandMode.SANWA_B:
+                            commandStr = "$1MCR:CLOSE:1,0";
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1166,6 +1345,9 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:CULFC;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:MOVIN:1,0";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1186,9 +1368,21 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:CUDMP;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+
                 case "SANWA_MC":
-                    commandStr = "$1MCR:HOME:1,1";
+                    switch (cmdMode)
+                    {
+                        case CommandMode.SANWA_A:
+                            commandStr = "$1MCR:HOME_:1,1";
+                            break;
+                        case CommandMode.SANWA_B:
+                            commandStr = "$1MCR:CLOSE:1,1";
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1251,9 +1445,21 @@ namespace TransferControl.CommandConvert
                 case "ASYST":
                     commandStr = "HCS STAGE";
                     break;
+
                 case "SANWA_MC":
-                    commandStr = "$1MCR:STAGE:1,0";
+                    switch(cmdMode)
+                    {
+                        case CommandMode.SANWA_A:
+                            commandStr = "$1MCR:STAGE:1,0";
+                            break;
+                        case CommandMode.SANWA_B:
+                            commandStr = "$1MCR:OPEN_:1,1";
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1320,12 +1526,25 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:PODOP;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+
                 case "ASYST":
                     commandStr = "HCS UNLK";
                     break;
+
                 case "SANWA_MC":
-                    commandStr = "$1MCR:LATCH:1,0";
+                    switch (cmdMode)
+                    {
+                        case CommandMode.SANWA_A:
+                            commandStr = "$1MCR:OPEN_:1,0";
+                            break;
+                        case CommandMode.SANWA_B:
+                            commandStr = "$1MCR:CLAMP:1,0";
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1346,12 +1565,25 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:PODCL;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+
                 case "ASYST":
                     commandStr = "HCS LOCK";
                     break;
+
                 case "SANWA_MC":
-                    commandStr = "$1MCR:LATCH:1,1";
+                    switch (cmdMode)
+                    {
+                        case CommandMode.SANWA_A:
+                            commandStr = "$1MCR:OPEN_:1,1";
+                            break;
+                        case CommandMode.SANWA_B:
+                            commandStr = "$1MCR:CLAMP:1,1";
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1422,6 +1654,9 @@ namespace TransferControl.CommandConvert
                     commandStr = "MOV:YWAIT;";
                     commandStr = TDKAssembly(commandStr);
                     break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:MOVIN:1,0";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -1441,6 +1676,9 @@ namespace TransferControl.CommandConvert
                 case "TDK":
                     commandStr = "MOV:YDOOR;";
                     commandStr = TDKAssembly(commandStr);
+                    break;
+                case "SANWA_MC":
+                    commandStr = "$1MCR:MOVIN:1,1";
                     break;
                 default:
                     throw new NotSupportedException();

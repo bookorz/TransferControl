@@ -18,7 +18,9 @@ namespace TransferControl.Procedure.SubProcedure
 
         public bool IsProcBusy = false;
         public bool IsProcStop = false;
-        private bool IsProcPause = false;
+        public bool IsProcPause = false;
+
+        public ManualResetEvent ProcFinishedEvt = new ManualResetEvent(false);
 
         public SubProc(Node node)
         {
@@ -53,7 +55,10 @@ namespace TransferControl.Procedure.SubProcedure
                 IsProcStop = false;
                 IsProcPause = false;
 
+                ProcFinishedEvt.Reset();
+
                 ProcNode.ProcStatus = Node.ProcedureStatus.Idle;
+
 
                 ThreadPool.QueueUserWorkItem(new WaitCallback(ProcRun), ProcNode);
                 Ret = true;
@@ -61,7 +66,7 @@ namespace TransferControl.Procedure.SubProcedure
 
             return Ret;
         }
-        public void Stop()
+        public virtual void Stop()
         {
             IsProcStop = true;
             IsProcPause = false;
@@ -100,6 +105,7 @@ namespace TransferControl.Procedure.SubProcedure
             }
 
             IsProcBusy = false;
+            ProcFinishedEvt.Set();
         }
     }
 }

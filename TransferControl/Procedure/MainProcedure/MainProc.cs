@@ -11,9 +11,11 @@ namespace TransferControl.Procedure.MainProcedure
     public class MainProc
     {
         protected ILog logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        public MainProc()
-        {
 
+        protected IMainProcCallback ProcCallback;
+        public MainProc(IMainProcCallback prco)
+        {
+            ProcCallback = prco;
         }
         public virtual bool Start()
         {
