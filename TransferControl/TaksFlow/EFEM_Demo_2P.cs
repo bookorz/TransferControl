@@ -294,6 +294,14 @@ namespace TransferControl.TaksFlow
 
                                     if (IsNodeEnabledOrNull("ROBOT01"))
                                         GetRobotPresence(TaskJob, NodeManagement.Get("ROBOT01"), "LSolenoid");
+
+
+                                    for (int i = 0; i < LoadportCount; i++)
+                                    {
+                                        if (IsNodeEnabledOrNull(string.Format("LOADPORT0{0}", i + 1)))
+                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(string.Format("LOADPORT0{0}", i + 1), "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetStatus }));
+                                    }
+
                                     break;
                                 }
                                 break;
@@ -1232,7 +1240,7 @@ namespace TransferControl.TaksFlow
 
                             case 2:
                                 //確認狀態
-                                //GetLoadportStatus(TaskJob, Target);
+                                GetLoadportStatus(TaskJob, Target);
                                 break;
 
                             default:
@@ -1260,7 +1268,7 @@ namespace TransferControl.TaksFlow
 
                             case 1:
                                 //確認狀態
-                                //GetLoadportStatus(TaskJob, Target);
+                                GetLoadportStatus(TaskJob, Target);
                                 break;
 
                             default:
@@ -1305,8 +1313,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                GetLoadportStatus(TaskJob, Target);
                                 break;
 
                             default:
@@ -1317,7 +1324,18 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_READ_STATUS:
-                        //if (!TDK_LoadportReadStatus(TaskJob, Target)) return;
+                        switch(TaskJob.CurrentIndex)
+                        {
+                            case 0:
+                                AckTask(TaskJob);
+                                break;
+                            case 1:
+                                GetLoadportStatus(TaskJob, Target);
+                                break;
+                            default:
+                                FinishTask(TaskJob);
+                                return;
+                        }
                         break;
 
                     case TaskFlowManagement.Command.LOADPORT_CLAMP:
@@ -1334,12 +1352,11 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                GetLoadportStatus(TaskJob, Target);
 
                                 break;
                             default:
-                                //Target.Foup_Lock = true;
+                                Target.Foup_Lock = true;
                                 FinishTask(TaskJob);
                                 return;
                         }
@@ -1360,11 +1377,11 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                GetLoadportStatus(TaskJob, Target);
                                 break;
 
                             default:
+                                Target.Foup_Lock = false;
                                 FinishTask(TaskJob);
                                 return;
                         }
@@ -1383,8 +1400,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                GetLoadportStatus(TaskJob, Target);
                                 break;
 
                             default:
@@ -1406,8 +1422,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                GetLoadportStatus(TaskJob, Target);
 
                                 break;
                             default:
@@ -1448,8 +1463,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 2:
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                GetLoadportStatus(TaskJob, Target);
 
                                 break;
                             default:
@@ -1476,11 +1490,23 @@ namespace TransferControl.TaksFlow
 
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Unload, Value = "0" }));
 
+                                //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.MappingUnload, Value = "0" }));
                                 break;
 
+
                             case 1:
-                                //if (!SystemConfig.Get().OfflineMode)
-                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                                //if (SystemConfig.Get().DummyMappingData)
+                                //{
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                                //}
+                                //else
+                                //{
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                                //}
+                                break;
+
+                            case 2:
+                                GetLoadportStatus(TaskJob, Target);
 
                                 break;
                             default:
@@ -1504,7 +1530,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                //GetLoadportStatus(TaskJob, Target);
+                                GetLoadportStatus(TaskJob, Target);
                                 break;
 
                             default:
@@ -1537,12 +1563,14 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                //switch (Target.Vendor.ToUpper())
-                                //{
-                                //    case "ASYST":
-                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.Load }));
-                                //        break;
-                                //}
+                                if (SystemConfig.Get().DummyMappingData)
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                                }
+                                else
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
+                                }
 
                                 break;
                             case 2:
@@ -1551,7 +1579,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 3:
-                                //GetLoadportStatus(TaskJob, Target);
+                                GetLoadportStatus(TaskJob, Target);
                                 break;
                             default:
                                 FinishTask(TaskJob);
@@ -1756,22 +1784,22 @@ namespace TransferControl.TaksFlow
                         break;
 
                     case TaskFlowManagement.Command.E84_SETTP1:
-                        if (!Sawan_E84SetTP1(TaskJob, Target,Value)) return;
+                        if (!Sanwa_E84SetTP1(TaskJob, Target,Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP2:
-                        if (!Sawan_E84SetTP2(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP2(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP3:
-                        if (!Sawan_E84SetTP3(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP3(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP4:
-                        if (!Sawan_E84SetTP4(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP4(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP5:
-                        if (!Sawan_E84SetTP5(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP5(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP6:
-                        if (!Sawan_E84SetTP6(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP6(TaskJob, Target, Value)) return;
                         break;
                     #endregion
                     #region OCR

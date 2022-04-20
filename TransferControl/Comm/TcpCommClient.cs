@@ -173,7 +173,7 @@ namespace TransferControl.Comm
 
                     break;
                 case "SANWA":
-                case "SANWA_HWATSING_MC":
+                case "SANWA_MC":
                     S += Encoding.Default.GetString(OrgData, 0, OrgData.Length);
 
                     if (S.IndexOf("\r") != -1)

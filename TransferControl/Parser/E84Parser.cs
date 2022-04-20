@@ -125,7 +125,6 @@ namespace TransferControl.Parser
             Dictionary<string, string> result = new Dictionary<string, string>();
             byte DIN = Convert.ToByte(Message.Substring(0, 2), 16);
 
-
             StringBuilder sb = new StringBuilder();
             sb.Append(Convert.ToString(DIN, 2).PadLeft(8, '0'));
 

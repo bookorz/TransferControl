@@ -911,7 +911,19 @@ namespace TransferControl.CommandConvert
             }
             return commandStr + EndCode();
         }
-
+        public string GetStatus()
+        {
+            string commandStr = "";
+            switch (Supplier)
+            {
+                case "SANWA_MC":
+                    commandStr = "$1MCR:GTSTS:1,0";
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return commandStr + EndCode();
+        }
         /// <summary>
         /// Version
         /// </summary>

@@ -263,6 +263,7 @@ namespace TransferControl.Management
                 public const string DoorDown = "DoorDown";
                 public const string ReadVersion = "ReadVersion";
                 public const string ReadStatus = "ReadStatus";
+                public const string GetStatus = "GetStatus";        ///Sanwa 300mm loadport use
                 public const string MapperWaitPosition = "MapperWaitPosition";
                 public const string MapperStartPosition = "MapperStartPosition";
                 public const string MapperArmRetracted = "MapperArmRetracted";
@@ -336,6 +337,7 @@ namespace TransferControl.Management
                 public const string PutWaitByLArm = "PutWaitByLArm";
                 public const string GetWaitByRArm = "GetWaitByRArm";
                 public const string GetWaitByLArm = "GetWaitByLArm";
+                public const string Flip = "Flip";
             }
             //Aligner
             public class AlignerType

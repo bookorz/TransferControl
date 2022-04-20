@@ -13,7 +13,8 @@ using TransferControl.Management;
 /// 華海清科 12吋 1 Robot 2 Loadport 2 Loadlock
 /// Robot : 1 Arm 同時包含 Clamp & Vacumm
 /// 取放片流程 : 
-/// Vacuum => LP(上方取片) -> 翻轉Wafer -> BF 下方放片 
+/// Vacuum => LP(下方取片) -> 翻轉Wafer -> BF 下方放片 
+/// Clamp => LP 下方取片 -> BF 下方放片
 /// Clamp => BF 下方取片 -> LP 下方放片
 ///               
 /// </summary>
@@ -423,23 +424,22 @@ namespace TransferControl.TaksFlow
 
                             case 4:
                                 //移動Wafer
-                                //Wafer in loadport by Vacuum
-                                //Wafer in loadlock by Clamp
                                 string arm = "1";
 
                                 RobotPoint point = PointManagement.GetPoint(Target.Name, Position.Name );
-
-                                if (Position.Type.ToUpper().Equals("LOADPORT"))
+                                //Arm 1 => Clamp
+                                //Arm 2 => Vacuum                                
+                                if(Arm.Equals("1"))
+                                {
+                                    arm = "0";
+                                    point.Point = point.ClampPoint;
+                                }
+                                else
                                 {
                                     arm = "1";
                                     point.Point = point.VacuumPoint;
                                 }
 
-                                if (Position.Type.ToUpper().Equals("LOADLOCK"))
-                                {
-                                    arm = "0";
-                                    point.Point = point.ClampPoint;
-                                }
 
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Get, Position = Position.Name, Arm = arm, Slot = "1" }));
                                 break;
@@ -454,7 +454,7 @@ namespace TransferControl.TaksFlow
                                 Wafer.LastNode = Wafer.Position ?? Position.Name;
                                 Wafer.LastSlot = Wafer.Slot ?? "1";
 
-                                Wafer.Position = Position.Type.ToUpper().Equals("LOADPORT") ? Target.Name + "_L" : Target.Name + "_R";
+                                Wafer.Position = Arm.Equals("1") ? Target.Name + "_R" : Target.Name + "_L";
                                 Wafer.Slot = "1";
 
                                 _TaskReport.On_Job_Location_Changed(Wafer);
@@ -464,13 +464,13 @@ namespace TransferControl.TaksFlow
 
                                 if(SystemConfig.Get().OfflineMode)
                                 {
-                                    if(Position.Type.ToUpper().Equals("LOADPORT"))
-                                    {
-                                        Target.L_Presence = true;
-                                    }
-                                    else if(Position.Type.ToUpper().Equals("LOADLOCK"))
+                                    if(Arm.Equals("1"))
                                     {
                                         Target.R_Presence = true;
+                                    }
+                                    else
+                                    {
+                                        Target.L_Presence = true;
                                     }
                                 }
                                 break;
@@ -559,14 +559,15 @@ namespace TransferControl.TaksFlow
                                 string arm = "0";
 
                                 RobotPoint point = PointManagement.GetPoint(Target.Name, Position.Name);
-                                //Put to loadport by clamp arm & put to loadlock by vacuum arm
-                                if (Position.Type.ToUpper().Equals("LOADPORT"))
+
+                                //Arm 1 => Clamp
+                                //Arm 2 => Vacuum  
+                                if (Arm.Equals("1"))
                                 {
                                     arm = "0";
                                     point.Point = point.ClampPoint;
                                 }
-
-                                if(Position.Type.ToUpper().Equals("LOADLOCK"))
+                                else
                                 {
                                     arm = "1";
                                     point.Point = point.VacuumPoint;
@@ -577,7 +578,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 5:
-                                Wafer = JobManagement.Get(Position.Type.ToUpper().Equals("LOADPORT") ? Target.Name + "_R" : Target.Name + "_L", "1");
+                                Wafer = JobManagement.Get(Arm.Equals("1") ? Target.Name + "_R" : Target.Name + "_L", "1");
                                 if (Wafer == null)
                                 {
                                     Wafer = JobManagement.Add();
@@ -599,11 +600,11 @@ namespace TransferControl.TaksFlow
 
                                 if (SystemConfig.Get().OfflineMode)
                                 {
-                                    if (Position.Type.ToUpper().Equals("LOADPORT"))
+                                    if (Arm.Equals("1"))
                                     {
                                         Target.R_Presence = false;
                                     }
-                                    else if (Position.Type.ToUpper().Equals("LOADLOCK"))
+                                    else
                                     {
                                         Target.L_Presence = false;
                                     }
@@ -784,7 +785,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 2:
-                                string arm = Position.Type.ToUpper().Equals("LOADPORT") ? "0" : "1";
+                                string arm = Arm.Equals("1") ? "0" : "1";
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = arm, Slot = "1" }));
                                 break;
 
@@ -827,7 +828,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 2:
-                                string arm = Position.Type.ToUpper().Equals("LOADPORT") ? "1" : "0";
+                                string arm = Arm.Equals("1") ? "0" : "1";
                                 TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = arm, Slot = "1" }));
                                 break;
 
@@ -984,17 +985,17 @@ namespace TransferControl.TaksFlow
                                 break;
                             case 7:
 
-                                //砍掉不必要的帳
-                                if(JobManagement.Get("ROBOT01_R") != null && !Target.R_Presence)
-                                {
-                                    JobManagement.Remove(JobManagement.Get("ROBOT01_R"));
-                                }
+                                ////砍掉不必要的帳
+                                //if(JobManagement.Get("ROBOT01_R") != null && !Target.R_Presence)
+                                //{
+                                //    JobManagement.Remove(JobManagement.Get("ROBOT01_R"));
+                                //}
 
-                                //砍掉不必要的帳
-                                if (JobManagement.Get("ROBOT01_L") != null && !Target.L_Presence)
-                                {
-                                    JobManagement.Remove(JobManagement.Get("ROBOT01_L"));
-                                }
+                                ////砍掉不必要的帳
+                                //if (JobManagement.Get("ROBOT01_L") != null && !Target.L_Presence)
+                                //{
+                                //    JobManagement.Remove(JobManagement.Get("ROBOT01_L"));
+                                //}
 
                                 break;
 
@@ -1110,6 +1111,7 @@ namespace TransferControl.TaksFlow
                     case TaskFlowManagement.Command.ROBOT_SAVE_LOG:
                         if (!Sanwa_RobotSaveLog(TaskJob, Target)) return;
                         break;
+
                     #endregion
                     #region LOADPORT
                     case TaskFlowManagement.Command.LOADPORT_INIT:
@@ -1233,14 +1235,14 @@ namespace TransferControl.TaksFlow
                     #endregion
                     #region E84
                     case TaskFlowManagement.Command.E84_INIT:
-                        if (!Sawan_E84INIT(TaskJob, Target)) return;
+                        if (!Sanwa_E84INIT(TaskJob, Target)) return;
                         break;
                     case TaskFlowManagement.Command.RESET_E84:
-                        if (!Sawan_E84Reset(TaskJob, Target)) return;
+                        if (!Sanwa_E84Reset(TaskJob, Target)) return;
                         break;
                     case TaskFlowManagement.Command.E84_MODE:
                     case TaskFlowManagement.Command.E84_TRANSREQ:
-                        if (!Sawan_E84Mode(TaskJob, Target,Value)) return;
+                        if (!Sanwa_E84Mode(TaskJob, Target,Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SET_ALL_MODE:
                         switch (TaskJob.CurrentIndex)
@@ -1321,22 +1323,22 @@ namespace TransferControl.TaksFlow
                         }
                         break;
                     case TaskFlowManagement.Command.E84_SETTP1:
-                        if (!Sawan_E84SetTP1(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP1(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP2:
-                        if (!Sawan_E84SetTP2(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP2(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP3:
-                        if (!Sawan_E84SetTP3(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP3(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP4:
-                        if (!Sawan_E84SetTP4(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP4(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP5:
-                        if (!Sawan_E84SetTP5(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP5(TaskJob, Target, Value)) return;
                         break;
                     case TaskFlowManagement.Command.E84_SETTP6:
-                        if (!Sawan_E84SetTP6(TaskJob, Target, Value)) return;
+                        if (!Sanwa_E84SetTP6(TaskJob, Target, Value)) return;
                         break;
 
                     #endregion
@@ -1435,20 +1437,21 @@ namespace TransferControl.TaksFlow
         {
             if (node != null)
             {
-                if(node.Vendor.Equals("SANWA_HWATSING_MC"))
-                {
-                    Node tempNode = new Node
-                    {
-                        Name = node.Name,
-                        Vendor = "SANWA_MC"
-                    };
+                _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(node, Message, TaskJob.MainTaskId));
+                //if(node.Vendor.Equals("SANWA_HWATSING_MC"))
+                //{
+                //    Node tempNode = new Node
+                //    {
+                //        Name = node.Name,
+                //        Vendor = "SANWA_MC"
+                //    };
 
-                    _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(tempNode, Message, TaskJob.MainTaskId));
-                }
-                else
-                {
-                    _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(node, Message, TaskJob.MainTaskId));
-                }
+                //    _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(tempNode, Message, TaskJob.MainTaskId));
+                //}
+                //else
+                //{
+                //    _TaskReport.On_Alarm_Happen(AlarmManagement.NewAlarm(node, Message, TaskJob.MainTaskId));
+                //}
             }
             _TaskReport.On_TaskJob_Aborted(TaskJob);
         }

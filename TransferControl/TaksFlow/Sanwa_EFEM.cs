@@ -1555,28 +1555,28 @@ namespace TransferControl.TaksFlow
                         {
                             case 0:
                                 AckTask(TaskJob);
-                                if (SystemConfig.Get().DummyMappingData)
-                                {
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
-                                }
-                                else
-                                {
-                                    string excuteType = "FINISHED";
-                                    switch (Target.Vendor.ToUpper())
-                                    {
-                                        case "SANWA_MC":
-                                            excuteType = "FINISHED";
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
-                                            break;
+                                //if (SystemConfig.Get().DummyMappingData)
+                                //{
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.GetMappingDummy }));
+                                //}
+                                //else
+                                //{
+                                //    string excuteType = "FINISHED";
+                                //    switch (Target.Vendor.ToUpper())
+                                //    {
+                                //        case "SANWA_MC":
+                                //            excuteType = "FINISHED";
+                                //            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMapping, Value = "NoEvt" }));
+                                //            break;
 
-                                        case "ASYST":
-                                            excuteType = "EXCUTED";
-                                            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMappingData }));
-                                            break;
-                                    }
+                                //        case "ASYST":
+                                //            excuteType = "EXCUTED";
+                                //            TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMappingData }));
+                                //            break;
+                                //    }
 
 
-                                }
+                                //}
                                 break;
 
                             case 1:
@@ -1761,14 +1761,14 @@ namespace TransferControl.TaksFlow
                                 {
                                     case "SANWA_MC":
                                         excuteType = "FINISHED";
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
                                         break;
 
                                     case "ASYST":
                                         excuteType = "EXCUTED";
+                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMappingData }));
                                         break;
                                 }
-
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.GetMapping }));
 
                                 break;
 

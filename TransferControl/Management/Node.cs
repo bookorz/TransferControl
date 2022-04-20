@@ -1321,6 +1321,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.Status();
                                 txn.CommandType = "GET";
                                 break;
+                            case Transaction.Command.LoadPortType.GetStatus:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.GetStatus();
+                                txn.CommandType = "GET";
+                                break;
                             case Transaction.Command.LoadPortType.InitialPos:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.InitialPosition(EncoderLoadPort.CommandType.Normal);
                                 txn.CommandType = "CMD";
@@ -1718,6 +1722,10 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.SaveLog(AdrNo, txn.Seq);
                                 txn.CommandType = "SET";
                                 txn.AckTimeOut = 180000;
+                                break;
+                            case Transaction.Command.RobotType.Flip:
+                                txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.WaferFlip(AdrNo, txn.Seq, txn.Value);
+                                txn.CommandType = "CMD";
                                 break;
                         }
                         break;

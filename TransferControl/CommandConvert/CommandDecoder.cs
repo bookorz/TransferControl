@@ -27,9 +27,9 @@ namespace TransferControl.CommandConvert
                         result = SANWA_MCCodeAnalysis(Message);
                         break;
 
-                    case "SANWA_HWATSING_MC":
-                        result = SANWA_HWATSING_MCCodeAnalysis(Message);
-                        break;
+                    //case "SANWA_HWATSING_MC":
+                    //    result = SANWA_HWATSING_MCCodeAnalysis(Message);
+                    //    break;
 
                     case "SANWA":
                     case "ATEL_NEW":
@@ -1049,6 +1049,7 @@ namespace TransferControl.CommandConvert
                     CommandReturnMessage each = new CommandReturnMessage();
                     each.OrgMsg = Msg.Substring(Msg.IndexOf("$"));
                     each.CommandType = "CMD";
+                    each.NodeAdr = each.OrgMsg.Substring(1,1);
                     string[] content = each.OrgMsg.Replace("\r", "").Replace("\n", "").Substring(2).Split(':');
                     for (int i = 0; i < content.Length; i++)
                     {
@@ -1103,7 +1104,7 @@ namespace TransferControl.CommandConvert
                                     {
                                         if (content[i].IndexOf(",") != -1)
                                         {
-                                            each.NodeAdr = content[i].Substring(0, content[i].IndexOf(","));
+                                            //each.NodeAdr = content[i].Substring(0, content[i].IndexOf(","));
 
                                             if (each.Type.Equals(CommandReturnMessage.ReturnType.Finished))
                                             {
@@ -1138,7 +1139,7 @@ namespace TransferControl.CommandConvert
                                         }
                                         else
                                         {
-                                            each.NodeAdr = content[i];
+                                            //each.NodeAdr = content[i];
                                         }
                                     }
                                     //if (each.Command.Equals("MCR__"))

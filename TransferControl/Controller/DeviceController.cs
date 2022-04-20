@@ -513,21 +513,22 @@ namespace TransferControl.Controller
                 switch (Vendor.ToUpper())
                 {
                     case "SANWA_MC":
-                    case "SANWA_HWATSING_MC":
                         if (orgTxn.CommandEncodeStr.Contains("MCR:"))
                         {
                             Txn.CommandType = "CMD";
                         }
 
-                        if (Txn.Method == Transaction.Command.LoadPortType.Reset)
-                        {
-                            //key = "0";
-                            key = Vendor.ToUpper().Equals("SANWA_MC") ? "0" : Txn.AdrNo;
-                        }
-                        else
-                        {
-                            key = Txn.AdrNo;
-                        }
+                        key = Txn.AdrNo;
+
+                        //if (Txn.Method == Transaction.Command.LoadPortType.Reset)
+                        //{
+                        //    //key = "0";
+                        //    key = Vendor.ToUpper().Equals("SANWA_MC") ? "0" : Txn.AdrNo;
+                        //}
+                        //else
+                        //{
+                        //    key = Txn.AdrNo;
+                        //}
                         break;
                     case "KAWASAKI":
                         key = Txn.Seq;
@@ -724,14 +725,15 @@ namespace TransferControl.Controller
                                 }
                                 else if (Vendor.ToUpper().Equals("SANWA_MC"))
                                 {
-                                    if (ReturnMsg.Command.Equals("RESET"))
-                                    {
-                                        key = "0";
-                                    }
-                                    else
-                                    {
-                                        key = ReturnMsg.NodeAdr;
-                                    }
+                                    key = ReturnMsg.NodeAdr;
+                                    //if (ReturnMsg.Command.Equals("RESET"))
+                                    //{
+                                    //    key = "0";
+                                    //}
+                                    //else
+                                    //{
+                                    //    key = ReturnMsg.NodeAdr;
+                                    //}
                                 }
                                 else if (DeviceType.Equals("SMARTTAG") || DeviceType.ToUpper().Equals("RFID")
                                      || DeviceType.Equals("E84"))

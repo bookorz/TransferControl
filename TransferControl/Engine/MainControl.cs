@@ -269,6 +269,23 @@ namespace TransferControl.Engine
                                     Node.Foup_Presence = false;
                                 }
                                 break;
+                            case "PRESENCE":    //Sanwa 300mm use
+                                if (each.Value.Equals("1"))
+                                {
+                                    Node.Foup_Placement = true;
+                                    Node.Foup_Presence = true;
+                                }
+                                else if(each.Value.Equals("2"))
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = true;
+                                }
+                                else
+                                {
+                                    Node.Foup_Placement = false;
+                                    Node.Foup_Presence = false;
+                                }
+                                break;
                             case "PRTST":
                                 if (each.Value.Equals("UNLK"))
                                 {
@@ -278,6 +295,17 @@ namespace TransferControl.Engine
                                 {
                                     Node.Foup_Lock = true;
                                 }
+                                break;
+                            case "CLAMP":       //Sanwa 300mm use
+                                if (each.Value.Equals("1"))
+                                {
+                                    Node.Foup_Lock = true;
+                                }
+                                else
+                                {
+                                    Node.Foup_Lock = false;
+                                }
+
                                 break;
                             case "Door Position":
                                 Node.Door_Position = each.Value;
@@ -308,6 +336,60 @@ namespace TransferControl.Engine
                                     Node.Latch_Open = false;
                                 }
                                 break;
+                            case "LATCH":       //Sanwa 300mm use
+                                if (each.Value.Equals("1"))
+                                {
+                                    Node.Latch_Open = true;
+                                }
+                                else
+                                {
+                                    Node.Latch_Open = false;
+                                }
+                                break;
+                            case "INFOPAD":       //Sanwa 300mm use
+                                int info = Convert.ToInt32(each.Value);
+
+                                if(info >= 8)
+                                {
+                                    Node.LoadPort_InfoPadA = true;
+                                    info -= 8;
+                                }
+                                else
+                                {
+                                    Node.LoadPort_InfoPadA = false;
+                                }
+
+                                if (info >= 4)
+                                {
+                                    Node.LoadPort_InfoPadB = true;
+                                    info -= 4;
+                                }
+                                else
+                                {
+                                    Node.LoadPort_InfoPadB = false;
+                                }
+
+                                if (info >= 2)
+                                {
+                                    Node.LoadPort_InfoPadC = true;
+                                    info -= 2;
+                                }
+                                else
+                                {
+                                    Node.LoadPort_InfoPadC = false;
+                                }
+
+                                if (info >= 1)
+                                {
+                                    Node.LoadPort_InfoPadD = true;
+                                }
+                                else
+                                {
+                                    Node.LoadPort_InfoPadD = false;
+                                }
+
+                                break;
+
                             case "Cassette Presence":
                                 if (each.Value.Equals("None"))
                                 {
@@ -463,7 +545,7 @@ namespace TransferControl.Engine
                                 }
                                 break;
                             case Transaction.Command.LoadPortType.ReadStatus:
-
+                            case Transaction.Command.LoadPortType.GetStatus:
                                 Transaction_Command_LoadPortType_ReadStatus(Node, Txn, Msg);
 
                                 break;
@@ -1223,9 +1305,11 @@ namespace TransferControl.Engine
                                     switch (each.Key)
                                     {
                                         case "Clamp_Presence":
+                                            Node.R_Vacuum_Solenoid = each.Value;
                                             Node.R_Presence = each.Value.Equals("1") ? true : false;
                                             break;
                                         case "Vacuum_Status":
+                                            Node.L_Vacuum_Solenoid = each.Value;
                                             Node.L_Presence = each.Value.Equals("1") ? true : false;
                                             break;
                                     }
@@ -1442,7 +1526,14 @@ namespace TransferControl.Engine
                                 }
                                 break;
                             case Transaction.Command.LoadPortType.ReadStatus:
+                            case Transaction.Command.LoadPortType.GetStatus:
                                 Transaction_Command_LoadPortType_ReadStatus(Node, Txn, Msg);
+                                break;
+                            case Transaction.Command.LoadPortType.Clamp:
+                                Node.Foup_Lock = true;
+                                break;
+                            case Transaction.Command.LoadPortType.UnClamp:
+                                Node.Foup_Lock = false;
                                 break;
                             default:
                                 Node.IsLoad = false;

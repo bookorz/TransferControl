@@ -21,6 +21,8 @@ namespace TransferControl.Parser
                     return ParsePresent(Message);
                 case Transaction.Command.LoadPortType.ReadStatus:
                     return ParseStatus(Message);
+                case Transaction.Command.LoadPortType.GetStatus:
+                    return ParseGetStatus(Message);
                 case Transaction.Command.RobotType.GetPresence:
                     return ParsePresence(Message);
                 default:
@@ -109,6 +111,82 @@ namespace TransferControl.Parser
                         break;
                     default:
                         result.Add("SHELF" + (idx - 5).ToString(), tmp[i]);
+                        break;
+                }
+            }
+            return result;
+        }
+        private Dictionary<string, string> ParseGetStatus(string Message)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            string[] tmp = Message.Split(',');
+            //0.Type
+            //  0 : Indexer status
+            //  1 : Map Status
+            //1.Alarm 
+            //  0 : No, 1 : Yes
+            //2.Error
+            //  0 : No
+            //3.Mode (Last Function Done)
+            //  0 : Normal
+            //  1 : Dry
+            //  2 : Unknown
+            //4.ORG
+            //  0 : No
+            //  1 : Yes
+            //5.Presence(PPS)
+            //  0 : None
+            //  1 : Present
+            //  2 : Unknown
+            //6.Clamp(PLS)
+            //  0 : Unclamp
+            //  1 : Clamp
+            //  2 : Unknown
+            //7.Latch
+            //  0 : Unlatch
+            //  1 : Latch
+            //  2 : Unknown
+            //8.Vacuum
+            //  0 : Off
+            //  1 : On
+            //9.Door
+            //  0 : Close
+            //  1 : Open
+            //  2 : Unknown
+            //10.ZPos
+            //  0 : Home
+            //  1 : Map start
+            //  2 : Map end
+            //  3 : Load end
+            //  9 : Unknow
+            //11.XPos
+            //  0 : Outside
+            //  1 : Inside
+            //  9 : Unknow
+            //12.FOUP Type
+            //  0 : Off
+            //  1 : On
+            //13.Info Pad
+            //  BIT 3 : A
+            //  BIT 2 : B
+            //  BIT 1 : C
+            //  BIT 0 : D
+            for (int i = 0; i < tmp.Length; i++)
+            {
+                //int idx = i + 1;
+                switch (i)
+                {
+                    case 5:
+                        result.Add("PRESENCE", tmp[i]);
+                        break;
+                    case 6:
+                        result.Add("CLAMP", tmp[i]);
+                        break;
+                    case 7:
+                        result.Add("LATCH", tmp[i]);
+                        break;
+                    case 13:
+                        result.Add("INFOPAD", tmp[i]);
                         break;
                 }
             }

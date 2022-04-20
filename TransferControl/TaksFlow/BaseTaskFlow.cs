@@ -1599,8 +1599,8 @@ namespace TransferControl.TaksFlow
                     break;
 
                 case 1:
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    //if (!SystemConfig.Get().OfflineMode)
+                    //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
 
                     break;
                 default:
@@ -1623,8 +1623,8 @@ namespace TransferControl.TaksFlow
                     break;
 
                 case 1:
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    //if (!SystemConfig.Get().OfflineMode)
+                    //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
 
                     break;
                 default:
@@ -1647,8 +1647,8 @@ namespace TransferControl.TaksFlow
                     break;
 
                 case 1:
-                    if (!SystemConfig.Get().OfflineMode)
-                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
+                    //if (!SystemConfig.Get().OfflineMode)
+                    //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
 
                     break;
                 default:
@@ -1690,8 +1690,10 @@ namespace TransferControl.TaksFlow
             return true;
         }
         #endregion
+        #region SANWA_LOADPORT
+        #endregion
         #region SANWA_E84
-        public virtual bool Sawan_E84INIT(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        public virtual bool Sanwa_E84INIT(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1712,7 +1714,7 @@ namespace TransferControl.TaksFlow
 
             return true;
         }
-        public virtual bool Sawan_E84Reset(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        public virtual bool Sanwa_E84Reset(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1780,7 +1782,7 @@ namespace TransferControl.TaksFlow
 
             return true;
         }
-        public virtual bool Sawan_E84Mode(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        public virtual bool Sanwa_E84Mode(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1836,7 +1838,7 @@ namespace TransferControl.TaksFlow
 
             return true;
         }
-        public virtual bool Sawan_E84SetTP1(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        public virtual bool Sanwa_E84SetTP1(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1849,7 +1851,7 @@ namespace TransferControl.TaksFlow
             }
             return true;
         }
-        public virtual bool Sawan_E84SetTP2(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        public virtual bool Sanwa_E84SetTP2(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1862,7 +1864,7 @@ namespace TransferControl.TaksFlow
             }
             return true;
         }
-        public virtual bool Sawan_E84SetTP3(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        public virtual bool Sanwa_E84SetTP3(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1875,7 +1877,7 @@ namespace TransferControl.TaksFlow
             }
             return true;
         }
-        public virtual bool Sawan_E84SetTP4(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        public virtual bool Sanwa_E84SetTP4(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1888,7 +1890,7 @@ namespace TransferControl.TaksFlow
             }
             return true;
         }
-        public virtual bool Sawan_E84SetTP5(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        public virtual bool Sanwa_E84SetTP5(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -1901,7 +1903,7 @@ namespace TransferControl.TaksFlow
             }
             return true;
         }
-        public virtual bool Sawan_E84SetTP6(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        public virtual bool Sanwa_E84SetTP6(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
         {
             switch (TaskJob.CurrentIndex)
             {
@@ -2358,6 +2360,16 @@ namespace TransferControl.TaksFlow
                 if (Target.Enable)
                     TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetPosition, Value = "2" }));
             }
+        }
+        /// <summary>
+        /// Sanwa 300mm Loadport use
+        /// </summary>
+        /// <param name="TaskJob"></param>
+        /// <param name="Target"></param>
+        public virtual void GetLoadportStatus(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            if (!SystemConfig.Get().OfflineMode)
+                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.LoadPortType.GetStatus }));
         }
     }
 }
