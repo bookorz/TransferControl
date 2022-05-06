@@ -200,7 +200,7 @@ namespace TransferControl.Digital_IO.Controller
         {
             try
             {
-                logger.Debug(string.Format("{0}:SetOut({1},{2})", this._Cfg.DeviceName, Address, Value));
+                //logger.Debug(string.Format("{0}:SetOut({1},{2})", this._Cfg.DeviceName, Address, Value));
                 //20210830 Pingchung Lock start ++
                 lock (OutputLock)
                 {
@@ -214,7 +214,7 @@ namespace TransferControl.Digital_IO.Controller
                             {
                                 lock (Master)
                                 {
-                                    logger.Debug(string.Format("{0}:WriteSingleCoil({1},{2},{3})", this._Cfg.DeviceName, _Cfg.slaveID, adr, boolVal));
+                                    //logger.Debug(string.Format("{0}:WriteSingleCoil({1},{2},{3})", this._Cfg.DeviceName, _Cfg.slaveID, adr, boolVal));
                                     SpinWait.SpinUntil(() => false, 20);
                                     Master.WriteSingleCoil(_Cfg.slaveID, adr, boolVal);
                                 }

@@ -662,23 +662,27 @@ namespace TransferControl.Engine
                                 }
                                 break;
                             case Transaction.Command.RobotType.GetPosition:
-                                parser = new MessageParser(Node.Vendor);
-                                Dictionary<string, string> PositionResult = parser.ParseMessage(Txn.Method, Msg.Value);
-                                foreach (KeyValuePair<string, string> each in PositionResult)
+                                if(Node.Vendor.Equals("ATEL_NEW") || Node.Vendor.Equals("SANWA"))
                                 {
-                                    switch (each.Key)
+                                    parser = new MessageParser(Node.Vendor);
+                                    Dictionary<string, string> PositionResult = parser.ParseMessage(Txn.Method, Msg.Value);
+                                    foreach (KeyValuePair<string, string> each in PositionResult)
                                     {
-                                        case "X_Position":
-                                            Node.X_Position = each.Value;
-                                            break;
-                                        case "R_Position":
-                                            Node.R_Position = each.Value;
-                                            break;
-                                        case "L_Position":
-                                            Node.L_Position = each.Value;
-                                            break;
+                                        switch (each.Key)
+                                        {
+                                            case "X_Position":
+                                                Node.X_Position = each.Value;
+                                                break;
+                                            case "R_Position":
+                                                Node.R_Position = each.Value;
+                                                break;
+                                            case "L_Position":
+                                                Node.L_Position = each.Value;
+                                                break;
+                                        }
                                     }
                                 }
+
                                 break;
                             case Transaction.Command.RobotType.GetMode:
                                 Node.Mode = Msg.Value;
@@ -1656,7 +1660,8 @@ namespace TransferControl.Engine
         {
             Node.Foup_Placement = false;
             Node.Foup_Presence = true;
-            Node.Foup_Lock = false;
+            
+            //Node.Foup_Lock = false;
 
             _UIReport.On_Event_Trigger(Node, Msg);
         }
@@ -1948,6 +1953,7 @@ namespace TransferControl.Engine
                             case "ES_OFF":
                                 Node.E84IOStatus["ES"] = Msg.Command.Contains("ON") ? true : false;
                                 Node.E84IOStatus["EMO"] = Msg.Command.Contains("ON") ? false : true;
+                                //Node.E84IOStatus["EMO"] = Msg.Command.Contains("ON") ? true : false;
                                 break;
 
                             case "CLAMP_ON":

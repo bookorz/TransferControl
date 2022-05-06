@@ -167,6 +167,9 @@ namespace TransferControl.TaksFlow
                             case 3:
                                 if (!SystemConfig.Get().OfflineMode)
                                 {
+
+                                    SpinWait.SpinUntil(() => false, 600);
+
                                     for (int i = 0; i < LoadportCount; i++)
                                     {
                                         Name = string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0'));
@@ -440,8 +443,8 @@ namespace TransferControl.TaksFlow
                                     point.Point = point.VacuumPoint;
                                 }
 
-
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Get, Position = Position.Name, Arm = arm, Slot = "1" }));
+                                Position.RobotError = true;
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Get, Position = Position.Name, Arm = arm, Slot = Slot }));
                                 break;
 
                             case 5:
@@ -483,7 +486,31 @@ namespace TransferControl.TaksFlow
                                 GetRobotPosition(TaskJob, Target);
                                 break;
 
+                            case 8:
+                                if(!SystemConfig.Get().DummyMappingData)
+                                {
+                                    if (Arm.Equals("1"))
+                                    {
+                                        if (!Target.R_Presence)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S0300179");
+                                            return;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!Target.L_Presence)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = Position.Name }, "S030017A");
+                                            return;
+                                        }
+                                    }
+                                }
+
+                                break;
+
                             default:
+                                Position.RobotError = false;
                                 FinishTask(TaskJob);
                                 return;
                         }
@@ -573,7 +600,9 @@ namespace TransferControl.TaksFlow
                                     point.Point = point.VacuumPoint;
                                 }
 
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Put, Position = Position.Name, Arm = arm, Slot = "1" }));
+                                Position.RobotError = true;
+
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Put, Position = Position.Name, Arm = arm, Slot = Slot }));
 
                                 break;
 
@@ -620,6 +649,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             default:
+                                Position.RobotError = false;
                                 FinishTask(TaskJob);
                                 return;
                         }
@@ -828,8 +858,22 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 2:
-                                string arm = Arm.Equals("1") ? "0" : "1";
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.PutWait, Position = Position.Name, Arm = arm, Slot = "1" }));
+                                string arm = "0";
+
+                                RobotPoint point = PointManagement.GetPoint(Target.Name, Position.Name);
+                                //Arm 1 => Clamp
+                                //Arm 2 => Vacuum                                
+                                if (Arm.Equals("1"))
+                                {
+                                    arm = "0";
+                                    point.Point = point.ClampPoint;
+                                }
+                                else
+                                {
+                                    arm = "1";
+                                    point.Point = point.VacuumPoint;
+                                }
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.GetWait, Position = Position.Name, Arm = arm, Slot = "1" }));
                                 break;
 
                             case 3:
@@ -863,10 +907,20 @@ namespace TransferControl.TaksFlow
                                 }
 
                                 AckTask(TaskJob);
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferRelease, Arm = Arm }));
 
+                                if (Arm.Equals("1"))
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Flip, Value = "0" }));
+                                }
+                                else
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Flip, Value = "1" }));
+                                }
                                 break;
                             case 1:
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferRelease, Arm = Arm.Equals("1")? "0":"1" }));
+                                break;
+                            case 2:
                                 GetRobotPresence(TaskJob, Target);
                                 break;
 
@@ -893,10 +947,22 @@ namespace TransferControl.TaksFlow
                                 }
 
                                 AckTask(TaskJob);
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm }));
+                                if(Arm.Equals("1"))
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Flip, Value = "0" }));
+                                }
+                                else
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Flip, Value = "1" }));
+                                }
+
                                 break;
 
                             case 1:
+                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.WaferHold, Arm = Arm.Equals("1") ? "0" : "1" }));
+                                break;
+
+                            case 2:
                                 GetRobotPresence(TaskJob, Target);
                                 break;
 
@@ -971,7 +1037,9 @@ namespace TransferControl.TaksFlow
                                 GetRobotPosition(TaskJob, Target);
                                 break;
                             case 3:
-                                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.OrginSearch }));
+                                //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.OrginSearch }));
+                                if (!SystemConfig.Get().OfflineMode)
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Initialize }));
                                 break;
                             case 4:
                                 GetRobotPresence(TaskJob, Target);
@@ -979,29 +1047,31 @@ namespace TransferControl.TaksFlow
                             case 5:
                                 GetRobotPosition(TaskJob, Target);
                                 break;
+
                             case 6:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
-                                break;
-                            case 7:
 
-                                ////砍掉不必要的帳
-                                //if(JobManagement.Get("ROBOT01_R") != null && !Target.R_Presence)
-                                //{
-                                //    JobManagement.Remove(JobManagement.Get("ROBOT01_R"));
-                                //}
+                                //砍掉不必要的帳
+                                if (JobManagement.Get("ROBOT01_R") != null && !Target.R_Presence)
+                                    JobManagement.Remove(JobManagement.Get("ROBOT01_R"));
 
-                                ////砍掉不必要的帳
-                                //if (JobManagement.Get("ROBOT01_L") != null && !Target.L_Presence)
-                                //{
-                                //    JobManagement.Remove(JobManagement.Get("ROBOT01_L"));
-                                //}
+                                //砍掉不必要的帳
+                                if (JobManagement.Get("ROBOT01_L") != null && !Target.L_Presence)
+                                    JobManagement.Remove(JobManagement.Get("ROBOT01_L"));
+
 
                                 break;
 
                             default:
                                 OrgSearchCompleted(Target.Name);
                                 ResetRobotInterLock();
+
+                                string Name;
+                                for (int i = 0; i < LoadportCount; i++)
+                                {
+                                    Name = string.Format("LOADPORT{0}", (i + 1).ToString().PadLeft(2, '0'));
+                                    if (IsNodeEnabledOrNull(Name))
+                                        NodeManagement.Get(Name).RobotError = false;
+                                }
 
                                 FinishTask(TaskJob);
                                 return;
@@ -1028,11 +1098,6 @@ namespace TransferControl.TaksFlow
                                 GetRobotPosition(TaskJob, Target);
                                 break;
 
-                            case 4:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
-                                break;
-
                             default:
                                 FinishTask(TaskJob);
                                 return;
@@ -1046,37 +1111,46 @@ namespace TransferControl.TaksFlow
                                 AckTask(TaskJob);
                                 break;
                             case 1:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Servo, Value = "1" }));
                                 break;
 
                             case 2:
-                                if (!SystemConfig.Get().OfflineMode)
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //{
+                                //    if (SystemConfig.Get().DummyMappingData)
+                                //    {
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "1" }));
+                                //    }
+                                //    else
+                                //    {
+                                //        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "0" }));
+                                //    }
+                                //}
+                                if (SystemConfig.Get().DummyMappingData)
                                 {
-                                    if (SystemConfig.Get().DummyMappingData)
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "1" }));
-                                    }
-                                    else
-                                    {
-                                        TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "0" }));
-                                    }
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "1" }));
                                 }
+                                else
+                                {
+                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = "0" }));
+                                }
+
                                 break;
 
                             case 3:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
                                 break;
 
                             case 4:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //   TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
                                 break;
 
                             case 5:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetError, Value = "00" }));
                                 break;
 
                             case 6:
@@ -1085,8 +1159,8 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 7:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Initialize }));
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Initialize }));
                                 break;
                             case 8:
                                 GetRobotPresence(TaskJob, Target);
@@ -1097,8 +1171,8 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 10:
-                                if (!SystemConfig.Get().OfflineMode)
-                                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
+                                //if (!SystemConfig.Get().OfflineMode)
+                                //    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetStatus }));
                                 break;
 
                             default:
@@ -1250,7 +1324,7 @@ namespace TransferControl.TaksFlow
                             case 0:
                                 if (!SystemConfig.Get().OfflineMode)
                                 {
-                                    for (int i = 0; i < ArmCount; i++)
+                                    for (int i = 0; i < LoadportCount; i++)
                                     {
                                         string E84Name = string.Format("E84{0}", (i + 1).ToString().PadLeft(2, '0'));
                                         if (IsNodeEnabledOrNull(E84Name))
@@ -1266,7 +1340,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             case 1:
-                                for (int i = 0; i < ArmCount; i++)
+                                for (int i = 0; i < LoadportCount; i++)
                                 {
                                     string E84Name = string.Format("E84{0}", (i + 1).ToString().PadLeft(2, '0'));
                                     if (IsNodeEnabledOrNull(E84Name))
@@ -1287,7 +1361,7 @@ namespace TransferControl.TaksFlow
                             case 2:
                                 if (!SystemConfig.Get().OfflineMode)
                                 {
-                                    for (int i = 0; i < ArmCount; i++)
+                                    for (int i = 0; i < LoadportCount; i++)
                                     {
                                         string E84Name = string.Format("E84{0}", (i + 1).ToString().PadLeft(2, '0'));
                                         if (IsNodeEnabledOrNull(E84Name))
@@ -1299,7 +1373,7 @@ namespace TransferControl.TaksFlow
                             case 3:
                                 if (!SystemConfig.Get().OfflineMode)
                                 {
-                                    for (int i = 0; i < ArmCount; i++)
+                                    for (int i = 0; i < LoadportCount; i++)
                                     {
                                         string E84Name = string.Format("E84{0}", (i + 1).ToString().PadLeft(2, '0'));
                                         if (IsNodeEnabledOrNull(E84Name))
@@ -1309,7 +1383,7 @@ namespace TransferControl.TaksFlow
                                 break;
 
                             default:
-                                for (int i = 0; i < ArmCount; i++)
+                                for (int i = 0; i < LoadportCount; i++)
                                 {
                                     string E84Name = string.Format("E84{0}", (i + 1).ToString().PadLeft(2, '0'));
                                     if (IsNodeEnabledOrNull(E84Name))
@@ -1454,6 +1528,72 @@ namespace TransferControl.TaksFlow
                 //}
             }
             _TaskReport.On_TaskJob_Aborted(TaskJob);
+        }
+
+        public override bool Sanwa_RobotMode(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "FINISHED", new Transaction { Method = Transaction.Command.RobotType.Mode, Value = Value }));
+
+                    break;
+                case 1:
+                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetMode }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public override bool Sanwa_RobotSpeed(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target, string Value)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.Speed, Value = Value }));
+                    Target.Speed = Value;
+
+                    break;
+                case 1:
+                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
+        }
+        public override bool Sanwa_RobotGetSpeed(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)
+        {
+            switch (TaskJob.CurrentIndex)
+            {
+                case 0:
+
+                    AckTask(TaskJob);
+                    //TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, "EXCUTED", new Transaction { Method = Transaction.Command.RobotType.GetSpeed }));
+
+                    break;
+
+                default:
+                    FinishTask(TaskJob);
+                    return false;
+            }
+
+            return true;
         }
 
     }

@@ -239,13 +239,12 @@ namespace TransferControl.Parser
 
             for (int i = 0; i < tmp.Length; i++)
             {
-                int idx = i + 1;
-                switch (idx)
+                switch (i)
                 {
-                    case 2:
+                    case 0:
                         result.Add("Clamp_Presence", tmp[i]);
                         break;
-                    case 3:
+                    case 1:
                         result.Add("Vacuum_Status", tmp[i]);
                         break;
                     default:

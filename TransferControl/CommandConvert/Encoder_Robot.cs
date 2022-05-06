@@ -127,9 +127,13 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
-                case "SANWA_MC":
                     commandStr = "${0}{1}GET:POS__:{2},{3}";
                     commandStr = string.Format(commandStr, Address, Sequence, Type, Unit) + EndCode();
+                    break;
+
+                case "SANWA_MC":
+                    commandStr = "${0}{1}MCR:POS__:0";
+                    commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
                 default:
                     throw new NotSupportedException();
@@ -174,9 +178,9 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "SANWA_MC":
                 case "ATEL_NEW":
-                    commandStr = "${0}{1}SET:CONT_";
+                case "SANWA_MC":
+                    commandStr = "${0}{1}MCR:CONT_:0";
                     commandStr = string.Format(commandStr, Address, Sequence) + EndCode();
                     break;
                 default:
@@ -710,10 +714,14 @@ namespace TransferControl.CommandConvert
             {
                 case "SANWA":
                 case "ATEL_NEW":
-                case "SANWA_MC":
                     commandStr = "${0}{1}SET:MODE_:{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, vl) + EndCode();
                     break;
+                case "SANWA_MC":
+                    commandStr = "${0}{1}MCR:MODE_:0,{2}";
+                    commandStr = string.Format(commandStr, Address, Sequence, vl) + EndCode();
+                    break;
+
                 case "KAWASAKI":
                     switch (vl)
                     {
@@ -1380,7 +1388,6 @@ namespace TransferControl.CommandConvert
             switch (Supplier)
             {
                 case "SANWA":
-                case "SANWA_MC":
                     vl = Convert.ToInt16(vl).ToString();
                     if (vl.Equals("0"))
                     {
@@ -1391,6 +1398,19 @@ namespace TransferControl.CommandConvert
                         vl = "0";
                     }
                     commandStr = "${0}{1}SET:SP___:{2}";
+                    commandStr = string.Format(commandStr, Address, Sequence, vl) + EndCode();
+                    break;
+                case "SANWA_MC":
+                    vl = Convert.ToInt16(vl).ToString();
+                    if (vl.Equals("0"))
+                    {
+                        vl = "1";
+                    }
+                    else if (vl.Equals("100"))
+                    {
+                        vl = "0";
+                    }
+                    commandStr = "${0}{1}MCR:SP___:0,{2}";
                     commandStr = string.Format(commandStr, Address, Sequence, vl) + EndCode();
                     break;
                 case "ATEL_NEW":

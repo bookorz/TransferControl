@@ -291,6 +291,7 @@ namespace TransferControl.Management
                 public const string GetPosition = "GetPosition";
                 public const string ArmReturn = "ArmReturn";
                 public const string Exchange = "Exchange";
+                public const string Flip = "Flip";
                 public const string Get = "Get";
                 public const string Initialize = "Initialize";
                 public const string DoubleGet = "DoubleGet";
@@ -337,7 +338,6 @@ namespace TransferControl.Management
                 public const string PutWaitByLArm = "PutWaitByLArm";
                 public const string GetWaitByRArm = "GetWaitByRArm";
                 public const string GetWaitByLArm = "GetWaitByLArm";
-                public const string Flip = "Flip";
             }
             //Aligner
             public class AlignerType

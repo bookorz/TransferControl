@@ -339,39 +339,66 @@ namespace TransferControl.TaksFlow
                             case 0:
 
                                 if (NodeManagement.Get("ROBOT01") != null)
-                                    if (NodeManagement.Get("ROBOT01").Enable && !NodeManagement.Get("ROBOT01").InitialComplete)
+                                {
+                                    if(NodeManagement.Get("ROBOT01").Enable)
                                     {
-                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300015");
-                                        return;
+                                        if(!NodeManagement.Get("ROBOT01").InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "ROBOT01" }, "S0300015");
+                                            return;
+                                        }
+
                                     }
+                                }
 
                                 if (NodeManagement.Get("LOADPORT01") != null)
-                                    if (NodeManagement.Get("LOADPORT01").Enable && !NodeManagement.Get("LOADPORT01").InitialComplete)
+                                {
+                                    if(NodeManagement.Get("LOADPORT01").Enable)
                                     {
-                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300019");
-                                        return;
+                                        if(!NodeManagement.Get("LOADPORT01").InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT01" }, "S0300019");
+                                            return;
+                                        }
                                     }
+                                }
 
-                                if (NodeManagement.Get("LOADPORT02") != null)
-                                    if (NodeManagement.Get("LOADPORT02").Enable && !NodeManagement.Get("LOADPORT02").InitialComplete)
+                                if(NodeManagement.Get("LOADPORT02") != null)
+                                {
+                                    if (NodeManagement.Get("LOADPORT02").Enable)
                                     {
-                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300020");
-                                        return;
+                                        if (!NodeManagement.Get("LOADPORT02").InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT02" }, "S0300020");
+                                            return;
+                                        }
                                     }
+                                }
 
-                                if (NodeManagement.Get("LOADPORT03") != null)
-                                    if (NodeManagement.Get("LOADPORT03").Enable && !NodeManagement.Get("LOADPORT03").InitialComplete)
+                                if(NodeManagement.Get("LOADPORT03") != null)
+                                {
+                                    if(NodeManagement.Get("LOADPORT03").Enable)
                                     {
-                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300021");
-                                        return;
+                                        if(!NodeManagement.Get("LOADPORT03").InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT03" }, "S0300021");
+                                            return;
+                                        }
                                     }
+                                }
 
                                 if (NodeManagement.Get("LOADPORT04") != null)
-                                    if (NodeManagement.Get("LOADPORT04").Enable && !NodeManagement.Get("LOADPORT04").InitialComplete)
+                                {
+                                    if (NodeManagement.Get("LOADPORT04").Enable)
                                     {
-                                        AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300022");
-                                        return;
+                                        if(!NodeManagement.Get("LOADPORT04").InitialComplete)
+                                        {
+                                            AbortTask(TaskJob, new Node() { Vendor = "SYSTEM", Name = "LOADPORT04" }, "S0300022");
+                                            return;
+                                        }
                                     }
+                                }
+
 
                                 AckTask(TaskJob);
                                 break;
@@ -2408,19 +2435,21 @@ namespace TransferControl.TaksFlow
         {
             if (!SystemConfig.Get().OfflineMode)
             {
-                string excuteType = "FINISHED";
-                switch (Target.Vendor.ToUpper())
+                if(Target.Enable)
                 {
-                    case "SANWA_MC":
-                        excuteType = "FINISHED";
-                        break;
+                    string excuteType = "FINISHED";
+                    switch (Target.Vendor.ToUpper())
+                    {
+                        case "SANWA_MC":
+                            excuteType = "FINISHED";
+                            break;
 
-                    case "ASYST":
-                        excuteType = "EXCUTED";
-                        break;
+                        case "ASYST":
+                            excuteType = "EXCUTED";
+                            break;
+                    }
+                    TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
                 }
-                TaskJob.CheckList.Add(new TaskFlowManagement.ExcutedCmd(Target.Name, excuteType, new Transaction { Method = Transaction.Command.LoadPortType.ReadStatus }));
-
             }
         }
         private void GetRobotStatus(TaskFlowManagement.CurrentProcessTask TaskJob, Node Target)

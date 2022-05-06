@@ -162,7 +162,23 @@ namespace TransferControl.Management
                               where !each.Finished
                               select each;
                 count = findExcuted.Count();
+
+                //所有指令執行完
+                //Excuted command 執行上比 Finished command 慢
+                if(count == 0 && ReturnType.ToUpper().Equals("EXCUTED"))  //CurrentTask.CheckList 全部執行完
+                {
+                   findExcuted = from each in CurrentTask.CheckList
+                                    where each.ExcuteName.Equals(Txn.Method) && !each.ExcuteType.Equals(ReturnType.ToUpper()) && each.NodeName.Equals(Txn.NodeName)
+                                 select each;
+
+                    if(findExcuted.Count() > 0)
+                    {
+                        logger.Debug("Next(), findExcuted.Count() > 0");
+                        return;
+                    }
+                }
             }
+
             if (count == 0)//當全部完成後，繼續下一步
             {
                 CurrentTask.CurrentIndex++;

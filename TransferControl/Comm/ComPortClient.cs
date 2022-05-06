@@ -168,6 +168,7 @@ namespace TransferControl.Comm
         {
             try
             {
+
                 ConnReport.On_Connection_Connecting("Connecting to ");
                 port.Open();
                 ConnReport.On_Connection_Connected("Connected! ");
@@ -201,7 +202,7 @@ namespace TransferControl.Comm
                         break;
 
                     case "MITSUBISHI_PLC":
-                        port.DataReceived += new SerialDataReceivedEventHandler(MITSUBISHI_PLC_DataReceived); 
+                        port.DataReceived += new SerialDataReceivedEventHandler(MITSUBISHI_PLC_DataReceived);
                         break;
                     case "FRANCES":
                         port.DataReceived += new SerialDataReceivedEventHandler(FRANCES_DataReceived);
@@ -593,9 +594,20 @@ namespace TransferControl.Comm
             {
                 byte[] buf = new byte[(sender as SerialPort).BytesToRead];
                 port.Read(buf, 0, buf.Length);
-                tmp += ByteArrayToString(buf);
 
-                logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+                if (tmp.Equals(""))
+                {
+                    tmp = ByteArrayToString(buf);
+                    logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+                    tmp = tmp.Substring(tmp.IndexOf('A'));
+                }
+                else
+                {
+                    tmp += ByteArrayToString(buf);
+                    logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+                }
+
+
 
                 byte[] hexbuf = HexStringToByteArray(tmp.ToString());
 

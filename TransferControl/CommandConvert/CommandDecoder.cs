@@ -387,6 +387,9 @@ namespace TransferControl.CommandConvert
 
                     switch(strFunctionCode.ToUpper())
                     {
+                        case "00":
+                            each.Command = "";
+                            break;
                         case "FF":
                             each.Type = CommandReturnMessage.ReturnType.Error;
                             each.Value = strFunctionCode.ToUpper() + strErrorCode.ToUpper();
@@ -522,6 +525,15 @@ namespace TransferControl.CommandConvert
                                 case "F3":
                                     each.Command = "CLAMP_OFF";
                                     break;
+
+                                //case "F5":
+                                //case "F7":
+                                //    each.Command = "LC_OFF";
+                                //    break;
+
+                                //case "F6":
+                                //    each.Command = "LC_ON";
+                                //    break;
 
                                 case "F5":
                                 case "F7":

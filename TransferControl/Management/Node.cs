@@ -110,6 +110,7 @@ namespace TransferControl.Management
         //public bool IsCheckReMappingResult = true;
 
         public bool MappingHasError = false;
+        public bool RobotError = false;
 
         /// <summary>
         /// 標記為虛擬裝置
@@ -1943,10 +1944,10 @@ namespace TransferControl.Management
                 }
 
                 //txn.AckTimeOut = this.AckTimeOut;
-                logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
+                //logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
 
                 //txn.MotionTimeOut = this.MotionTimeOut;
-                logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
+                //logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
                 Ctrl.DoWork(txn, IsWaitData);
                 result = true;
 
