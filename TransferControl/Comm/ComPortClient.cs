@@ -599,7 +599,14 @@ namespace TransferControl.Comm
                 {
                     tmp = ByteArrayToString(buf);
                     logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
-                    tmp = tmp.Substring(tmp.IndexOf('A'));
+                    if(tmp.IndexOf('A') > -1)
+                    {
+                        tmp = tmp.Substring(tmp.IndexOf('A'));
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
                 else
                 {

@@ -10,6 +10,7 @@ using TransferControl.Config;
 using TransferControl.Engine;
 using TransferControl.Management;
 /// <summary>
+/// Git Test
 /// 華海清科 12吋 1 Robot 2 Loadport 2 Loadlock
 /// Robot : 1 Arm 同時包含 Clamp & Vacumm
 /// 取放片流程 : 
@@ -30,6 +31,7 @@ namespace TransferControl.TaksFlow
         {
             _TaskReport = TaskReport;
             ArmCount = 1;
+
 
             LoadportCount = 2;
         }
@@ -1050,13 +1052,38 @@ namespace TransferControl.TaksFlow
 
                             case 6:
 
+                                //Job Wafer = null;
                                 //砍掉不必要的帳
-                                if (JobManagement.Get("ROBOT01_R") != null && !Target.R_Presence)
-                                    JobManagement.Remove(JobManagement.Get("ROBOT01_R"));
+                                if (JobManagement.Get("ROBOT01_R","1") != null && !Target.R_Presence)
+                                {
+                                    Wafer = JobManagement.Get("ROBOT01_R", "1");
+                                    JobManagement.Remove(Wafer);
+                                    Wafer.LastNode = Wafer.Position;
+                                    Wafer.LastSlot = Wafer.Slot;
+                                    Wafer.Position = "";
+                                    Wafer.Slot = "";
+
+                                    _TaskReport.On_Job_Location_Changed(Wafer);
+
+
+                                }
+
 
                                 //砍掉不必要的帳
-                                if (JobManagement.Get("ROBOT01_L") != null && !Target.L_Presence)
-                                    JobManagement.Remove(JobManagement.Get("ROBOT01_L"));
+                                if (JobManagement.Get("ROBOT01_L", "1") != null && !Target.L_Presence)
+                                {
+                                    Wafer = JobManagement.Get("ROBOT01_L", "1");
+                                    JobManagement.Remove(Wafer);
+                                    Wafer.LastNode = Wafer.Position;
+                                    Wafer.LastSlot = Wafer.Slot;
+                                    Wafer.Position = "";
+                                    Wafer.Slot = "";
+
+                                    _TaskReport.On_Job_Location_Changed(Wafer);
+
+
+                                }
+
 
 
                                 break;
