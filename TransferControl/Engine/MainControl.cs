@@ -501,21 +501,22 @@ namespace TransferControl.Engine
                             case Transaction.Command.LoadPortType.Unload:
                             case Transaction.Command.LoadPortType.MappingUnload:
                             case Transaction.Command.LoadPortType.DoorUp:
+                            case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
+                                //標記尚未Mapping
+                                Node.IsLoad = false;
+                                Node.IsMapping = false;
+                                Node.MappingResult = "";
+                                break;
+
                             case Transaction.Command.LoadPortType.InitialPos:
                             case Transaction.Command.LoadPortType.ForceInitialPos:
-                            case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
-
-                                //LoadPort卸載時打開安全鎖
-                                // Node.InterLock = true;
                                 //標記尚未Mapping
                                 Node.IsLoad = false;
                                 Node.IsMapping = false;
                                 Node.MappingResult = "";
                                 //刪除所有帳
                                 foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
-                                {
                                     JobManagement.Remove(eachJob);
-                                }
 
                                 Node.FoupID = "";
 
@@ -592,8 +593,10 @@ namespace TransferControl.Engine
 
                                 if (!Node.IsMapping)
                                 {
-                                    CommandReturnMessage rem = new CommandReturnMessage();
-                                    rem.Value = "MAPERR";
+                                    CommandReturnMessage rem = new CommandReturnMessage
+                                    {
+                                        Value = "MAPERR"
+                                    };
                                     _UIReport.On_Command_Error(Node, Txn, rem);
                                 }
                                 break;
@@ -888,8 +891,10 @@ namespace TransferControl.Engine
                                 }
                                 if (!port.IsMapping)
                                 {
-                                    CommandReturnMessage rem = new CommandReturnMessage();
-                                    rem.Value = "MAPERR";
+                                    CommandReturnMessage rem = new CommandReturnMessage
+                                    {
+                                        Value = "MAPERR"
+                                    };
                                     _UIReport.On_Command_Error(Node, Txn, rem);
                                 }
 
@@ -1113,9 +1118,7 @@ namespace TransferControl.Engine
 
                                 Node.IsMapping = true;
                                 foreach (Job each in JobManagement.GetByNode(Node.Name))
-                                {
                                     JobManagement.Remove(each);
-                                }
 
 
                                 int currentIdx = 1;
@@ -1174,8 +1177,10 @@ namespace TransferControl.Engine
                                 }
                                 if (!Node.IsMapping)
                                 {
-                                    CommandReturnMessage rem = new CommandReturnMessage();
-                                    rem.Value = "MAPERR";
+                                    CommandReturnMessage rem = new CommandReturnMessage
+                                    {
+                                        Value = "MAPERR"
+                                    };
                                     _UIReport.On_Command_Error(Node, Txn, rem);
                                 }
                                 break;
@@ -1250,8 +1255,10 @@ namespace TransferControl.Engine
                                 }
                                 if (!Node.IsMapping)
                                 {
-                                    CommandReturnMessage rem = new CommandReturnMessage();
-                                    rem.Value = "MAPERR";
+                                    CommandReturnMessage rem = new CommandReturnMessage
+                                    {
+                                        Value = "MAPERR"
+                                    };
                                     _UIReport.On_Command_Error(Node, Txn, rem);
                                 }
                                 break;
@@ -1432,21 +1439,14 @@ namespace TransferControl.Engine
                                 Node.Workpiece = Convert.ToInt32(OPMode[2]);
 
                                 break;
-                            case Transaction.Command.LoadPortType.MappingLoad:
-                            case Transaction.Command.LoadPortType.Load:
 
-                                break;
                             case Transaction.Command.LoadPortType.UntilDoorCloseVacOFF:
                             case Transaction.Command.LoadPortType.UnDock:
+                            case Transaction.Command.LoadPortType.Unload:
                                 Node.IsLoad = false;
                                 Node.IsMapping = false;
-                                foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
-                                {
-                                    JobManagement.Remove(eachJob);
-                                }
                                 break;
 
-                            case Transaction.Command.LoadPortType.Unload:
                             case Transaction.Command.LoadPortType.MappingUnload:
                                 Node.IsLoad = false;
                                 Node.IsMapping = false;
@@ -1524,8 +1524,10 @@ namespace TransferControl.Engine
 
                                 if (!Node.IsMapping)
                                 {
-                                    CommandReturnMessage rem = new CommandReturnMessage();
-                                    rem.Value = "MAPERR";
+                                    CommandReturnMessage rem = new CommandReturnMessage
+                                    {
+                                        Value = "MAPERR"
+                                    };
                                     _UIReport.On_Command_Error(Node, Txn, rem);
                                 }
                                 break;
@@ -1731,11 +1733,10 @@ namespace TransferControl.Engine
 
                                 break;
                             case "MANSW":
-                                //IO_State_Change(Node.Name, "Access_SW", true);
                                 Node.Access_SW = true;
+
                                 break;
                             case "MANOF":
-                                //IO_State_Change(Node.Name, "Access_SW", false);
                                 Node.Access_SW = false;
                                 break;
                             case "SMTON":
@@ -1755,25 +1756,18 @@ namespace TransferControl.Engine
                                 Node.Foup_Placement = false;
                                 break;
                             case "PODOF":
-                                //CarrierManagement.Remove(Node.Carrier);
                                 Node.Foup_Presence = false;
                                 Node.Foup_Placement = false;
-                                //Node.IsMapping = false;
-                                //Node.MappingResult = "";
-                                ////刪除所有帳
-                                //foreach (Job eachJob in JobManagement.GetByNode(Node.Name))
-                                //{
-                                //    JobManagement.Remove(eachJob);
-                                //}
-                                //Node.FoupID = "";
+
+
 
                                 break;
                             case "PODON":
-                                //CarrierManagement.Add().SetLocation(Node.Name);
                                 Node.Foup_Presence = true;
                                 Node.Foup_Placement = true;
 
                                 break;
+
                             case "ABNST":
                                 Node.Foup_Presence = true;
                                 Node.Foup_Placement = false;
@@ -2104,8 +2098,6 @@ namespace TransferControl.Engine
         {
        
             _UIReport.On_Alarm_Happen( AlarmManagement.NewAlarm(new Node() { Name = DIOName, Vendor = "SANWA", Type = "DIO" }, ErrorCode));
-
-
         }
 
 
@@ -2130,86 +2122,47 @@ namespace TransferControl.Engine
                 Job wafer = JobManagement.Add();
                 wafer.Slot = (i + 1).ToString();
 
+                wafer.FromPort = Node.Name;
+                wafer.FromPortSlot = wafer.Slot;
+                wafer.FromFoupID = Node.FoupID;
                 wafer.Position = Node.Name;
                 wafer.AlignerFlag = false;
                 wafer.MappingValue = Mapping[i].ToString();
                 string Slot = (i + 1).ToString("00");
 
-                //除了中科信與帆宣
-                //其餘Mapping Result通訊統一輸出
-                if (SystemConfig.Get().TaskFlow.ToUpper().Equals("EFEM_SEMICORE") ||
-                    SystemConfig.Get().TaskFlow.ToUpper().Equals("EFEM_MIC_2P"))
+                switch (Mapping[i])
                 {
-                    switch (Mapping[i])
-                    {
-                        case '0':
-                            JobManagement.Remove(wafer);
-                            break;
-                        case '1':
-                            wafer.Status = Job.MapStatus.Normal;
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = false;
+                    case '0':
+                        JobManagement.Remove(wafer);
+                        break;
 
-                            break;
-                        case '2':
-                        case 'E':
-                            wafer.Status = Job.MapStatus.Crossed;
+                    case '1':
+                        wafer.Status = Job.MapStatus.Normal;
+                        wafer.MapFlag = true;
+                        wafer.ErrPosition = false;
+                        break;
 
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = true;
+                    case '3':
+                        wafer.Status = Job.MapStatus.Crossed;
+                        wafer.MapFlag = true;
+                        wafer.ErrPosition = true;
+                        break;
 
-                            break;
-                        case 'W':
-                            wafer.Status = Job.MapStatus.Double;
+                    case '7':
+                    case '2':
+                        wafer.Status = Job.MapStatus.Double;
+                        wafer.MapFlag = true;
+                        wafer.ErrPosition = true;
+                        break;
 
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = true;
-                            break;
-                        case '?':
-                        default:
-                            wafer.Status = Job.MapStatus.Undefined;
+                    case '8':
+                    case '9':
+                    default:
+                        wafer.Status = Job.MapStatus.Undefined;
 
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = true;
-                            break;
-                    }
-                }
-                else
-                {
-                    switch (Mapping[i])
-                    {
-                        case '0':
-                            JobManagement.Remove(wafer);
-                            break;
-
-                        case '1':
-                            wafer.Status = Job.MapStatus.Normal;
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = false;
-                            break;
-
-                        case '3':
-                            wafer.Status = Job.MapStatus.Crossed;
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = true;
-                            break;
-
-                        case '7':
-                        case '2':
-                            wafer.Status = Job.MapStatus.Double;
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = true;
-                            break;
-
-                        case '8':
-                        case '9':
-                        default:
-                            wafer.Status = Job.MapStatus.Undefined;
-
-                            wafer.MapFlag = true;
-                            wafer.ErrPosition = true;
-                            break;
-                    }
+                        wafer.MapFlag = true;
+                        wafer.ErrPosition = true;
+                        break;
                 }
             }
         }

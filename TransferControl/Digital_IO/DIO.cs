@@ -56,18 +56,8 @@ namespace TransferControl.Digital_IO
             Ctrls = new ConcurrentDictionary<string, IDIOController>();
             Params = new ConcurrentDictionary<string, ParamConfig>();
             Controls = new ConcurrentDictionary<string, ParamConfig>();
-            //Dictionary<string, object> keyValues = new Dictionary<string, object>();
-            //keyValues.Add("@equipment_model_id", SystemConfig.Get().SystemMode);
-
-
-
-            //string Sql = @"select t.dioname DeviceName,t.`type` 'Type',t.address ,upper(t.Parameter) Parameter,t.abnormal,t.error_code  from config_dio_point t
-            //        where  t.equipment_model_id = @equipment_model_id";
-            //DataTable dt = dBUtil.GetDataTable(Sql, keyValues);
-            //string str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
 
             List<ParamConfig> ParamList = new ConfigTool<List<ParamConfig>>().ReadFile("config/DIO.json");
-
 
             foreach (ParamConfig each in ParamList)
             {
@@ -84,19 +74,6 @@ namespace TransferControl.Digital_IO
                 }
             }
 
-            //Sql = @"SELECT t.device_name as DeviceName,t.device_type as DeviceType,t.vendor as vendor,
-            //                case when t.conn_type = 'Socket' then  t.conn_address else '' end as IPAdress ,
-            //                case when t.conn_type = 'Socket' then  CONVERT(t.conn_port,SIGNED) else 0 end as Port ,
-            //                case when t.conn_type = 'Comport' then   CONVERT(t.conn_port,SIGNED) else 0 end as BaudRate ,
-            //                case when t.conn_type = 'Comport' then  t.conn_address else '' end as PortName ,             
-            //                t.conn_type as ConnectionType,
-            //                t.enable_flg as Enable
-            //                FROM config_controller_setting t
-            //                WHERE t.equipment_model_id = @equipment_model_id
-            //                AND t.device_type = 'DIO'";
-
-            //dt = dBUtil.GetDataTable(Sql, keyValues);
-            //str_json = JsonConvert.SerializeObject(dt, Formatting.Indented);
 
             List<CtrlConfig> ctrlList = new ConfigTool<List<CtrlConfig>>().ReadFile("config/DIOController.json");
             var dioCtrl = from dio in ctrlList

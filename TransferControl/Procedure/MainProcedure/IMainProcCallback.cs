@@ -10,4 +10,9 @@ namespace TransferControl.Procedure.MainProcedure
     {
         void EndOfProcCallback();
     }
+
+    //public interface IPrcoReport
+    //{
+    //    void MessageReport(string msg);
+    //}
 }

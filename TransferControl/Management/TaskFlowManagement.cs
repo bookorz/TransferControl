@@ -64,6 +64,7 @@ namespace TransferControl.Management
             public string ExcuteName { get; set; }
             public string ExcuteType { get; set; }
             public Transaction Txn { get; set; }
+            public bool Excuted = false;
             public bool Finished = false;
         }
         public TaskFlowManagement(IUserInterfaceReport TaskReport)
@@ -107,6 +108,10 @@ namespace TransferControl.Management
                 case "EFEM_DEMO_2P":
                     TaskFlow = new EFEM_Demo_2P(this);
                     break;
+                case "SORTER_ULVAC_2P1R":
+                    TaskFlow = new Sorter_2P1R(this);
+                    break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -151,32 +156,31 @@ namespace TransferControl.Management
             lock (CurrentProcessTasks)
             {
                 var findExcuted = from each in CurrentTask.CheckList
-                                  where each.ExcuteName.Equals(Txn.Method) && each.ExcuteType.Equals(ReturnType.ToUpper()) && each.NodeName.Equals(Txn.NodeName) && !each.Finished
+                                  where each.ExcuteName.Equals(Txn.Method) &&
+                                        ReturnType.ToUpper().Equals("EXCUTED") 
                                   select each;
-                if (findExcuted.Count() != 0)//標記完成的命令
-                {
-                    findExcuted.First().Finished = true;
-                }
+
+                if (findExcuted.Count() != 0)   //ACK
+                    findExcuted.First().Excuted = true;
 
                 findExcuted = from each in CurrentTask.CheckList
-                              where !each.Finished
+                                  where each.ExcuteName.Equals(Txn.Method) && each.ExcuteType.Equals(ReturnType.ToUpper()) && each.NodeName.Equals(Txn.NodeName) && !each.Finished
+                                  select each;
+
+                if (findExcuted.Count() != 0)   //標記完成的命令
+                {
+                    ExcutedCmd cmd = findExcuted.First();
+                    cmd.Finished = true;
+
+                    if(SystemConfig.Get().OfflineMode)
+                        cmd.Excuted = true;
+                }
+
+
+                findExcuted = from each in CurrentTask.CheckList
+                              where !each.Finished || !each.Excuted
                               select each;
                 count = findExcuted.Count();
-
-                //所有指令執行完
-                //Excuted command 執行上比 Finished command 慢
-                if(count == 0 && ReturnType.ToUpper().Equals("EXCUTED"))  //CurrentTask.CheckList 全部執行完
-                {
-                   findExcuted = from each in CurrentTask.CheckList
-                                    where each.ExcuteName.Equals(Txn.Method) && !each.ExcuteType.Equals(ReturnType.ToUpper()) && each.NodeName.Equals(Txn.NodeName)
-                                 select each;
-
-                    if(findExcuted.Count() > 0)
-                    {
-                        logger.Debug("Next(), findExcuted.Count() > 0");
-                        return;
-                    }
-                }
             }
 
             if (count == 0)//當全部完成後，繼續下一步
@@ -581,7 +585,10 @@ namespace TransferControl.Management
             EFEM_INIT,
             OCR_ONLINE,
             OCR_OFFLINE,
-            OCR_READ
+            OCR_READ,
+            SORTER_INIT,
+            NOTIFY_CARRIER_OUT,
+            NOTIFY_SEMIAUTO_FINISHED
         }
     }
 }

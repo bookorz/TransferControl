@@ -22,17 +22,22 @@ namespace TransferControl.Management
         {
             public const string Idle = "Idle";
             public const string Stop = "Stop";
-            public const string ErrorStop = "ErrorStop";
+            public const string AlarmStop = "AlarmStop";
             public const string CheckPresence = "CheckPresence";
             public const string GetPresence = "GetPresence";
             public const string ReadCarrierID = "ReadCarrierID";
             public const string LoadAndMapping = "LoadAndMapping";
+            public const string CheckMappingResult = "CheckMappingResult";
             public const string TransferWafer = "TransferWafer";
             public const string CheckType = "CheckType";
             public const string AssignWafer = "AssignWafer";
             public const string IsLoaderEmpty = "IsLoaderEmpty";
             public const string IsUnloaderFull = "IsUnloaderFull";
+            public const string IsSemiLoaderFinished = "IsSemiLoaderFinished";
             public const string Unload = "Unload";
+            public const string CloseDoor = "CloseDoor";
+            public const string LoadPortChangeForDemo = "LoadPortChangeForDemo";
+            public const string WaitCarrierOut = "WaitCarrierOut";
             public const string WaitUnloadCompleted = "WaitUnloadCompleted";
             public const string OnlyOneWaferOnRArm = "OnlyOneWaferOnRArm";
             public const string OnlyOneWaferOnLArm = "OnlyOneWaferOnLArm";
@@ -250,7 +255,7 @@ namespace TransferControl.Management
         public string MappingDataSnapshot { get; set; }
         public bool WaferProtrusionSensor { get; set; }
         public object ExcuteLock = new object();
-
+        public object EventLock = new object();
         public string ExeFilePath { get; set; }
         public string ProcessName { get; set; }
         public string ImgSourcePath { get; set; }
@@ -339,11 +344,14 @@ namespace TransferControl.Management
         public string TransReqMode;
 
         public string AlignDegree{ get; set; }
-
         public string ProcStatus { get; set; }
         public string FoupIDReader { get; set; }
+        /// <summary>
+        /// 離線模擬使用
+        /// </summary>
+        public bool SendCmdFinished { get; set; } = false;
 
-        public void InitialObject()
+    public void InitialObject()
         {
             R_Vacuum_Solenoid = "0";
             L_Vacuum_Solenoid = "0";
@@ -402,6 +410,7 @@ namespace TransferControl.Management
                 { "LC", false },
             };
 
+            Mode = "";
             E84Mode = E84_Mode.MANUAL;
             TransReqMode = "Stop";
 
@@ -612,31 +621,11 @@ namespace TransferControl.Management
                     {
                         txn.Point = point.Point;
                     }
-                    //檢查Loadport門是否為可以取放片狀態
-                    //if (point.PositionType.Equals("LOADPORT"))
-                    //{
-                    //    Node port = NodeManagement.Get(point.Position);
-                    //    if (port != null)
-                    //    {
-                    //        if (!port.ByPass)
-                    //        {
-                    //            Transaction InterLockTxn = new Transaction();
-                    //            InterLockTxn.Method = Transaction.Command.LoadPortType.ReadStatus;
-                    //            InterLockTxn.FormName = "InterLockChk";
-                    //            port.SendCommand(InterLockTxn);
-                    //        }
-                    //    }
-                    //}
+
                     if (!txn.Position2.Equals(""))
                     {
-                        //if (txn.Method.Equals(Transaction.Command.RobotType.Mapping))
-                        //{
-                        //    point = PointManagement.GetMapPoint(txn.Position2, txn.RecipeID);
-                        //}
-                        //else
-                        //{
                         point = PointManagement.GetPoint(Name, txn.Position2);
-                        //}
+
                         if (point == null)
                         {
                             logger.Error("point " + txn.Position2 + " not found!");
@@ -645,20 +634,6 @@ namespace TransferControl.Management
                         }
 
                         txn.Point2 = point.Point;
-                        //if (point.PositionType.Equals("LOADPORT"))
-                        //{
-                        //    Node port = NodeManagement.Get(point.Position);
-                        //    if (port != null)
-                        //    {
-                        //        if (!port.ByPass)
-                        //        {
-                        //            Transaction InterLockTxn = new Transaction();
-                        //            InterLockTxn.Method = Transaction.Command.LoadPortType.ReadStatus;
-                        //            InterLockTxn.FormName = "InterLockChk";
-                        //            port.SendCommand(InterLockTxn);
-                        //        }
-                        //    }
-                        //}
                     }
                 }
 
@@ -1515,19 +1490,6 @@ namespace TransferControl.Management
                                 if (Vendor.ToUpper().Equals("ASYST"))
                                     txn.CommandType = "CMD";
                                 break;
-
-                                //case Transaction.Command.LoadPortType.SetSlotOffset:
-                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotOffset(txn.Value);
-                                //    break;
-                                //case Transaction.Command.LoadPortType.SetWaferOffset:
-                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetWaferOffset(txn.Value);
-                                //    break;
-                                //case Transaction.Command.LoadPortType.SetSlotPitch:
-                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetSlotPitch(txn.Value);
-                                //    break;
-                                //case Transaction.Command.LoadPortType.SetTweekDistance:
-                                //    txn.CommandEncodeStr = Ctrl.GetEncoder().LoadPort.SetTweekDistance(txn.Value);
-                                //    break;
                         }
                         break;
                     case "ROBOT":
@@ -1566,9 +1528,7 @@ namespace TransferControl.Management
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Status(AdrNo, txn.Seq);
                                 txn.CommandType = "GET";
                                 break;
-                            //case Transaction.Command.RobotType.GetCombineStatus:
-                            //    txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.CombinedStatus(AdrNo, txn.Seq);
-                            //    break;
+
                             case Transaction.Command.RobotType.GetSpeed:
                                 txn.CommandEncodeStr = Ctrl.GetEncoder().Robot.Speed(AdrNo, txn.Seq);
                                 txn.CommandType = "GET";
@@ -1943,11 +1903,6 @@ namespace TransferControl.Management
                     IsWaitData = true;
                 }
 
-                //txn.AckTimeOut = this.AckTimeOut;
-                //logger.Debug("Ack TimeOut:" + txn.AckTimeOut.ToString());
-
-                //txn.MotionTimeOut = this.MotionTimeOut;
-                //logger.Debug("Motion TimeOut:" + txn.MotionTimeOut.ToString());
                 Ctrl.DoWork(txn, IsWaitData);
                 result = true;
 
@@ -1959,14 +1914,10 @@ namespace TransferControl.Management
                 this.IsExcuting = false;
                 throw new Exception("SendCommand " + e.Message + "\n" + e.StackTrace);
             }
-            //watch.Stop();
-            //var elapsedMs = watch.ElapsedMilliseconds;
-            //logger.Info("SendCommand ProcessTime:"+ elapsedMs.ToString());
 
             return result;
 
         }
-
 
     }
 }

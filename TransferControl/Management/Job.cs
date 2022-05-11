@@ -36,16 +36,27 @@ namespace TransferControl.Management
         public string OCR_T7_Score { get; set; }
         public string OCR_T7_Result { get; set; }
         public bool OCR_T7_Pass { get; set; }
-        public string Position { get; set; }           
+        private string _position;
+        public string Position
+        {
+            get => _position;
+            set
+            {
+                _position = value;
+                EndTime = DateTime.Now;
+            } 
+        }
+
         public string RecipeID { get; set; }
         public bool ErrPosition { get; set; }
         public bool MapFlag { get; set; }
         public int Offset { get; set; }
-
         public string Destination { get; set; }
         public string DestinationSlot { get; set; }
         public bool IsAssigned { get; set; }
-
+        public string FromPort { get; set; }
+        public string FromPortSlot { get; set; }
+        public string FromFoupID { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string WaferSize { get; set; }
@@ -62,8 +73,6 @@ namespace TransferControl.Management
 
         public Job()
         {
-           
-          
             Host_Lot_Id = "";
           
             OCRImgPath = "";
@@ -87,7 +96,9 @@ namespace TransferControl.Management
 
             Destination = "";
             IsAssigned = false;
-    }
+
+            StartTime = DateTime.Now;
+        }
 
        
     }

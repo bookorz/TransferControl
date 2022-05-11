@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using TransferControl.Comm;
 using TransferControl.Config;
@@ -16,6 +17,9 @@ namespace TransferControl.Management
         private static Dictionary<string, Alarm> CurrentAlarm = new Dictionary<string, Alarm>();
         //private static List<AlarmInfo> AlarmHistory = new List<AlarmInfo>();
         private static List<AlarmInfo> AlarmData = new List<AlarmInfo>();
+
+        private static string AlarmHisFileName = @"D:\config\AlarmHistory.json";
+
         private class AlarmInfo
         {
             public string vendor { get; set; }
@@ -40,11 +44,13 @@ namespace TransferControl.Management
         }
         public static Alarm NewAlarm(Node Node, string ErrorCode, string TaskID = "")
         {
-            Alarm result = new Alarm();
-            result.nodeName = Node == null ? "SYSTEM" : (Node.Name==null? "SYSTEM" : Node.Name);
-            result.errorCode = ErrorCode;
-            result.TimeStamp = DateTime.Now;
-            result.taskID = TaskID;
+            Alarm result = new Alarm
+            {
+                nodeName = Node == null ? "SYSTEM" : (Node.Name ?? "SYSTEM"),
+                errorCode = ErrorCode,
+                TimeStamp = DateTime.Now,
+                taskID = TaskID
+            };
 
             if (AlarmData != null && Node != null)
             {
@@ -116,15 +122,23 @@ namespace TransferControl.Management
             }
             lock (AlarmHis)
             {
-                new ConfigTool<List<Alarm>>().WriteFile("config/AlarmHistory.json", AlarmHis);
+                new ConfigTool<List<Alarm>>().WriteFile(AlarmHisFileName, AlarmHis);
             }
             return result;
         }
 
         public static void InitialAlarm()
         {
+            if (!File.Exists(AlarmHisFileName))
+            {
+                if (!Directory.Exists(@"D:\config"))
+                    Directory.CreateDirectory(@"D:\config");
+
+                File.Copy("config/AlarmHistory.json", AlarmHisFileName, true);
+            }
+
             AlarmData = new ConfigTool<List<AlarmInfo>>().ReadFile("config/error_code_en.json");
-            AlarmHis = new ConfigTool<List<Alarm>>().ReadFile("config/AlarmHistory.json");
+            AlarmHis = new ConfigTool<List<Alarm>>().ReadFile(AlarmHisFileName);
 
             if (AlarmHis == null)
             {

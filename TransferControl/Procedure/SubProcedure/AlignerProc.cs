@@ -13,7 +13,7 @@ namespace TransferControl.Procedure.SubProcedure
 {
     class AlignerProc : SubProc
     {
-        public AlignerProc(Node node) : base(node)
+        public AlignerProc(Node node, IProcReport procreport) : base(node, procreport)
         {
             logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         }

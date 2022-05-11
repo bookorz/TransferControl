@@ -16,18 +16,13 @@ namespace TransferControl.Procedure.SubProcedure
         private string Arm;
         private string Slot;
         private string Position;
-        private bool StartToStop = false;
 
-        public Demo2ArmRobot(Node node) : base(node)
+        public Demo2ArmRobot(Node node, IProcReport procreport) : base(node, procreport)
         {
             logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-            node.RobotArmType = Robot_ArmType.USE_RLARM;
-
             Arm = "";
             Slot = "";
             Position = "";
-
         }
         ~Demo2ArmRobot()
         {
@@ -51,7 +46,7 @@ namespace TransferControl.Procedure.SubProcedure
                     if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.GET_CLAMP, param).Promise())
                     {
                         //Error Stop 
-                        procNode.ProcStatus = Node.ProcedureStatus.ErrorStop;
+                        procNode.ProcStatus = Node.ProcedureStatus.AlarmStop;
                     }
                     else
                     {
@@ -63,15 +58,30 @@ namespace TransferControl.Procedure.SubProcedure
 
                 case Node.ProcedureStatus.CheckPresence:
 
-                    if(procNode.R_Presence && procNode.L_Presence)
+                    if(Recipe.CurrentRecipe.RunMode.ToUpper().Equals("SEMIAUTO"))
+                    {
+                        var Loaders = from Loader in NodeManagement.GetLoadPortList()
+                                      where Loader.IsMapping && !Loader.Foup_Lock
+                                      select Loader;
+
+                        if(Loaders.Count() == 0)
+                        {
+                            TaskFlowManagement.Excute(TaskFlowManagement.Command.NOTIFY_SEMIAUTO_FINISHED, param);
+                            procNode.ProcStatus = Node.ProcedureStatus.Stop;
+                            logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
+                            break;
+                        }
+                    }
+
+                    if (procNode.R_Presence && procNode.L_Presence)
                     {
                         procNode.ProcStatus = Node.ProcedureStatus.FullWaferOnRLArm;
                     }
-                    else if(!procNode.R_Presence && !procNode.L_Presence)
+                    else if (!procNode.R_Presence && !procNode.L_Presence)
                     {
                         procNode.ProcStatus = Node.ProcedureStatus.NoWaferOnRLArm;
                     }
-                    else if(procNode.R_Presence && !procNode.L_Presence)
+                    else if (procNode.R_Presence && !procNode.L_Presence)
                     {
                         procNode.ProcStatus = Node.ProcedureStatus.OnlyOneWaferOnRArm;
                     }
@@ -85,10 +95,8 @@ namespace TransferControl.Procedure.SubProcedure
 
                 case Node.ProcedureStatus.NoWaferOnRLArm:
                     WaferOnAligner = JobManagement.Get("ALIGNER01", "1");
-                    logger.Debug("1");
                     if (WaferOnAligner != null)
                     {
-                        logger.Debug("2");
                         if (WaferOnAligner.OCRFlag)  //OCR Finish, get wafer from aligner
                         {
                             logger.Debug("3");
@@ -111,45 +119,59 @@ namespace TransferControl.Procedure.SubProcedure
                         }
                         else
                         {
-                            logger.Debug("4");
                             if (procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM) && !StartToStop)
                             {
-                                logger.Debug("5");
                                 List<Node> LD = new List<Node>();
                                 foreach (Node loader in NodeManagement.GetLoadPortList())
                                 {
                                     if (loader.Mode != null)
-                                        if (loader.Mode.Equals("LD") && loader.IsMapping && loader.AssignWaferFinished)
+                                    {
+                                        if (Recipe.CurrentRecipe.RunMode.ToUpper().Equals("AUTO") ? loader.Mode.Equals("LD") : true && 
+                                            loader.IsMapping && 
+                                            loader.AssignWaferFinished)
                                         {
                                             LD.Add(loader);
                                         }
+                                    }
+
                                 }
 
                                 if (LD.Count() != 0)
                                 {
-                                    Node LDnode = LD.First();
-
-                                    var WaferList = from wafer in JobManagement.GetJobList()
-                                                    where wafer.IsAssigned &&
-                                                        !wafer.Destination.Equals("") &&
-                                                        wafer.Position.ToUpper().Equals(LDnode.Name.ToUpper())
-                                                    select wafer;
-
-                                    if (WaferList.Count() != 0)
+                                    foreach(Node LDnode in LD.ToList())
                                     {
-                                        WaferList = WaferList.OrderBy(x => Convert.ToInt16(x.Slot));
-                                        Job wafer = WaferList.First();
+                                        var WaferList = from wafer in JobManagement.GetJobList()
+                                                        where wafer.IsAssigned &&
+                                                            !wafer.Destination.Equals("") &&
+                                                            (!wafer.Position.Equals(wafer.Destination.ToUpper()) ||
+                                                            !wafer.Slot.Equals(wafer.DestinationSlot.ToUpper())) &&
+                                                            wafer.Position.ToUpper().Equals(LDnode.Name.ToUpper())
+                                                        select wafer;
 
-                                        Arm = "1";
-                                        Position = LDnode.Name;
-                                        Slot = wafer.Slot;
+                                        if (WaferList.Count() != 0)
+                                        {
+                                            if (Recipe.CurrentRecipe.get_slot_order.Equals("BOTTOM_UP"))
+                                            {
+                                                WaferList = WaferList.OrderBy(x => Convert.ToInt16(x.Slot));
+                                            }
+                                            else
+                                            {
+                                                WaferList = WaferList.OrderByDescending(x => Convert.ToInt16(x.Slot));
+                                            }
 
-                                        procNode.ProcStatus = Node.ProcedureStatus.Get;
+                                            Job wafer = WaferList.First();
+
+                                            Arm = "1";
+                                            Position = LDnode.Name;
+                                            Slot = wafer.Slot;
+
+                                            procNode.ProcStatus = Node.ProcedureStatus.Get;
+                                            break;
+                                        }
                                     }
-                                    else
-                                    {
+
+                                    if (!procNode.ProcStatus.Equals(Node.ProcedureStatus.Get))
                                         procNode.ProcStatus = Node.ProcedureStatus.GetPresence;
-                                    }
                                 }
                                 else
                                 {
@@ -176,66 +198,113 @@ namespace TransferControl.Procedure.SubProcedure
                             foreach (Node loader in NodeManagement.GetLoadPortList())
                             {
                                 if (loader.Mode != null)
-                                    if (loader.Mode.Equals("LD") && loader.IsMapping && loader.AssignWaferFinished)
+                                {
+                                    if (Recipe.CurrentRecipe.RunMode.ToUpper().Equals("AUTO") ? loader.Mode.Equals("LD") : true
+                                        && loader.IsMapping
+                                        && loader.AssignWaferFinished)
                                     {
                                         LD.Add(loader);
                                     }
+                                }
                             }
 
                             if (LD.Count() != 0)
                             {
-                                Node LDnode = LD.First();
-
-                                var WaferList = from wafer in JobManagement.GetJobList()
-                                                where wafer.IsAssigned &&
-                                                    !wafer.Destination.Equals("") &&
-                                                    !wafer.Position.ToUpper().Equals(wafer.Destination.ToUpper())
-                                                select wafer;
-
-                                if (WaferList.Count() != 0)
+                                foreach (Node LDnode in LD.ToList().OrderBy(x => x.Name))
                                 {
-                                    WaferList = WaferList.OrderBy(x => Convert.ToInt16(x.Slot));
+                                    var WaferList = from wafer in JobManagement.GetJobList()
+                                                    where wafer.IsAssigned &&
+                                                        !wafer.Destination.Equals("") &&
+                                                        (!wafer.Position.Equals(wafer.Destination.ToUpper()) ||
+                                                        !wafer.Slot.Equals(wafer.DestinationSlot.ToUpper())) &&
+                                                        wafer.Position.ToUpper().Equals(LDnode.Name.ToUpper())
+                                                    select wafer;
 
-                                    Job wafer = WaferList.First();
-
-                                    bool UseDoubleArm = false;
-                                    Job wafer2 = JobManagement.Get(wafer.Position, (Convert.ToInt16(wafer.Slot) + 1).ToString());
-
-                                    if (procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM) && wafer2 != null)
+                                    if (WaferList.Count() != 0)
                                     {
-                                        if (wafer2.IsAssigned && !wafer2.Destination.Equals("") &&
-                                            !wafer2.Position.ToUpper().Equals(wafer2.Destination.ToUpper()))
-                                            UseDoubleArm = true;
-                                    }
-
-                                    Position = LDnode.Name;
-                                    if (UseDoubleArm)
-                                    {
-                                        Arm = "3";
-                                        Slot = wafer2.Slot;
-                                    }
-                                    else
-                                    {
-                                        switch (procNode.RobotArmType)
+                                        if (Recipe.CurrentRecipe.get_slot_order.Equals("BOTTOM_UP"))
                                         {
-                                            case Robot_ArmType.USE_RARM:
-                                            case Robot_ArmType.USE_RLARM:
-                                                Arm = "1";
-                                                break;
-
-                                            case Robot_ArmType.USE_LARM:
-                                                Arm = "2";
-                                                break;
+                                            WaferList = WaferList.OrderBy(x => Convert.ToInt16(x.Slot));
                                         }
-                                        Slot = wafer.Slot;
-                                    }
+                                        else
+                                        {
+                                            WaferList = WaferList.OrderByDescending(x => Convert.ToInt16(x.Slot));
+                                        }
 
-                                    procNode.ProcStatus = Node.ProcedureStatus.Get;
+                                        Job wafer = WaferList.First();
+
+                                        bool UseDoubleArm = false;
+                                        Job wafer2 = JobManagement.Get(wafer.Position, 
+                                            (Recipe.CurrentRecipe.get_slot_order.Equals("BOTTOM_UP") ? Convert.ToInt16(wafer.Slot) + 1 : Convert.ToInt16(wafer.Slot) - 1).ToString());
+
+                                        if (procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM) && wafer2 != null)
+                                        {
+                                            if (wafer2.IsAssigned && !wafer2.Destination.Equals("") &&
+                                                (!wafer2.Position.ToUpper().Equals(wafer2.Destination.ToUpper()) ||
+                                                !wafer2.Slot.ToUpper().Equals(wafer2.DestinationSlot.ToUpper()) )&&
+                                                wafer.Destination.ToUpper().Equals(wafer2.Destination.ToUpper()) &&
+                                                 wafer2.Position.ToUpper().Equals(LDnode.Name.ToUpper()) 
+                                                 )                                             
+                                            {
+                                                if (Recipe.CurrentRecipe.put_slot_order.Equals(Recipe.CurrentRecipe.get_slot_order))
+                                                {
+                                                    if(Recipe.CurrentRecipe.put_slot_order.Equals("TOP_DOWN"))
+                                                    {
+                                                        if (Convert.ToInt16(wafer.DestinationSlot) == Convert.ToInt16(wafer2.DestinationSlot) + 1)
+                                                            UseDoubleArm = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (Convert.ToInt16(wafer.DestinationSlot) == Convert.ToInt16(wafer2.DestinationSlot) - 1)
+                                                            UseDoubleArm = true;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (Recipe.CurrentRecipe.put_slot_order.Equals("TOP_DOWN"))
+                                                    {
+                                                        if (Convert.ToInt16(wafer.DestinationSlot) == Convert.ToInt16(wafer2.DestinationSlot) - 1)
+                                                            UseDoubleArm = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (Convert.ToInt16(wafer.DestinationSlot) == Convert.ToInt16(wafer2.DestinationSlot) + 1)
+                                                            UseDoubleArm = true;
+                                                    }
+                                                }
+                                            }
+
+                                        }
+
+                                        Position = LDnode.Name;
+                                        if (UseDoubleArm)
+                                        {
+                                            Arm = "3";
+                                            Slot = Recipe.CurrentRecipe.get_slot_order.Equals("BOTTOM_UP") ? wafer2.Slot : wafer.Slot;
+                                        }
+                                        else
+                                        {
+                                            switch (procNode.RobotArmType)
+                                            {
+                                                case Robot_ArmType.USE_RARM:
+                                                case Robot_ArmType.USE_RLARM:
+                                                    Arm = "1";
+                                                    break;
+
+                                                case Robot_ArmType.USE_LARM:
+                                                    Arm = "2";
+                                                    break;
+                                            }
+                                            Slot = wafer.Slot;
+                                        }
+
+                                        procNode.ProcStatus = Node.ProcedureStatus.Get;
+                                        break;
+                                    }
                                 }
-                                else
-                                {
+
+                                if(!procNode.ProcStatus.Equals(Node.ProcedureStatus.Get))
                                     procNode.ProcStatus = Node.ProcedureStatus.GetPresence;
-                                }
                             }
                             else
                             {
@@ -244,7 +313,13 @@ namespace TransferControl.Procedure.SubProcedure
                         }
 
                     }
+
+                    //減少資源使用
+                    if (procNode.ProcStatus.Equals(Node.ProcedureStatus.GetPresence))
+                        SpinWait.SpinUntil(() => false, 1000);
+
                     logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
+
                     break;
 
                 case Node.ProcedureStatus.OnlyOneWaferOnRArm:
@@ -282,7 +357,7 @@ namespace TransferControl.Procedure.SubProcedure
                             else
                             {
                                 //Error
-                                procNode.ProcStatus = Node.ProcedureStatus.ErrorStop;
+                                procNode.ProcStatus = Node.ProcedureStatus.AlarmStop;
                             }
                         }
                     }
@@ -323,29 +398,39 @@ namespace TransferControl.Procedure.SubProcedure
                     }
                     else
                     {
-                        logger.Debug("a1");
                         WaferOnRArm = JobManagement.Get(procNode.Name + "_R", "1");
                         WaferOnLArm = JobManagement.Get(procNode.Name + "_L", "1");
 
-                        if(!IsNodeEnabled("ALIGNER01") || !(WaferOnRArm.OCRFlag && WaferOnLArm.OCRFlag))
+                        if(IsNodeEnabled("ALIGNER01") && !(WaferOnRArm.OCRFlag && WaferOnLArm.OCRFlag))
                         {
-                            logger.Debug("a2");
                             Position = "ALIGNER01";
                             Slot = "1";
                             if (!WaferOnRArm.OCRFlag && !WaferOnLArm.OCRFlag)
                             {
-                                logger.Debug("a3");
                                 Arm = Convert.ToInt16(WaferOnRArm.DestinationSlot) > Convert.ToInt16(WaferOnLArm.DestinationSlot) ? "1" : "2";
                             }
                             else
                             {
-                                logger.Debug("a4");
                                 Arm = !WaferOnRArm.OCRFlag ? "1" : "2";
                             }
-                            logger.Debug(Arm);
                         }
                         else
                         {
+
+                            //if (procNode.RobotArmType.Equals(Robot_ArmType.USE_RLARM) && !Recipe.CurrentRecipe.RunMode.ToUpper().Equals("SEMIAUTO"))
+                            //{
+                            //    if (Convert.ToInt16(WaferOnLArm.DestinationSlot) == Convert.ToInt16(WaferOnRArm.DestinationSlot) + 1)
+                            //    {
+                            //        WaferOnRArm.DestinationSlot = WaferOnLArm.DestinationSlot;
+                            //        WaferOnLArm.DestinationSlot = (Convert.ToInt16(WaferOnRArm.DestinationSlot) - 1).ToString();
+
+                            //        logger.Debug("Re-Assign Wafer : to " + WaferOnRArm.Destination + " Slot " + WaferOnRArm.DestinationSlot);
+
+                            //        logger.Debug("Re-Assign Wafer : to " + WaferOnLArm.Destination + " Slot " + WaferOnLArm.DestinationSlot);
+
+                            //    }
+                            //}
+
                             if (WaferOnRArm.Destination.Equals(WaferOnLArm.Destination) &&
                                 Convert.ToInt16(WaferOnRArm.DestinationSlot) == Convert.ToInt16(WaferOnLArm.DestinationSlot) + 1)
                             {
@@ -384,7 +469,8 @@ namespace TransferControl.Procedure.SubProcedure
                     param.Add("@BYPASS_CHECK", NodeManagement.Get(Position).ByPassCheck ? "TRUE" : "FALSE");
                     param.Add("@IsTransCommand", "FALSE");
 
-                    logger.Debug("Get wafer form : " + Position + " Slot " + Slot + " by Arm " + Arm);
+                    Report.MessageReport("Get wafer form : " + Position + " Slot " + Slot + " by Arm " + Arm);
+                    //TimerManagement.Record();
 
                     if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_GET, param).Promise())
                     {
@@ -436,7 +522,8 @@ namespace TransferControl.Procedure.SubProcedure
                     param.Add("@BYPASS_CHECK", NodeManagement.Get(Position).ByPassCheck ? "TRUE" : "FALSE");
                     param.Add("@IsTransCommand", "FALSE");
 
-                    logger.Debug("Put wafer to : " + Position + " Slot " + Slot + " by Arm " + Arm);
+                    Report.MessageReport("Put wafer to : " + Position + " Slot " + Slot + " by Arm " + Arm);
+                    //TimerManagement.Record();
 
                     if (!TaskFlowManagement.Excute(TaskFlowManagement.Command.ROBOT_PUT, param).Promise())
                     {
@@ -444,6 +531,9 @@ namespace TransferControl.Procedure.SubProcedure
                     }
                     else
                     {
+                        if(Position.ToUpper().Contains("LOADPORT"))
+                            TimerManagement.Add(Arm.Equals("3") ? 2 : 1);
+
                         if (SystemConfig.Get().OfflineMode)
                         {
                             if (Position.ToUpper().Equals("ALIGNER01"))
@@ -477,11 +567,14 @@ namespace TransferControl.Procedure.SubProcedure
                     logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
                     break;
 
-                case Node.ProcedureStatus.ErrorStop:
+                case Node.ProcedureStatus.AlarmStop:
                 case Node.ProcedureStatus.Stop:
                     logger.Debug("Node : " + procNode.Name + ", go to " + procNode.ProcStatus);
                     IsProcStop = true;
                     StartToStop = false;
+
+                    procNode.InitialComplete = false;
+                    procNode.OrgSearchComplete = false;
                     break;
                 default:
                     throw new NotSupportedException();
@@ -492,9 +585,7 @@ namespace TransferControl.Procedure.SubProcedure
         }
         public override void Stop()
         {
-            //IsProcStop = true;
             IsProcPause = false;
-
             StartToStop = true;
         }
     }

@@ -235,15 +235,16 @@ namespace TransferControl.Management
         public static Node Get(string Name)
         {
             Node result = null;
-            if (Name != null)
+            if(NodeList != null)
             {
-                NodeList.TryGetValue(Name.ToUpper(), out result);
+                if (Name != null)
+                    NodeList.TryGetValue(Name.ToUpper(), out result);
+
+                if (result == null)
+                    logger.Debug("Node not exist, Name:" + Name);
             }
-            if (result == null)
-            {
-                //logger.Error("Node not exist, Name:" + Name);
-                logger.Debug("Node not exist, Name:" + Name);
-            }
+
+
             return result;
         }  
         public static Node GetByController(string DeviceName, string NodeAdr)

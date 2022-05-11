@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using TransferControl.Management;
 
+using TransferControl.Procedure;
+
 namespace TransferControl.Procedure.SubProcedure
 {
     public class SubProc
@@ -16,15 +18,20 @@ namespace TransferControl.Procedure.SubProcedure
         protected Node ProcNode = null;
         protected bool IsProcExit = false;
 
-        public bool IsProcBusy = false;
-        public bool IsProcStop = false;
-        public bool IsProcPause = false;
+        protected bool IsProcBusy = false;
+        protected bool IsProcStop = false;
+        protected bool IsProcPause = false;
+
+        protected IProcReport Report;
+
+        protected bool StartToStop = false;
 
         public ManualResetEvent ProcFinishedEvt = new ManualResetEvent(false);
 
-        public SubProc(Node node)
+        public SubProc(Node node, IProcReport procreport)
         {
             ProcNode = node;
+            Report = procreport;
         }
         ~SubProc()
         {
@@ -55,6 +62,8 @@ namespace TransferControl.Procedure.SubProcedure
                 IsProcStop = false;
                 IsProcPause = false;
 
+                StartToStop = false;
+
                 ProcFinishedEvt.Reset();
 
                 ProcNode.ProcStatus = Node.ProcedureStatus.Idle;
@@ -66,6 +75,9 @@ namespace TransferControl.Procedure.SubProcedure
 
             return Ret;
         }
+        /// <summary>
+        /// 提供給後續修改子流程
+        /// </summary>
         public virtual void Stop()
         {
             IsProcStop = true;
@@ -106,6 +118,11 @@ namespace TransferControl.Procedure.SubProcedure
 
             IsProcBusy = false;
             ProcFinishedEvt.Set();
+        }
+        public void EmergencyStop()
+        {
+            IsProcPause = false;
+            IsProcStop = true;
         }
     }
 }

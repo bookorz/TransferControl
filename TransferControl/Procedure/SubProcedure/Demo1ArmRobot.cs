@@ -12,7 +12,7 @@ namespace TransferControl.Procedure.SubProcedure
 {
     class Demo1ArmRobot : SubProc
     {
-        public Demo1ArmRobot(Node node) : base(node)
+        public Demo1ArmRobot(Node node, IProcReport procreport) : base(node, procreport)
         {
             logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         }

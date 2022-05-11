@@ -5,56 +5,49 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using TransferControl.CommandConvert;
 using TransferControl.Config;
+using TransferControl.Engine;
 using TransferControl.Management;
 using TransferControl.Procedure.SubProcedure;
 
 namespace TransferControl.Procedure.MainProcedure
 {
-    public class DemoEFEMMainProc: MainProc
+    public class SorterMainProc_2P1R : MainProc
     {
-        private DemoLPProc LP1, LP2;
-        private AlignerProc AL1;
+        private ManualResetEvent[] ProcFinishedEvt = new ManualResetEvent[3];
+
+        private LPProc LP1, LP2;
         private Demo2ArmRobot Robot1;
-        private ManualResetEvent[] ProcFinishedEvt = new ManualResetEvent[4];
 
         enum Proc
         {
             LP1 = 0,
             LP2,
-            AL,
             ROB,
             TOTAL
         }
-
-        //private SubProc Robot1;
-        public DemoEFEMMainProc(IMainProcCallback prco):base(prco)
+        public SorterMainProc_2P1R(IMainProcCallback prco, IProcReport report) : base(prco, report)
         {
-            LP1 = new DemoLPProc(NodeManagement.Get("LOADPORT01"));
-            ProcFinishedEvt[(int)Proc.LP1] = LP1.ProcFinishedEvt;
 
-            LP2 = new DemoLPProc(NodeManagement.Get("LOADPORT02"));
-            ProcFinishedEvt[(int)Proc.LP2] = LP2.ProcFinishedEvt;
-
-            AL1 = new AlignerProc(NodeManagement.Get("ALIGNER01"));
-            ProcFinishedEvt[(int)Proc.AL] = AL1.ProcFinishedEvt;
-
-            Robot1 = new Demo2ArmRobot(NodeManagement.Get("ROBOT01"));
-            ProcFinishedEvt[(int)Proc.ROB] = Robot1.ProcFinishedEvt;
         }
         public override bool Start()
         {
+            Node nodeRobot1 = NodeManagement.Get("ROBOT01");
+
             Node nodeLP1 = NodeManagement.Get("LOADPORT01");
-            nodeLP1.Mode = "LD";
+            LP1 = new LPProc(nodeLP1, Report);
+            ProcFinishedEvt[(int)Proc.LP1] = LP1.ProcFinishedEvt;
             if (!nodeLP1.InitialComplete || !nodeLP1.OrgSearchComplete)
             {
-                logger.Debug("Node name :"+ nodeLP1.Name + "InitialFail!");
+                logger.Debug("Node name :" + nodeLP1.Name + "InitialFail!");
                 return false;
             }
 
 
             Node nodeLP2 = NodeManagement.Get("LOADPORT02");
-            nodeLP2.Mode = "ULD";
+            LP2 = new LPProc(nodeLP2, Report);
+            ProcFinishedEvt[(int)Proc.LP2] = LP2.ProcFinishedEvt;
             if (!nodeLP2.InitialComplete || !nodeLP2.OrgSearchComplete)
             {
                 logger.Debug("Node name :" + nodeLP2.Name + "InitialFail!");
@@ -62,22 +55,14 @@ namespace TransferControl.Procedure.MainProcedure
             }
 
 
-            Node nodeRobot1 = NodeManagement.Get("ROBOT01");
+
+            Robot1 = new Demo2ArmRobot(nodeRobot1, Report);
+            ProcFinishedEvt[(int)Proc.ROB] = Robot1.ProcFinishedEvt;
             if (!nodeRobot1.InitialComplete || !nodeRobot1.OrgSearchComplete)
             {
                 logger.Debug("Node name :" + nodeRobot1.Name + "InitialFail!");
                 return false;
             }
-
-
-
-            Node nodeAligner1 = NodeManagement.Get("ALIGNER01");
-            if (!nodeAligner1.InitialComplete || !nodeAligner1.OrgSearchComplete)
-            {
-                logger.Debug("Node name :" + nodeAligner1.Name + "InitialFail!");
-                return false;
-            }
-
 
             bool Ret = true;
 
@@ -97,18 +82,21 @@ namespace TransferControl.Procedure.MainProcedure
             if (!LP1.Start()) Ret = false;
             if (!LP2.Start()) Ret = false;
 
-            if (!AL1.Start()) Ret = false;
-
             if (!Robot1.Start()) Ret = false;
 
             if (!Ret) Stop();
+
+            IsRun = Ret;
+
+            if (IsRun)
+                TimerManagement.Initial();
 
             return Ret;
         }
         bool IsStopped = false;
         public override void Stop()
         {
-            if(!IsStopped)
+            if (!IsStopped)
             {
                 IsStopped = true;
                 Robot1.Stop();
@@ -121,11 +109,17 @@ namespace TransferControl.Procedure.MainProcedure
         public override void Pause()
         {
             Robot1.Pause();
+
+            if (IsRun)
+                TimerManagement.Pause();
         }
 
         public override void Reset()
         {
             Robot1.Reset();
+
+            if (IsRun)
+                TimerManagement.Start();
         }
         public override bool GetPauseStatus()
         {
@@ -138,13 +132,23 @@ namespace TransferControl.Procedure.MainProcedure
 
             LP1.Stop();
             LP2.Stop();
-            AL1.Stop();
 
             WaitHandle.WaitAll(ProcFinishedEvt, Timeout.Infinite);
 
 
             ProcCallback.EndOfProcCallback();
+
             IsStopped = false;
+            IsRun = false;
         }
+        public override void EmergencyStop()
+        {
+            LP1?.EmergencyStop();
+            LP2?.EmergencyStop();
+            Robot1?.EmergencyStop();
+
+            TimerManagement.Pause();
+        }
+
     }
 }

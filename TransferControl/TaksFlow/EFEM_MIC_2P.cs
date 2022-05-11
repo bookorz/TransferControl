@@ -16,7 +16,7 @@ namespace TransferControl.TaksFlow
     {
         ILog logger = LogManager.GetLogger(typeof(EFEM_MIC_2P));
         //IUserInterfaceReport _TaskReport;
-        private readonly int ArmCount;
+        //private readonly int ArmCount;
         public EFEM_MIC_2P(IUserInterfaceReport TaskReport) : base(TaskReport)
         {
             _TaskReport = TaskReport;

@@ -13,12 +13,20 @@ namespace TransferControl.Procedure.MainProcedure
         protected ILog logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         protected IMainProcCallback ProcCallback;
-        public MainProc(IMainProcCallback prco)
+        protected IProcReport Report;
+
+        public bool IsRun { set; get;}
+        public MainProc(IMainProcCallback prco, IProcReport report)
         {
             ProcCallback = prco;
+
+            Report = report;
+
+            IsRun = false;
         }
         public virtual bool Start()
         {
+            IsRun = true;
             return true;
         }
         public virtual void Stop()
@@ -40,6 +48,14 @@ namespace TransferControl.Procedure.MainProcedure
         {
             return true;
         }
+        public virtual void EmergencyStop()
+        {
+
+        }
+
+
+
+
     }
 
 }
