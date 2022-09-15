@@ -214,17 +214,23 @@ namespace TransferControl.CommandConvert
                 result = new List<CommandReturnMessage>();
 
                 CommandReturnMessage r = new CommandReturnMessage();
-                if (Message[0] == (char)4)
+                if (Message.Length.Equals(0))
+                {
+                    r.Type = CommandReturnMessage.ReturnType.Excuted;
+                    r.Value = "(Null)";
+                }
+                else if (Message[0] == (char)4)
                 {
                     r.Type = CommandReturnMessage.ReturnType.Excuted;
                 }
                 else if (Message[0] == (char)6 || Message[0] == (char)5)
                 {
                     r.Type = CommandReturnMessage.ReturnType.Information;
+                    //r.Type = CommandReturnMessage.ReturnType.Excuted;
                 }
                 else
                 {
-                    r.Type = CommandReturnMessage.ReturnType.Finished;
+                    r.Type = CommandReturnMessage.ReturnType.Excuted;
                     r.Value = Message;
 
                     if(Message.Contains("SSACK_"))
@@ -271,9 +277,9 @@ namespace TransferControl.CommandConvert
                     switch(strResponseCode)
                     {
                         case "00":
-                            each.Type = CommandReturnMessage.ReturnType.Finished;
-
-                            if(Msg.Length > 7)
+                            //each.Type = CommandReturnMessage.ReturnType.Finished;
+                            each.Type = CommandReturnMessage.ReturnType.Excuted;
+                            if (Msg.Length > 7)
                             {
                                 string temp = Msg.Substring(5, 32);
 
@@ -363,6 +369,7 @@ namespace TransferControl.CommandConvert
                     each.Value = "";
                     string strRawMsg = Msg.ToUpper().Replace(" ", "");
                     string strResponseCode = "";
+                    string strResponseCode2 = "";
                     string strFunctionCode = "";
                     string strErrorCode = "";
 
@@ -382,6 +389,7 @@ namespace TransferControl.CommandConvert
                     {
                         strFunctionCode = strRawMsg.Substring(2, 2);
                         strResponseCode = strRawMsg.Substring(4, 2);
+                        strResponseCode2 = strRawMsg.Substring(6, 2);
                         each.Command = strFunctionCode.ToUpper();
                     }
 
@@ -402,6 +410,10 @@ namespace TransferControl.CommandConvert
                                 each.Type = CommandReturnMessage.ReturnType.Excuted;
                             }
                             else if (strFunctionCode.ToUpper().Equals("04") && strResponseCode.Equals("00"))
+                            {
+                                each.Type = CommandReturnMessage.ReturnType.Excuted;
+                            }
+                            else if (strFunctionCode.ToUpper().Equals("04") && strResponseCode.Equals("01") && strResponseCode2.Equals("00"))
                             {
                                 each.Type = CommandReturnMessage.ReturnType.Excuted;
                             }
@@ -534,9 +546,11 @@ namespace TransferControl.CommandConvert
                                 //case "F6":
                                 //    each.Command = "LC_ON";
                                 //    break;
+                                case "F7":
+                                    each.Command = "LC_ON_ERROR";
+                                    break;
 
                                 case "F5":
-                                case "F7":
                                     each.Command = "LC_ON";
                                     break;
 
@@ -709,7 +723,13 @@ namespace TransferControl.CommandConvert
 
 
                 CommandReturnMessage r = new CommandReturnMessage();
-                if (Message[0] == (char)4)
+
+                if(Message.Length.Equals(0))
+                {
+                    r.Type = CommandReturnMessage.ReturnType.Excuted;
+                    r.Value = "(Null)";
+                }
+                else if (Message[0] == (char)4)
                 {
                     r.Type = CommandReturnMessage.ReturnType.Excuted;
                 }
@@ -719,7 +739,7 @@ namespace TransferControl.CommandConvert
                 }
                 else
                 {
-                    r.Type = CommandReturnMessage.ReturnType.Finished;
+                    r.Type = CommandReturnMessage.ReturnType.Excuted;
                     r.Value = Message;
                 }
 
@@ -1058,9 +1078,11 @@ namespace TransferControl.CommandConvert
                     {
                         continue;
                     }
-                    CommandReturnMessage each = new CommandReturnMessage();
-                    each.OrgMsg = Msg.Substring(Msg.IndexOf("$"));
-                    each.CommandType = "CMD";
+                    CommandReturnMessage each = new CommandReturnMessage
+                    {
+                        OrgMsg = Msg.Substring(Msg.IndexOf("$")),
+                        CommandType = "CMD"
+                    };
                     each.NodeAdr = each.OrgMsg.Substring(1,1);
                     string[] content = each.OrgMsg.Replace("\r", "").Replace("\n", "").Substring(2).Split(':');
                     for (int i = 0; i < content.Length; i++)
@@ -1109,6 +1131,11 @@ namespace TransferControl.CommandConvert
                                 {
                                     each.Value = content[i];
                                     each.NodeAdr = "";
+                                }
+                                else if(each.Type.Equals(CommandReturnMessage.ReturnType.Error))
+                                {
+                                    //華海2P
+                                    each.Value = content[i];
                                 }
                                 else
                                 {
