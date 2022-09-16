@@ -367,6 +367,8 @@ namespace TransferControl.Comm
         }
 
         string tmp8400Data = "";
+        string MultiBlockString = "";
+        byte FileDataType = 0x41;
         private void SMARTTAG8400_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
@@ -414,9 +416,71 @@ namespace TransferControl.Comm
                                 logger.Debug(this.cfg.GetDeviceName() + " Convert.ToInt32(hexbuf[0]):" + (Convert.ToInt32(hexbuf[0]) + 3).ToString());
                                 if (hexbuf.Length != Convert.ToInt32(hexbuf[0]) + 3) return;
 
-                                //logger.Debug(this.cfg.GetDeviceName() + " Received:" + ByteArrayToString(buf));
+                                //msg = tmp.Substring(18, Convert.ToInt16(tmp[17]));
+                                //hexbuf[0] Messege length
+                                //hexbuf[1] R-Bit & Upper device id 
+                                //hexbuf[2] lower device id 
+                                //hexbuf[3] W-Bit & Upper message id 
+                                //hexbuf[4] Upper message id 
+                                //hexbuf[5] E-Bit & Upper Block id 
+                                //hexbuf[6] Upper Block id 
 
-                                msg = tmp.Substring(18, Convert.ToInt16(tmp[17]));
+                                //Single-Block or Multi-Block
+                                bool EBlock = false;
+                                int BlockNo = 1;
+
+                                string Block1 = Convert.ToString(hexbuf[5], 2).PadLeft(8, '0');
+                                string Block2 = Convert.ToString(hexbuf[6], 2).PadLeft(8, '0');
+
+                                EBlock = Block1[0].Equals('1');
+                                BlockNo = Convert.ToInt32(Block1.Substring(1) + Block2, 2);
+
+                                if (BlockNo.Equals(1))
+                                    FileDataType = hexbuf[16];
+
+                                if (EBlock && BlockNo.Equals(1)) //Single-Block
+                                {
+                                    if (FileDataType.Equals(0x41))
+                                    {
+                                        msg = tmp.Substring(18, Convert.ToInt16(tmp[17]));
+                                    }
+                                    else if (FileDataType.Equals(0x42))
+                                    {
+                                        string Length1 = Convert.ToString(hexbuf[17], 2).PadLeft(8, '0');
+                                        string Length2 = Convert.ToString(hexbuf[18], 2).PadLeft(8, '0');
+
+                                        msg = tmp.Substring(19, Convert.ToInt32(Length1 + Length2, 2));
+                                    }
+                                }
+                                else if (EBlock) //Final part of Multi-Block 
+                                {
+                                    tmp = tmp.Substring(7);
+                                    MultiBlockString += tmp.Substring(0, tmp.Length - 2);
+                                    msg = MultiBlockString;
+                                    MultiBlockString = "";
+                                }
+                                else if (BlockNo.Equals(1))
+                                {
+                                    if (FileDataType.Equals(0x41))
+                                    {
+                                        tmp = tmp.Substring(18);
+                                    }
+                                    else if (FileDataType.Equals(0x42))
+                                    {
+                                        tmp = tmp.Substring(19);
+                                    }
+
+                                    MultiBlockString = tmp.Substring(0, tmp.Length - 2);
+                                    tmp = tmp8400Data = "";
+                                    return;
+                                }
+                                else
+                                {
+                                    tmp = tmp.Substring(7);
+                                    MultiBlockString += tmp.Substring(0, tmp.Length - 2);
+                                    tmp = tmp8400Data = "";
+                                    return;
+                                }
                             }
                             else
                             {
@@ -436,7 +500,7 @@ namespace TransferControl.Comm
             }
             catch (Exception e1)
             {
-                ConnReport.On_Connection_Error("(MITSUBISHI_PLC_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
+                ConnReport.On_Connection_Error("(SMARTTAG8400_DataReceived )" + e1.Message + "\n" + e1.StackTrace);
             }
         }
         string tmpHR4136Data = "";
